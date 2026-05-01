@@ -1,0 +1,43 @@
+{
+  "skill_name": "my-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this copied skill and adapt it to the current repository conventions.",
+      "expected_output": "A revised skill that matches the repo stack, paths, and commands.",
+      "task_framing_expectations": {
+        "what": "The revised skill makes the important actions concrete.",
+        "why": "The skill explains why those actions exist instead of listing raw steps.",
+        "when": "The skill states when to use key commands or actions.",
+        "expected_outcome": "The skill makes success criteria observable for important steps."
+      },
+      "files": [
+        "evals/files/copied-skill/SKILL.md"
+      ],
+      "assertions": [
+        "The revised skill removes stale stack references from the source project",
+        "The revised skill keeps the same core responsibility",
+        "The revised skill uses this repository's real commands or file paths where relevant"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Tighten this skill description so it triggers on realistic prompts without false-triggering on nearby tasks.",
+      "expected_output": "A more precise description plus justification for the new scope.",
+      "task_framing_expectations": {
+        "what": "The revision is clear about what change is being made.",
+        "why": "The response explains why the new wording improves trigger quality.",
+        "when": "The guidance indicates when the revised description should activate the skill.",
+        "expected_outcome": "The final description is more precise and easier to evaluate with trigger queries."
+      },
+      "files": [
+        "evals/files/description-input/SKILL.md"
+      ],
+      "assertions": [
+        "The new description is more specific about when to use the skill",
+        "The new description remains under the spec limit",
+        "The response explains at least one activation boundary"
+      ]
+    }
+  ]
+}

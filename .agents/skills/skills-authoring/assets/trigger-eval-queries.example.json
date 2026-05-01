@@ -1,0 +1,26 @@
+[
+  {
+    "query": "I have a copied skill that still mentions pnpm and Next.js, but this repo is Python with uv. Please fix it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you draft a skill description that triggers when users ask for CSV analysis even if they never say CSV?",
+    "should_trigger": true
+  },
+  {
+    "query": "Please review whether this skill is too broad and should be split into two skills.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a Python function that parses a JSON file and prints the keys.",
+    "should_trigger": false
+  },
+  {
+    "query": "I need help updating formulas in an Excel workbook.",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the current time in UTC?",
+    "should_trigger": false
+  }
+]
