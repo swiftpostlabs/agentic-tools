@@ -1,5 +1,5 @@
 # Mock test
-from my_project.main import some_function
+from swiftpost_shareable_skills.main import some_function
 
 
 def test_some_function():
