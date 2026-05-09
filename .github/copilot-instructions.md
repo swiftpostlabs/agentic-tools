@@ -56,6 +56,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-code-conventions`** — Python code structure and quality standards
 - Use when: creating features, writing tests, adjusting project config, or working with source code
 
+**`ref-git-commits`** — Commit grouping and commit message guidance
+- Use when: deciding how changes should be committed, writing commit titles or bodies, or documenting automated commands in commit messages
+
 **`ref-project-structure-setup`** — Project layout, `pyproject.toml`, and tool wiring
 - Use when: locating code, understanding folder layout, or updating project/tool configuration
 
@@ -70,6 +73,12 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 **`tool-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
 - Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
+
+**`tool-create-skill`** — Guided wizard for creating a new skill
+- Use when: the user wants to add a new skill or scaffold one through a guided intake flow
+
+**`tool-commit`** — Group edited files into logical commits and create focused commits
+- Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing
 
 **`ref-local-feature-tracking`** — Maintain local feature tracking under `.agents/tasks/`
 - Use when: a task needs local planning, temporary feature notes, or structured tracking under `.agents/tasks/`
@@ -102,7 +111,10 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 ## Asking for Help
 
 - For code structure, typing, tests, or CLI/task choices: use `ref-code-conventions`.
+- For commit format, commit bodies, or reproducibility details in commit messages: use `ref-git-commits`.
 - For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-structure-setup`.
 - For workflow and structural caution: use `ref-agent-behavior`.
 - For security policy config and generated restriction files: use `ref-ai-security`.
+- For creating a new skill through a guided intake flow: use `tool-create-skill`.
+- For grouping the current diff into focused commits and making them: use `tool-commit`.
 - For skills themselves: use `ref-skills-authoring` and `tool-consolidate-skills`.
