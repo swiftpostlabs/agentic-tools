@@ -4,7 +4,7 @@ Use this checklist when transplanting this repo's skills and AI-policy tooling i
 
 ## Project Mode
 
-- Did you identify whether the target is an existing repo, a Python script/tool repo, a Python application repo, an AI-safety-only adoption, or another case?
+- Did you identify whether the target is an existing repo, a Python script/tool repo, a Python application repo, an AI-security-only adoption, or another case?
 - If the mode was unclear, did you ask instead of assuming?
 - Did you recommend the full Python UV starter only for the greenfield Python application case, not for lightweight script or retrofit cases?
 
@@ -19,7 +19,7 @@ Use this checklist when transplanting this repo's skills and AI-policy tooling i
 - If you copied the top-level instructions, did you preserve the source `## Personality` section verbatim rather than paraphrasing it?
 - If the target repo already existed, did you prefer selective adoption over wholesale copying?
 
-## AI Safety
+## AI Security
 
 - Did you copy `.ai-policy.json` as the source of truth?
 - Did you copy `scripts/sync_ai_policy.py` or an adapted equivalent?

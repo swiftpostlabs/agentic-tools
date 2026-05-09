@@ -53,8 +53,8 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`project-structure-setup`** — Project layout, `pyproject.toml`, and tool wiring
 - Use when: locating code, understanding folder layout, or updating project/tool configuration
 
-**`ai-safety`** — AI policy, protected files, and sync workflow
-- Use when: changing `.ai-policy.json`, sync behavior, or generated safety files
+**`ai-security`** — AI policy, protected files, exclusion sync, and multi-client enforcement
+- Use when: changing `.ai-policy.json`, sync behavior, generated restriction files, or agent file-access enforcement
 
 **`skills-authoring`** — Guidelines for creating and maintaining project skills
 - Use when: designing skills, updating copied skills, or evaluating skill quality
@@ -62,8 +62,8 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`tool-consolidate-skills`** — Consolidate overlapping skill and top-level guidance
 - Use when: trimming duplication, moving rules to the right owner, or simplifying `copilot-instructions.md`
 
-**`tool-adopt-these-skills`** — Adopt this repo's core skills and AI safety tooling in another repository
-- Use when: bootstrapping another repo with this repo's agent setup or porting the AI safety workflow elsewhere
+**`tool-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
+- Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
 
 **`tasks-management`** — Maintain feature task tracking under `.agents/tasks/`
 - Use when: a task should be tracked as a structured multi-step feature
@@ -98,5 +98,5 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For code structure, typing, tests, or CLI/task choices: use `code-conventions`.
 - For repo layout, tool wiring, or `pyproject.toml`: use `project-structure-setup`.
 - For workflow and structural caution: use `agent-behavior`.
-- For safety config and generated policy files: use `ai-safety`.
+- For security policy config and generated restriction files: use `ai-security`.
 - For skills themselves: use `skills-authoring` and `tool-consolidate-skills`.

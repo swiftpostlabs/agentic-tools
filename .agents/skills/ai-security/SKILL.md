@@ -1,25 +1,38 @@
 ---
-name: ai-safety
-description: "AI policy, protected file access, and exclusion sync. Use when: modifying .ai-policy.json, updating the sync script, or reviewing AI safety configuration."
+name: ai-security
+description: "AI policy, protected file access, exclusion sync, and multi-client enforcement. Use when: modifying .ai-policy.json, updating the sync workflow, reviewing generated restriction files, or changing how agents are prevented from reading sensitive files."
 ---
 
-# AI Safety
+# AI Security
 
 ## Purpose
 
-Document how AI agents are prevented from accessing sensitive files, how noisy/generated files are excluded from context, and how the policy is synced across agent-specific configurations.
+Define how AI agents are prevented from reading sensitive files, how noisy/generated files are excluded from context, and how the policy is synchronized across agent-specific configurations.
 
 ## Values
 
 - Prefer simplicity over cleverness.
 - Prefer maintainability over short-term convenience.
 - Keep policy synchronization deterministic and easy to audit.
+- Keep the source of truth explicit.
+- Make enforcement boundaries and limitations visible.
 
 ## When to use this skill
 
 - Adding or modifying protected or excluded file patterns.
-- Updating the sync script.
-- Reviewing AI safety configuration.
+- Updating the sync script or sync workflow.
+- Reviewing generated restriction files.
+- Reviewing AI security configuration across clients.
+- Adopting the policy system in another repository.
+
+## Core Workflow
+
+1. Edit `.ai-policy.json` as the source of truth.
+2. Regenerate the managed outputs.
+3. Review how the change affects each client.
+4. Commit the source-of-truth file and generated files together.
+
+Read `./references/policy-workflow.md` for the command-oriented workflow and `./references/agent-enforcement.md` for the client-enforcement model.
 
 ## Architecture Overview
 
@@ -40,6 +53,15 @@ Document how AI agents are prevented from accessing sensitive files, how noisy/g
 - `protectedFiles`: security-sensitive files that must not be read or modified.
 - `excludedFiles`: low-signal generated output or noise that should usually stay out of agent context, but are not secrets by default.
 
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Edit `.ai-policy.json` | Update the security policy source of truth. | Generated restrictions and approvals derive from this file. | When protected files, excluded files, or approval maps must change. | The intended policy change is represented in one authoritative file. |
+| `uv run sync-ai-policy` | Regenerate policy-managed client files. | Generated restrictions must stay aligned with the source of truth. | After any policy change. | `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` update deterministically. |
+| `uv run sync-ai-policy-import-vscode` | Import current VS Code approvals into policy, then regenerate outputs. | This is the supported path for promoting interactive approvals into durable policy. | Only when current VS Code approvals should become policy. | Approval maps are imported into `.ai-policy.json` and generated outputs remain aligned. |
+| Review generated diffs | Check whether enforcement changed as intended. | Security changes are high risk if accepted without understanding the diff. | After every sync. | The diff is deliberate, limited, and understandable. |
+
 ## How Each Agent Is Restricted
 
 | Agent | File-Level Restriction | Behavioral Instruction |
@@ -52,16 +74,13 @@ Document how AI agents are prevented from accessing sensitive files, how noisy/g
 
 The `.vscode/settings.json` approach maps protected patterns to a `copilot-restricted-file` language ID and disables Copilot for that ID. This is a **best-effort workaround** — `copilot-restricted-file` is not a real language ID. The behavioral directive in `copilot-instructions.md` is still the primary enforcement.
 
-## Updating Policy
+## Decision Rules
 
-1. Edit `.ai-policy.json`.
-2. Put sensitive patterns in `protectedFiles`.
-3. Put noisy/generated output in `excludedFiles`.
-4. Update top-level `terminalAutoApprove` and `editAutoApprove` rules when needed.
-5. Run `uv run sync-ai-policy` to propagate changes.
-6. Commit all generated files (`.aiexclude`, `.claude/settings.json`, `.vscode/settings.json`).
-
-If you want to promote approvals that VS Code added interactively after the user greenlit a command, run `uv run sync-ai-policy-import-vscode`. That imports the current VS Code terminal/edit approvals into `.ai-policy.json` first, then performs the normal sync.
+- Put sensitive patterns in `protectedFiles`.
+- Put noisy or generated output in `excludedFiles`.
+- Keep approval policy in the source-of-truth file instead of manually editing generated outputs.
+- Treat generated policy files as deterministic outputs, not primary authoring surfaces.
+- Review enforcement limitations explicitly when changing Copilot-facing restrictions.
 
 ## Sync Script
 
@@ -86,3 +105,8 @@ Keep this tool as a standalone repository script under `scripts/` unless the use
 This repository intentionally keeps the implementation in `scripts/` while exposing the supported command through `[project.scripts]`.
 
 Use the `--import-vscode` flag (also exposed via the `sync-ai-policy-import-vscode` entrypoint) to pull the current VS Code approval maps into `.ai-policy.json` first.
+
+## References
+
+- Read `./references/policy-workflow.md` when changing `.ai-policy.json`, syncing outputs, or reviewing policy diffs.
+- Read `./references/agent-enforcement.md` when reviewing how the policy is enforced across Gemini, Claude Code, and GitHub Copilot.
