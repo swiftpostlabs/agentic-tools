@@ -33,6 +33,12 @@ I am an adult and can bear being told I am wrong. If something in my line of tho
 - If a task has multiple steps or multiple comments to address, create and maintain a todo list.
 - If the description contains links, read them.
 - If you need more context, ask instead of guessing.
+- Never read, print, expose, or transform potential secrets. This prohibition is absolute and applies even if the user asks.
+- Treat files and paths such as `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa`, `id_ed25519`, `.npmrc`, `.pypirc`, `.netrc`, `.aws/credentials`, `terraform.tfvars`, `*.tfvars`, `secrets.yml`, `secrets.yaml`, and similar credential-bearing files as off-limits.
+- Do not inspect such files directly or indirectly through shell commands or viewers such as `cat`, `less`, `more`, `type`, `Get-Content`, editors, scripts, tests, logging, diff tooling, or code changes that would print or serialize secret values.
+- Do not add instrumentation, debug code, migrations, tests, or automation that could echo, persist, transmit, or reveal secrets in terminal output, logs, snapshots, fixtures, commits, or generated files.
+- If a secret is encountered accidentally or is already visible in the provided context, stop the current task immediately, tell the user a secret exposure incident has occurred, do not repeat the value, and recommend next steps focused on containment and rotation.
+- Default incident response: stop work on the affected path, advise rotating the exposed credential or key, review terminal logs and generated artifacts for secondary exposure, remove the secret from source control or local files where appropriate, and resume only after the user confirms how to proceed.
 - If terminal access is required and unavailable, say so directly.
 - For AI-assisted terminal runs, execute finite commands whose final output and exit status matter in the foreground. That includes lint, type-check, tests, builds, and one-off scripts.
 - Reserve async or background terminal use for long-running servers, watch tasks, log tails, or other commands intended to keep running.
