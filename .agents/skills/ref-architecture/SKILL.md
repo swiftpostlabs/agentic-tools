@@ -79,6 +79,9 @@ Provide portable repository and feature-structure defaults that keep codebases m
 ### Python package with feature-first layout
 
 ```text
+scripts/ (only for devs, not installed with the package)
+  data-migration.py
+  generate-docs.py
 src/package_name/
   billing/
     main.py
@@ -90,6 +93,9 @@ src/package_name/
 ### JavaScript or TypeScript package in a monorepo
 
 ```text
+scripts/ (only for devs, not installed with the package)
+  data-migration.mts
+  generate-docs.mts
 packages/package-name/
   src/
     billing/
@@ -101,10 +107,13 @@ packages/package-name/
 ### Standalone browser tool with local assets
 
 ```text
-src/features/tool-name/
+scripts/ (only for devs, not installed with the package)
+  data-migration.mjs/mts
+  generate-docs.mjs/mts
+src/features/billing/
   index.html
-  js/app.js
-  css/styles.css
+  app.js
+  styles.css
 ```
 
 ## Validation
