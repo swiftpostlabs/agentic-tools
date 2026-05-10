@@ -1,10 +1,14 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "scripts/**/*.js",
@@ -14,5 +18,9 @@
     "scripts/**/*.ts",
     "scripts/**/*.cts"
   ],
-  "exclude": ["node_modules", "out", "dist"]
+  "exclude": [
+    "node_modules",
+    "out",
+    "dist"
+  ]
 }

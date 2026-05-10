@@ -1,7 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "types": []
@@ -11,5 +15,9 @@
     "src/features/**/*.user.ts",
     "src/features/**/*userscript*.d.ts"
   ],
-  "exclude": ["node_modules", "out", "dist"]
+  "exclude": [
+    "node_modules",
+    "out",
+    "dist"
+  ]
 }

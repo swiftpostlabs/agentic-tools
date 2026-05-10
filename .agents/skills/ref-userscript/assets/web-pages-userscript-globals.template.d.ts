@@ -35,4 +35,4 @@ declare function GM_listValues(): string[];
 declare function GM_addStyle(css: string): void;
 declare const GM_info: any;
 
-export {};
+export { };
