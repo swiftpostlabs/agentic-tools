@@ -47,8 +47,10 @@ reportUnnecessaryTypeIgnoreComment = "warning"
 
 [project.scripts]
 main = "agentic_tools.main:main"
-sync-ai-policy = "scripts.sync_ai_policy:main"
-sync-ai-policy-import-vscode = "scripts.sync_ai_policy:import_vscode_main"
+agents-policy = "agentic_tools.agents_policy.main:main"
+agents-policy-import-vscode = "agentic_tools.agents_policy.main:import_vscode_main"
+sync-ai-policy = "agentic_tools.agents_policy.main:main"
+sync-ai-policy-import-vscode = "agentic_tools.agents_policy.main:import_vscode_main"
 skills-management-cli = "agentic_tools.skills_management.main:main"
 skills-management = "agentic_tools.skills_management.main:main"
 

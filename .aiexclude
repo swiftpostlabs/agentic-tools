@@ -1,6 +1,6 @@
-# ============================================================================== 
+# ==============================================================================
 # AI EXCLUSION FILE
-# Generated from .ai-policy.json
+# Generated from .agents/policy.json
 # Protected files are sensitive; excluded files are mostly noise or generated output.
 # ==============================================================================
 

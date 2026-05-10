@@ -22,19 +22,20 @@
   "chat.tools.terminal.autoApprove": {
     "/^git (log|status|diff).*$/": true,
     "/^uv run poe (lint|lint-fix|typecheck|test)$/": true,
-    "/^uv run (sync-ai-policy|sync-ai-policy-import-vscode)$/": true,
+    "/^uv run (agents-policy|agents-policy-import-vscode|sync-ai-policy|sync-ai-policy-import-vscode)$/": true,
     "rm": false,
     "rmdir": false,
     "del": false,
     "curl": false,
-    "wget": false
+    "wget": false,
+    "uv": true
   },
   "chat.tools.edits.autoApprove": {
     "**/*.{py,json,yml,yaml,css,md}": true,
     "**/.env*": false,
     "**/secrets/**": false,
     "**/.aiexclude": false,
-    "**/.ai-policy.json": false,
+    "**/.agents/policy.json": false,
     "**/*.{pem,key,pub}": false,
     "**/internal-config.yml": false
   },

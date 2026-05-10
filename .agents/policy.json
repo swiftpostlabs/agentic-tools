@@ -1,4 +1,9 @@
 {
+  "services": [
+    "gemini",
+    "claude",
+    "copilot"
+  ],
   "protectedFiles": [
     "*.env",
     "*.env.*",
@@ -26,7 +31,7 @@
   "terminalAutoApprove": {
     "/^git (log|status|diff).*$/": true,
     "/^uv run poe (lint|lint-fix|typecheck|test)$/": true,
-    "/^uv run (sync-ai-policy|sync-ai-policy-import-vscode)$/": true,
+    "/^uv run (agents-policy|agents-policy-import-vscode|sync-ai-policy|sync-ai-policy-import-vscode)$/": true,
     "rm": false,
     "rmdir": false,
     "del": false,
@@ -38,7 +43,7 @@
     "**/.env*": false,
     "**/secrets/**": false,
     "**/.aiexclude": false,
-    "**/.ai-policy.json": false,
+    "**/.agents/policy.json": false,
     "**/*.{pem,key,pub}": false,
     "**/internal-config.yml": false
   }

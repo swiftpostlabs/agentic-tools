@@ -31,7 +31,7 @@ jobs:
 
       - name: Sync AI policy and enforce generated files
         run: |
-          uv run sync-ai-policy
+          uv run agents-policy
           git diff --exit-code -- .aiexclude .claude/settings.json .vscode/settings.json
 
       - name: Run tests
