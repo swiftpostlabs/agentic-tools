@@ -22,6 +22,7 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 
 - Use `deno.json` as the Deno source of truth.
 - Prefer `deno task`, `deno fmt`, `deno lint`, and `deno test` over ad hoc wrappers when Deno owns the workflow.
+- Deno's native tooling is sufficient for Deno-owned code; use Yarn only when the repository also has Node-managed packages or scripts outside the Deno boundary.
 - Prefer JSR packages, `npm:` specifiers, or explicit import-map entries over scattered legacy URL imports.
 - Prefer Web-standard APIs and `Deno.serve` for servers.
 - Treat permissions as a design decision, not an afterthought.

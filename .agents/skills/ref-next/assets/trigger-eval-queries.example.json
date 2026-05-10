@@ -1,0 +1,26 @@
+[
+  {
+    "query": "Should this Next.js App Router page stay a Server Component or move to 'use client'?",
+    "should_trigger": true
+  },
+  {
+    "query": "How should we structure these App Router layouts and route files so they stay thin?",
+    "should_trigger": true
+  },
+  {
+    "query": "What should we use for i18n in a Next.js App Router app?",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this React component's hook usage and local state ownership.",
+    "should_trigger": false
+  },
+  {
+    "query": "Build a standalone HTML/CSS/JS page with no framework.",
+    "should_trigger": false
+  },
+  {
+    "query": "How should I split tsconfig files for Node scripts and browser modules in one repo?",
+    "should_trigger": false
+  }
+]

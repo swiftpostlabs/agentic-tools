@@ -24,7 +24,7 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Use this skill for portable structure decisions such as feature boundaries, shared-utility thresholds, and product-versus-maintenance separation.
 - Use `.agents/skills/ref-project-structure-setup/SKILL.md` when the question is about this repository's exact top-level folders, `pyproject.toml`, or agent wiring.
 - Use `.agents/skills/ref-python/SKILL.md`, `.agents/skills/ref-javascript/SKILL.md`, or `.agents/skills/ref-typescript/SKILL.md` when the question is about language-specific folder shapes.
-- Use `.agents/skills/ref-standalone-web-pages/SKILL.md` when the structure question is specific to a browser-only local page or mini-tool.
+- Use `.agents/skills/ref-app-web-standalone/SKILL.md` when the structure question is specific to a browser-only local app or mini-tool.
 
 ## Defaults
 

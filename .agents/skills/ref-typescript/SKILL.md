@@ -21,6 +21,8 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 ## Scope Boundaries
 
 - Use this skill for strict TypeScript design, runtime boundaries, and package-level structure.
+- Use `.agents/skills/ref-react/SKILL.md` when the main question is about React component structure, hooks, client-side state ownership, or React-specific dependency choices.
+- Use `.agents/skills/ref-next/SKILL.md` when the main question is about Next.js framework structure, App Router, or Next-specific integrations.
 - Use `.agents/skills/ref-javascript/SKILL.md` when the code intentionally stays in plain JavaScript with JSDoc rather than full TypeScript.
 - Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
 - Use `.agents/skills/ref-architecture/SKILL.md` for generic feature-boundary or shared-utility decisions that are not TypeScript-specific.
@@ -34,6 +36,7 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer inference inside small local scopes and explicit annotations at exported or shared boundaries.
 - Prefer `.ts` for ordinary TypeScript modules and feature code.
 - Prefer `.mts` for Node ESM scripts that are executed directly by Node and need the extension to communicate module format clearly.
+- Prefer Yarn for dependency management and script execution in Node-based TypeScript projects unless the repo is intentionally Deno-owned.
 
 ## Task Framing
 

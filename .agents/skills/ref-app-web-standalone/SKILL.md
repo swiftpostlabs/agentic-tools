@@ -1,0 +1,109 @@
+---
+name: ref-app-web-standalone
+description: "App-level guidance for standalone HTML, CSS, and JavaScript tools that should run without framework or build-system overhead. Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries."
+metadata:
+  shareable-skills.visibility: "shareable"
+---
+
+# Standalone Web App
+
+## Purpose
+
+Provide app-level defaults for self-contained browser apps and local web tools that should stay simple, readable, and maintainable without unnecessary framework or build-system overhead.
+
+## When to use this skill
+
+- Creating a standalone browser app or local web tool.
+- Refactoring a no-build web app that is getting too large.
+- Deciding whether the app can stay framework-free or should escalate to a full React and Next app.
+- Choosing local assets and browser-loadable libraries for a whole standalone app.
+
+## Scope Boundaries
+
+- Use this skill for whole browser-only apps and local web tools you control directly.
+- Use `.agents/skills/ref-app-react-next/SKILL.md` when the user explicitly wants a full React and Next app rather than a no-build browser app.
+- Use `.agents/skills/ref-react/SKILL.md` or `.agents/skills/ref-next/SKILL.md` only after the app has deliberately crossed into those frameworks.
+- Use `.agents/skills/ref-userscript/SKILL.md` when the code runs inside a userscript manager on someone else's page.
+- Use `.agents/skills/ref-javascript/SKILL.md` for broader JavaScript and JSDoc questions that are not primarily about standalone-app structure.
+- Use `.agents/skills/ref-architecture/SKILL.md` when the question is about repo-wide structure rather than one browser app.
+
+## Defaults
+
+- Start with one self-contained HTML file for small and medium apps.
+- Use semantic HTML before reaching for generic containers.
+- Prefer no package manager or build pipeline by default.
+- If Node-based tooling becomes necessary, prefer Yarn for dependency management and scripts.
+- For richer no-build UI, prefer browser-loadable UI libraries such as Web Awesome plus Font Awesome or MDUI 2 plus Google Material Icons.
+- Do not introduce React or a build pipeline by default.
+- Prefer `.js` for ordinary local browser scripts and `.mjs` when explicit browser-module boundaries improve clarity.
+- Keep styles and scripts local unless extraction clearly improves readability.
+
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Start with the smallest viable app | Keep HTML, CSS, and JS local until complexity proves extraction is needed. | Standalone tools become harder to move and maintain once they inherit premature infrastructure. | When creating a new browser-only app. | The app is easy to open, reason about, and iterate on. |
+| Split a growing app locally | Extract sibling CSS or JS files inside the same folder when the inline version gets hard to scan. | Local extraction improves readability without creating cross-app coupling. | When one file is becoming mentally heavy. | Structure is clearer but the app still ships as an independent unit. |
+| Compare no-build versus framework escalation | Decide whether the requirement still fits a no-build browser app or has crossed into full-app territory. | Framework escalation is expensive when the app could stay local and simple. | When state, routing, or deployment expectations start growing. | The chosen app model matches the real complexity. |
+
+## Core Rules
+
+### Structure
+
+- Use semantic sections such as `header`, `main`, `section`, `form`, and `dialog` where they fit.
+- Keep the app layout obvious from the markup alone.
+- Extract CSS or JS into local sibling files only when the inline version becomes hard to scan.
+
+### File conventions
+
+- Keep the main page on `.html`.
+- Use `.mjs` for extracted browser modules only when the module boundary is real and helpful, not just because ESM is available.
+- If the app ships with a related userscript, keep the userscript beside it and use `.user.js` or `.user.ts` explicitly.
+
+### JavaScript organization
+
+- Keep a predictable order: constants, state, element lookup, pure helpers, rendering, events, initialization.
+- Extract repeated transformations and persistence helpers before extracting global infrastructure.
+- Keep storage keys, labels, and other repeated values in named constants.
+
+### Independence
+
+- Assume one standalone browser app should not need another app's runtime files.
+- If local assets or helpers exist, keep them inside the same app folder.
+- Only create shared runtime layers when the user explicitly wants repository-wide reuse.
+
+## Example Layouts
+
+### Single-file local app
+
+```text
+src/features/example-mini-lab/
+  example-mini-lab.html
+```
+
+### Standalone app with local sibling assets
+
+```text
+src/features/example-dashboard-kit/
+  index.html
+  css/styles.css
+  js/app.js
+  assets/empty-state.svg
+```
+
+## Validation
+
+- The app remains understandable without framework knowledge.
+- HTML is semantic, JS responsibilities are clear, and repeated values are named.
+- Local extraction improved readability instead of adding ceremony.
+- The app does not introduce hidden coupling, unnecessary framework assumptions, or avoidable build machinery.
+
+## References
+
+- MDN HTML Element Reference: <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
+- MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
+- Optional MDUI AI reference when the app intentionally uses MDUI: <https://www.mdui.org/en/docs/2/llms.txt>
+- Read `./references/checklist.md` for a quick standalone-app review pass.
+- Read `./references/library-recommendations.md` when choosing browser-loadable UI or utility libraries for a no-build app.
+- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for standalone app and browser-tool prompts.
+- Review `./evals/evals.json` when validating output quality for structure or extraction guidance.

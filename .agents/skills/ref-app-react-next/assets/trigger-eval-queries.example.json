@@ -1,0 +1,26 @@
+[
+  {
+    "query": "Set up a small React and Next app with TypeScript, Yarn, and a sane app-level structure.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this Next app layout and tell me whether the top-level structure and baseline stack still make sense.",
+    "should_trigger": true
+  },
+  {
+    "query": "Should this feature stay a standalone browser app or become a full React and Next application?",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this React component's hook usage and state ownership.",
+    "should_trigger": false
+  },
+  {
+    "query": "How should this Next.js App Router route handle locale routing and next-intl?",
+    "should_trigger": false
+  },
+  {
+    "query": "Build a standalone HTML page with no framework or build step.",
+    "should_trigger": false
+  }
+]

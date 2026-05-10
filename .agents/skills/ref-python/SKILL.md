@@ -32,6 +32,7 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Prefer `pathlib.Path` over raw path strings.
 - Prefer dataclasses, typed dicts, or small domain objects over loose dictionaries when structure matters.
 - Prefer explicit exceptions and clear error messages over silent fallbacks.
+- Prefer `uv` for Python dependency management, virtual environments, and runnable project commands unless the repo already mandates another Python workflow.
 - Prefer the repo's standard formatter, type checker, and test task wrappers when they exist.
 
 ## Task Framing

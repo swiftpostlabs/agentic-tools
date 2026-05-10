@@ -80,14 +80,23 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
 - Use when: writing plain JavaScript, adding JSDoc, or keeping JavaScript maintainable without TypeScript
 
+**`ref-react`** — Portable React guidance for components, hooks, and library choices
+- Use when: creating or reviewing React components, choosing React-friendly libraries, deciding where UI or async state should live, or refactoring a React feature that is getting hard to read
+
+**`ref-next`** — Portable Next.js guidance for App Router structure and framework integrations
+- Use when: creating or reviewing Next routes and layouts, deciding where `'use client'` belongs, configuring Next.js, or choosing framework-specific integrations like `next-intl`
+
 **`ref-python`** — Portable Python guidance for typed code, scripts, and tests
 - Use when: writing or refactoring Python modules, designing Python CLIs, or deciding typing and testing patterns
 
+**`ref-app-web-standalone`** — App-level guidance for standalone HTML, CSS, and JavaScript tools
+- Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries
+
+**`ref-app-react-next`** — App-level guidance for full React and Next.js apps
+- Use when: scaffolding or reviewing a whole React/Next app, choosing the baseline stack and package manager, or deciding app-level structure
+
 **`ref-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
-
-**`ref-standalone-web-pages`** — Portable guidance for standalone HTML, CSS, and JavaScript pages
-- Use when: creating single-page tools, deciding when to extract local assets, or keeping browser-only pages maintainable without a framework
 
 **`ref-supabase`** — Portable Supabase guidance for CLI workflows, edge functions, and ORM boundaries
 - Use when: initializing Supabase, working on local or remote workflows, writing Edge Functions, or deciding how ORMs fit with Supabase
@@ -153,8 +162,11 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For security policy config and generated restriction files: use `ref-ai-security`.
 - For Python code and CLI patterns: use `ref-python`.
 - For JavaScript scripts or browser code with JSDoc: use `ref-javascript`.
+- For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-react`.
+- For Next.js App Router structure, rendering boundaries, and Next-specific integrations: use `ref-next`.
 - For TypeScript typing and boundary decisions: use `ref-typescript`.
-- For standalone HTML, CSS, and JavaScript pages: use `ref-standalone-web-pages`.
+- For standalone browser apps and no-build web tools: use `ref-app-web-standalone`.
+- For whole React and Next.js app planning and app-level stack choices: use `ref-app-react-next`.
 - For browser userscripts: use `ref-userscript`.
 - For Deno runtime and hybrid Deno or Node repos: use `ref-deno`.
 - For Supabase CLI, schema, edge functions, and ORM boundaries: use `ref-supabase`.

@@ -1,0 +1,26 @@
+[
+  {
+    "query": "Review this React component and tell me whether the state should stay local, move into a custom hook, or use TanStack Query.",
+    "should_trigger": true
+  },
+  {
+    "query": "What libraries should we prefer for schema validation and async server state in a React app?",
+    "should_trigger": true
+  },
+  {
+    "query": "Should this form feature use Zod or just small local guards?",
+    "should_trigger": true
+  },
+  {
+    "query": "How should I split tsconfig files for Node scripts and browser modules in one repo?",
+    "should_trigger": false
+  },
+  {
+    "query": "How should this Next.js App Router project handle locale routing and next-intl?",
+    "should_trigger": false
+  },
+  {
+    "query": "Build a standalone HTML page with no framework or build step.",
+    "should_trigger": false
+  }
+]

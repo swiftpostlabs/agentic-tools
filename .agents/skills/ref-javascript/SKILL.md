@@ -21,10 +21,12 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 ## Scope Boundaries
 
 - Use this skill for portable JavaScript structure and JSDoc guidance.
+- Use `.agents/skills/ref-react/SKILL.md` when the main question is about React component structure, hooks, or React-specific dependency choices, whether the file is JavaScript or TypeScript.
+- Use `.agents/skills/ref-next/SKILL.md` when Next.js framework concerns dominate the design.
 - Use `.agents/skills/ref-typescript/SKILL.md` when the main question is about strict type-system design rather than JSDoc-backed JavaScript.
 - Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
 - Use `.agents/skills/ref-architecture/SKILL.md` for portable feature-boundary or shared-utility decisions.
-- Use `.agents/skills/ref-userscript/SKILL.md` or `.agents/skills/ref-standalone-web-pages/SKILL.md` when the JavaScript lives inside a userscript or standalone page and those constraints dominate the design.
+- Use `.agents/skills/ref-userscript/SKILL.md` or `.agents/skills/ref-app-web-standalone/SKILL.md` when the JavaScript lives inside a userscript or standalone browser app and those constraints dominate the design.
 
 ## Defaults
 
@@ -34,6 +36,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Prefer named constants and helpers over repeated inline logic.
 - Prefer explicit input validation at I/O boundaries.
 - Prefer simple data flow over mutation-heavy code.
+- Prefer Yarn for dependency management and script execution in Node-based JavaScript projects unless the repo is intentionally Deno-owned.
 
 ## Task Framing
 
