@@ -32,6 +32,7 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Keep product code under the main source tree.
 - Keep maintenance and repo automation separate from product features.
 - Keep tests near the code they explain when the project layout allows it.
+- Add a short `README.md` at the root of each real feature folder so the feature's purpose and entrypoints are obvious without reading code first.
 - Extract shared utilities only after real reuse appears.
 
 ## Task Framing
@@ -48,6 +49,7 @@ Provide portable repository and feature-structure defaults that keep codebases m
 
 - Give each feature a folder or slice that is easy to find and reason about.
 - Keep the code, tests, and local assets that change together close together.
+- When a feature has its own folder, add a short `README.md` there that explains what the feature owns, where the main entrypoints live, and how to validate it.
 - Avoid letting one feature depend directly on another feature's internals.
 
 ### Shared code
