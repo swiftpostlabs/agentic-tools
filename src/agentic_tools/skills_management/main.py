@@ -4,20 +4,27 @@ Usage:
 - List skills in the current repository: `uv run skills-management list`
 - Link one skill to the global skills directory: `uv run skills-management link ref-skills-authoring --global`
 - Link one skill from another repo into the current repo: `uv run skills-management link ref-skills-authoring --from ../python-uv-template`
+- Sync all configured skills into the current repo: `uv run skills-management sync`
 """
 
 from __future__ import annotations
 
 from argparse import ArgumentParser
+import json
+from json import JSONDecodeError
 from dataclasses import dataclass
+from importlib.util import find_spec
 import os
 from pathlib import Path
+from typing import Any
 from typing import Sequence
 
 DEFAULT_GLOBAL_SKILLS_DIR = Path.home() / ".agents" / "skills"
 SHAREABLE_VISIBILITY = "shareable"
 REPO_LOCAL_VISIBILITY = "repo-local"
 SHAREABILITY_WIZARD = "tool-make-skill-shareable"
+PACKAGE_SOURCE_PREFIX = "package:"
+SYNC_CONFIG_FILENAME = "skills.json"
 
 
 class SkillsManagementError(Exception):
@@ -31,6 +38,12 @@ class SkillManifest:
     visibility: str | None
     requires: tuple[str, ...]
     reason: str | None
+
+
+@dataclass(frozen=True)
+class ConfiguredSkillSource:
+    source: str
+    skills: tuple[str, ...]
 
 
 def strip_yaml_string(value: str) -> str:
@@ -122,6 +135,147 @@ def resolve_destination_skills_root(path: Path, *, use_global: bool) -> Path:
         return DEFAULT_GLOBAL_SKILLS_DIR
 
     return to_skills_root(path)
+
+
+def to_repo_root(path: Path) -> Path:
+    return path.parent.parent if is_skills_root(path) else path
+
+
+def require_json_object(value: Any, *, context: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise SkillsManagementError(f"{context} must be a JSON object.")
+    return value
+
+
+def require_string_list(value: Any, *, context: str) -> tuple[str, ...]:
+    if not isinstance(value, list):
+        raise SkillsManagementError(f"{context} must be an array of strings.")
+
+    entries: list[str] = []
+    for entry in value:
+        if not isinstance(entry, str) or entry.strip() == "":
+            raise SkillsManagementError(f"{context} must contain only non-empty strings.")
+        entries.append(entry)
+
+    if not entries:
+        raise SkillsManagementError(f"{context} must not be empty.")
+
+    return tuple(entries)
+
+
+def parse_configured_skill_sources(text: str) -> tuple[ConfiguredSkillSource, ...]:
+    try:
+        parsed = json.loads(text)
+    except JSONDecodeError as error:
+        raise SkillsManagementError(f"Skills config is not valid JSON: {error}") from error
+
+    config = require_json_object(parsed, context="Skills config")
+    raw_sources = config.get("sources")
+    if not isinstance(raw_sources, list) or not raw_sources:
+        raise SkillsManagementError(
+            "Skills config must define a non-empty 'sources' array."
+        )
+
+    configured_sources: list[ConfiguredSkillSource] = []
+    for index, raw_source in enumerate(raw_sources, start=1):
+        source_object = require_json_object(
+            raw_source,
+            context=f"Skills config source #{index}",
+        )
+
+        raw_from = source_object.get("from")
+        if not isinstance(raw_from, str) or raw_from.strip() == "":
+            raise SkillsManagementError(
+                f"Skills config source #{index} is missing a non-empty 'from' value."
+            )
+
+        configured_sources.append(
+            ConfiguredSkillSource(
+                source=raw_from,
+                skills=require_string_list(
+                    source_object.get("skills"),
+                    context=f"Skills config source '{raw_from}' skills",
+                ),
+            )
+        )
+
+    return tuple(configured_sources)
+
+
+def load_configured_skill_sources(config_path: Path) -> tuple[ConfiguredSkillSource, ...]:
+    if not config_path.exists():
+        raise SkillsManagementError(f"Could not find skills config at {config_path}")
+    if not config_path.is_file():
+        raise SkillsManagementError(f"Skills config path is not a file: {config_path}")
+
+    return parse_configured_skill_sources(config_path.read_text(encoding="utf-8"))
+
+
+def infer_config_base_root(config_path: Path) -> Path:
+    if config_path.parent.name == ".agents":
+        return config_path.parent.parent
+    return config_path.parent
+
+
+def resolve_sync_config_path(
+    destination_path: Path,
+    *,
+    use_global: bool,
+    raw_config: str | None,
+) -> Path:
+    if raw_config is not None:
+        return Path(raw_config).expanduser().resolve()
+
+    if use_global:
+        raise SkillsManagementError("sync with --global requires --config")
+
+    return to_repo_root(destination_path) / ".agents" / SYNC_CONFIG_FILENAME
+
+
+def resolve_package_source_root(package_name: str) -> Path:
+    candidate_names = [package_name]
+    underscored_name = package_name.replace("-", "_")
+    if underscored_name != package_name:
+        candidate_names.append(underscored_name)
+
+    for candidate_name in candidate_names:
+        spec = find_spec(candidate_name)
+        if spec is None:
+            continue
+
+        search_roots: list[Path] = []
+        if spec.submodule_search_locations is not None:
+            search_roots.extend(Path(entry) for entry in spec.submodule_search_locations)
+        if spec.origin is not None:
+            search_roots.append(Path(spec.origin))
+
+        for search_root in search_roots:
+            normalized_root = search_root.resolve()
+            start_path = normalized_root.parent if normalized_root.is_file() else normalized_root
+            for possible_root in [start_path, *start_path.parents]:
+                if (possible_root / ".agents" / "skills").is_dir():
+                    return possible_root
+
+    attempted_names = ", ".join(candidate_names)
+    raise SkillsManagementError(
+        f"Could not resolve package source '{package_name}'. Checked module names: {attempted_names}."
+    )
+
+
+def resolve_configured_source_root(config_source: str, *, config_path: Path) -> Path:
+    if config_source.startswith(PACKAGE_SOURCE_PREFIX):
+        package_name = config_source.removeprefix(PACKAGE_SOURCE_PREFIX).strip()
+        if package_name == "":
+            raise SkillsManagementError(
+                "Package skill sources must include a package name after 'package:'."
+            )
+        return resolve_package_source_root(package_name)
+
+    source_path = Path(config_source).expanduser()
+    if not source_path.is_absolute():
+        source_path = infer_config_base_root(config_path) / source_path
+
+    return source_path.resolve()
 
 
 def read_skill_manifest(skill_directory: Path) -> SkillManifest:
@@ -378,6 +532,9 @@ def add_source_argument(parser: ArgumentParser) -> None:
 
 def add_destination_arguments(parser: ArgumentParser) -> None:
     add_source_argument(parser)
+
+
+def add_target_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
         "-t",
         "--to",
@@ -391,6 +548,11 @@ def add_destination_arguments(parser: ArgumentParser) -> None:
         action="store_true",
         help="Use ~/.agents/skills as the destination.",
     )
+
+
+def add_destination_arguments(parser: ArgumentParser) -> None:
+    add_source_argument(parser)
+    add_target_arguments(parser)
 
 
 def build_parser() -> ArgumentParser:
@@ -409,6 +571,28 @@ def build_parser() -> ArgumentParser:
         help="Print the link plan without creating any symlinks.",
     )
     link_parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Replace an existing symlink that points somewhere else.",
+    )
+
+    sync_parser = subparsers.add_parser(
+        "sync",
+        help="Link skills declared in a skills config.",
+    )
+    add_target_arguments(sync_parser)
+    sync_parser.add_argument(
+        "-c",
+        "--config",
+        dest="config",
+        help="Path to a skills config file. Defaults to <destination>/.agents/skills.json.",
+    )
+    sync_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the sync plan without creating any symlinks.",
+    )
+    sync_parser.add_argument(
         "--force",
         action="store_true",
         help="Replace an existing symlink that points somewhere else.",
@@ -486,6 +670,58 @@ def handle_link_command(
     return 0
 
 
+def handle_sync_command(
+    parser: ArgumentParser,
+    *,
+    destination: str | None,
+    use_global: bool,
+    config: str | None,
+    dry_run: bool,
+    force: bool,
+) -> int:
+    validate_destination_flags(parser, use_global=use_global, destination=destination)
+
+    destination_path = resolve_path(destination)
+    config_path = resolve_sync_config_path(
+        destination_path,
+        use_global=use_global,
+        raw_config=config,
+    )
+    destination_skills_dir = resolve_destination_skills_root(
+        destination_path,
+        use_global=use_global,
+    )
+
+    linked_skill_names: set[str] = set()
+    for configured_source in load_configured_skill_sources(config_path):
+        manifests = discover_skill_manifests(
+            resolve_configured_source_root(
+                configured_source.source,
+                config_path=config_path,
+            )
+        )
+        for manifest in resolve_selected_skills(
+            manifests,
+            deduplicate_preserving_order(configured_source.skills),
+        ):
+            if manifest.name in linked_skill_names:
+                raise SkillsManagementError(
+                    f"Skill '{manifest.name}' is configured more than once across sync sources."
+                )
+
+            print(
+                link_skill_directory(
+                    manifest,
+                    destination_skills_dir,
+                    dry_run=dry_run,
+                    force=force,
+                )
+            )
+            linked_skill_names.add(manifest.name)
+
+    return 0
+
+
 def handle_unlink_command(
     parser: ArgumentParser,
     *,
@@ -531,6 +767,15 @@ def main(argv: Sequence[str] | None = None) -> int:
                 source=args.source,
                 destination=args.destination,
                 use_global=args.use_global,
+                dry_run=args.dry_run,
+                force=args.force,
+            )
+        if args.command == "sync":
+            return handle_sync_command(
+                parser,
+                destination=args.destination,
+                use_global=args.use_global,
+                config=args.config,
                 dry_run=args.dry_run,
                 force=args.force,
             )

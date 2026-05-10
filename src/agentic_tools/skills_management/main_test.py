@@ -1,3 +1,4 @@
+import json
 from collections.abc import Callable
 from pathlib import Path
 
@@ -255,6 +256,88 @@ def test_main_link_global_dry_run_uses_global_destination(
 
     assert exit_code == 0
     assert str(global_skills_dir / "ref-alpha") in output
+
+
+def test_main_sync_dry_run_reads_relative_sources_from_repo_root(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+    (destination_agents_dir / "skills.json").write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "../source",
+                        "skills": ["ref-alpha"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = skills_management_main.main(
+        ["sync", "--to", str(destination_repo), "--dry-run"]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert str(destination_repo / ".agents" / "skills" / "ref-alpha") in output
+    assert str(source_repo / ".agents" / "skills" / "ref-alpha") in output
+
+
+def test_main_sync_dry_run_supports_package_sources(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+    (destination_agents_dir / "skills.json").write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "package:agentic-tools",
+                        "skills": ["ref-alpha"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        skills_management_main,
+        "resolve_package_source_root",
+        lambda package_name: source_repo,
+    )
+
+    exit_code = skills_management_main.main(
+        ["sync", "--to", str(destination_repo), "--dry-run"]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert str(destination_repo / ".agents" / "skills" / "ref-alpha") in output
+    assert str(source_repo / ".agents" / "skills" / "ref-alpha") in output
 
 
 def test_main_unlink_dry_run_uses_expected_source_and_destination(

@@ -30,6 +30,35 @@ After this step you may want to close and reopen your terminal or IDE to ensure 
 uv run skills-management list
 ```
 
+```sh
+uv run skills-management sync
+```
+
+To declare shared skill sources for `sync`, add `.agents/skills.json` to the target repo:
+
+```json
+{
+  "sources": [
+    {
+      "from": "package:agentic-tools",
+      "skills": [
+        "ref-skills-authoring",
+        "ref-architecture",
+        "ref-coding-patterns"
+      ]
+    },
+    {
+      "from": "../another-skill-repo",
+      "skills": [
+        "ref-react"
+      ]
+    }
+  ]
+}
+```
+
+Relative `from` paths resolve from the target repo root. Package sources use `package:<name>` and resolve by looking up the installed package location, then walking up to the repo's `.agents/skills` directory.
+
 ## Tests
 
 ```sh
