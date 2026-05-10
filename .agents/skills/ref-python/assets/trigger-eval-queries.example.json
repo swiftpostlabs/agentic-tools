@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Refactor this typed Python module so the public API and error handling are clearer.",
+    "should_trigger": true
+  },
+  {
+    "query": "Where should a new Python CLI feature live in a src-layout project?",
+    "should_trigger": true
+  },
+  {
+    "query": "Review these pytest cases and tell me whether they cover the risky Python logic.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me design a Supabase Edge Function.",
+    "should_trigger": false
+  },
+  {
+    "query": "Should this JavaScript file use JSDoc typedefs?",
+    "should_trigger": false
+  }
+]

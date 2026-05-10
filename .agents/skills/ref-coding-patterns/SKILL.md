@@ -80,3 +80,8 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Comments explain non-obvious constraints rather than narrating syntax.
 - CLI flags are consistent, discoverable, and safe.
 - Tests cover risky logic and failure modes, not only success paths.
+
+## References
+
+- Read `./references/checklist.md` for a quick review pass when applying or revising these defaults.
+- Read `./assets/trigger-eval-queries.example.json` when testing whether the description triggers on the right requests.

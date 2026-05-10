@@ -60,3 +60,8 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Paths, errors, and data structures are explicit.
 - Product CLIs and maintenance scripts are separated intentionally.
 - Tests cover non-trivial logic and stay readable.
+
+## References
+
+- Read `./references/checklist.md` for a quick Python review pass.
+- Read `./assets/trigger-eval-queries.example.json` when checking trigger quality for Python-focused prompts.

@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Set up a Deno project with deno.json tasks and modern dependency specifiers.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this hybrid repo where Deno scripts and Node tooling keep fighting over the same files.",
+    "should_trigger": true
+  },
+  {
+    "query": "What permissions should this Deno CLI request for filesystem and network access?",
+    "should_trigger": true
+  },
+  {
+    "query": "Configure tsup for a Node library build.",
+    "should_trigger": false
+  },
+  {
+    "query": "Design a Supabase Edge Function deployment workflow.",
+    "should_trigger": false
+  }
+]

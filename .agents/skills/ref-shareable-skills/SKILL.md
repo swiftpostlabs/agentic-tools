@@ -62,5 +62,5 @@ Define how this repo decides whether a skill is safe to export, how shareability
 ## References
 
 - Read `./references/checklist.md` before finalizing shareability metadata on a skill.
-- Read C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-skills-authoring/SKILL.md when the task shifts from portability review to broader skill authoring rules.
-- Use C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/tool-make-skill-shareable/SKILL.md when a user wants a guided shareability decision for an existing skill.
+- Read .agents/skills/ref-skills-authoring/SKILL.md when the task shifts from portability review to broader skill authoring rules.
+- Use .agents/skills/tool-make-skill-shareable/SKILL.md when a user wants a guided shareability decision for an existing skill.

@@ -52,3 +52,8 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Repeated or complex logic has been named and isolated.
 - Browser code keeps responsibilities readable.
 - Script inputs and outputs are explicit and predictable.
+
+## References
+
+- Read `./references/checklist.md` for a quick JavaScript and JSDoc review pass.
+- Read `./assets/trigger-eval-queries.example.json` when testing the description against plain JavaScript and browser-script requests.

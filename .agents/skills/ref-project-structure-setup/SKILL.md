@@ -110,7 +110,7 @@ Type checker configuration in **strict mode**:
 - Rules tune warning/error levels for project needs
 - `stubPath = "src/typings"` allows custom type stubs for untyped libraries
 
-See C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-code-conventions/SKILL.md for typing rules.
+See .agents/skills/ref-code-conventions/SKILL.md for typing rules.
 
 #### `[tool.pytest.ini_options]`
 Test framework configuration:
@@ -212,8 +212,8 @@ If the implementation intentionally stays in `scripts/`, the entrypoint may targ
 
 ## See Also
 
-- C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-code-conventions/SKILL.md — Code writing standards and feature-first layout details
-- C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-agent-behavior/SKILL.md — Project persona and workflow expectations
+- .agents/skills/ref-code-conventions/SKILL.md — Code writing standards and feature-first layout details
+- .agents/skills/ref-agent-behavior/SKILL.md — Project persona and workflow expectations
 - [pyproject.toml reference](../../pyproject.toml) — Actual configuration file
 - [uv documentation](https://docs.astral.sh/uv/) — Package manager and runner
 - [poethepoet documentation](https://poethepoet.naiveapproach.com/) — Task runner

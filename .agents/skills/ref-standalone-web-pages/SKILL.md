@@ -52,3 +52,8 @@ Provide portable defaults for self-contained web pages and browser-only tools th
 - HTML is semantic, JS responsibilities are clear, and repeated values are named.
 - Local extraction improved readability instead of adding ceremony.
 - The tool does not introduce hidden coupling to unrelated pages.
+
+## References
+
+- Read `./references/checklist.md` for a quick standalone-page review pass.
+- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for page, browser-tool, and single-file app prompts.

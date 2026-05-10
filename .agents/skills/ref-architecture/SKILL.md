@@ -66,3 +66,8 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Shared utilities exist because of real reuse, not prediction.
 - Feature boundaries are explicit and avoid backdoor dependencies.
 - Tests live close enough to their source that maintenance stays cheap.
+
+## References
+
+- Read `./references/checklist.md` for a quick repository-structure review pass.
+- Read `./assets/trigger-eval-queries.example.json` when testing whether architecture requests activate this skill cleanly.

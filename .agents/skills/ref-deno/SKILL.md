@@ -26,6 +26,14 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - Prefer Web-standard APIs and `Deno.serve` for servers.
 - Treat permissions as a design decision, not an afterthought.
 
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Configure `deno.json` | Define tasks, compiler options, and dependency conventions in Deno's config file. | Deno should own its own workflow rather than borrowing Node-centric config by accident. | When starting or restructuring a Deno project. | Deno commands and editor behavior are consistent. |
+| Set hybrid boundaries | Separate Deno-owned paths from Node-owned paths in mixed repositories. | Tooling conflicts are one of the most common hybrid-repo failures. | When Deno code lives beside Node or TS tooling. | Editors and commands do not fight over the same files. |
+| Review permissions | Choose explicit permissions and task wrappers for runtime access. | Deno's security model only helps when permissions are deliberate. | Before running new scripts or exposing a Deno CLI workflow. | Filesystem, network, and environment access are intentional and auditable. |
+
 ## Core Rules
 
 ### Configuration and dependencies
@@ -52,9 +60,21 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - If older docs mention them, treat them as transition notes rather than the default recommendation.
 - Prefer current Deno Deploy and runtime guidance over deprecated Deploy Classic patterns.
 
+## Gotchas
+
+- If Deno and Node tooling both claim the same files, editor diagnostics become noisy and misleading.
+- `-A` is acceptable for trusted tooling, but it is the wrong default for ordinary application code.
+- Old URL-import and whole-workspace-activation patterns are transition aids, not modern defaults.
+
 ## Validation
 
 - `deno.json` owns Deno configuration and tasks.
 - The Deno and Node parts of a hybrid repo do not fight over tooling.
 - Dependency specifiers are modern and explicit.
 - Permissions are intentional and documented where they matter.
+
+## References
+
+- Read `./references/checklist.md` for a quick Deno review pass.
+- Read `./assets/trigger-eval-queries.example.json` when checking trigger quality for Deno and hybrid-repo prompts.
+- Review `./evals/evals.json` when validating output quality for configuration or migration guidance.

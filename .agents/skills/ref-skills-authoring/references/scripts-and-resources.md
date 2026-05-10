@@ -92,7 +92,7 @@ Good:
 - `Read ./references/release-checks.md before preparing a release PR.`
 - `Use ./assets/report-template.md when the user requests the standard report format.`
 - `Run ./scripts/validate.py after generating the mapping file.`
-- `Read C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-code-conventions/SKILL.md if the task shifts from skill design to repo Python coding standards.`
+- `Read .agents/skills/ref-code-conventions/SKILL.md if the task shifts from skill design to repo Python coding standards.`
 
 Bad:
 

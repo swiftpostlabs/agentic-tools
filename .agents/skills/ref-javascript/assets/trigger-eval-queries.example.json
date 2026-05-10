@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Review this plain JavaScript module and tell me where JSDoc would actually help.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need maintainable browser-script code without converting the repo to TypeScript.",
+    "should_trigger": true
+  },
+  {
+    "query": "Refactor this Node script so the inputs, outputs, and helper functions are easier to follow.",
+    "should_trigger": true
+  },
+  {
+    "query": "Tighten these TypeScript generics and conditional types.",
+    "should_trigger": false
+  },
+  {
+    "query": "Plan a Deno migration for a hybrid repo.",
+    "should_trigger": false
+  }
+]

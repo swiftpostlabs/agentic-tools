@@ -22,7 +22,7 @@ Guide the agent through reviewing an existing skill, deciding whether it should 
 
 ## First Step
 
-Read C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-shareable-skills/SKILL.md and C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-skills-authoring/SKILL.md before deciding whether the target skill can be exported cleanly.
+Read .agents/skills/ref-shareable-skills/SKILL.md and .agents/skills/ref-skills-authoring/SKILL.md before deciding whether the target skill can be exported cleanly.
 
 ## Core Workflow
 
@@ -60,7 +60,7 @@ Ask only the questions that are still unanswered after reading the target skill.
 
 ## Validation
 
-- Review the result against C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-shareable-skills/references/checklist.md.
+- Review the result against .agents/skills/ref-shareable-skills/references/checklist.md.
 - Confirm the metadata keys stay within the spec's string-to-string model.
 - Confirm every dependency in `shareable-skills.requires` exists and is itself shareable.
 - Run `uv run skills-management link <name> --global --dry-run` once the linker CLI exists.

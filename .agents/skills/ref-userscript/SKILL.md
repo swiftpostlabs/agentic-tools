@@ -46,9 +46,29 @@ Provide portable defaults for userscripts that are resilient to DOM changes, sco
 - Keep selectors and mutation rules centralized so page changes are easier to repair.
 - Fail softly when the page no longer matches expectations.
 
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Define metadata scope | Choose `@match`, `@grant`, and startup metadata deliberately. | Over-broad scope and unused permissions make userscripts harder to trust and maintain. | Before writing the implementation. | The userscript runs only where intended and requests only the APIs it uses. |
+| Inject UI safely | Add UI, listeners, and styles in an idempotent way. | Dynamic pages and repeated initialization are common failure modes. | When augmenting an existing page. | Re-runs do not duplicate UI or handlers. |
+| Centralize selectors and storage | Keep selectors, storage keys, and injected identifiers in named constants. | Host pages change often, and scattered selectors make repairs expensive. | Whenever the script reads or mutates page state. | The DOM integration surface is easy to update and review. |
+
+## Gotchas
+
+- Broad `@match` patterns and unused grants create unnecessary risk.
+- Polling loops are usually a smell; prefer targeted observers or state checks.
+- Injected IDs and class names need namespacing or they will collide with host-page styles and scripts.
+
 ## Validation
 
 - The metadata block requests only the permissions and pages actually needed.
 - Re-running the script does not duplicate injected UI or listeners.
 - Page selectors and injected identifiers are centralized and namespaced.
 - The script degrades cleanly when the host page changes.
+
+## References
+
+- Read `./references/checklist.md` for a quick userscript review pass.
+- Read `./assets/trigger-eval-queries.example.json` when testing whether the description activates on userscript and DOM-automation prompts.
+- Review `./evals/evals.json` when checking output quality for high-risk page automation work.

@@ -46,9 +46,20 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Extract shared types only when they are truly shared.
 - Prefer readable named functions and objects over dense callback chains.
 
+## Gotchas
+
+- Strict compile-time checks do not replace runtime validation for external data.
+- `unknown` is only safer than `any` if the code actually narrows it before use.
+- Large type-level abstractions can hide the domain model instead of clarifying it.
+
 ## Validation
 
 - No new `any` escapes or unchecked casts were introduced without strong justification.
 - External input is validated before domain logic uses it.
 - Shared types are easy to locate and easy to understand.
 - The resulting code remains readable to someone who did not write the types.
+
+## References
+
+- Read `./references/checklist.md` for a quick strict-TypeScript review pass.
+- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for TypeScript requests.

@@ -1,0 +1,22 @@
+[
+  {
+    "query": "I need guidance on naming, typing, comments, and CLI ergonomics for a new feature.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this refactor for readability and whether the branching structure is still maintainable.",
+    "should_trigger": true
+  },
+  {
+    "query": "What coding defaults should we follow for a small script and its tests?",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me configure Supabase migrations and local containers.",
+    "should_trigger": false
+  },
+  {
+    "query": "Summarize this GitHub pull request notification.",
+    "should_trigger": false
+  }
+]

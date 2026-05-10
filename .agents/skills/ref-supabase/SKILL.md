@@ -27,6 +27,15 @@ Provide portable defaults for working with Supabase across local development, re
 - Keep privileged logic in trusted server code or Edge Functions, not in browser clients.
 - Treat Edge Functions as small Deno-based integration points, not as a monolith.
 
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Initialize local workflow | Use `supabase init`, `start`, `stop`, and `status` to own the local stack deliberately. | Local development is much easier when the CLI, config, and containers stay aligned. | When starting or reviewing a Supabase project. | The local stack is reproducible and observable. |
+| Evolve schema safely | Use migrations, diffs, resets, and generated types as one workflow. | Schema drift and stale generated types are common causes of runtime bugs. | Whenever tables, policies, or RPCs change. | Migration history, local schema, and generated types stay aligned. |
+| Build Edge Functions | Create, serve, deploy, and secure functions through the CLI and secrets workflow. | Edge Functions mix privileged logic, external integrations, and deployment concerns. | When adding webhooks, privileged endpoints, or background integrations. | Functions stay small, testable, and safe to deploy. |
+| Decide ORM boundary | Choose whether `supabase-js` is enough or whether an ORM adds real value. | Split-brain schema ownership is one of the easiest ways to make Supabase projects brittle. | When introducing Drizzle, Prisma, or another ORM. | One clear schema authority owns migrations and platform boundaries stay intact. |
+
 ## Core Rules
 
 ### CLI and local workflow
@@ -63,6 +72,12 @@ Provide portable defaults for working with Supabase across local development, re
 - Use an ORM for domain modeling or server-side query composition when it helps, but keep Supabase platform features such as auth, storage, realtime, and row-level security in the architecture.
 - Prefer `supabase-js` plus generated database types when the ORM would add more abstraction than value.
 
+## Gotchas
+
+- Service-role or secret keys do not belong in browser code.
+- Generated database types must be refreshed after schema changes or client code drifts from reality.
+- Supabase migrations and ORM-managed migrations must not compete for schema authority.
+
 ## Validation
 
 - The local stack and remote link flow are explicit.
@@ -70,3 +85,9 @@ Provide portable defaults for working with Supabase across local development, re
 - Browser clients never hold privileged keys.
 - Edge Functions are small, focused, and use secrets correctly.
 - ORM usage has a clear boundary and does not create schema split-brain.
+
+## References
+
+- Read `./references/checklist.md` for a quick Supabase review pass.
+- Read `./assets/trigger-eval-queries.example.json` when checking trigger quality for Supabase platform requests.
+- Review `./evals/evals.json` when validating output quality for CLI, schema, or Edge Function guidance.

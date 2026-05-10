@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Build a standalone HTML/CSS/JS page for a local tool and keep it maintainable without a framework.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this single-page browser utility and tell me whether it should stay one file or split local assets.",
+    "should_trigger": true
+  },
+  {
+    "query": "I need a browser-only page with semantic HTML, intentional styling, and readable JavaScript.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a Tampermonkey userscript for page automation.",
+    "should_trigger": false
+  },
+  {
+    "query": "Set up a Next.js app with shared components.",
+    "should_trigger": false
+  }
+]

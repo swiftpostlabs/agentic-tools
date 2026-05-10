@@ -2,8 +2,8 @@
 name: tool-commit
 description: "Inspect edited files, group them into logical commits, and create focused commits for this repo. Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing."
 metadata:
-	shareable-skills.visibility: "shareable"
-	shareable-skills.requires: "ref-git-commits"
+  shareable-skills.visibility: "shareable"
+  shareable-skills.requires: "ref-git-commits"
 argument-hint: "Optional commit goal, grouping constraint, or whether to only propose groups instead of committing"
 ---
 
@@ -22,7 +22,7 @@ Guide the agent through inspecting the current diff, grouping changes into coher
 
 ## First Step
 
-Read C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-git-commits/SKILL.md before deciding commit boundaries or writing commit messages.
+Read .agents/skills/ref-git-commits/SKILL.md before deciding commit boundaries or writing commit messages.
 
 ## Core Workflow
 

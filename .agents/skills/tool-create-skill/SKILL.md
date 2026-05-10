@@ -2,8 +2,8 @@
 name: tool-create-skill
 description: "Create a new skill using this repo's skill-authoring standard. Use when: the user wants to add a new skill, scaffold a skill folder, turn repeated guidance into a skill, or run a guided wizard before writing skill files."
 metadata:
-	shareable-skills.visibility: "shareable"
-	shareable-skills.requires: "ref-skills-authoring"
+  shareable-skills.visibility: "shareable"
+  shareable-skills.requires: "ref-skills-authoring"
 argument-hint: "Skill goal, preferred name if known, and whether the skill should be reference-style or tool-style"
 ---
 
@@ -22,7 +22,7 @@ Guide the agent through a short skill-creation wizard so a new skill is scoped c
 
 ## First Step
 
-Read C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-skills-authoring/SKILL.md before drafting the new skill.
+Read .agents/skills/ref-skills-authoring/SKILL.md before drafting the new skill.
 
 ## Core Workflow
 
@@ -69,7 +69,7 @@ Ask only the questions that are still unanswered after reading the user's reques
 
 ## Validation
 
-- Review the draft against C:/Users/fcole/Projects/swiftpost-shareable-skills/.agents/skills/ref-skills-authoring/references/checklist.md.
+- Review the draft against .agents/skills/ref-skills-authoring/references/checklist.md.
 - Confirm the `name` matches the folder and uses the correct `ref-` or `tool-` prefix.
 - Confirm any shareability metadata uses `shareable-skills.visibility` and, when needed, `shareable-skills.requires` as string values rather than YAML lists.
 - Confirm any cross-skill reference uses an absolute path.

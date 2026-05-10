@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-userscript",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Write a userscript that adds buttons to a dynamic page and avoids duplicate UI when the site rerenders.",
+      "expected_output": "Guidance that narrows the metadata scope, keeps injection idempotent, and uses resilient page-state handling.",
+      "assertions": [
+        "The response mentions narrow match or grant choices",
+        "The response mentions idempotent injection or duplicate-listener avoidance",
+        "The response prefers observers or targeted state checks over blind polling"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this userscript plan that stores page-specific settings and mutates the DOM in several places.",
+      "expected_output": "A review that centralizes selectors and storage keys, calls out namespacing, and explains how to fail softly when the host page changes.",
+      "assertions": [
+        "The response recommends centralizing selectors or storage keys",
+        "The response mentions namespacing injected identifiers or styles",
+        "The response addresses graceful degradation when the host page changes"
+      ]
+    }
+  ]
+}

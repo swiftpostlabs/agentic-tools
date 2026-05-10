@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-supabase",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We need to add a new table, apply the change locally, and use the generated types in client code. Outline the Supabase workflow.",
+      "expected_output": "A workflow that uses migrations, local CLI commands, and regenerated types as one coherent path.",
+      "assertions": [
+        "The response mentions migrations or schema history",
+        "The response mentions regenerated database types after schema changes",
+        "The response keeps the workflow centered on the Supabase CLI"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A team wants to add Prisma on top of Supabase. Explain the boundary decisions and the main risk if both systems own migrations.",
+      "expected_output": "Guidance that keeps one schema authority, preserves Supabase platform features, and explains split-brain migration risk.",
+      "assertions": [
+        "The response mentions one clear schema authority",
+        "The response calls out split-brain or competing migrations as a risk",
+        "The response preserves Supabase-specific platform concerns such as auth, storage, or RLS"
+      ]
+    }
+  ]
+}

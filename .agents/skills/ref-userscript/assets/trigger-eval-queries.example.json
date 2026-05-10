@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Write a userscript that injects controls into a dynamic page without duplicating the UI on re-runs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this Tampermonkey metadata block and tell me whether the grants and match patterns are too broad.",
+    "should_trigger": true
+  },
+  {
+    "query": "How should I structure selectors and storage keys in a page-automation userscript?",
+    "should_trigger": true
+  },
+  {
+    "query": "Build a browser extension popup with React.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a standalone HTML page with no page automation.",
+    "should_trigger": false
+  }
+]

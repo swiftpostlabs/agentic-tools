@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Review this strict TypeScript code for runtime boundaries and unsafe casts.",
+    "should_trigger": true
+  },
+  {
+    "query": "How should we model these discriminated unions without losing readability?",
+    "should_trigger": true
+  },
+  {
+    "query": "I need help deciding where types should live in a feature-first TypeScript project.",
+    "should_trigger": true
+  },
+  {
+    "query": "Add JSDoc to this plain JavaScript file.",
+    "should_trigger": false
+  },
+  {
+    "query": "Show me the Supabase CLI commands for local development.",
+    "should_trigger": false
+  }
+]

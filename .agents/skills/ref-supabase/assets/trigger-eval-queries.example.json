@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Explain the right Supabase CLI workflow for local development, migrations, and generated types.",
+    "should_trigger": true
+  },
+  {
+    "query": "We need a Supabase Edge Function for a webhook. Review the architecture and secret handling.",
+    "should_trigger": true
+  },
+  {
+    "query": "Should this project use supabase-js alone or add an ORM on top of Supabase?",
+    "should_trigger": true
+  },
+  {
+    "query": "Tune this generic PostgreSQL query planner issue.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a Firebase Cloud Function.",
+    "should_trigger": false
+  }
+]
