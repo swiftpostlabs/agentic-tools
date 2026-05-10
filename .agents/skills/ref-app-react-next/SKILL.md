@@ -53,8 +53,8 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 
 ### Top-level structure
 
-- Keep route entry files focused on app routing and high-level composition.
-- Keep reusable feature code, shared UI, and app-shell code in predictable separate areas.
+- Keep the route tree, feature code, shared UI, and app-shell code in predictable separate areas.
+- Keep app-level ownership boundaries obvious before worrying about lower-level route or component refinements.
 - Avoid leaving prototypes, migration scripts, or maintenance helpers inside the main app tree.
 
 ### Decision rules

@@ -24,7 +24,7 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 - Use `.agents/skills/ref-app-react-next/SKILL.md` when the user explicitly wants a full React and Next app rather than a no-build browser app.
 - Use `.agents/skills/ref-react/SKILL.md` or `.agents/skills/ref-next/SKILL.md` only after the app has deliberately crossed into those frameworks.
 - Use `.agents/skills/ref-userscript/SKILL.md` when the code runs inside a userscript manager on someone else's page.
-- Use `.agents/skills/ref-javascript/SKILL.md` for broader JavaScript and JSDoc questions that are not primarily about standalone-app structure.
+- Use `.agents/skills/ref-javascript/SKILL.md` for detailed JavaScript module, JSDoc, and runtime-surface questions once the standalone app model itself is chosen.
 - Use `.agents/skills/ref-architecture/SKILL.md` when the question is about repo-wide structure rather than one browser app.
 
 ## Defaults
@@ -35,7 +35,6 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 - If Node-based tooling becomes necessary, prefer Yarn for dependency management and scripts.
 - For richer no-build UI, prefer browser-loadable UI libraries such as Web Awesome plus Font Awesome or MDUI 2 plus Google Material Icons.
 - Do not introduce React or a build pipeline by default.
-- Prefer `.js` for ordinary local browser scripts and `.mjs` when explicit browser-module boundaries improve clarity.
 - Keep styles and scripts local unless extraction clearly improves readability.
 
 ## Task Framing
@@ -54,17 +53,11 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 - Keep the app layout obvious from the markup alone.
 - Extract CSS or JS into local sibling files only when the inline version becomes hard to scan.
 
-### File conventions
+### Local asset boundaries
 
-- Keep the main page on `.html`.
-- Use `.mjs` for extracted browser modules only when the module boundary is real and helpful, not just because ESM is available.
-- If the app ships with a related userscript, keep the userscript beside it and use `.user.js` or `.user.ts` explicitly.
-
-### JavaScript organization
-
-- Keep a predictable order: constants, state, element lookup, pure helpers, rendering, events, initialization.
-- Extract repeated transformations and persistence helpers before extracting global infrastructure.
-- Keep storage keys, labels, and other repeated values in named constants.
+- Keep the main page on `.html` and colocate any extracted CSS, JS, and assets inside the same app folder.
+- Extract local assets only when the single-file version has become hard to scan.
+- If the app also ships with a userscript, keep that handoff explicit and route the userscript-specific details to `.agents/skills/ref-userscript/SKILL.md`.
 
 ### Independence
 
@@ -97,12 +90,14 @@ src/features/example-dashboard-kit/
 - HTML is semantic, JS responsibilities are clear, and repeated values are named.
 - Local extraction improved readability instead of adding ceremony.
 - The app does not introduce hidden coupling, unnecessary framework assumptions, or avoidable build machinery.
+- Lower-level JavaScript module and JSDoc choices are delegated to `ref-javascript` instead of being duplicated here.
 
 ## References
 
 - MDN HTML Element Reference: <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
 - Optional MDUI AI reference when the app intentionally uses MDUI: <https://www.mdui.org/en/docs/2/llms.txt>
+- Read `.agents/skills/ref-javascript/SKILL.md` for detailed JS module, JSDoc, and runtime-surface guidance inside the chosen standalone app model.
 - Read `./references/checklist.md` for a quick standalone-app review pass.
 - Read `./references/library-recommendations.md` when choosing browser-loadable UI or utility libraries for a no-build app.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for standalone app and browser-tool prompts.
