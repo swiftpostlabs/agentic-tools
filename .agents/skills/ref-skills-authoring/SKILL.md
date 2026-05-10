@@ -257,7 +257,7 @@ Keep instructions consistent across all platform-specific files:
 
 The Copilot instructions file is the default source of truth in this repo, and `GEMINI.md` plus `.claude/CLAUDE.md` should normally stay thin routing stubs.
 
-For detailed guidance on writing and maintaining these instruction files, use `.agents/skills/ref-instructions-authoring/SKILL.md` and its provider-specific companion skills instead of expanding this skill further.
+For detailed guidance on writing and maintaining these instruction files, use `.agents/skills/ref-agents-instructions-authoring/SKILL.md` and its provider-specific reference subfiles instead of expanding this skill further.
 
 ## Communication Guidelines
 

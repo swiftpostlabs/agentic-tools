@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Design a GitHub Actions CI workflow for pull requests and pushes with matrix testing, caching, and safe token permissions.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this .github/workflows/ci.yml file for bad triggers, over-broad permissions, and unsafe action pinning.",
+    "should_trigger": true
+  },
+  {
+    "query": "Should this workflow use pull_request_target or pull_request for external contributors?",
+    "should_trigger": true
+  },
+  {
+    "query": "How should I configure dependabot.yml to group npm and GitHub Actions updates?",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the right tsconfig split for Node and browser code?",
+    "should_trigger": false
+  }
+]

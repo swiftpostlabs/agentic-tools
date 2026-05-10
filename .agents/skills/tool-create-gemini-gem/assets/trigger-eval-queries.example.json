@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Help me create a Gemini Gem from this repo's skills.",
+    "should_trigger": true
+  },
+  {
+    "query": "Which skills should I attach as Gemini knowledge for a frontend-focused Gem?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write the instructions I should paste into a Gemini Gem that uses these skills.",
+    "should_trigger": true
+  },
+  {
+    "query": "Explain how skills-management sync works.",
+    "should_trigger": false
+  },
+  {
+    "query": "Help me export skills into another repo with symlinks.",
+    "should_trigger": false
+  }
+]

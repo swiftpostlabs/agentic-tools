@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Create a dependabot.yml for a repo with npm, uv, and GitHub Actions, and keep the PR volume manageable.",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this Dependabot config and tell me whether the update blocks, schedules, and grouping rules make sense.",
+    "should_trigger": true
+  },
+  {
+    "query": "How should we configure Dependabot for private registries and GitHub Actions updates?",
+    "should_trigger": true
+  },
+  {
+    "query": "Design a secure GitHub Actions CI workflow with matrix jobs and concurrency.",
+    "should_trigger": false
+  },
+  {
+    "query": "What folder structure should a feature-first Python app use?",
+    "should_trigger": false
+  }
+]

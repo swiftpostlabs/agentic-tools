@@ -167,8 +167,8 @@ Prefer these commands over calling the underlying tools directly during normal w
 | **Black** | `uv run poe lint` | Poe task | Check code formatting |
 | **Black** | `uv run poe lint-fix` | Poe task | Auto-format code |
 | **Pyright** | `uv run poe typecheck` | Poe task | Type-check in strict mode |
-| **AI policy sync** | `uv run sync-ai-policy` | Project script | Regenerate agent config from `.ai-policy.json` |
-| **AI policy import** | `uv run sync-ai-policy-import-vscode` | Project script | Import VS Code approvals into policy, then sync |
+| **AI policy sync** | `uv run agents-policy` | Project script | Regenerate agent config from `.agents/policy.json` |
+| **AI policy import** | `uv run agents-policy-import-vscode` | Project script | Import VS Code approvals into policy, then sync |
 | **Update script** | `uv run poe update-from-upstream` | Poe task | Fetch updates from template |
 
 All commands use `uv run` to execute in the managed environment.

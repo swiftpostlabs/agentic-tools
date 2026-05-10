@@ -1,0 +1,45 @@
+{
+  "skill_name": "ref-agents-instructions-authoring",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Design the instruction-file architecture for a repo that supports Copilot, Gemini, and Claude without duplicating the same workflow text in three places.",
+      "expected_output": "Guidance that chooses one source of truth, recommends thin provider bridges, and separates durable repo rules from domain-specific skill detail.",
+      "assertions": [
+        "The response chooses one instruction source of truth",
+        "The response recommends thin bridge or stub files for the other providers",
+        "The response distinguishes top-level instruction content from skill-level detail"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review .github/copilot-instructions.md after several new skills were added and tell me what should change.",
+      "expected_output": "A review that updates the skill list, routing hints, and any workflow commands that changed, while keeping feature-level detail in skills.",
+      "assertions": [
+        "The response checks skill listings or routing hints",
+        "The response checks workflow or command drift",
+        "The response avoids moving feature-level detail into the top-level file by default"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review GEMINI.md and tell me whether it is too heavy or whether it should just bridge back to the shared instructions.",
+      "expected_output": "Guidance that keeps GEMINI.md thin by default, allows only narrow Gemini-specific notes, and routes back to the shared source of truth.",
+      "assertions": [
+        "The response keeps GEMINI.md thin by default",
+        "The response allows only narrow provider-specific exceptions",
+        "The response routes Gemini back to the shared instructions"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Review .claude/CLAUDE.md and tell me whether it is too heavy or whether it should just bridge back to the shared instructions.",
+      "expected_output": "Guidance that keeps .claude/CLAUDE.md thin by default, allows only narrow Claude-specific notes, and routes back to the shared source of truth.",
+      "assertions": [
+        "The response keeps .claude/CLAUDE.md thin by default",
+        "The response allows only narrow provider-specific exceptions",
+        "The response routes Claude back to the shared instructions"
+      ]
+    }
+  ]
+}

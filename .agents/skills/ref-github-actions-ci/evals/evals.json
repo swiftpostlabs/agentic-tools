@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-github-actions-ci",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review a GitHub Actions CI workflow that runs on push and pull_request, uses several third-party actions, and deploys from main. Explain what you would tighten.",
+      "expected_output": "A review that checks triggers, least-privilege permissions, action pinning, concurrency, and the separation between CI and deployment concerns.",
+      "assertions": [
+        "The response addresses token permissions",
+        "The response checks whether third-party actions are pinned safely",
+        "The response distinguishes CI validation concerns from deployment concerns"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Design a GitHub Actions workflow for a mixed-language repository that should cancel stale PR runs, test across a small matrix, and stay safe for external contributors.",
+      "expected_output": "Workflow guidance that uses deliberate triggers, branch-safe concurrency, a justified matrix, and safe pull request execution defaults.",
+      "assertions": [
+        "The response recommends workflow or job concurrency for stale runs",
+        "The response keeps the matrix intentional rather than maximal",
+        "The response prefers pull_request over unsafe pull_request_target execution of untrusted code"
+      ]
+    }
+  ]
+}

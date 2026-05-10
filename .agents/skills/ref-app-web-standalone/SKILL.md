@@ -33,7 +33,7 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 - Use semantic HTML before reaching for generic containers.
 - Prefer no package manager or build pipeline by default.
 - If Node-based tooling becomes necessary, prefer Yarn for dependency management and scripts.
-- For richer no-build UI, prefer browser-loadable UI libraries such as Web Awesome plus Font Awesome or MDUI 2 plus Google Material Icons.
+- For richer no-build UI, prefer browser-loadable UI libraries over re-creating every control from scratch.
 - Do not introduce React or a build pipeline by default.
 - Keep styles and scripts local unless extraction clearly improves readability.
 
@@ -96,7 +96,6 @@ src/features/example-dashboard-kit/
 
 - MDN HTML Element Reference: <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
-- Optional MDUI AI reference when the app intentionally uses MDUI: <https://www.mdui.org/en/docs/2/llms.txt>
 - Read `.agents/skills/ref-javascript/SKILL.md` for detailed JS module, JSDoc, and runtime-surface guidance inside the chosen standalone app model.
 - Read `./references/checklist.md` for a quick standalone-app review pass.
 - Read `./references/library-recommendations.md` when choosing browser-loadable UI or utility libraries for a no-build app.

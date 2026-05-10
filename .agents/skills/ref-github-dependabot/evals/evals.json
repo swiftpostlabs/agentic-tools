@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-github-dependabot",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Design a Dependabot configuration for a repository that uses npm, uv, and GitHub Actions, and keep review noise manageable.",
+      "expected_output": "Configuration guidance that uses version 2 syntax, explicit update blocks, reasonable schedules, and grouping or PR limits to control noise.",
+      "assertions": [
+        "The response uses .github/dependabot.yml with version 2",
+        "The response defines one or more explicit update blocks",
+        "The response addresses PR volume with schedules, groups, or open-pull-requests-limit"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review a noisy dependabot.yml and tell me how to improve it without disabling updates entirely.",
+      "expected_output": "A review that tunes grouping, ignore rules, schedules, and ecosystem boundaries instead of just turning Dependabot off.",
+      "assertions": [
+        "The response prefers tuning over blanket disabling",
+        "The response distinguishes grouping from ignoring",
+        "The response mentions GitHub Actions updates when workflow dependencies exist"
+      ]
+    }
+  ]
+}

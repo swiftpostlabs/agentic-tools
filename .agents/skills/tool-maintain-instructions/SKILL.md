@@ -3,7 +3,7 @@ name: tool-maintain-instructions
 description: "Review and update repository instruction files after code, workflow, or skill changes. Use when: .github/copilot-instructions.md, GEMINI.md, or .claude/CLAUDE.md may be outdated, the skill catalog changed, or a multi-provider repo needs its instruction bridge refreshed."
 metadata:
   shareable-skills.visibility: "shareable"
-  shareable-skills.requires: "ref-instructions-authoring ref-copilot-instructions ref-gemini-instructions ref-claude-instructions"
+  shareable-skills.requires: "ref-agents-instructions-authoring"
 argument-hint: "What changed in the repo and which instruction files or providers need to stay in sync"
 ---
 
@@ -22,7 +22,7 @@ Guide the agent through a short maintenance wizard so top-level instruction file
 
 ## First Step
 
-Read `.agents/skills/ref-instructions-authoring/SKILL.md` and the provider-specific instruction skills that match the files being touched.
+Read `.agents/skills/ref-agents-instructions-authoring/SKILL.md` and the provider reference files under its `references/providers/` folder that match the files being touched.
 
 ## Core Workflow
 
@@ -61,13 +61,13 @@ Ask only the questions that are still unanswered after inspecting the repo.
 
 ## Validation
 
-- Check the result against `.agents/skills/ref-instructions-authoring/references/checklist.md`.
+- Check the result against `.agents/skills/ref-agents-instructions-authoring/references/checklist.md`.
 - Confirm the source-of-truth file and bridge files still agree.
 - Confirm provider bridge files remain minimal unless a real provider-specific exception exists.
 - Run a targeted error check on the touched instruction files before concluding.
 
 ## References
 
-- Read `.agents/skills/ref-copilot-instructions/SKILL.md`, `.agents/skills/ref-gemini-instructions/SKILL.md`, and `.agents/skills/ref-claude-instructions/SKILL.md` for file-specific authoring rules.
+- Read `.agents/skills/ref-agents-instructions-authoring/references/providers/copilot-instructions.md`, `.agents/skills/ref-agents-instructions-authoring/references/providers/gemini-instructions.md`, and `.agents/skills/ref-agents-instructions-authoring/references/providers/claude-instructions.md` for file-specific authoring rules.
 - Use `.agents/skills/tool-consolidate-skills/SKILL.md` when the maintenance pass reveals duplicated or misplaced guidance that should be moved into a different owner.
 - Use `.agents/skills/ref-ai-security/SKILL.md` when instruction changes must stay aligned with generated policy files or provider restrictions.

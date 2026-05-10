@@ -63,7 +63,7 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 - Use when: locating code, understanding folder layout, or updating project/tool configuration
 
 **`ref-ai-security`** — AI policy, protected files, exclusion sync, and multi-client enforcement
-- Use when: changing `.ai-policy.json`, sync behavior, generated restriction files, or agent file-access enforcement
+- Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
 **`ref-architecture`** — Portable architecture guidance for feature folders and code boundaries
 - Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
@@ -74,17 +74,14 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-skills-authoring`** — Guidelines for creating and maintaining project skills
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
-**`ref-instructions-authoring`** — Guidance for writing and maintaining multi-provider instruction files
-- Use when: authoring or updating `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md`, choosing a source of truth, or designing an import bridge across providers
+**`ref-agents-instructions-authoring`** — Guidance for structuring and maintaining multi-provider instruction files
+- Use when: designing the repo's instruction-file system, choosing the source of truth, or updating `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` together, including provider-specific guidance through the skill's references
 
-**`ref-copilot-instructions`** — Guidance for `.github/copilot-instructions.md`
-- Use when: editing Copilot instructions, deciding what belongs in the source-of-truth instruction file, or updating workflow, skill-routing, or command summaries
+**`ref-github-actions-ci`** — Portable GitHub Actions CI guidance
+- Use when: creating or reviewing `.github/workflows/*.yml`, setting up CI or reusable workflows, or securing workflow tokens, actions, and runner choices
 
-**`ref-gemini-instructions`** — Guidance for `GEMINI.md`
-- Use when: editing `GEMINI.md`, deciding whether Gemini needs provider-specific text, or keeping Gemini routed to the shared repo instructions
-
-**`ref-claude-instructions`** — Guidance for `.claude/CLAUDE.md`
-- Use when: editing Claude instructions, deciding whether Claude needs provider-specific text, or keeping Claude routed to the shared repo instructions
+**`ref-github-dependabot`** — Portable Dependabot configuration guidance
+- Use when: creating or reviewing `.github/dependabot.yml`, tuning update volume, or deciding how version and security updates should be grouped and scoped
 
 **`ref-deno`** — Portable Deno guidance for modern runtime usage and hybrid repos
 - Use when: writing Deno code, configuring `deno.json`, or migrating older Deno patterns
@@ -113,6 +110,12 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-supabase`** — Portable Supabase guidance for CLI workflows, edge functions, and ORM boundaries
 - Use when: initializing Supabase, working on local or remote workflows, writing Edge Functions, or deciding how ORMs fit with Supabase
 
+**`ref-swiftpost-ai-policy`** — Repo-specific agents-policy guidance
+- Use when: working on `src/agentic_tools/agents_policy`, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
+
+**`ref-swiftpost-skills-management`** — Repo-specific skills-management CLI guidance
+- Use when: working on `src/agentic_tools/skills_management`, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
+
 **`ref-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
 - Use when: writing or reviewing TypeScript code, types, or configuration decisions
 
@@ -125,11 +128,20 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`tool-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
 - Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
 
+**`tool-export-these-skills`** — Export selected skills from this repo for another target
+- Use when: choosing which skills can leave this repo, preparing a skills-management handoff, or packaging a skill set for another environment
+
+**`tool-create-gemini-gem`** — Build a Gemini Gem from this repo's skills
+- Use when: selecting skills to attach as Gemini knowledge or generating paste-ready Gem instructions
+
 **`tool-create-skill`** — Guided wizard for creating a new skill
 - Use when: the user wants to add a new skill or scaffold one through a guided intake flow
 
 **`tool-maintain-instructions`** — Guided workflow for updating repo instruction files
 - Use when: instruction files may be outdated after code, workflow, or skill changes, or a multi-provider repo needs its instruction bridge refreshed
+
+**`tool-maintain-skills`** — Guided workflow for refreshing project skills after repo changes
+- Use when: skills may be outdated after code, workflow, or branch changes, or a skill catalog needs a maintenance pass
 
 **`tool-make-skill-shareable`** — Guided workflow for making an existing skill shareable
 - Use when: a skill lacks shareability metadata, portability is unclear, or a repo-local skill may need to be split before export
@@ -161,8 +173,8 @@ When working on this project:
 - `uv run poe lint-filter` — Run lint and filter output.
 - `uv run poe typecheck-filter` — Run type-checking and filter output.
 - `uv run skills-management list` — List skills available from the current repo or a specified source.
-- `uv run sync-ai-policy` — Regenerate agent config from `.ai-policy.json`.
-- `uv run sync-ai-policy-import-vscode` — Import VS Code approvals into policy, then sync.
+- `uv run agents-policy` — Regenerate agent config from `.agents/policy.json`.
+- `uv run agents-policy-import-vscode` — Import VS Code approvals into policy, then sync.
 
 Use the Poe validation tasks above as the default way to run tests, lint, and type-checking in this repo. Only call the underlying tools directly when a task needs flags or behavior that the Poe wrapper does not expose.
 
@@ -175,10 +187,10 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For portable coding defaults across languages and CLIs: use `ref-coding-patterns`.
 - For generic architecture and feature-boundary decisions: use `ref-architecture`.
 - For security policy config and generated restriction files: use `ref-ai-security`.
-- For writing and maintaining top-level instruction files across providers: use `ref-instructions-authoring`.
-- For `.github/copilot-instructions.md`: use `ref-copilot-instructions`.
-- For `GEMINI.md`: use `ref-gemini-instructions`.
-- For `.claude/CLAUDE.md`: use `ref-claude-instructions`.
+- For this repo's `agents-policy` feature, `.agents/policy.json`, and generated vendor outputs: use `ref-swiftpost-ai-policy`.
+- For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-agents-instructions-authoring`.
+- For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-github-actions-ci`.
+- For Dependabot config, schedules, grouping, and GitHub Actions dependency updates: use `ref-github-dependabot`.
 - For Python code and CLI patterns: use `ref-python`.
 - For JavaScript scripts or browser code with JSDoc: use `ref-javascript`.
 - For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-react`.
@@ -189,9 +201,13 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For browser userscripts: use `ref-userscript`.
 - For Deno runtime and hybrid Deno or Node repos: use `ref-deno`.
 - For Supabase CLI, schema, edge functions, and ORM boundaries: use `ref-supabase`.
+- For this repo's skills-management CLI and `.agents/skills.json` sync model: use `ref-swiftpost-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-shareable-skills`.
+- For exporting selected skills from this repo into another repo, a copied bundle, or another target: use `tool-export-these-skills`.
+- For assembling a Gemini Gem from this repo's skills and generating paste-ready instructions: use `tool-create-gemini-gem`.
 - For creating a new skill through a guided intake flow: use `tool-create-skill`.
 - For refreshing `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-maintain-instructions`.
+- For refreshing project skills after repo or branch changes: use `tool-maintain-skills`.
 - For turning an existing skill into a shareable one through a guided review: use `tool-make-skill-shareable`.
 - For grouping the current diff into focused commits and making them: use `tool-commit`.
 - For skills themselves: use `ref-skills-authoring` and `tool-consolidate-skills`.

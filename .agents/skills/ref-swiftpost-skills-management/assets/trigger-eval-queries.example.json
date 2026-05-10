@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Explain how the skills-management sync command and .agents/skills.json work in this repo.",
+    "should_trigger": true
+  },
+  {
+    "query": "I'm debugging why a skill cannot be linked from this repository into another repo.",
+    "should_trigger": true
+  },
+  {
+    "query": "What does package:agentic-tools mean in skills.json and how is it resolved?",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a new shareable skill for Dependabot configuration.",
+    "should_trigger": false
+  },
+  {
+    "query": "Refresh project skills after branch changes.",
+    "should_trigger": false
+  }
+]

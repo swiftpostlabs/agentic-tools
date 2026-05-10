@@ -82,8 +82,8 @@ Adopt these when they match the target repo's needs:
 
 If the target repo wants the same protected-file and exclusion workflow, copy and adapt these together as one unit:
 
-- `.ai-policy.json` — source of truth for protected files, excluded files, and approval maps.
-- `scripts/sync_ai_policy.py` — deterministic generator for editor- and agent-specific config.
+- `.agents/policy.json` — source of truth for protected files, excluded files, approval maps, and enabled services.
+- `src/agentic_tools/agents_policy/main.py` or an adapted equivalent — deterministic generator for editor- and agent-specific config.
 - `.aiexclude` — generated exclusion file.
 - `.claude/settings.json` — generated protected read rules for Claude.
 - `.vscode/settings.json` — generated protected file associations and approval maps for Copilot.
@@ -92,8 +92,8 @@ If the target repo wants the same protected-file and exclusion workflow, copy an
 The target repo should also copy the corresponding command wiring:
 
 - `[project.scripts]`
-  - `sync-ai-policy = "scripts.sync_ai_policy:main"`
-  - `sync-ai-policy-import-vscode = "scripts.sync_ai_policy:import_vscode_main"`
+   - `agents-policy = "agentic_tools.agents_policy.main:main"`
+   - `agents-policy-import-vscode = "agentic_tools.agents_policy.main:import_vscode_main"`
 - CI drift enforcement that runs the sync command and fails if generated files changed.
 
 If the target repo does not use Python or `uv`, adapt the sync invocation to its real runtime and package manager instead of copying the command names blindly.
@@ -150,7 +150,7 @@ Do not copy repo-specific skills unchanged into another repo. Treat them as exam
 Adapt these to the target repo's package manager if it does not use `uv`:
 
 ```sh
-uv run sync-ai-policy
+uv run agents-policy
 git diff --exit-code -- .aiexclude .claude/settings.json .vscode/settings.json
 ```
 

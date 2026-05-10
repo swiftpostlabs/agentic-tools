@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Review the current branch changes and update any skills that are now stale.",
+    "should_trigger": true
+  },
+  {
+    "query": "We changed commands and added new workflows in this repo. Check whether the skills and top-level routing need maintenance.",
+    "should_trigger": true
+  },
+  {
+    "query": "A copied skill still mentions the wrong package manager and outdated examples. Do a maintenance pass.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a new skill for GitHub Actions workflow hardening.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain how the skills-management sync command works in this repo.",
+    "should_trigger": false
+  }
+]

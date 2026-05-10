@@ -21,8 +21,8 @@ Use this checklist when transplanting this repo's skills and AI-policy tooling i
 
 ## AI Security
 
-- Did you copy `.ai-policy.json` as the source of truth?
-- Did you copy `scripts/sync_ai_policy.py` or an adapted equivalent?
+- Did you copy `.agents/policy.json` as the source of truth?
+- Did you copy `src/agentic_tools/agents_policy/main.py` or an adapted equivalent?
 - Did you add the relevant entrypoints or task-runner commands for syncing policy?
 - Did you regenerate `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` instead of treating them as hand-edited source files?
 - Did you update `.claude/CLAUDE.md`, `GEMINI.md`, and `.github/copilot-instructions.md` or the target repo's equivalent entry points to reference the shared policy model?

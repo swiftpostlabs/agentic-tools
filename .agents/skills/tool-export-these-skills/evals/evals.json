@@ -1,0 +1,25 @@
+{
+  "skill_name": "tool-export-these-skills",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Help me export selected skills from this repo into another repo that can use skills-management sync.",
+      "expected_output": "A response that chooses the skills-management mode, includes hard dependencies, and gives a concrete sync-oriented handoff.",
+      "assertions": [
+        "The response selects the repo or skills-management export mode",
+        "The response mentions shareable skills and hard dependencies",
+        "The response gives a concrete command or config-oriented handoff"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want a copyable bundle of reusable skills from this repo, not symlinks. What should I export?",
+      "expected_output": "A response that selects the manual bundle mode, preserves whole skill folders, and excludes repo-local skills by default.",
+      "assertions": [
+        "The response preserves whole skill folders rather than summaries",
+        "The response excludes repo-local skills by default",
+        "The response mentions hard dependencies"
+      ]
+    }
+  ]
+}

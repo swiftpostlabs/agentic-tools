@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Help me export these skills into another repo using skills-management.",
+    "should_trigger": true
+  },
+  {
+    "query": "Which skills from this repo can I copy as a reusable bundle?",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to export a subset of this repo's skills to a Gemini Gem.",
+    "should_trigger": true
+  },
+  {
+    "query": "Explain how the agents-policy feature works in this repo.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a new Supabase skill.",
+    "should_trigger": false
+  }
+]
