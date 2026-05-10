@@ -65,11 +65,38 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-ai-security`** — AI policy, protected files, exclusion sync, and multi-client enforcement
 - Use when: changing `.ai-policy.json`, sync behavior, generated restriction files, or agent file-access enforcement
 
+**`ref-architecture`** — Portable architecture guidance for feature folders and code boundaries
+- Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
+
+**`ref-coding-patterns`** — Portable coding defaults across languages and CLIs
+- Use when: choosing naming, typing, comments, branching structure, CLI ergonomics, or testing defaults
+
 **`ref-skills-authoring`** — Guidelines for creating and maintaining project skills
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
+**`ref-deno`** — Portable Deno guidance for modern runtime usage and hybrid repos
+- Use when: writing Deno code, configuring `deno.json`, or migrating older Deno patterns
+
+**`ref-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
+- Use when: writing plain JavaScript, adding JSDoc, or keeping JavaScript maintainable without TypeScript
+
+**`ref-python`** — Portable Python guidance for typed code, scripts, and tests
+- Use when: writing or refactoring Python modules, designing Python CLIs, or deciding typing and testing patterns
+
 **`ref-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
+
+**`ref-standalone-web-pages`** — Portable guidance for standalone HTML, CSS, and JavaScript pages
+- Use when: creating single-page tools, deciding when to extract local assets, or keeping browser-only pages maintainable without a framework
+
+**`ref-supabase`** — Portable Supabase guidance for CLI workflows, edge functions, and ORM boundaries
+- Use when: initializing Supabase, working on local or remote workflows, writing Edge Functions, or deciding how ORMs fit with Supabase
+
+**`ref-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
+- Use when: writing or reviewing TypeScript code, types, or configuration decisions
+
+**`ref-userscript`** — Portable guidance for browser userscripts and DOM automation
+- Use when: writing or reviewing `.user.js` or `.user.ts` scripts, metadata blocks, permissions, or page automation
 
 **`tool-consolidate-skills`** — Consolidate overlapping skill and top-level guidance
 - Use when: trimming duplication, moving rules to the right owner, or simplifying `copilot-instructions.md`
@@ -121,7 +148,16 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For commit format, commit bodies, or reproducibility details in commit messages: use `ref-git-commits`.
 - For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-structure-setup`.
 - For workflow and structural caution: use `ref-agent-behavior`.
+- For portable coding defaults across languages and CLIs: use `ref-coding-patterns`.
+- For generic architecture and feature-boundary decisions: use `ref-architecture`.
 - For security policy config and generated restriction files: use `ref-ai-security`.
+- For Python code and CLI patterns: use `ref-python`.
+- For JavaScript scripts or browser code with JSDoc: use `ref-javascript`.
+- For TypeScript typing and boundary decisions: use `ref-typescript`.
+- For standalone HTML, CSS, and JavaScript pages: use `ref-standalone-web-pages`.
+- For browser userscripts: use `ref-userscript`.
+- For Deno runtime and hybrid Deno or Node repos: use `ref-deno`.
+- For Supabase CLI, schema, edge functions, and ORM boundaries: use `ref-supabase`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-shareable-skills`.
 - For creating a new skill through a guided intake flow: use `tool-create-skill`.
 - For turning an existing skill into a shareable one through a guided review: use `tool-make-skill-shareable`.
