@@ -109,6 +109,7 @@ When working on this project:
 - `uv run poe typecheck` — Run Pyright strict mode.
 - `uv run poe lint-filter` — Run lint and filter output.
 - `uv run poe typecheck-filter` — Run type-checking and filter output.
+- `uv run link-shareable-skills --list` — List skills currently marked shareable.
 - `uv run sync-ai-policy` — Regenerate agent config from `.ai-policy.json`.
 - `uv run sync-ai-policy-import-vscode` — Import VS Code approvals into policy, then sync.
 
