@@ -50,7 +50,7 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 ### Available Skills
 
-**`ref-agent-behavior`** — Project persona and workflow expectations
+**`ref-agents-persona`** — Agent persona and workflow expectations
 - Use when: starting tasks, planning commits, preserving structure, or understanding communication expectations
 
 **`ref-code-conventions`** — Python code structure and quality standards
@@ -59,13 +59,13 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-git-commits`** — Commit grouping and commit message guidance
 - Use when: deciding how changes should be committed, writing commit titles or bodies, or documenting automated commands in commit messages
 
-**`ref-project-structure-setup`** — Project layout, `pyproject.toml`, and tool wiring
+**`ref-project-setup`** — Project layout, `pyproject.toml`, and tool wiring
 - Use when: locating code, understanding folder layout, or updating project/tool configuration
 
-**`ref-ai-security`** — AI policy, protected files, exclusion sync, and multi-client enforcement
+**`ref-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
-**`ref-architecture`** — Portable architecture guidance for feature folders and code boundaries
+**`ref-projects-architecture`** — Portable architecture guidance for feature folders and code boundaries
 - Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
 
 **`ref-coding-patterns`** — Portable coding defaults across languages and CLIs
@@ -83,16 +83,16 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-github-dependabot`** — Portable Dependabot configuration guidance
 - Use when: creating or reviewing `.github/dependabot.yml`, tuning update volume, or deciding how version and security updates should be grouped and scoped
 
-**`ref-deno`** — Portable Deno guidance for modern runtime usage and hybrid repos
+**`ref-js-deno`** — Portable Deno guidance for modern runtime usage and hybrid repos
 - Use when: writing Deno code, configuring `deno.json`, or migrating older Deno patterns
 
-**`ref-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
+**`ref-js-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
 - Use when: writing plain JavaScript, adding JSDoc, or keeping JavaScript maintainable without TypeScript
 
-**`ref-react`** — Portable React guidance for components, hooks, and library choices
+**`ref-js-react`** — Portable React guidance for components, hooks, and library choices
 - Use when: creating or reviewing React components, choosing React-friendly libraries, deciding where UI or async state should live, or refactoring a React feature that is getting hard to read
 
-**`ref-next`** — Portable Next.js guidance for App Router structure and framework integrations
+**`ref-js-next`** — Portable Next.js guidance for App Router structure and framework integrations
 - Use when: creating or reviewing Next routes and layouts, deciding where `'use client'` belongs, configuring Next.js, or choosing framework-specific integrations like `next-intl`
 
 **`ref-python`** — Portable Python guidance for typed code, scripts, and tests
@@ -110,38 +110,32 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-supabase`** — Portable Supabase guidance for CLI workflows, edge functions, and ORM boundaries
 - Use when: initializing Supabase, working on local or remote workflows, writing Edge Functions, or deciding how ORMs fit with Supabase
 
-**`ref-swiftpost-ai-policy`** — Repo-specific agents-policy guidance
+**`ref-swiftpost-agents-policy`** — Repo-specific agents-policy guidance
 - Use when: working on `src/agentic_tools/agents_policy`, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
 
 **`ref-swiftpost-skills-management`** — Repo-specific skills-management CLI guidance
 - Use when: working on `src/agentic_tools/skills_management`, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
 
-**`ref-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
+**`ref-js-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
 - Use when: writing or reviewing TypeScript code, types, or configuration decisions
 
-**`ref-userscript`** — Portable guidance for browser userscripts and DOM automation
+**`ref-js-userscript`** — Portable guidance for browser userscripts and DOM automation
 - Use when: writing or reviewing `.user.js` or `.user.ts` scripts, metadata blocks, permissions, or page automation
-
-**`tool-consolidate-skills`** — Consolidate overlapping skill and top-level guidance
-- Use when: trimming duplication, moving rules to the right owner, or simplifying `copilot-instructions.md`
 
 **`tool-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
 - Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
 
-**`tool-export-these-skills`** — Export selected skills from this repo for another target
-- Use when: choosing which skills can leave this repo, preparing a skills-management handoff, or packaging a skill set for another environment
-
-**`tool-create-gemini-gem`** — Build a Gemini Gem from this repo's skills
-- Use when: selecting skills to attach as Gemini knowledge or generating paste-ready Gem instructions
+**`tool-export-skills`** — Export selected skills from this repo for repos, AI handoffs, and Gems
+- Use when: choosing which skills can leave this repo, preparing a handoff, or packaging a skill set for another environment, AI conversation, or Gemini Gem
 
 **`tool-create-skill`** — Guided wizard for creating a new skill
 - Use when: the user wants to add a new skill or scaffold one through a guided intake flow
 
-**`tool-maintain-instructions`** — Guided workflow for updating repo instruction files
+**`tool-maintain-agents-instructions`** — Guided workflow for updating repo instruction files
 - Use when: instruction files may be outdated after code, workflow, or skill changes, or a multi-provider repo needs its instruction bridge refreshed
 
-**`tool-maintain-skills`** — Guided workflow for refreshing project skills after repo changes
-- Use when: skills may be outdated after code, workflow, or branch changes, or a skill catalog needs a maintenance pass
+**`tool-maintain-skills`** — Guided workflow for refreshing and consolidating project skills after repo changes
+- Use when: skills may be outdated after code, workflow, or branch changes, guidance is duplicated or misplaced, or a skill catalog needs a maintenance pass
 
 **`tool-make-skill-shareable`** — Guided workflow for making an existing skill shareable
 - Use when: a skill lacks shareability metadata, portability is unclear, or a repo-local skill may need to be split before export
@@ -161,7 +155,7 @@ When working on this project:
 3. **Implement**: Follow the owning skill for the area you are touching.
 4. **Validate**: Run lint, type-checking, and tests before committing.
 5. **Commit**: Keep commits small and focused.
-6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. Summarize the result to the user and ask if they want the guidance updated. If yes, update the relevant skill using `ref-skills-authoring`, and after editing suggest a follow-up consolidation pass with `tool-consolidate-skills`.
+6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. Summarize the result to the user and ask if they want the guidance updated. If yes, update the relevant skill using `ref-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-maintain-skills`.
 
 ## Quick Commands
 
@@ -182,32 +176,31 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 
 - For code structure, typing, tests, or CLI/task choices: use `ref-code-conventions`.
 - For commit format, commit bodies, or reproducibility details in commit messages: use `ref-git-commits`.
-- For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-structure-setup`.
-- For workflow and structural caution: use `ref-agent-behavior`.
+- For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-setup`.
+- For workflow and structural caution: use `ref-agents-persona`.
 - For portable coding defaults across languages and CLIs: use `ref-coding-patterns`.
-- For generic architecture and feature-boundary decisions: use `ref-architecture`.
-- For security policy config and generated restriction files: use `ref-ai-security`.
-- For this repo's `agents-policy` feature, `.agents/policy.json`, and generated vendor outputs: use `ref-swiftpost-ai-policy`.
+- For generic architecture and feature-boundary decisions: use `ref-projects-architecture`.
+- For security policy config and generated restriction files: use `ref-agents-security`.
+- For this repo's `agents-policy` feature, `.agents/policy.json`, and generated vendor outputs: use `ref-swiftpost-agents-policy`.
 - For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-agents-instructions-authoring`.
 - For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-github-actions-ci`.
 - For Dependabot config, schedules, grouping, and GitHub Actions dependency updates: use `ref-github-dependabot`.
 - For Python code and CLI patterns: use `ref-python`.
-- For JavaScript scripts or browser code with JSDoc: use `ref-javascript`.
-- For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-react`.
-- For Next.js App Router structure, rendering boundaries, and Next-specific integrations: use `ref-next`.
-- For TypeScript typing and boundary decisions: use `ref-typescript`.
+- For JavaScript scripts or browser code with JSDoc: use `ref-js-javascript`.
+- For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-js-react`.
+- For Next.js App Router structure, rendering boundaries, and Next-specific integrations: use `ref-js-next`.
+- For TypeScript typing and boundary decisions: use `ref-js-typescript`.
 - For standalone browser apps and no-build web tools: use `ref-app-web-standalone`.
 - For whole React and Next.js app planning and app-level stack choices: use `ref-app-react-next`.
-- For browser userscripts: use `ref-userscript`.
-- For Deno runtime and hybrid Deno or Node repos: use `ref-deno`.
+- For browser userscripts: use `ref-js-userscript`.
+- For Deno runtime and hybrid Deno or Node repos: use `ref-js-deno`.
 - For Supabase CLI, schema, edge functions, and ORM boundaries: use `ref-supabase`.
 - For this repo's skills-management CLI and `.agents/skills.json` sync model: use `ref-swiftpost-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-shareable-skills`.
-- For exporting selected skills from this repo into another repo, a copied bundle, or another target: use `tool-export-these-skills`.
-- For assembling a Gemini Gem from this repo's skills and generating paste-ready instructions: use `tool-create-gemini-gem`.
+- For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-export-skills`.
 - For creating a new skill through a guided intake flow: use `tool-create-skill`.
-- For refreshing `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-maintain-instructions`.
+- For refreshing `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-maintain-agents-instructions`.
 - For refreshing project skills after repo or branch changes: use `tool-maintain-skills`.
 - For turning an existing skill into a shareable one through a guided review: use `tool-make-skill-shareable`.
 - For grouping the current diff into focused commits and making them: use `tool-commit`.
-- For skills themselves: use `ref-skills-authoring` and `tool-consolidate-skills`.
+- For skills themselves: use `ref-skills-authoring` and `tool-maintain-skills`.

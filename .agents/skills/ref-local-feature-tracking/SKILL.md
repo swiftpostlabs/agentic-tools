@@ -1,6 +1,6 @@
 ---
 name: ref-local-feature-tracking
-description: "Reference guidance for using `.agents/tasks/` as a local, usually gitignored workspace for feature tracking and temporary working files. Use when: updating `.agents/tasks/TODO.md`, maintaining a feature-specific task folder, storing temporary artifacts such as `pr-description.md`, or keeping local progress notes aligned with the current task."
+description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace for feature tracking and temporary working files. Use when: updating `.agents/tasks/TODO.md`, maintaining a feature-specific task folder, storing temporary artifacts such as `pr-description.md`, or keeping local progress notes aligned with the current task."
 metadata:
   shareable-skills.visibility: "shareable"
 ---
@@ -9,7 +9,7 @@ metadata:
 
 ## Purpose
 
-Define how this repo uses `.agents/tasks/` as a local, usually gitignored workspace for short-lived feature tracking, working notes, and temporary delivery artifacts.
+Define how this repo uses `.agents/tasks/` as a gitignored local workspace for short-lived feature tracking, working notes, and temporary delivery artifacts.
 
 ## When to use this skill
 
@@ -49,6 +49,7 @@ Define how this repo uses `.agents/tasks/` as a local, usually gitignored worksp
 ## Decision Rules
 
 - Treat `.agents/tasks/` as local working state, not as committed product documentation.
+- Keep `.agents/tasks/` gitignored and promote durable guidance elsewhere instead of relying on local notes to survive cloning or review.
 - Prefer PR-style, kebab-case folder names such as `.agents/tasks/add-button-for-language/`.
 - Do not require every feature folder to have a `README.md`. Use one only when the work needs a durable running brief.
 - If the folder only needs a narrow temporary artifact, store that file directly without inventing extra structure.

@@ -43,14 +43,14 @@ To declare shared skill sources for `sync`, add `.agents/skills.json` to the tar
       "from": "package:agentic-tools",
       "skills": [
         "ref-skills-authoring",
-        "ref-architecture",
+        "ref-projects-architecture",
         "ref-coding-patterns"
       ]
     },
     {
       "from": "../another-skill-repo",
       "skills": [
-        "ref-react"
+        "ref-js-react"
       ]
     }
   ]

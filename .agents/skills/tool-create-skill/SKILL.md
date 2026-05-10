@@ -4,7 +4,7 @@ description: "Create a new skill using this repo's skill-authoring standard. Use
 metadata:
   shareable-skills.visibility: "shareable"
   shareable-skills.requires: "ref-skills-authoring"
-argument-hint: "Skill goal, preferred name if known, and whether the skill should be reference-style or tool-style"
+argument-hint: "Skill goal, preferred name if known, whether the skill should be reference-style or tool-style, and any intended scope grouping"
 ---
 
 # Create Skill
@@ -28,7 +28,7 @@ Read .agents/skills/ref-skills-authoring/SKILL.md before drafting the new skill.
 
 1. Inspect the user's request and the existing skill set to avoid creating an overlapping duplicate.
 2. Ask only the missing intake questions needed to define the skill boundary, name, trigger, outputs, and shareability.
-3. Decide whether the new skill is `ref-...` or `tool-...`.
+3. Decide whether the new skill is `ref-...` or `tool-...`, then decide whether the name should carry a scope grouping such as `agents`, `js`, `app`, `project`, `github`, or a repo-specific namespace.
 4. Decide whether the skill is `shareable` or `repo-local`, and list any hard skill dependencies.
 5. Draft the smallest useful skill package.
 6. Add support files only when they improve progressive disclosure.
@@ -38,6 +38,7 @@ Read .agents/skills/ref-skills-authoring/SKILL.md before drafting the new skill.
 
 - Default to one `SKILL.md` file first. Add `references/`, `assets/`, or `scripts/` only when the workflow genuinely needs them.
 - Default to `ref-...` when the skill mainly informs the agent. Default to `tool-...` when the skill mainly drives an action-oriented workflow the user may invoke directly.
+- When the repo already groups sibling skills, include the scope in the name when it improves discovery and keeps the catalog coherent, such as `ref-js-typescript`, `ref-agents-security`, or `ref-project-setup`.
 - Default to `shareable` when the skill can move to another repo with only light adaptation. Default to `repo-local` when it depends on this repo's concrete layout, policies, or wrappers.
 - If the skill has hard dependencies on other skills, record them in `metadata.shareable-skills.requires` as a space-separated list of skill names.
 - Keep hard dependencies few, especially for `shareable` skills.
@@ -53,6 +54,7 @@ Ask only the questions that are still unanswered after reading the user's reques
 | --- | --- | --- | --- | --- |
 | Skill goal | What repeated task or failure should this skill improve? | The skill boundary should come from a real job, not a topic label. | Always, unless the request already states the concrete job clearly. | The skill has one primary responsibility. |
 | Skill role | Is this mostly reference guidance or a user-invoked action workflow? | The answer determines whether the name should start with `ref-` or `tool-`. | When the role is not already obvious. | The skill gets the right prefix and interaction style. |
+| Name scope | Should the skill live under an existing grouping such as `agents`, `js`, `app`, `project`, or a repo-specific namespace? | Scoped names keep related skills easy to discover and reduce drift in the catalog. | When the repo already uses grouped naming or the new skill clearly belongs beside sibling skills. | The final name fits the catalog rather than reading like an orphan. |
 | Shareability | Should this skill be `shareable` or `repo-local`, and why? | The answer determines whether the skill is meant to travel outside this repo and whether repo-specific assumptions should be explicit. | When the transferability is not already obvious. | The skill gets the right visibility metadata. |
 | Skill dependencies | What other skills are hard requirements for this skill to work correctly? | Shareable skills should keep hard dependencies few and explicit. | When the new skill relies on another skill's instructions rather than just neighboring domain knowledge. | `shareable-skills.requires` is minimal and accurate. |
 | Trigger surface | What kinds of user requests should activate this skill? | The description must match realistic intent, not internal implementation language. | When the triggering language is still vague. | The skill can be described with a specific activation sentence. |
@@ -72,7 +74,7 @@ Ask only the questions that are still unanswered after reading the user's reques
 ## Validation
 
 - Review the draft against .agents/skills/ref-skills-authoring/references/checklist.md.
-- Confirm the `name` matches the folder and uses the correct `ref-` or `tool-` prefix.
+- Confirm the `name` matches the folder and uses the correct `ref-` or `tool-` prefix plus any intended scope grouping.
 - Confirm any shareability metadata uses `shareable-skills.visibility` and, when needed, `shareable-skills.requires` as string values rather than YAML lists.
 - Confirm cross-skill references use repo-root-relative paths for skills in this repo.
 - Confirm generic examples use synthetic folder, feature, and script names rather than real names copied from another repo.

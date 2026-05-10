@@ -1,6 +1,6 @@
 ---
 name: tool-maintain-skills
-description: "Review and update project skills after repo, workflow, or branch changes. Use when: skills may be outdated after code or tooling changes, a branch introduced new commands or libraries that skills should reflect, or the repo's skill catalog needs a maintenance pass."
+description: "Review, consolidate, and update project skills after repo, workflow, or branch changes. Use when: skills may be outdated after code or tooling changes, guidance is duplicated or misplaced, or the repo's skill catalog needs a maintenance pass."
 metadata:
   shareable-skills.visibility: "shareable"
   shareable-skills.requires: "ref-skills-authoring"
@@ -12,6 +12,7 @@ argument-hint: "What changed in the repo or branch, and which skills may now be 
 ## Purpose
 
 Guide the agent through a short maintenance workflow so project skills stay aligned with current repo behavior, branch changes, and skill-authoring standards instead of drifting into stale commands, stale examples, or missing coverage.
+Keep project guidance simple by giving each rule one clear home when maintenance reveals duplication or misplaced detail.
 
 ## When to use this skill
 
@@ -38,6 +39,7 @@ Read `.agents/skills/ref-skills-authoring/SKILL.md` before planning updates.
 - Prefer a branch-diff-driven review over a blind rewrite of the entire skill catalog.
 - Prefer updating the owning skill rather than adding top-level instruction detail that duplicates it.
 - Prefer focused edits to the affected skill and its support files over sweeping rewrites.
+- Prefer consolidating duplicated guidance into one owner instead of preserving near-copies across several skills.
 - When the branch adds a new domain, decide whether an existing skill should expand, a new skill should be created, or the change is too repo-specific to generalize.
 - If no skill update is actually needed, say so explicitly and explain why the current skill set still covers the change.
 
@@ -70,6 +72,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 ## Validation
 
 - Check the result against `./references/checklist.md`.
+- If guidance moved between skills or out of top-level instructions, check `./references/consolidation-checklist.md` too.
 - Run a targeted error check on the touched skill files.
 - Run the repo's skill-discovery or catalog-validation command when one exists.
 - Confirm that new or renamed skills are reflected in top-level routing if needed.
@@ -77,8 +80,8 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 
 ## References
 
-- Use `.agents/skills/tool-consolidate-skills/SKILL.md` when the maintenance pass reveals duplicated or misplaced guidance.
-- Use `.agents/skills/tool-maintain-instructions/SKILL.md` when skill changes imply drift in `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
+- Read `./references/consolidation-checklist.md` when the maintenance pass reveals duplicated or misplaced guidance.
+- Use `.agents/skills/tool-maintain-agents-instructions/SKILL.md` when skill changes imply drift in `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
 - Use `.agents/skills/ref-local-feature-tracking/SKILL.md` when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
 - Read `./references/checklist.md` for a quick maintenance review pass.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for branch-aware skill maintenance prompts.

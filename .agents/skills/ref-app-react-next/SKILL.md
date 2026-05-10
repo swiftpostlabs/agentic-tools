@@ -3,14 +3,14 @@ name: ref-app-react-next
 description: "App-level guidance for building a full React and Next.js application. Use when: scaffolding or reviewing a whole React/Next app, choosing the baseline stack and package manager, deciding app-level structure, or comparing a full app against a simpler standalone browser tool."
 metadata:
   shareable-skills.visibility: "shareable"
-  shareable-skills.requires: "ref-react ref-next ref-typescript"
+  shareable-skills.requires: "ref-js-react ref-js-next ref-js-typescript"
 ---
 
 # React + Next App
 
 ## Purpose
 
-Provide app-level defaults for planning and reviewing a whole React and Next.js application without duplicating the lower-level framework guidance that belongs in `ref-react`, `ref-next`, and `ref-typescript`.
+Provide app-level defaults for planning and reviewing a whole React and Next.js application without duplicating the lower-level framework guidance that belongs in `ref-js-react`, `ref-js-next`, and `ref-js-typescript`.
 
 ## When to use this skill
 
@@ -22,9 +22,9 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 ## Scope Boundaries
 
 - Use this skill for whole-app setup, baseline stack decisions, and top-level app structure.
-- Use `.agents/skills/ref-react/SKILL.md` for component internals, hooks, local UI state, and general React dependency choices.
-- Use `.agents/skills/ref-next/SKILL.md` for App Router structure, client and server boundaries, framework integrations, and Next-specific library choices.
-- Use `.agents/skills/ref-typescript/SKILL.md` for strict type modeling, runtime boundaries, and `tsconfig` design.
+- Use `.agents/skills/ref-js-react/SKILL.md` for component internals, hooks, local UI state, and general React dependency choices.
+- Use `.agents/skills/ref-js-next/SKILL.md` for App Router structure, client and server boundaries, framework integrations, and Next-specific library choices.
+- Use `.agents/skills/ref-js-typescript/SKILL.md` for strict type modeling, runtime boundaries, and `tsconfig` design.
 - Use `.agents/skills/ref-app-web-standalone/SKILL.md` when the requirement can stay a no-build browser app instead of becoming a full React and Next project.
 
 ## Defaults
@@ -49,7 +49,7 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 
 - Make the package manager explicit and keep the Node-based workflow on Yarn consistently.
 - Keep the initial app baseline minimal instead of front-loading many optional libraries.
-- Let `ref-react` and `ref-next` own the detailed framework rules instead of copying them into this skill.
+- Let `ref-js-react` and `ref-js-next` own the detailed framework rules instead of copying them into this skill.
 
 ### Top-level structure
 
@@ -60,8 +60,8 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 ### Decision rules
 
 - If the requirement is a local browser app that can stay framework-free, prefer `.agents/skills/ref-app-web-standalone/SKILL.md` instead of escalating to a full app.
-- If the question turns into component internals, hook design, or React dependency choices, load `.agents/skills/ref-react/SKILL.md`.
-- If the question turns into App Router, `use client`, metadata, or Next-specific integrations, load `.agents/skills/ref-next/SKILL.md`.
+- If the question turns into component internals, hook design, or React dependency choices, load `.agents/skills/ref-js-react/SKILL.md`.
+- If the question turns into App Router, `use client`, metadata, or Next-specific integrations, load `.agents/skills/ref-js-next/SKILL.md`.
 
 ## Validation
 
@@ -72,9 +72,9 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 
 ## References
 
-- Read `.agents/skills/ref-react/SKILL.md` for component, hook, and React dependency guidance.
-- Read `.agents/skills/ref-next/SKILL.md` for App Router, rendering-boundary, and Next-specific integration guidance.
-- Read `.agents/skills/ref-typescript/SKILL.md` for strict TypeScript and runtime-boundary guidance.
+- Read `.agents/skills/ref-js-react/SKILL.md` for component, hook, and React dependency guidance.
+- Read `.agents/skills/ref-js-next/SKILL.md` for App Router, rendering-boundary, and Next-specific integration guidance.
+- Read `.agents/skills/ref-js-typescript/SKILL.md` for strict TypeScript and runtime-boundary guidance.
 - Read `.agents/skills/ref-app-web-standalone/SKILL.md` when the feature may not need a full React and Next app.
 - Read `./references/checklist.md` for a quick whole-app review pass.
 - Read `./references/app-stack.md` when choosing the app baseline and top-level structure.

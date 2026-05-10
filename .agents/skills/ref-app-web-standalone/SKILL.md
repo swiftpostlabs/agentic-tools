@@ -22,10 +22,10 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 
 - Use this skill for whole browser-only apps and local web tools you control directly.
 - Use `.agents/skills/ref-app-react-next/SKILL.md` when the user explicitly wants a full React and Next app rather than a no-build browser app.
-- Use `.agents/skills/ref-react/SKILL.md` or `.agents/skills/ref-next/SKILL.md` only after the app has deliberately crossed into those frameworks.
-- Use `.agents/skills/ref-userscript/SKILL.md` when the code runs inside a userscript manager on someone else's page.
-- Use `.agents/skills/ref-javascript/SKILL.md` for detailed JavaScript module, JSDoc, and runtime-surface questions once the standalone app model itself is chosen.
-- Use `.agents/skills/ref-architecture/SKILL.md` when the question is about repo-wide structure rather than one browser app.
+- Use `.agents/skills/ref-js-react/SKILL.md` or `.agents/skills/ref-js-next/SKILL.md` only after the app has deliberately crossed into those frameworks.
+- Use `.agents/skills/ref-js-userscript/SKILL.md` when the code runs inside a userscript manager on someone else's page.
+- Use `.agents/skills/ref-js-javascript/SKILL.md` for detailed JavaScript module, JSDoc, and runtime-surface questions once the standalone app model itself is chosen.
+- Use `.agents/skills/ref-projects-architecture/SKILL.md` when the question is about repo-wide structure rather than one browser app.
 
 ## Defaults
 
@@ -57,7 +57,7 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 
 - Keep the main page on `.html` and colocate any extracted CSS, JS, and assets inside the same app folder.
 - Extract local assets only when the single-file version has become hard to scan.
-- If the app also ships with a userscript, keep that handoff explicit and route the userscript-specific details to `.agents/skills/ref-userscript/SKILL.md`.
+- If the app also ships with a userscript, keep that handoff explicit and route the userscript-specific details to `.agents/skills/ref-js-userscript/SKILL.md`.
 
 ### Independence
 
@@ -90,13 +90,13 @@ src/features/example-dashboard-kit/
 - HTML is semantic, JS responsibilities are clear, and repeated values are named.
 - Local extraction improved readability instead of adding ceremony.
 - The app does not introduce hidden coupling, unnecessary framework assumptions, or avoidable build machinery.
-- Lower-level JavaScript module and JSDoc choices are delegated to `ref-javascript` instead of being duplicated here.
+- Lower-level JavaScript module and JSDoc choices are delegated to `ref-js-javascript` instead of being duplicated here.
 
 ## References
 
 - MDN HTML Element Reference: <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
-- Read `.agents/skills/ref-javascript/SKILL.md` for detailed JS module, JSDoc, and runtime-surface guidance inside the chosen standalone app model.
+- Read `.agents/skills/ref-js-javascript/SKILL.md` for detailed JS module, JSDoc, and runtime-surface guidance inside the chosen standalone app model.
 - Read `./references/checklist.md` for a quick standalone-app review pass.
 - Read `./references/library-recommendations.md` when choosing browser-loadable UI or utility libraries for a no-build app.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for standalone app and browser-tool prompts.

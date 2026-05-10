@@ -24,8 +24,9 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Use `./references/providers/copilot-instructions.md` for what belongs specifically in `.github/copilot-instructions.md`.
 - Use `./references/providers/gemini-instructions.md` for `GEMINI.md` bridge or provider-specific decisions.
 - Use `./references/providers/claude-instructions.md` for `.claude/CLAUDE.md` bridge or provider-specific decisions.
+- Use `.agents/skills/ref-agents-persona/SKILL.md` when the instruction system needs to preserve or refresh the repo's agent voice, interaction style, or escalation stance.
 - Use `.agents/skills/ref-skills-authoring/SKILL.md` for authoring skills rather than top-level instruction files.
-- Use `.agents/skills/tool-maintain-instructions/SKILL.md` when the user wants a guided update workflow instead of just the reference guidance.
+- Use `.agents/skills/tool-maintain-agents-instructions/SKILL.md` when the user wants a guided update workflow instead of just the reference guidance.
 
 ## Major Provider References
 

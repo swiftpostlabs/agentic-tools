@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-js-next",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review this App Router route tree and explain where the client boundary should sit and whether the route files are too heavy.",
+      "expected_output": "A review that keeps route files thin, narrows 'use client' boundaries, and pushes reusable UI or feature logic out of route entry files.",
+      "assertions": [
+        "The response treats Server Components as the default",
+        "The response narrows client boundaries instead of moving whole route trees to the client",
+        "The response discusses route-file thinness or feature extraction"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Choose the framework integrations for a Next.js App Router app that uses MUI and needs localization.",
+      "expected_output": "Guidance that prefers the official MUI and Next.js integration, prefers next-intl for localization, and keeps package manager usage on Yarn for the Node-based app workflow.",
+      "assertions": [
+        "The response mentions the official MUI and Next.js integration path",
+        "The response recommends next-intl for Next-specific localization",
+        "The response keeps Yarn as the preferred package manager for the Node-based app"
+      ]
+    }
+  ]
+}

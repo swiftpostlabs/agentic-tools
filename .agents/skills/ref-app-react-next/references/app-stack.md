@@ -5,8 +5,8 @@
 - For a full React and Next app, default to `next`, `react`, `react-dom`, and `typescript`.
 - Use Yarn as the default package manager and script runner for the Node-based app workflow.
 - Keep framework-sensitive dependency choices delegated to the framework reference skills:
-  - `.agents/skills/ref-react/SKILL.md` for UI system, validation, async server state, and date-library choices.
-  - `.agents/skills/ref-next/SKILL.md` for App Router integrations such as `next-intl` and MUI's Next wiring.
+  - `.agents/skills/ref-js-react/SKILL.md` for UI system, validation, async server state, and date-library choices.
+  - `.agents/skills/ref-js-next/SKILL.md` for App Router integrations such as `next-intl` and MUI's Next wiring.
 
 ## Structure rule
 

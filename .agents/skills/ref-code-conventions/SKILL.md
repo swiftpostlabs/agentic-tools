@@ -47,7 +47,7 @@ Help the agent work within this project in a way that respects its structure, ty
 - Use this skill for repo-specific Python defaults in this repository, especially the actual package name, command wrappers, and file placement conventions.
 - Use `.agents/skills/ref-python/SKILL.md` for portable Python structure, typing, and CLI guidance.
 - Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, control-flow, comment, and testing defaults.
-- Use `.agents/skills/ref-project-structure-setup/SKILL.md` for top-level repo wiring such as `pyproject.toml`, `.agents/skills/`, and `scripts/`.
+- Use `.agents/skills/ref-project-setup/SKILL.md` for top-level repo wiring such as `pyproject.toml`, `.agents/skills/`, and `scripts/`.
 
 ## Structure and file placement
 

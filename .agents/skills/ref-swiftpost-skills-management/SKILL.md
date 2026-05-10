@@ -83,7 +83,7 @@ Document the stable behavior of this repository's `skills-management` CLI, its s
   "sources": [
     {
       "from": "package:agentic-tools",
-      "skills": ["ref-skills-authoring", "ref-architecture"]
+      "skills": ["ref-skills-authoring", "ref-projects-architecture"]
     }
   ]
 }

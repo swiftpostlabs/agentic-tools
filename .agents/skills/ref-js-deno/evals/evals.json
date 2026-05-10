@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-js-deno",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We have a mixed repo with Deno utilities and a Node app. Explain how to configure the Deno side without making the tools fight over the same files.",
+      "expected_output": "Guidance that centers deno.json, defines clear ownership boundaries, and avoids whole-workspace Deno activation as the default.",
+      "assertions": [
+        "The response mentions deno.json as the Deno source of truth",
+        "The response addresses hybrid boundary or file-ownership issues",
+        "The response does not recommend whole-workspace Deno activation as the default"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Design a Deno CLI that reads local files and calls an HTTP API. What permissions and command structure should it use?",
+      "expected_output": "A recommendation that uses explicit permissions, clear Deno tasks or commands, and modern dependency conventions.",
+      "assertions": [
+        "The response mentions explicit filesystem or network permissions",
+        "The response recommends task or command wiring through Deno tooling",
+        "The response avoids using -A as the default recommendation"
+      ]
+    }
+  ]
+}

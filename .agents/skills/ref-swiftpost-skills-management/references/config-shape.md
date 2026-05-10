@@ -14,7 +14,7 @@
       "from": "../shared-skills-repo",
       "skills": [
         "ref-skills-authoring",
-        "ref-architecture",
+        "ref-projects-architecture",
         "ref-coding-patterns"
       ]
     },
