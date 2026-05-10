@@ -68,6 +68,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-skills-authoring`** — Guidelines for creating and maintaining project skills
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
+**`ref-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
+- Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
+
 **`tool-consolidate-skills`** — Consolidate overlapping skill and top-level guidance
 - Use when: trimming duplication, moving rules to the right owner, or simplifying `copilot-instructions.md`
 
@@ -76,6 +79,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 **`tool-create-skill`** — Guided wizard for creating a new skill
 - Use when: the user wants to add a new skill or scaffold one through a guided intake flow
+
+**`tool-make-skill-shareable`** — Guided workflow for making an existing skill shareable
+- Use when: a skill lacks shareability metadata, portability is unclear, or a repo-local skill may need to be split before export
 
 **`tool-commit`** — Group edited files into logical commits and create focused commits
 - Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing
@@ -115,6 +121,8 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-structure-setup`.
 - For workflow and structural caution: use `ref-agent-behavior`.
 - For security policy config and generated restriction files: use `ref-ai-security`.
+- For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-shareable-skills`.
 - For creating a new skill through a guided intake flow: use `tool-create-skill`.
+- For turning an existing skill into a shareable one through a guided review: use `tool-make-skill-shareable`.
 - For grouping the current diff into focused commits and making them: use `tool-commit`.
 - For skills themselves: use `ref-skills-authoring` and `tool-consolidate-skills`.

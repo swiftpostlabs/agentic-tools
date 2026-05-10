@@ -1,6 +1,9 @@
 ---
 name: tool-commit
 description: "Inspect edited files, group them into logical commits, and create focused commits for this repo. Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing."
+metadata:
+	shareable-skills.visibility: "shareable"
+	shareable-skills.requires: "ref-git-commits"
 argument-hint: "Optional commit goal, grouping constraint, or whether to only propose groups instead of committing"
 ---
 

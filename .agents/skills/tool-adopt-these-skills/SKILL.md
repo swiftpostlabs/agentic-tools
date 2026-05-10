@@ -1,6 +1,9 @@
 ---
 name: tool-adopt-these-skills
 description: "Adopt the most important skills and AI security tooling from this repository into another repository. Use when: bootstrapping a new repo, porting this repo's agent setup elsewhere, choosing whether this repo should be used as a starter, or teaching another agent which files to copy and adapt first."
+metadata:
+   shareable-skills.visibility: "repo-local"
+   shareable-skills.reason: "This workflow is specific to transplanting this repo's skill bundle and paths into another repository."
 argument-hint: "Target repo context and whether to adopt the full skill system, only selected skills, or only AI security tooling"
 ---
 

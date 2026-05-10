@@ -1,6 +1,8 @@
 ---
 name: tool-consolidate-skills
 description: "Consolidate overlapping guidance across project skills and top-level Copilot instructions. Use when: copilot-instructions.md is getting bloated, multiple skills repeat the same rule, guidance belongs in the wrong file, a copied skill still mentions the wrong stack, or a long skill should be split into references, assets, or scripts."
+metadata:
+   shareable-skills.visibility: "shareable"
 argument-hint: "What guidance should be consolidated?"
 ---
 

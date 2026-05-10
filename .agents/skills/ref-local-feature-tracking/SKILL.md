@@ -1,6 +1,8 @@
 ---
 name: ref-local-feature-tracking
 description: "Reference guidance for using `.agents/tasks/` as a local, usually gitignored workspace for feature tracking and temporary working files. Use when: updating `.agents/tasks/TODO.md`, maintaining a feature-specific task folder, storing temporary artifacts such as `pr-description.md`, or keeping local progress notes aligned with the current task."
+metadata:
+	shareable-skills.visibility: "shareable"
 ---
 
 # Local Feature Tracking

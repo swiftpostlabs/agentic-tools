@@ -1,6 +1,8 @@
 ---
 name: ref-agent-behavior
 description: "Reference guidance for project persona and workflow expectations. Use when: starting a new task, addressing feedback, planning commits, or understanding project communication style."
+metadata:
+	shareable-skills.visibility: "shareable"
 ---
 
 # Project Conventions

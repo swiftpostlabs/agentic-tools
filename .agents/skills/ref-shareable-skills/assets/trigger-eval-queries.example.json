@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Please review this skill and tell me whether it should be shareable or repo-local before I export it.",
+    "should_trigger": true
+  },
+  {
+    "query": "Backfill shareable-skills metadata across these three skills and keep the dependency chain small.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want to symlink this skill into ~/.agents/skills but I am not sure whether it is portable enough.",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a Python script that parses YAML frontmatter.",
+    "should_trigger": false
+  },
+  {
+    "query": "Create a brand new skill from scratch.",
+    "should_trigger": false
+  }
+]

@@ -1,6 +1,8 @@
 ---
 name: ref-git-commits
 description: "Reference guidance for grouping changes into focused commits and writing commit messages in this repo. Use when: deciding how to split changes into commits, writing a commit title or body, deciding whether a commit needs a long description, or documenting an automated command for reproducibility."
+metadata:
+	shareable-skills.visibility: "shareable"
 ---
 
 # Git Commits

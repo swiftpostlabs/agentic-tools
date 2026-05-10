@@ -1,6 +1,8 @@
 ---
 name: ref-ai-security
 description: "Reference guidance for AI policy, protected file access, exclusion sync, and multi-client enforcement. Use when: modifying .ai-policy.json, updating the sync workflow, reviewing generated restriction files, or changing how agents are prevented from reading sensitive files."
+metadata:
+    shareable-skills.visibility: "shareable"
 ---
 
 # AI Security
