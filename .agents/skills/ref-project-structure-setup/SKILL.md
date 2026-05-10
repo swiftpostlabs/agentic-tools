@@ -44,7 +44,7 @@ Guide understanding of the project's physical organization, central configuratio
 |-----------|---------|
 | `src/my_project/` | Main package source code. Organize using feature-first approach: each feature gets its own subdirectory. |
 | `src/my_project/<feature>/` | Feature-specific code and tests, kept together. Tests use `*_test.py` naming. |
-| `scripts/` | Utility scripts for maintenance, automation, or testing. They may be run directly or exposed through entrypoints when the repo chooses. |
+| `scripts/` | Utility scripts for maintenance, automation, or testing. Keep repo features out of `scripts/`; if a command is part of the product surface, put it under `src/my_project/<feature>/` instead. |
 | `.agents/skills/` | Custom agent workflow skills (loaded by GitHub Copilot on-demand). Each skill in its own folder with `SKILL.md`. |
 | `.github/` | Project-wide configuration including copilot instructions and agent definitions. |
 
@@ -174,8 +174,8 @@ Only commit after all checks pass.
 | New feature code | `src/my_project/<feature_name>/<feature_name>.py` | Keeps features self-contained and discoverable |
 | Tests for a feature | `src/my_project/<feature_name>/<feature_name>_test.py` (same folder) | Collocates test with code for easy maintenance |
 | Shared utilities | `src/my_project/utils/<category>/<tool>.py` | Consolidates reusable code; doesn't clutter feature folders |
-| Maintenance script | `scripts/<script_name>.py` | Separate from package code; can be run directly or exposed through `[project.scripts]` if the repo wants an installed command |
-| CLI command (user-facing) | `src/my_project/<feature>/cli.py`, register in `[project.scripts]` | Gets installed as a shell command when package is distributed |
+| Maintenance script | `scripts/<script_name>.py` | Separate from package code; use only for repo maintenance, automation, migrations, or one-off helpers |
+| CLI command (user-facing) | `src/my_project/<feature>/main.py`, register in `[project.scripts]` | Product-facing commands belong to a feature folder under `src`, with code and tests kept together |
 | Configuration file | Top-level in repo, reference from `pyproject.toml` | Makes it discoverable and avoids duplication |
 | Type stubs (for untyped libraries) | `src/typings/<library_name>.pyi` | Isolated from main code; Pyright reads this directory |
 
@@ -199,7 +199,7 @@ Only commit after all checks pass.
 2. Run: `uv run poe my-task`
 
 ### Creating a New CLI Entry Point
-1. Create module with a `main()` function in `src/my_project/`
+1. Create module with a `main()` function in `src/my_project/<feature>/`
 2. Add to `[project.scripts]`:
    ```toml
    [project.scripts]
@@ -208,7 +208,7 @@ Only commit after all checks pass.
 3. Reinstall: `uv sync`
 4. Run: `my-command` (available as shell command)
 
-If the implementation intentionally stays in `scripts/`, the entrypoint may target `scripts.<module>:main` instead, provided the wheel includes `scripts`.
+If the implementation intentionally stays in `scripts/`, the entrypoint may target `scripts.<module>:main` instead, provided the wheel includes `scripts`. Use that only for maintenance or repo-local automation, not for product features that belong under `src/my_project/<feature>/`.
 
 ## See Also
 

@@ -97,8 +97,9 @@ Help the agent work within this project in a way that respects its structure, ty
 
 - When a file is meant to be run from the command line:
   - Prefer `[project.scripts]` for Python entrypoints whenever the command belongs to the installed project.
-  - For packaged application code under `src/my_project`, expose a clear function (e.g. `main()`) and register it in `[project.scripts]`.
+  - For packaged application code under `src/my_project`, expose a clear function (e.g. `main()`) inside a feature folder such as `src/my_project/<feature>/main.py` and register it in `[project.scripts]`.
   - For standalone maintenance or repository scripts that already live in `scripts/`, keep them there unless the user explicitly asks to promote them into `src/my_project`.
+  - If the command is a user-facing feature of this repo rather than maintenance glue, put it under `src/my_project/<feature>/` with collocated tests instead of leaving it in `scripts/`.
   - For those standalone `scripts/` utilities, `if __name__ == "__main__":` is acceptable.
   - Ask explicitly before moving an existing script into `src/my_project` or changing how the user runs it.
 - If the script is not simple Python or better modeled as a task:
