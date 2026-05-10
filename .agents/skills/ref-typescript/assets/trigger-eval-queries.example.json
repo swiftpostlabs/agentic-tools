@@ -12,6 +12,10 @@
     "should_trigger": true
   },
   {
+    "query": "Should this monorepo package use packages/session-tools/src/auth or extract a shared types folder at the workspace root?",
+    "should_trigger": true
+  },
+  {
     "query": "Add JSDoc to this plain JavaScript file.",
     "should_trigger": false
   },

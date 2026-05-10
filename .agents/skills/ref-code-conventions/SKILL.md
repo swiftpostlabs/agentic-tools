@@ -2,7 +2,7 @@
 name: ref-code-conventions
 description: "Reference guidance for conventions and workflows in this Python project using Black, Pyright (strict), and pytest, with a feature-first layout. Use when: creating features, updating tests, adjusting project config, or working with source code."
 metadata:
-  shareable-skills.visibility: "shareable"
+  shareable-skills.visibility: "repo-local"
 ---
 
 # Project Conventions
@@ -20,11 +20,12 @@ Help the agent work within this project in a way that respects its structure, ty
 ## Project context
 
 - Language: Python
-- Package name: `my_project`
-- Source layout: `src/my_project`
+- Distribution name: `agentic-tools`
+- Package name: `agentic_tools`
+- Source layout: `src/agentic_tools`
 - Feature-first structure:
-  - `src/my_project/feat1/`
-  - `src/my_project/feat2/`
+  - `src/agentic_tools/skills_management/`
+  - `src/agentic_tools/<feature>/`
   - Each feature keeps its code and tests close together.
 - Tooling:
   - Hatch for packaging
@@ -36,20 +37,27 @@ Help the agent work within this project in a way that respects its structure, ty
 
 ## When to use this skill
 
-- Creating or updating features under `src/my_project/<feature_name>/`.
+- Creating or updating features under `src/agentic_tools/<feature_name>/`.
 - Adding or updating tests for a feature.
 - Creating CLI entrypoints or tasks.
 - Adjusting project configuration related to Pyright, Black, pytest, or Poe tasks.
 
+## Scope boundaries
+
+- Use this skill for repo-specific Python defaults in this repository, especially the actual package name, command wrappers, and file placement conventions.
+- Use `.agents/skills/ref-python/SKILL.md` for portable Python structure, typing, and CLI guidance.
+- Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, control-flow, comment, and testing defaults.
+- Use `.agents/skills/ref-project-structure-setup/SKILL.md` for top-level repo wiring such as `pyproject.toml`, `.agents/skills/`, and `scripts/`.
+
 ## Structure and file placement
 
 - Use a **feature-first** approach:
-  - Group related code under `src/my_project/<feature_name>/`.
+  - Group related code under `src/agentic_tools/<feature_name>/`.
   - If a feature is self-contained, put its unit tests in the same feature folder, e.g.:
-    - `src/my_project/feature/feature.py`
-    - `src/my_project/feature/feature_test.py`
+    - `src/agentic_tools/feature/feature.py`
+    - `src/agentic_tools/feature/feature_test.py`
 - Example of a feature structure
-  - `src/my_project/feature/`
+  - `src/agentic_tools/feature/`
     - `main.py`
     - `main_test.py`
     - `types.py` (optional, may contain additional types used in the feature)
@@ -67,9 +75,10 @@ Help the agent work within this project in a way that respects its structure, ty
 
 ## Additional utilities
 
-- Additional utilities that are meant to be shared project-wise, go in a special feature-folder called `utils`
-- This has a different structure than other feature-folders, as it contains folders divided by purpose
-- `utils`
+- Add shared utilities only after real reuse appears across features.
+- When they are justified, keep them under `src/agentic_tools/utils/` with purpose-based subfolders.
+- Example:
+- `src/agentic_tools/utils/`
   - `web/`
     - `parser.py`
     - `parser_test.py`
@@ -97,11 +106,11 @@ Help the agent work within this project in a way that respects its structure, ty
 
 - When a file is meant to be run from the command line:
   - Prefer `[project.scripts]` for Python entrypoints whenever the command belongs to the installed project.
-  - For packaged application code under `src/my_project`, expose a clear function (e.g. `main()`) inside a feature folder such as `src/my_project/<feature>/main.py` and register it in `[project.scripts]`.
-  - For standalone maintenance or repository scripts that already live in `scripts/`, keep them there unless the user explicitly asks to promote them into `src/my_project`.
-  - If the command is a user-facing feature of this repo rather than maintenance glue, put it under `src/my_project/<feature>/` with collocated tests instead of leaving it in `scripts/`.
+  - For packaged application code under `src/agentic_tools`, expose a clear function such as `main()` inside a feature folder like `src/agentic_tools/<feature>/main.py` and register it in `[project.scripts]`.
+  - For standalone maintenance or repository scripts that already live in `scripts/`, keep them there unless the user explicitly asks to promote them into `src/agentic_tools`.
+  - If the command is a user-facing feature of this repo rather than maintenance glue, put it under `src/agentic_tools/<feature>/` with collocated tests instead of leaving it in `scripts/`.
   - For those standalone `scripts/` utilities, `if __name__ == "__main__":` is acceptable.
-  - Ask explicitly before moving an existing script into `src/my_project` or changing how the user runs it.
+  - Ask explicitly before moving an existing script into `src/agentic_tools` or changing how the user runs it.
 - If the script is not simple Python or better modeled as a task:
   - Add it under `[tool.poe.tasks]` with an appropriate name.
   - Keep Poe as a fallback for orchestration or shell-like commands that do not fit cleanly into `[project.scripts]`.

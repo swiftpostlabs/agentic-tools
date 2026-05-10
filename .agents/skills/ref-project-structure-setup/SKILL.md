@@ -2,7 +2,7 @@
 name: ref-project-structure-setup
 description: "Reference guidance for project folder layout, organization, pyproject.toml configuration hub, and tool setup. Use when: understanding the project architecture, locating where code goes, understanding tool configuration, configuring new tools, or explaining the project structure to others."
 metadata:
-   shareable-skills.visibility: "shareable"
+   shareable-skills.visibility: "repo-local"
 argument-hint: "Optional: aspect to explain (e.g., 'folder structure', 'pyproject.toml', 'poe tasks')"
 ---
 
@@ -10,7 +10,21 @@ argument-hint: "Optional: aspect to explain (e.g., 'folder structure', 'pyprojec
 
 ## Purpose
 
-Guide understanding of the project's physical organization, central configuration through `pyproject.toml`, and how tools are integrated. This ensures consistent setup, proper file placement, and correct tool usage.
+Guide understanding of this repository's physical layout, central configuration through `pyproject.toml`, and where tool wiring lives. Use this skill to locate code and config in this repo, not to restate generic architecture or language-specific patterns that belong to the dedicated skills.
+
+## When to use this skill
+
+- Locating the repo surface that owns packaging, entrypoints, validation tasks, or agent config.
+- Explaining how this repository is wired together at the top level.
+- Deciding which top-level folder a new file belongs in.
+- Reviewing whether a question is about repo structure, generic architecture, or language-specific layout.
+
+## Scope boundaries
+
+- Use this skill for repo-specific placement and tool wiring such as `pyproject.toml`, `.agents/skills/`, `scripts/`, or the package root under `src/`.
+- Use `.agents/skills/ref-architecture/SKILL.md` for portable structure patterns such as feature-first organization, shared-utility thresholds, and product-vs-maintenance boundaries.
+- Use `.agents/skills/ref-python/SKILL.md` for Python-specific feature layouts such as `src/<package>/<feature>/`.
+- Use `.agents/skills/ref-javascript/SKILL.md` and `.agents/skills/ref-typescript/SKILL.md` for language-specific JS or TS guidance, including package-level layout and monorepo-friendly paths like `packages/<package-name>/src/<feature>/` when that style fits the repo.
 
 ## Folder Structure
 
@@ -22,13 +36,12 @@ Guide understanding of the project's physical organization, central configuratio
 ├── .agents/
 │   └── skills/                 # Custom agent workflow skills
 ├── src/
-│   └── <project_name>/         # Main package (matches pyproject.toml [project].name)
-│       ├── main.py             # CLI entrypoint or main module
-│       ├── main_test.py        # Unit tests (collocated with source)
-│       └── <feature>/          # Feature folders follow feature-first layout
-│           ├── feature.py      # Feature implementation
-│           ├── feature_test.py # Feature tests
-│           └── module.py       # Supporting modules as needed
+│   └── agentic_tools/          # Python package root for shipped code
+│       ├── main.py             # Small package entrypoint/example module
+│       ├── main_test.py        # Collocated test for the package root module
+│       └── skills_management/  # Packaged feature folder for the skills CLI
+│           ├── main.py         # CLI implementation and parser wiring
+│           └── main_test.py    # Feature tests
 ├── scripts/
 │   ├── *.py                    # Maintenance scripts
 │   └── *_test.py               # Script tests (optional)
@@ -42,11 +55,12 @@ Guide understanding of the project's physical organization, central configuratio
 
 | Directory | Purpose |
 |-----------|---------|
-| `src/my_project/` | Main package source code. Organize using feature-first approach: each feature gets its own subdirectory. |
-| `src/my_project/<feature>/` | Feature-specific code and tests, kept together. Tests use `*_test.py` naming. |
-| `scripts/` | Utility scripts for maintenance, automation, or testing. Keep repo features out of `scripts/`; if a command is part of the product surface, put it under `src/my_project/<feature>/` instead. |
+| `src/agentic_tools/` | Main Python package for shipped code. The package path uses underscores even though the project name in `pyproject.toml` is `agentic-tools`. |
+| `src/agentic_tools/<feature>/` | Packaged feature code and its tests. For placement rules and feature-folder shape, defer to `.agents/skills/ref-python/SKILL.md` and `.agents/skills/ref-architecture/SKILL.md`. |
+| `scripts/` | Repo maintenance, transition helpers, and automation that are not part of the packaged product surface. |
 | `.agents/skills/` | Custom agent workflow skills (loaded by GitHub Copilot on-demand). Each skill in its own folder with `SKILL.md`. |
-| `.github/` | Project-wide configuration including copilot instructions and agent definitions. |
+| `.github/` | Project-wide configuration including Copilot instructions. |
+| `.claude/` and `GEMINI.md` | Thin routing stubs that point other clients back to the Copilot instructions. |
 
 ## pyproject.toml: The Configuration Hub
 
@@ -56,10 +70,12 @@ The `pyproject.toml` file is the **single source of truth** for project configur
 
 #### `[project]`
 Defines metadata about the package distributed to users:
-- `name`: Package name (used in `src/` folder organization)
+- `name`: Distribution name shown to installers and packaging tools
 - `version`: Semantic version for releases
 - `dependencies`: Runtime dependencies (required by users)
 - `readme`, `license`, `authors`: Metadata for package distribution
+
+In this repo, `name = "agentic-tools"` while the importable package is `src/agentic_tools/`. That normalization is normal for Python packaging; do not assume the folder name must literally include dashes.
 
 #### `[dependency-groups]`
 Organizes development-only dependencies (uv feature):
@@ -79,10 +95,11 @@ dev = [
 Defines CLI entry points installed as shell commands:
 ```toml
 [project.scripts]
-main = "my_project.main:main"
+main = "agentic_tools.main:main"
+skills-management = "agentic_tools.skills_management.main:main"
 ```
 
-This creates a `main` command that calls the `main()` function in `my_project/main.py`. Users get it automatically via `pip install`.
+This is where installed commands are wired. In this repo, the packaged skills CLI is exposed from `src/agentic_tools/skills_management/main.py`.
 
 #### `[tool.poe.tasks]`
 Defines development tasks (not distributed to users):
@@ -122,10 +139,23 @@ Test framework configuration:
 Build configuration for packaging:
 ```toml
 [tool.hatch.build.targets.wheel]
-packages = ["src/my_project", "scripts"]
+packages = ["src/agentic_tools"]
 ```
 
-Tells the build system which folders are included in the wheel when installed entrypoints need code from them.
+Tells the build system which package directories are shipped. Keep this aligned with the actual packaged source tree.
+
+## Routing Examples
+
+Use the smallest skill that owns the decision:
+
+| Question | Start here | Why |
+|----------|------------|-----|
+| Where is the installed skills CLI wired? | This skill, then `pyproject.toml` and `src/agentic_tools/skills_management/main.py` | This is repo wiring, not a generic language rule. |
+| Should a new reusable parser live in a feature folder or a shared utility area? | `.agents/skills/ref-architecture/SKILL.md` | That is a portable boundary decision. |
+| Where should a new Python feature live? | `.agents/skills/ref-python/SKILL.md` | Python feature layout belongs to the Python skill. |
+| Should a new repo helper live in `scripts/` or under `src/agentic_tools/`? | This skill first, then `.agents/skills/ref-architecture/SKILL.md` if the boundary is unclear | The top-level folder choice is repo-specific, but the product-vs-maintenance rule is architectural. |
+| Where do skill support files go? | This skill | The answer is repo-specific: `.agents/skills/<skill-name>/references`, `assets`, `evals`, or `scripts`. |
+| How should a TypeScript or JavaScript package be laid out in a monorepo? | `.agents/skills/ref-typescript/SKILL.md` or `.agents/skills/ref-javascript/SKILL.md` | That is language and package-layout guidance, not repo wiring. |
 
 ## Tool Command Reference
 
@@ -167,17 +197,16 @@ uv run poe test        # Run tests
 
 Only commit after all checks pass.
 
-## File Placement Decision Guide
+## Repo Placement Guide
 
-| Scenario | Where to Put It | Why |
-|----------|-----------------|-----|
-| New feature code | `src/my_project/<feature_name>/<feature_name>.py` | Keeps features self-contained and discoverable |
-| Tests for a feature | `src/my_project/<feature_name>/<feature_name>_test.py` (same folder) | Collocates test with code for easy maintenance |
-| Shared utilities | `src/my_project/utils/<category>/<tool>.py` | Consolidates reusable code; doesn't clutter feature folders |
-| Maintenance script | `scripts/<script_name>.py` | Separate from package code; use only for repo maintenance, automation, migrations, or one-off helpers |
-| CLI command (user-facing) | `src/my_project/<feature>/main.py`, register in `[project.scripts]` | Product-facing commands belong to a feature folder under `src`, with code and tests kept together |
-| Configuration file | Top-level in repo, reference from `pyproject.toml` | Makes it discoverable and avoids duplication |
-| Type stubs (for untyped libraries) | `src/typings/<library_name>.pyi` | Isolated from main code; Pyright reads this directory |
+| Scenario | Where to Start | Why |
+|----------|----------------|-----|
+| Packaged Python feature | `src/agentic_tools/<feature>/` | Shipped behavior belongs under the package root; see `.agents/skills/ref-python/SKILL.md` for the feature layout details. |
+| Repo-only automation or migration helper | `scripts/` | Keeps maintenance code out of the product package. |
+| Installed command wiring | `[project.scripts]` in `pyproject.toml` | Entry points belong in the packaging config. |
+| Dev workflow command | `[tool.poe.tasks]` in `pyproject.toml` | Repo task wrappers live in Poe, not in shipped entrypoints. |
+| Skill guidance | `.agents/skills/<skill-name>/` | Agent-facing guidance stays in the skills tree with its own `SKILL.md`. |
+| Provider routing stub | `GEMINI.md` or `.claude/CLAUDE.md` | These files stay thin and point back to the main project instructions. |
 
 ## Common Tasks with Configuration
 
@@ -199,20 +228,28 @@ Only commit after all checks pass.
 2. Run: `uv run poe my-task`
 
 ### Creating a New CLI Entry Point
-1. Create module with a `main()` function in `src/my_project/<feature>/`
+1. Create the feature implementation under `src/agentic_tools/<feature>/`.
 2. Add to `[project.scripts]`:
    ```toml
    [project.scripts]
-   my-command = "my_project.module:main"
+   my-command = "agentic_tools.<feature>.main:main"
    ```
 3. Reinstall: `uv sync`
 4. Run: `my-command` (available as shell command)
 
-If the implementation intentionally stays in `scripts/`, the entrypoint may target `scripts.<module>:main` instead, provided the wheel includes `scripts`. Use that only for maintenance or repo-local automation, not for product features that belong under `src/my_project/<feature>/`.
+If the implementation intentionally stays in `scripts/`, keep it a repo-local maintenance command unless there is a strong reason to ship it. Product features should not stay hidden in `scripts/`.
+
+## References
+
+- Read `./references/checklist.md` for a quick review pass on repo placement and `pyproject.toml` consistency.
+- Read `./assets/trigger-eval-queries.example.json` when testing whether repo-structure questions trigger this skill instead of the portable architecture or language skills.
 
 ## See Also
 
-- .agents/skills/ref-code-conventions/SKILL.md — Code writing standards and feature-first layout details
+- .agents/skills/ref-architecture/SKILL.md — Portable structure patterns, boundaries, and shared-utility rules
+- .agents/skills/ref-python/SKILL.md — Python feature layout, CLI placement, and testing patterns
+- .agents/skills/ref-javascript/SKILL.md — JavaScript structure and JSDoc guidance
+- .agents/skills/ref-typescript/SKILL.md — TypeScript layout and runtime-boundary guidance
 - .agents/skills/ref-agent-behavior/SKILL.md — Project persona and workflow expectations
 - [pyproject.toml reference](../../pyproject.toml) — Actual configuration file
 - [uv documentation](https://docs.astral.sh/uv/) — Package manager and runner

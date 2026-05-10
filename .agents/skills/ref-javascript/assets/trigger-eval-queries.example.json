@@ -12,6 +12,10 @@
     "should_trigger": true
   },
   {
+    "query": "How should a plain JavaScript tool be laid out under packages/report-tools/src in a monorepo?",
+    "should_trigger": true
+  },
+  {
     "query": "Tighten these TypeScript generics and conditional types.",
     "should_trigger": false
   },

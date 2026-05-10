@@ -8,6 +8,10 @@
     "should_trigger": true
   },
   {
+    "query": "Show me a good Python feature tree for a packaged command with collocated tests.",
+    "should_trigger": true
+  },
+  {
     "query": "Review these pytest cases and tell me whether they cover the risky Python logic.",
     "should_trigger": true
   },

@@ -18,6 +18,12 @@ Provide portable defaults for userscripts that are resilient to DOM changes, sco
 - Injecting UI into third-party pages.
 - Automating DOM interactions or page data extraction.
 
+## Scope Boundaries
+
+- Use this skill when the code runs as a userscript on third-party pages and the metadata block, grants, or page integration rules dominate the design.
+- Use `.agents/skills/ref-standalone-web-pages/SKILL.md` when the browser code lives in a page you control rather than in a userscript manager.
+- Use `.agents/skills/ref-javascript/SKILL.md` for plain JavaScript structure and JSDoc concerns that are not userscript-specific.
+
 ## Defaults
 
 - Keep the metadata block explicit and minimal.

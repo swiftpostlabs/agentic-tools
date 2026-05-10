@@ -18,6 +18,13 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Reviewing TypeScript config and type-checking strictness.
 - Handling unknown external data safely.
 
+## Scope Boundaries
+
+- Use this skill for strict TypeScript design, runtime boundaries, and package-level structure.
+- Use `.agents/skills/ref-javascript/SKILL.md` when the code intentionally stays in plain JavaScript with JSDoc rather than full TypeScript.
+- Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
+- Use `.agents/skills/ref-architecture/SKILL.md` for generic feature-boundary or shared-utility decisions that are not TypeScript-specific.
+
 ## Defaults
 
 - Prefer strict mode and keep it strict.
@@ -25,6 +32,14 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer discriminated unions for stateful variants.
 - Prefer explicit runtime validation at trust boundaries.
 - Prefer inference inside small local scopes and explicit annotations at exported or shared boundaries.
+
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Model a runtime boundary | Decide where external data becomes validated domain data. | TypeScript is safest when compile-time certainty matches runtime reality. | When reading network, file, env, or parsed JSON input. | The code narrows or validates untrusted input before use. |
+| Place types and features | Keep package-owned code and its local types under a readable `src/<feature>/` layout. | Deeply shared `types/` folders often grow faster than the actual features they serve. | When starting or reorganizing a package. | The feature and the types it owns are easy to find together. |
+| Review strictness and readability | Check whether utility types, generics, and unions are helping or obscuring the model. | Strictness loses value when the types stop communicating intent. | When reviewing or refactoring a non-trivial TypeScript module. | Runtime safety stays strong without burying the domain in type tricks. |
 
 ## Core Rules
 
@@ -45,6 +60,30 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Keep types close to the feature or module that owns them.
 - Extract shared types only when they are truly shared.
 - Prefer readable named functions and objects over dense callback chains.
+
+## Example Layouts
+
+### TypeScript package in a monorepo
+
+```text
+packages/package-name/
+  src/
+    invoice-import/
+      index.ts
+      parse-csv.ts
+      parse-csv.test.ts
+      types.ts
+```
+
+### Small feature with local validation
+
+```text
+src/
+  session-state/
+    index.ts
+    validate-session.ts
+    validate-session.test.ts
+```
 
 ## Gotchas
 

@@ -18,6 +18,14 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Refactoring dynamic JavaScript into clearer, more explicit code.
 - Reviewing whether a JavaScript module should stay JS or move to TypeScript.
 
+## Scope Boundaries
+
+- Use this skill for portable JavaScript structure and JSDoc guidance.
+- Use `.agents/skills/ref-typescript/SKILL.md` when the main question is about strict type-system design rather than JSDoc-backed JavaScript.
+- Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
+- Use `.agents/skills/ref-architecture/SKILL.md` for portable feature-boundary or shared-utility decisions.
+- Use `.agents/skills/ref-userscript/SKILL.md` or `.agents/skills/ref-standalone-web-pages/SKILL.md` when the JavaScript lives inside a userscript or standalone page and those constraints dominate the design.
+
 ## Defaults
 
 - Prefer modern ESM syntax.
@@ -25,6 +33,14 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Prefer named constants and helpers over repeated inline logic.
 - Prefer explicit input validation at I/O boundaries.
 - Prefer simple data flow over mutation-heavy code.
+
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Add JSDoc where it earns its keep | Document exported shapes, callbacks, and shared objects without turning the file into comment soup. | JavaScript stays maintainable when the implicit contracts are surfaced selectively. | When editor help or object shapes are getting hard to follow. | The file is still plain JavaScript, but the important contracts are explicit. |
+| Split browser or script responsibilities | Separate DOM access, state changes, parsing, and I/O into named helpers or modules. | JavaScript gets hard to debug quickly when everything is inline and anonymous. | When a script starts mixing too many concerns. | The code reads in layers instead of as one giant callback. |
+| Choose a package-level layout | Keep feature code under a package-owned `src/` tree when the repo is multi-package or monorepo-style. | Package ownership is easy to lose when scripts, shared code, and app code sit at the same level. | When introducing a reusable JS package or tool in a monorepo. | The package has a clear root and feature slices stay local to it. |
 
 ## Core Rules
 
@@ -45,6 +61,29 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Use consistent flag names and help text when a JS file acts like a CLI.
 - Keep script inputs explicit rather than reaching into ambient globals unless the platform requires it.
 - Validate file, network, or user-provided input before acting on it.
+
+## Example Layouts
+
+### Plain JavaScript package in a monorepo
+
+```text
+packages/package-name/
+  src/
+    csv-tools/
+      index.js
+      parse-report.js
+      parse-report.test.js
+```
+
+### Browser script with local helpers
+
+```text
+src/features/report-viewer/
+  report-viewer.html
+  js/
+    app.js
+    storage.js
+```
 
 ## Validation
 

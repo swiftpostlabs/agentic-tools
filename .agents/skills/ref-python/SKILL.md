@@ -19,6 +19,13 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Deciding where tests should live and what they should cover.
 - Reviewing Python code for readability and long-term maintainability.
 
+## Scope Boundaries
+
+- Use this skill for portable Python structure, typing, CLI, and testing guidance.
+- Use `.agents/skills/ref-coding-patterns/SKILL.md` for language-agnostic naming, comment, and CLI ergonomics defaults.
+- Use `.agents/skills/ref-architecture/SKILL.md` for shared-utility thresholds and product-versus-maintenance boundaries.
+- Use repo-local skills such as `.agents/skills/ref-project-structure-setup/SKILL.md` or `.agents/skills/ref-code-conventions/SKILL.md` when the question is about this repository's exact package names, top-level folders, or validation commands.
+
 ## Defaults
 
 - Prefer modern Python with type hints throughout public and shared code.
@@ -26,6 +33,14 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Prefer dataclasses, typed dicts, or small domain objects over loose dictionaries when structure matters.
 - Prefer explicit exceptions and clear error messages over silent fallbacks.
 - Prefer the repo's standard formatter, type checker, and test task wrappers when they exist.
+
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Organize a Python feature | Choose a feature folder, local modules, and collocated tests. | A good starting layout keeps future refactors local instead of repo-wide. | When adding a new unit of behavior. | The feature is easy to find, extend, and test. |
+| Decide between product CLI and maintenance script | Choose whether a command belongs under the package or in repo maintenance paths. | Many Python repos accumulate product behavior in ad hoc scripts. | When a new command-line flow appears. | Product commands are packaged cleanly and maintenance glue stays separate. |
+| Review types and tests together | Check whether the public API, data structures, and risky branches are explicit. | Python stays maintainable when type clarity and test coverage grow together. | When reviewing or refactoring non-trivial logic. | Data shapes are clear and the fragile branches are covered. |
 
 ## Core Rules
 
@@ -53,6 +68,27 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Add unit tests for non-trivial logic and error cases.
 - Prefer small builders, fixtures, or factory helpers over giant setup blocks.
 - Keep test names specific enough that failures are easy to localize.
+
+## Example Layouts
+
+### Packaged feature with collocated tests
+
+```text
+src/package_name/report_sync/
+  main.py
+  main_test.py
+  client.py
+  client_test.py
+  models.py
+```
+
+### Repo maintenance script
+
+```text
+scripts/
+  update_from_upstream.py
+  update_from_upstream_test.py
+```
 
 ## Validation
 

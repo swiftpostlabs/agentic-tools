@@ -1,0 +1,22 @@
+[
+  {
+    "query": "Explain where the skills-management command is wired in this repository and which file owns the entrypoint.",
+    "should_trigger": true
+  },
+  {
+    "query": "Should this new repo helper live in scripts/, src/agentic_tools/, or under .agents/skills/?",
+    "should_trigger": true
+  },
+  {
+    "query": "Review this pyproject.toml setup and tell me whether project.scripts and tool.poe.tasks are being used in the right places.",
+    "should_trigger": true
+  },
+  {
+    "query": "Show me a good Python feature-first layout for a packaged CLI.",
+    "should_trigger": false
+  },
+  {
+    "query": "Should this TypeScript package use packages/package-name/src/feature or some other monorepo layout?",
+    "should_trigger": false
+  }
+]

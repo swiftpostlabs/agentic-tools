@@ -19,6 +19,13 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Choosing when shared utilities are justified.
 - Refactoring a repository that has started to blur boundaries.
 
+## Scope Boundaries
+
+- Use this skill for portable structure decisions such as feature boundaries, shared-utility thresholds, and product-versus-maintenance separation.
+- Use `.agents/skills/ref-project-structure-setup/SKILL.md` when the question is about this repository's exact top-level folders, `pyproject.toml`, or agent wiring.
+- Use `.agents/skills/ref-python/SKILL.md`, `.agents/skills/ref-javascript/SKILL.md`, or `.agents/skills/ref-typescript/SKILL.md` when the question is about language-specific folder shapes.
+- Use `.agents/skills/ref-standalone-web-pages/SKILL.md` when the structure question is specific to a browser-only local page or mini-tool.
+
 ## Defaults
 
 - Prefer feature-first organization over type-based dumping grounds.
@@ -26,6 +33,14 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Keep maintenance and repo automation separate from product features.
 - Keep tests near the code they explain when the project layout allows it.
 - Extract shared utilities only after real reuse appears.
+
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Define feature boundaries | Decide what belongs inside one feature slice and what should stay outside it. | Clear ownership reduces coupling and makes refactors cheaper. | When creating a new feature or splitting a large one. | The owning folder is obvious and internal details stay internal. |
+| Promote product code out of maintenance paths | Move shipped or user-facing behavior under the main source tree instead of leaving it in `scripts/`. | Prototype placement often lingers long after the code becomes part of the product. | When a script becomes a real feature or installed command. | Product code is discoverable and tested like the rest of the source tree. |
+| Decide whether to share a utility | Judge whether repeated logic is stable enough to extract or still cheap to duplicate locally. | Premature sharing creates invisible dependencies and vague utility buckets. | When two or more features start to reuse similar helpers. | Shared code exists for real reuse and has a clear home. |
 
 ## Core Rules
 
@@ -58,6 +73,39 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Start small, but keep a path open for splitting files as complexity grows.
 - Extract pure helpers before extracting stateful orchestration.
 - If a file is hard to scan, split by responsibility inside the same feature before introducing repo-wide infrastructure.
+
+## Example Layouts
+
+### Python package with feature-first layout
+
+```text
+src/package_name/
+  billing/
+    main.py
+    main_test.py
+    service.py
+    service_test.py
+```
+
+### JavaScript or TypeScript package in a monorepo
+
+```text
+packages/package-name/
+  src/
+    billing/
+      index.ts
+      parse-invoice.ts
+      parse-invoice.test.ts
+```
+
+### Standalone browser tool with local assets
+
+```text
+src/features/tool-name/
+  index.html
+  js/app.js
+  css/styles.css
+```
 
 ## Validation
 

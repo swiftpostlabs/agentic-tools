@@ -12,6 +12,10 @@
     "should_trigger": true
   },
   {
+    "query": "Should this monorepo package keep its code under packages/invoice-tools/src/importer or move the helpers to a shared workspace folder?",
+    "should_trigger": true
+  },
+  {
     "query": "Write a TypeScript type guard for this API response.",
     "should_trigger": false
   },

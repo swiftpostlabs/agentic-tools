@@ -19,6 +19,13 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Designing a CLI or automation surface.
 - Reviewing whether tests actually cover risky behavior.
 
+## Scope Boundaries
+
+- Use this skill for language-agnostic defaults such as naming, comments, branching, CLI ergonomics, and testing posture.
+- Use `.agents/skills/ref-architecture/SKILL.md` for folder layout, feature boundaries, and shared-utility decisions.
+- Use `.agents/skills/ref-python/SKILL.md`, `.agents/skills/ref-javascript/SKILL.md`, or `.agents/skills/ref-typescript/SKILL.md` for syntax- and runtime-specific guidance.
+- Use repo-local skills like `.agents/skills/ref-project-structure-setup/SKILL.md` or `.agents/skills/ref-code-conventions/SKILL.md` when the question is about this repository's exact paths or commands.
+
 ## Defaults
 
 - Prefer strict typing when the language supports it.
@@ -28,6 +35,14 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Prefer small focused functions over multi-purpose handlers.
 - Prefer safe CLI defaults and discoverable help.
 - Prefer focused tests over broad integration-style guesswork.
+
+## Task Framing
+
+| Command or action | What | Why | When | Expected outcome |
+| --- | --- | --- | --- | --- |
+| Pick naming and data-boundary defaults | Choose intention-revealing names and explicit validation or narrowing points. | Weak names and fuzzy I/O boundaries make every later refactor harder. | When starting a new feature or cleaning up unclear code. | Call sites, helpers, and data shapes read clearly without private context. |
+| Shape a CLI surface | Choose subcommands, flags, help text, and safe defaults deliberately. | CLI ergonomics become sticky quickly once other people start using them. | When creating or revising a command-line workflow. | The command is discoverable, predictable, and safe to run. |
+| Review comments and tests | Decide which constraints deserve comments and which branches deserve tests. | Documentation and tests are expensive if they are broad but shallow. | When finishing a risky change or reviewing a refactor. | Comments explain real constraints and tests cover the most fragile behavior. |
 
 ## Core Rules
 
