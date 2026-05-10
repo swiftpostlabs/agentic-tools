@@ -20,7 +20,7 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "chat.tools.terminal.autoApprove": {
-    "/^git (log|status).*$/": true,
+    "/^git (log|status|diff).*$/": true,
     "/^uv run poe (lint|lint-fix|typecheck|test)$/": true,
     "/^uv run (sync-ai-policy|sync-ai-policy-import-vscode)$/": true,
     "rm": false,
