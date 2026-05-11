@@ -16,7 +16,7 @@ function createTempDir(t) {
   return tempDir;
 }
 
-test("runAgentsPolicy syncs generated files from .agents/policy.json", (t) => {
+test("runAgentsPolicy syncs generated files from .agents/policy.json", async (t) => {
   const tempDir = createTempDir(t);
   fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
   fs.writeFileSync(
@@ -36,7 +36,7 @@ test("runAgentsPolicy syncs generated files from .agents/policy.json", (t) => {
   );
 
   const messages = [];
-  const exitCode = runAgentsPolicy([], {
+  const exitCode = await runAgentsPolicy([], {
     cwd: tempDir,
     output: (message) => {
       messages.push(message);
@@ -60,7 +60,7 @@ test("runAgentsPolicy syncs generated files from .agents/policy.json", (t) => {
   assert.match(messages.join("\n"), /Synced: Copilot local policy/u);
 });
 
-test("runAgentsPolicyImportVscode imports approvals back into the policy file", (t) => {
+test("runAgentsPolicyImportVscode imports approvals back into the policy file", async (t) => {
   const tempDir = createTempDir(t);
   fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
   fs.mkdirSync(path.join(tempDir, ".vscode"), { recursive: true });
@@ -82,7 +82,7 @@ test("runAgentsPolicyImportVscode imports approvals back into the policy file", 
     "utf8",
   );
 
-  const exitCode = runAgentsPolicyImportVscode({ cwd: tempDir, output: () => {} });
+  const exitCode = await runAgentsPolicyImportVscode({ cwd: tempDir, output: () => {} });
   const policy = JSON.parse(
     fs.readFileSync(path.join(tempDir, ".agents", "policy.json"), "utf8"),
   );
@@ -90,6 +90,23 @@ test("runAgentsPolicyImportVscode imports approvals back into the policy file", 
   assert.equal(exitCode, 0);
   assert.deepEqual(policy.terminalAutoApprove, { "uv run poe test": true });
   assert.deepEqual(policy.editAutoApprove, { "**/*.md": true });
+});
+
+test("runAgentsPolicy reports no work when no policy file exists", async (t) => {
+  const tempDir = createTempDir(t);
+  const messages = [];
+
+  const exitCode = await runAgentsPolicy([], {
+    cwd: tempDir,
+    output: (message) => {
+      messages.push(message);
+    },
+  });
+
+  assert.equal(exitCode, 0);
+  assert.deepEqual(messages, [
+    "No .agents/policy.json or legacy .ai-policy.json found. Nothing to sync.",
+  ]);
 });
 
 function buildDefaultPolicyFixture() {

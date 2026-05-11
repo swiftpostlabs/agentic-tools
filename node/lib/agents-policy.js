@@ -1,20 +1,20 @@
 import fs from "node:fs";
 import path from "node:path";
-import { parseArgs } from "node:util";
+import { defineCommand, renderUsage, runCommand } from "citty";
 import {
-  ToolError,
-  ensureJsonObject,
-  getBooleanRecord,
-  getObjectRecord,
-  getStringList,
-  getStringRecord,
-  pathExists,
-  readJsonFile,
-  resolvePath,
-  syncJsonFile,
-  toPosixPath,
-  writeJsonFile,
-  writeTextFile,
+    ToolError,
+  createLogger,
+    ensureJsonObject,
+    getBooleanRecord,
+    getStringList,
+    getStringRecord,
+    pathExists,
+    readJsonFile,
+    resolvePath,
+    syncJsonFile,
+    toPosixPath,
+    writeJsonFile,
+    writeTextFile
 } from "./common.js";
 
 const CANONICAL_POLICY_PATH = path.join(".agents", "policy.json");
@@ -381,46 +381,76 @@ export function syncPolicyFile(policyFile, { importVscode = false } = {}) {
   return messages;
 }
 
-export function runAgentsPolicy(argv = process.argv.slice(2), options = {}) {
-  const effectiveOptions = {
+function createExecutionOptions(options = {}) {
+  const logger = options.logger ?? createLogger(options.output);
+
+  return {
     cwd: options.cwd ?? process.cwd(),
-    output: options.output ?? console.log,
+    logger,
+    output: options.output ?? ((message) => {
+      logger.log(message);
+    }),
   };
+}
+
+function createAgentsPolicyCommand(options) {
+  return defineCommand({
+    meta: {
+      name: "agents-policy",
+      description: "Sync generated agent policy files from .agents/policy.json.",
+    },
+    args: {
+      config: {
+        type: "string",
+        alias: ["c"],
+        description: "Path to a policy file.",
+      },
+      "import-vscode": {
+        type: "boolean",
+        description: "Import VS Code approval maps back into the policy file before syncing.",
+      },
+    },
+    run({ args }) {
+      if (args._.length > 0) {
+        throw new ToolError("agents-policy does not accept positional arguments.");
+      }
+
+      const policyPath = resolvePolicyPath(args.config ?? null, options.cwd);
+      if (policyPath === null) {
+        options.output(
+          "No .agents/policy.json or legacy .ai-policy.json found. Nothing to sync.",
+        );
+        return 0;
+      }
+
+      for (const message of syncPolicyFile(policyPath, {
+        importVscode: args.importVscode ?? false,
+      })) {
+        options.output(message);
+      }
+
+      return 0;
+    },
+  });
+}
+
+export async function runAgentsPolicy(argv = process.argv.slice(2), options = {}) {
+  const effectiveOptions = createExecutionOptions(options);
+  const command = createAgentsPolicyCommand(effectiveOptions);
 
   try {
-    const { values, positionals } = parseArgs({
-      args: argv,
-      allowPositionals: true,
-      options: {
-        config: { type: "string", short: "c" },
-        "import-vscode": { type: "boolean" },
-      },
+    const { result } = await runCommand(command, {
+      rawArgs: argv,
+      showUsage: true,
     });
-    if (positionals.length > 0) {
-      throw new ToolError("agents-policy does not accept positional arguments.");
-    }
-
-    const policyPath = resolvePolicyPath(values.config ?? null, effectiveOptions.cwd);
-    if (policyPath === null) {
-      effectiveOptions.output(
-        "No .agents/policy.json or legacy .ai-policy.json found. Nothing to sync.",
-      );
-      return 0;
-    }
-
-    for (const message of syncPolicyFile(policyPath, {
-      importVscode: values["import-vscode"] ?? false,
-    })) {
-      effectiveOptions.output(message);
-    }
-    return 0;
+    return typeof result === "number" ? result : 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    effectiveOptions.output(message);
+    effectiveOptions.logger.error(message);
     return 1;
   }
 }
 
-export function runAgentsPolicyImportVscode(options = {}) {
+export async function runAgentsPolicyImportVscode(options = {}) {
   return runAgentsPolicy(["--import-vscode"], options);
 }

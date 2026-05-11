@@ -1,26 +1,25 @@
 import fs from "node:fs";
 import path from "node:path";
-import { parseArgs } from "node:util";
+import { defineCommand, renderUsage, runCommand } from "citty";
 import {
-  DEFAULT_GLOBAL_SKILLS_DIR,
-  PACKAGE_SOURCE_PREFIX,
-  SYNC_CONFIG_FILENAME,
-  ToolError,
-  createDirectoryLink,
-  deduplicatePreservingOrder,
-  ensureJsonObject,
-  isDirectory,
-  isDirectoryLink,
-  isFile,
-  parseFrontmatter,
-  pathExists,
-  readJsonFile,
-  removeDirectoryLink,
-  resolveExistingLinkTarget,
-  resolvePackageRoot,
-  resolvePath,
-  stripYamlString,
-  toPosixPath,
+    DEFAULT_GLOBAL_SKILLS_DIR,
+    PACKAGE_SOURCE_PREFIX,
+    SYNC_CONFIG_FILENAME,
+    ToolError,
+  createLogger,
+    createDirectoryLink,
+    deduplicatePreservingOrder,
+    ensureJsonObject,
+    isDirectory,
+    isDirectoryLink,
+    isFile,
+    parseFrontmatter,
+    pathExists,
+    removeDirectoryLink,
+    resolveExistingLinkTarget,
+    resolvePackageRoot,
+    resolvePath,
+    stripYamlString
 } from "./common.js";
 
 const SHAREABLE_VISIBILITY = "shareable";
@@ -454,56 +453,6 @@ function validateDestinationFlags(useGlobal, destination) {
   }
 }
 
-function parseListArguments(arguments_) {
-  const { values, positionals } = parseArgs({
-    args: arguments_,
-    allowPositionals: true,
-    options: {
-      from: { type: "string", short: "f" },
-    },
-  });
-
-  if (positionals.length > 0) {
-    throw new ToolError("list does not accept positional arguments.");
-  }
-
-  return { source: values.from ?? null };
-}
-
-function parseTargetOptions(arguments_, includeConfig = false, requireSkills = false) {
-  const options = {
-    from: { type: "string", short: "f" },
-    to: { type: "string", short: "t" },
-    global: { type: "boolean", short: "g" },
-    "dry-run": { type: "boolean" },
-    force: { type: "boolean" },
-  };
-
-  if (includeConfig) {
-    options.config = { type: "string", short: "c" };
-  }
-
-  const { values, positionals } = parseArgs({
-    args: arguments_,
-    allowPositionals: true,
-    options,
-  });
-
-  if (requireSkills && positionals.length === 0) {
-    throw new ToolError("expected at least one skill name.");
-  }
-
-  return {
-    skills: requireSkills ? positionals : [],
-    source: values.from ?? null,
-    destination: values.to ?? null,
-    useGlobal: values.global ?? false,
-    dryRun: values["dry-run"] ?? false,
-    force: values.force ?? false,
-    config: includeConfig ? values.config ?? null : null,
-  };
-}
-
 function handleListCommand({ source }, options) {
   const manifests = discoverSkillManifests(resolvePath(source, options.cwd));
   options.output(describeSkills(manifests));
@@ -626,47 +575,181 @@ function handleUnlinkCommand(parsed, options) {
   return 0;
 }
 
-export function runSkillsManagement(argv = process.argv.slice(2), options = {}) {
-  const effectiveOptions = {
+function createExecutionOptions(options = {}) {
+  const logger = options.logger ?? createLogger(options.output);
+
+  return {
     cwd: options.cwd ?? process.cwd(),
-    output: options.output ?? console.log,
+    logger,
+    output: options.output ?? ((message) => {
+      logger.log(message);
+    }),
+  };
+}
+
+function assertNoPositionals(args, context) {
+  if (args._.length > 0) {
+    throw new ToolError(`${context} does not accept positional arguments.`);
+  }
+}
+
+function getRequiredSkills(args) {
+  const skills = deduplicatePreservingOrder(args._);
+  if (skills.length === 0) {
+    throw new ToolError("expected at least one skill name.");
+  }
+
+  return skills;
+}
+
+function createSharedTargetArgs(includeConfig = false) {
+  const sharedArgs = {
+    from: {
+      type: "string",
+      alias: ["f"],
+      description: "Skill source repo, package, or skills root.",
+    },
+    to: {
+      type: "string",
+      alias: ["t"],
+      description: "Destination repo or .agents/skills directory.",
+    },
+    global: {
+      type: "boolean",
+      alias: ["g"],
+      description: "Link into the global ~/.agents/skills directory.",
+    },
+    "dry-run": {
+      type: "boolean",
+      description: "Print what would change without mutating the filesystem.",
+    },
+    force: {
+      type: "boolean",
+      description: "Replace an existing link that points somewhere else.",
+    },
   };
 
+  if (includeConfig) {
+    sharedArgs.config = {
+      type: "string",
+      alias: ["c"],
+      description: "Path to the sync config file.",
+    };
+  }
+
+  return sharedArgs;
+}
+
+function createSkillsManagementCommand(options) {
+  return defineCommand({
+    meta: {
+      name: "skills-management",
+      description: "List, link, sync, and unlink shareable skills.",
+    },
+    subCommands: {
+      list: defineCommand({
+        meta: {
+          name: "list",
+          description: "List discovered skills from a source.",
+        },
+        args: {
+          from: {
+            type: "string",
+            alias: ["f"],
+            description: "Skill source repo, package, or skills root.",
+          },
+        },
+        run({ args }) {
+          assertNoPositionals(args, "list");
+          return handleListCommand({ source: args.from ?? null }, options);
+        },
+      }),
+      link: defineCommand({
+        meta: {
+          name: "link",
+          description: "Link one or more skills into a destination repo.",
+        },
+        args: createSharedTargetArgs(false),
+        run({ args }) {
+          return handleLinkCommand(
+            {
+              skills: getRequiredSkills(args),
+              source: args.from ?? null,
+              destination: args.to ?? null,
+              useGlobal: args.global ?? false,
+              dryRun: args.dryRun ?? false,
+              force: args.force ?? false,
+              config: null,
+            },
+            options,
+          );
+        },
+      }),
+      sync: defineCommand({
+        meta: {
+          name: "sync",
+          description: "Sync skills declared in .agents/skills.json.",
+        },
+        args: createSharedTargetArgs(true),
+        run({ args }) {
+          assertNoPositionals(args, "sync");
+          return handleSyncCommand(
+            {
+              skills: [],
+              source: null,
+              destination: args.to ?? null,
+              useGlobal: args.global ?? false,
+              dryRun: args.dryRun ?? false,
+              force: args.force ?? false,
+              config: args.config ?? null,
+            },
+            options,
+          );
+        },
+      }),
+      unlink: defineCommand({
+        meta: {
+          name: "unlink",
+          description: "Remove one or more linked skills from a destination repo.",
+        },
+        args: createSharedTargetArgs(false),
+        run({ args }) {
+          return handleUnlinkCommand(
+            {
+              skills: getRequiredSkills(args),
+              source: args.from ?? null,
+              destination: args.to ?? null,
+              useGlobal: args.global ?? false,
+              dryRun: args.dryRun ?? false,
+              force: args.force ?? false,
+              config: null,
+            },
+            options,
+          );
+        },
+      }),
+    },
+  });
+}
+
+export async function runSkillsManagement(argv = process.argv.slice(2), options = {}) {
+  const effectiveOptions = createExecutionOptions(options);
+  const command = createSkillsManagementCommand(effectiveOptions);
+
   if (argv.length === 0) {
-    effectiveOptions.output(
-      "Usage: skills-management <list|link|sync|unlink> [options]",
-    );
+    effectiveOptions.output(await renderUsage(command));
     return 1;
   }
 
-  const [command, ...commandArguments] = argv;
   try {
-    if (command === "list") {
-      return handleListCommand(parseListArguments(commandArguments), effectiveOptions);
-    }
-    if (command === "link") {
-      return handleLinkCommand(
-        parseTargetOptions(commandArguments, false, true),
-        effectiveOptions,
-      );
-    }
-    if (command === "sync") {
-      return handleSyncCommand(
-        parseTargetOptions(commandArguments, true, false),
-        effectiveOptions,
-      );
-    }
-    if (command === "unlink") {
-      return handleUnlinkCommand(
-        parseTargetOptions(commandArguments, false, true),
-        effectiveOptions,
-      );
-    }
-
-    throw new ToolError(`Unknown skills-management command '${stripYamlString(command)}'.`);
+    const { result } = await runCommand(command, {
+      rawArgs: argv,
+      showUsage: true,
+    });
+    return typeof result === "number" ? result : 0;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    effectiveOptions.output(message);
+    effectiveOptions.logger.error(message);
     return 1;
   }
 }

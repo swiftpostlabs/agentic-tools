@@ -2,4 +2,4 @@
 
 import { runSkillsManagement } from "../lib/skills-management.js";
 
-process.exitCode = runSkillsManagement(process.argv.slice(2));
+process.exitCode = await runSkillsManagement(process.argv.slice(2));

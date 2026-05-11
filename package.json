@@ -18,9 +18,14 @@
     "README.md",
     "LICENSE"
   ],
+  "packageManager": "yarn@1.22.22",
   "scripts": {
     "test:node": "node --test node/test/*.test.js",
     "pack:node": "npm pack --dry-run"
+  },
+  "dependencies": {
+    "citty": "^0.2.2",
+    "consola": "^3.4.2"
   },
   "engines": {
     "node": ">=22"

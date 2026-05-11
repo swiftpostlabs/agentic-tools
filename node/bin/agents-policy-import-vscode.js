@@ -2,4 +2,4 @@
 
 import { runAgentsPolicyImportVscode } from "../lib/agents-policy.js";
 
-process.exitCode = runAgentsPolicyImportVscode();
+process.exitCode = await runAgentsPolicyImportVscode();

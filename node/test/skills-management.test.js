@@ -5,9 +5,9 @@ import path from "node:path";
 import test from "node:test";
 
 import {
-  discoverSkillManifests,
-  resolvePackageSourceRoot,
-  runSkillsManagement,
+    discoverSkillManifests,
+    resolvePackageSourceRoot,
+    runSkillsManagement,
 } from "../lib/skills-management.js";
 
 function createTempDir(t) {
@@ -65,7 +65,7 @@ test("resolvePackageSourceRoot resolves an installed package from node_modules",
   assert.equal(resolvePackageSourceRoot("agentic-tools", tempDir), packageRoot);
 });
 
-test("runSkillsManagement sync links configured skills from an installed package", (t) => {
+test("runSkillsManagement sync links configured skills from an installed package", async (t) => {
   const tempDir = createTempDir(t);
   const packageRoot = path.join(tempDir, "node_modules", "agentic-tools");
   fs.mkdirSync(packageRoot, { recursive: true });
@@ -98,7 +98,7 @@ test("runSkillsManagement sync links configured skills from an installed package
   );
 
   const messages = [];
-  const exitCode = runSkillsManagement(["sync", "--to", tempDir], {
+  const exitCode = await runSkillsManagement(["sync", "--to", tempDir], {
     cwd: tempDir,
     output: (message) => {
       messages.push(message);
@@ -115,7 +115,7 @@ test("runSkillsManagement sync links configured skills from an installed package
   assert.match(messages.join("\n"), /Linked .*ref-alpha/u);
 });
 
-test("runSkillsManagement sync reports missing configured skills by source", (t) => {
+test("runSkillsManagement sync reports missing configured skills by source", async (t) => {
   const tempDir = createTempDir(t);
   const packageRoot = path.join(tempDir, "node_modules", "agentic-tools");
   fs.mkdirSync(packageRoot, { recursive: true });
@@ -148,7 +148,7 @@ test("runSkillsManagement sync reports missing configured skills by source", (t)
   );
 
   const messages = [];
-  const exitCode = runSkillsManagement(["sync", "--to", tempDir], {
+  const exitCode = await runSkillsManagement(["sync", "--to", tempDir], {
     cwd: tempDir,
     output: (message) => {
       messages.push(message);

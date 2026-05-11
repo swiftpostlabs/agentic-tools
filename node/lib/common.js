@@ -1,7 +1,8 @@
 import fs from "node:fs";
+import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
-import { createRequire } from "node:module";
+import { consola, createConsola } from "consola";
 
 export class ToolError extends Error {}
 
@@ -331,4 +332,36 @@ export function createDirectoryLink(destinationPath, targetPath) {
 
 export function toPosixPath(targetPath) {
   return targetPath.split(path.sep).join("/");
+}
+
+function formatLogArg(value) {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value instanceof Error) {
+    return value.message;
+  }
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+export function createLogger(output) {
+  if (typeof output !== "function") {
+    return consola;
+  }
+
+  return createConsola({
+    reporters: [
+      {
+        log(logObject) {
+          output(logObject.args.map((arg) => formatLogArg(arg)).join(" "));
+        },
+      },
+    ],
+  });
 }
