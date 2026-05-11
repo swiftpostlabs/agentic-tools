@@ -2,40 +2,56 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineCommand, renderUsage, runCommand } from "citty";
 import {
-    DEFAULT_GLOBAL_SKILLS_DIR,
-    PACKAGE_SOURCE_PREFIX,
-    SYNC_CONFIG_FILENAME,
-    ToolError,
-  createLogger,
-    createDirectoryLink,
-    deduplicatePreservingOrder,
-    ensureJsonObject,
-    isDirectory,
-    isDirectoryLink,
-    isFile,
-    parseFrontmatter,
-    pathExists,
-    removeDirectoryLink,
-    resolveExistingLinkTarget,
-    resolvePackageRoot,
-    resolvePath,
-    stripYamlString
-} from "./common.js";
+  DEFAULT_GLOBAL_SKILLS_DIR,
+  PACKAGE_SOURCE_PREFIX,
+  SYNC_CONFIG_FILENAME,
+  ToolError,
+  createDirectoryLink,
+  createExecutionOptions,
+  deduplicatePreservingOrder,
+  ensureJsonObject,
+  isDirectory,
+  isDirectoryLink,
+  isFile,
+  parseFrontmatter,
+  pathExists,
+  removeDirectoryLink,
+  resolveExistingLinkTarget,
+  resolvePackageRoot,
+  resolvePath,
+  type ExecutionOptions,
+  type RunOptions,
+} from "../node_cli/common.ts";
 
 const SHAREABLE_VISIBILITY = "shareable";
 const SHAREABILITY_WIZARD = "tool-make-skill-shareable";
 
-/**
- * @typedef {{
- *   name: string,
- *   directory: string,
- *   visibility: string | null,
- *   requires: string[],
- *   reason: string | null,
- * }} SkillManifest
- */
+interface SkillManifest {
+  name: string;
+  directory: string;
+  visibility: string | null;
+  requires: string[];
+  reason: string | null;
+}
 
-function splitRequires(value) {
+interface TargetCommandState {
+  skills: string[];
+  source: string | null;
+  destination: string | null;
+  useGlobal: boolean;
+  dryRun: boolean;
+  force: boolean;
+  config: string | null;
+}
+
+interface CommandArgs {
+  _: string[];
+  [key: string]: unknown;
+}
+
+type SkillManifestMap = Record<string, SkillManifest>;
+
+function splitRequires(value: unknown): string[] {
   if (typeof value !== "string") {
     return [];
   }
@@ -43,26 +59,35 @@ function splitRequires(value) {
   return value.split(/\s+/u).filter(Boolean);
 }
 
-function isSkillsRootPath(targetPath) {
+function getOptionalStringArg(args: CommandArgs, key: string): string | null {
+  const value = args[key];
+  return typeof value === "string" && value.trim() !== "" ? value : null;
+}
+
+function getBooleanArg(args: CommandArgs, key: string): boolean {
+  return args[key] === true;
+}
+
+function isSkillsRootPath(targetPath: string): boolean {
   return (
     path.basename(targetPath) === "skills" &&
     path.basename(path.dirname(targetPath)) === ".agents"
   );
 }
 
-function toSkillsRoot(targetPath) {
+function toSkillsRoot(targetPath: string): string {
   return isSkillsRootPath(targetPath)
     ? targetPath
     : path.join(targetPath, ".agents", "skills");
 }
 
-function toRepoRoot(targetPath) {
+function toRepoRoot(targetPath: string): string {
   return isSkillsRootPath(targetPath)
     ? path.dirname(path.dirname(targetPath))
     : targetPath;
 }
 
-export function resolveSourceSkillsRoot(sourcePath) {
+export function resolveSourceSkillsRoot(sourcePath: string): string {
   const skillsRoot = toSkillsRoot(sourcePath);
   if (isDirectory(skillsRoot)) {
     return skillsRoot;
@@ -81,11 +106,11 @@ export function resolveSourceSkillsRoot(sourcePath) {
   throw new ToolError(`Could not find skills directory at ${skillsRoot}`);
 }
 
-function resolveDestinationSkillsRoot(targetPath, useGlobal) {
+function resolveDestinationSkillsRoot(targetPath: string, useGlobal: boolean): string {
   return useGlobal ? DEFAULT_GLOBAL_SKILLS_DIR : toSkillsRoot(targetPath);
 }
 
-function readSkillManifest(skillDirectory) {
+function readSkillManifest(skillDirectory: string): SkillManifest {
   const skillFile = path.join(skillDirectory, "SKILL.md");
   const frontmatter = parseFrontmatter(fs.readFileSync(skillFile, "utf8"));
   const rawName = frontmatter.name;
@@ -103,7 +128,7 @@ function readSkillManifest(skillDirectory) {
     frontmatter.metadata !== null &&
     !Array.isArray(frontmatter.metadata) &&
     typeof frontmatter.metadata === "object"
-      ? frontmatter.metadata
+      ? ensureJsonObject(frontmatter.metadata, `Skill metadata for '${rawName}'`)
       : {};
 
   return {
@@ -121,9 +146,9 @@ function readSkillManifest(skillDirectory) {
   };
 }
 
-export function discoverSkillManifests(sourcePath) {
+export function discoverSkillManifests(sourcePath: string): SkillManifestMap {
   const skillsRoot = resolveSourceSkillsRoot(sourcePath);
-  const manifests = {};
+  const manifests: SkillManifestMap = {};
 
   for (const entry of fs.readdirSync(skillsRoot)) {
     const skillDirectory = path.join(skillsRoot, entry);
@@ -138,7 +163,7 @@ export function discoverSkillManifests(sourcePath) {
   return manifests;
 }
 
-function buildMakeShareableRecommendation(skillName) {
+function buildMakeShareableRecommendation(skillName: string): string {
   return (
     `Recommended next step: use /${SHAREABILITY_WIZARD} on '${skillName}' to decide ` +
     "whether it should be shareable or repo-local and to add " +
@@ -147,7 +172,7 @@ function buildMakeShareableRecommendation(skillName) {
   );
 }
 
-function ensureShareableManifest(manifest, manifests) {
+function ensureShareableManifest(manifest: SkillManifest, manifests: SkillManifestMap): void {
   if (manifest.visibility !== SHAREABLE_VISIBILITY) {
     const reasonSuffix = manifest.reason ? ` Reason: ${manifest.reason}` : "";
     throw new ToolError(
@@ -171,12 +196,15 @@ function ensureShareableManifest(manifest, manifests) {
   }
 }
 
-export function resolveSelectedSkills(manifests, requestedNames) {
-  const resolved = [];
-  const visiting = new Set();
-  const visited = new Set();
+export function resolveSelectedSkills(
+  manifests: SkillManifestMap,
+  requestedNames: string[],
+): SkillManifest[] {
+  const resolved: SkillManifest[] = [];
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
 
-  function visit(skillName) {
+  function visit(skillName: string): void {
     if (visited.has(skillName)) {
       return;
     }
@@ -208,7 +236,7 @@ export function resolveSelectedSkills(manifests, requestedNames) {
   return resolved;
 }
 
-function describeSkills(manifests) {
+function describeSkills(manifests: SkillManifestMap): string {
   const skillNames = Object.keys(manifests).sort();
   if (skillNames.length === 0) {
     return "No skills found.";
@@ -225,7 +253,7 @@ function describeSkills(manifests) {
     .join("\n");
 }
 
-function resolveSourceSkillDirectory(sourcePath, skillName) {
+function resolveSourceSkillDirectory(sourcePath: string, skillName: string): string {
   const skillDirectory = path.join(resolveSourceSkillsRoot(sourcePath), skillName);
   if (!isFile(path.join(skillDirectory, "SKILL.md"))) {
     throw new ToolError(
@@ -236,7 +264,12 @@ function resolveSourceSkillDirectory(sourcePath, skillName) {
   return path.resolve(skillDirectory);
 }
 
-function linkSkillDirectory(manifest, destinationSkillsDir, dryRun, force) {
+function linkSkillDirectory(
+  manifest: SkillManifest,
+  destinationSkillsDir: string,
+  dryRun: boolean,
+  force: boolean,
+): string {
   const destination = path.join(destinationSkillsDir, manifest.name);
   const target = path.resolve(manifest.directory);
 
@@ -267,7 +300,12 @@ function linkSkillDirectory(manifest, destinationSkillsDir, dryRun, force) {
   return `Linked ${destination} -> ${target}`;
 }
 
-function unlinkSkillDirectory(skillName, destinationSkillsDir, dryRun, expectedTarget) {
+function unlinkSkillDirectory(
+  skillName: string,
+  destinationSkillsDir: string,
+  dryRun: boolean,
+  expectedTarget: string | null,
+): string {
   const destination = path.join(destinationSkillsDir, skillName);
 
   if (dryRun) {
@@ -286,10 +324,7 @@ function unlinkSkillDirectory(skillName, destinationSkillsDir, dryRun, expectedT
   }
 
   const existingTarget = resolveExistingLinkTarget(destination);
-  if (
-    expectedTarget !== null &&
-    existingTarget !== path.resolve(expectedTarget)
-  ) {
+  if (expectedTarget !== null && existingTarget !== path.resolve(expectedTarget)) {
     throw new ToolError(
       `Destination '${destination}' points to '${existingTarget}', not '${expectedTarget}'.`,
     );
@@ -299,13 +334,17 @@ function unlinkSkillDirectory(skillName, destinationSkillsDir, dryRun, expectedT
   return `Unlinked ${destination} -> ${existingTarget}`;
 }
 
-function inferConfigBaseRoot(configPath) {
+function inferConfigBaseRoot(configPath: string): string {
   return path.basename(path.dirname(configPath)) === ".agents"
     ? path.dirname(path.dirname(configPath))
     : path.dirname(configPath);
 }
 
-function resolveSyncConfigPath(destinationPath, useGlobal, rawConfig) {
+function resolveSyncConfigPath(
+  destinationPath: string,
+  useGlobal: boolean,
+  rawConfig: string | null,
+): string {
   if (typeof rawConfig === "string") {
     return path.resolve(rawConfig);
   }
@@ -317,11 +356,11 @@ function resolveSyncConfigPath(destinationPath, useGlobal, rawConfig) {
   return path.join(toRepoRoot(destinationPath), ".agents", SYNC_CONFIG_FILENAME);
 }
 
-export function resolvePackageSourceRoot(packageName, cwd = process.cwd()) {
+export function resolvePackageSourceRoot(packageName: string, cwd = process.cwd()): string {
   return resolvePackageRoot(packageName, cwd);
 }
 
-function resolveConfiguredSourceRoot(configSource, configPath, cwd) {
+function resolveConfiguredSourceRoot(configSource: string, configPath: string, cwd: string): string {
   if (configSource.startsWith(PACKAGE_SOURCE_PREFIX)) {
     const packageName = configSource.slice(PACKAGE_SOURCE_PREFIX.length).trim();
     if (packageName === "") {
@@ -338,13 +377,13 @@ function resolveConfiguredSourceRoot(configSource, configPath, cwd) {
     : path.resolve(inferConfigBaseRoot(configPath), configSource);
 }
 
-function requireStringList(value, context) {
+function requireStringList(value: unknown, context: string): string[] {
   if (!Array.isArray(value)) {
     throw new ToolError(`${context} must be an array of strings.`);
   }
 
   const entries = value.filter(
-    (entry) => typeof entry === "string" && entry.trim() !== "",
+    (entry): entry is string => typeof entry === "string" && entry.trim() !== "",
   );
   if (entries.length !== value.length) {
     throw new ToolError(`${context} must contain only non-empty strings.`);
@@ -356,8 +395,8 @@ function requireStringList(value, context) {
   return entries;
 }
 
-function parseConfiguredSkillSources(text) {
-  let parsed;
+function parseConfiguredSkillSources(text: string): Array<{ source: string; skills: string[] }> {
+  let parsed: unknown;
   try {
     parsed = JSON.parse(text);
   } catch (error) {
@@ -390,7 +429,7 @@ function parseConfiguredSkillSources(text) {
   });
 }
 
-function loadConfiguredSkillSources(configPath) {
+function loadConfiguredSkillSources(configPath: string): Array<{ source: string; skills: string[] }> {
   if (!isFile(configPath)) {
     throw new ToolError(`Could not find skills config at ${configPath}`);
   }
@@ -398,13 +437,13 @@ function loadConfiguredSkillSources(configPath) {
   return parseConfiguredSkillSources(fs.readFileSync(configPath, "utf8"));
 }
 
-function findMissingRequestedSkills(manifests, requestedNames) {
+function findMissingRequestedSkills(manifests: SkillManifestMap, requestedNames: string[]): string[] {
   return deduplicatePreservingOrder(requestedNames).filter(
     (skillName) => manifests[skillName] === undefined,
   );
 }
 
-function describeMissingConfiguredSkills(missingBySource) {
+function describeMissingConfiguredSkills(missingBySource: Array<[string, string[]]>): string {
   return [
     "Skills config references missing skills:",
     ...missingBySource.map(
@@ -413,7 +452,7 @@ function describeMissingConfiguredSkills(missingBySource) {
   ].join("\n");
 }
 
-function cleanupDeadSkillLinks(destinationSkillsDir, dryRun) {
+function cleanupDeadSkillLinks(destinationSkillsDir: string, dryRun: boolean): string[] {
   if (!pathExists(destinationSkillsDir)) {
     return [];
   }
@@ -423,7 +462,7 @@ function cleanupDeadSkillLinks(destinationSkillsDir, dryRun) {
     );
   }
 
-  const messages = [];
+  const messages: string[] = [];
   for (const entry of fs.readdirSync(destinationSkillsDir).sort()) {
     const candidatePath = path.join(destinationSkillsDir, entry);
     if (!isDirectoryLink(candidatePath)) {
@@ -447,19 +486,19 @@ function cleanupDeadSkillLinks(destinationSkillsDir, dryRun) {
   return messages;
 }
 
-function validateDestinationFlags(useGlobal, destination) {
+function validateDestinationFlags(useGlobal: boolean, destination: string | null): void {
   if (useGlobal && destination !== null) {
     throw new ToolError("cannot combine --global with --to");
   }
 }
 
-function handleListCommand({ source }, options) {
+function handleListCommand({ source }: { source: string | null }, options: ExecutionOptions): number {
   const manifests = discoverSkillManifests(resolvePath(source, options.cwd));
   options.output(describeSkills(manifests));
   return 0;
 }
 
-function handleLinkCommand(parsed, options) {
+function handleLinkCommand(parsed: TargetCommandState, options: ExecutionOptions): number {
   validateDestinationFlags(parsed.useGlobal, parsed.destination);
   const manifests = discoverSkillManifests(resolvePath(parsed.source, options.cwd));
   const destinationSkillsDir = resolveDestinationSkillsRoot(
@@ -484,7 +523,7 @@ function handleLinkCommand(parsed, options) {
   return 0;
 }
 
-function handleSyncCommand(parsed, options) {
+function handleSyncCommand(parsed: TargetCommandState, options: ExecutionOptions): number {
   validateDestinationFlags(parsed.useGlobal, parsed.destination);
   const destinationPath = resolvePath(parsed.destination, options.cwd);
   const configPath = resolveSyncConfigPath(
@@ -497,9 +536,9 @@ function handleSyncCommand(parsed, options) {
     parsed.useGlobal,
   );
 
-  const missingBySource = [];
-  const manifestsToLink = [];
-  const linkedSkillNames = new Set();
+  const missingBySource: Array<[string, string[]]> = [];
+  const manifestsToLink: SkillManifest[] = [];
+  const linkedSkillNames = new Set<string>();
 
   for (const configuredSource of loadConfiguredSkillSources(configPath)) {
     const manifests = discoverSkillManifests(
@@ -531,10 +570,7 @@ function handleSyncCommand(parsed, options) {
     throw new ToolError(describeMissingConfiguredSkills(missingBySource));
   }
 
-  for (const message of cleanupDeadSkillLinks(
-    destinationSkillsDir,
-    parsed.dryRun,
-  )) {
+  for (const message of cleanupDeadSkillLinks(destinationSkillsDir, parsed.dryRun)) {
     options.output(message);
   }
 
@@ -552,7 +588,7 @@ function handleSyncCommand(parsed, options) {
   return 0;
 }
 
-function handleUnlinkCommand(parsed, options) {
+function handleUnlinkCommand(parsed: TargetCommandState, options: ExecutionOptions): number {
   validateDestinationFlags(parsed.useGlobal, parsed.destination);
   const sourcePath = resolvePath(parsed.source, options.cwd);
   const destinationSkillsDir = resolveDestinationSkillsRoot(
@@ -575,25 +611,13 @@ function handleUnlinkCommand(parsed, options) {
   return 0;
 }
 
-function createExecutionOptions(options = {}) {
-  const logger = options.logger ?? createLogger(options.output);
-
-  return {
-    cwd: options.cwd ?? process.cwd(),
-    logger,
-    output: options.output ?? ((message) => {
-      logger.log(message);
-    }),
-  };
-}
-
-function assertNoPositionals(args, context) {
+function assertNoPositionals(args: CommandArgs, context: string): void {
   if (args._.length > 0) {
     throw new ToolError(`${context} does not accept positional arguments.`);
   }
 }
 
-function getRequiredSkills(args) {
+function getRequiredSkills(args: CommandArgs): string[] {
   const skills = deduplicatePreservingOrder(args._);
   if (skills.length === 0) {
     throw new ToolError("expected at least one skill name.");
@@ -603,7 +627,7 @@ function getRequiredSkills(args) {
 }
 
 function createSharedTargetArgs(includeConfig = false) {
-  const sharedArgs = {
+  const sharedArgs: Record<string, unknown> = {
     from: {
       type: "string",
       alias: ["f"],
@@ -640,7 +664,7 @@ function createSharedTargetArgs(includeConfig = false) {
   return sharedArgs;
 }
 
-function createSkillsManagementCommand(options) {
+function createSkillsManagementCommand(options: ExecutionOptions) {
   return defineCommand({
     meta: {
       name: "skills-management",
@@ -659,9 +683,12 @@ function createSkillsManagementCommand(options) {
             description: "Skill source repo, package, or skills root.",
           },
         },
-        run({ args }) {
+        run({ args }: { args: CommandArgs }) {
           assertNoPositionals(args, "list");
-          return handleListCommand({ source: args.from ?? null }, options);
+          return handleListCommand(
+            { source: getOptionalStringArg(args, "from") },
+            options,
+          );
         },
       }),
       link: defineCommand({
@@ -670,15 +697,15 @@ function createSkillsManagementCommand(options) {
           description: "Link one or more skills into a destination repo.",
         },
         args: createSharedTargetArgs(false),
-        run({ args }) {
+        run({ args }: { args: CommandArgs }) {
           return handleLinkCommand(
             {
               skills: getRequiredSkills(args),
-              source: args.from ?? null,
-              destination: args.to ?? null,
-              useGlobal: args.global ?? false,
-              dryRun: args.dryRun ?? false,
-              force: args.force ?? false,
+              source: getOptionalStringArg(args, "from"),
+              destination: getOptionalStringArg(args, "to"),
+              useGlobal: getBooleanArg(args, "global"),
+              dryRun: getBooleanArg(args, "dry-run"),
+              force: getBooleanArg(args, "force"),
               config: null,
             },
             options,
@@ -691,17 +718,17 @@ function createSkillsManagementCommand(options) {
           description: "Sync skills declared in .agents/skills.json.",
         },
         args: createSharedTargetArgs(true),
-        run({ args }) {
+        run({ args }: { args: CommandArgs }) {
           assertNoPositionals(args, "sync");
           return handleSyncCommand(
             {
               skills: [],
               source: null,
-              destination: args.to ?? null,
-              useGlobal: args.global ?? false,
-              dryRun: args.dryRun ?? false,
-              force: args.force ?? false,
-              config: args.config ?? null,
+              destination: getOptionalStringArg(args, "to"),
+              useGlobal: getBooleanArg(args, "global"),
+              dryRun: getBooleanArg(args, "dry-run"),
+              force: getBooleanArg(args, "force"),
+              config: getOptionalStringArg(args, "config"),
             },
             options,
           );
@@ -713,15 +740,15 @@ function createSkillsManagementCommand(options) {
           description: "Remove one or more linked skills from a destination repo.",
         },
         args: createSharedTargetArgs(false),
-        run({ args }) {
+        run({ args }: { args: CommandArgs }) {
           return handleUnlinkCommand(
             {
               skills: getRequiredSkills(args),
-              source: args.from ?? null,
-              destination: args.to ?? null,
-              useGlobal: args.global ?? false,
-              dryRun: args.dryRun ?? false,
-              force: args.force ?? false,
+              source: getOptionalStringArg(args, "from"),
+              destination: getOptionalStringArg(args, "to"),
+              useGlobal: getBooleanArg(args, "global"),
+              dryRun: getBooleanArg(args, "dry-run"),
+              force: getBooleanArg(args, "force"),
               config: null,
             },
             options,
@@ -732,7 +759,10 @@ function createSkillsManagementCommand(options) {
   });
 }
 
-export async function runSkillsManagement(argv = process.argv.slice(2), options = {}) {
+export async function runSkillsManagement(
+  argv: string[] = process.argv.slice(2),
+  options: RunOptions = {},
+): Promise<number> {
   const effectiveOptions = createExecutionOptions(options);
   const command = createSkillsManagementCommand(effectiveOptions);
 

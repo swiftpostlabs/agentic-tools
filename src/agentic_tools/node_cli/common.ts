@@ -6,6 +6,26 @@ import { consola, createConsola } from "consola";
 
 export class ToolError extends Error {}
 
+export type JsonObject = Record<string, unknown>;
+export type OutputFn = (message: string) => void;
+
+export interface LoggerLike {
+  log: (...args: unknown[]) => void;
+  error: (...args: unknown[]) => void;
+}
+
+export interface RunOptions {
+  cwd?: string;
+  output?: OutputFn;
+  logger?: LoggerLike;
+}
+
+export interface ExecutionOptions {
+  cwd: string;
+  output: OutputFn;
+  logger: LoggerLike;
+}
+
 export const DEFAULT_GLOBAL_SKILLS_DIR = path.join(
   os.homedir(),
   ".agents",
@@ -14,11 +34,11 @@ export const DEFAULT_GLOBAL_SKILLS_DIR = path.join(
 export const PACKAGE_SOURCE_PREFIX = "package:";
 export const SYNC_CONFIG_FILENAME = "skills.json";
 
-export function resolvePath(rawPath, cwd = process.cwd()) {
+export function resolvePath(rawPath: string | null | undefined, cwd = process.cwd()): string {
   return path.resolve(cwd, rawPath ?? ".");
 }
 
-export function pathExists(targetPath) {
+export function pathExists(targetPath: string): boolean {
   try {
     fs.accessSync(targetPath);
     return true;
@@ -27,7 +47,7 @@ export function pathExists(targetPath) {
   }
 }
 
-export function isDirectory(targetPath) {
+export function isDirectory(targetPath: string): boolean {
   try {
     return fs.statSync(targetPath).isDirectory();
   } catch {
@@ -35,7 +55,7 @@ export function isDirectory(targetPath) {
   }
 }
 
-export function isFile(targetPath) {
+export function isFile(targetPath: string): boolean {
   try {
     return fs.statSync(targetPath).isFile();
   } catch {
@@ -43,56 +63,49 @@ export function isFile(targetPath) {
   }
 }
 
-export function ensureJsonObject(value, context) {
+export function ensureJsonObject(value: unknown, context: string): JsonObject {
   if (value === null || Array.isArray(value) || typeof value !== "object") {
     throw new ToolError(`${context} must be a JSON object.`);
   }
-  return value;
+
+  return value as JsonObject;
 }
 
-export function getStringList(value) {
+export function getStringList(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  return value.filter((entry) => typeof entry === "string");
+  return value.filter((entry): entry is string => typeof entry === "string");
 }
 
-export function getStringRecord(value) {
+export function getStringRecord(value: unknown): Record<string, string> {
   if (value === null || Array.isArray(value) || typeof value !== "object") {
     return {};
   }
 
   return Object.fromEntries(
     Object.entries(value).filter(
-      ([key, entry]) => typeof key === "string" && typeof entry === "string",
+      ([, entry]) => typeof entry === "string",
     ),
   );
 }
 
-export function getBooleanRecord(value) {
+export function getBooleanRecord(value: unknown): Record<string, boolean> {
   if (value === null || Array.isArray(value) || typeof value !== "object") {
     return {};
   }
 
   return Object.fromEntries(
     Object.entries(value).filter(
-      ([key, entry]) => typeof key === "string" && typeof entry === "boolean",
+      ([, entry]) => typeof entry === "boolean",
     ),
   );
 }
 
-export function getObjectRecord(value) {
-  if (value === null || Array.isArray(value) || typeof value !== "object") {
-    return {};
-  }
-
-  return value;
-}
-
-export function deduplicatePreservingOrder(items) {
-  const seen = new Set();
-  const ordered = [];
+export function deduplicatePreservingOrder(items: string[]): string[] {
+  const seen = new Set<string>();
+  const ordered: string[] = [];
 
   for (const item of items) {
     if (seen.has(item)) {
@@ -106,7 +119,7 @@ export function deduplicatePreservingOrder(items) {
   return ordered;
 }
 
-export function stripYamlString(value) {
+export function stripYamlString(value: string): string {
   const trimmed = value.trim();
   if (
     trimmed.length >= 2 &&
@@ -119,14 +132,14 @@ export function stripYamlString(value) {
   return trimmed;
 }
 
-export function parseFrontmatter(text) {
+export function parseFrontmatter(text: string): JsonObject {
   const lines = text.split(/\r?\n/u);
   if (lines.length === 0 || lines[0].trim() !== "---") {
     throw new ToolError("Skill file is missing YAML frontmatter.");
   }
 
-  const frontmatter = {};
-  let currentMapping = null;
+  const frontmatter: JsonObject = {};
+  let currentMapping: Record<string, string> | null = null;
 
   for (const line of lines.slice(1)) {
     if (line.trim() === "---") {
@@ -175,7 +188,7 @@ export function parseFrontmatter(text) {
   throw new ToolError("Skill file is missing the closing frontmatter delimiter.");
 }
 
-export function stripJsonc(text) {
+export function stripJsonc(text: string): string {
   let output = "";
   let index = 0;
   let inString = false;
@@ -236,30 +249,30 @@ export function stripJsonc(text) {
   return output.replace(/,\s*(?=[}\]])/gu, "");
 }
 
-export function readJsonFile(targetPath, fallback) {
+export function readJsonFile<T>(targetPath: string, fallback: T): T | unknown {
   if (!pathExists(targetPath)) {
     return fallback;
   }
 
   const text = fs.readFileSync(targetPath, "utf8");
   try {
-    return JSON.parse(text);
+    return JSON.parse(text) as unknown;
   } catch {
-    return JSON.parse(stripJsonc(text));
+    return JSON.parse(stripJsonc(text)) as unknown;
   }
 }
 
-export function writeJsonFile(targetPath, data) {
+export function writeJsonFile(targetPath: string, data: JsonObject): void {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
 }
 
-export function writeTextFile(targetPath, content) {
+export function writeTextFile(targetPath: string, content: string): void {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, content, "utf8");
 }
 
-export function syncJsonFile(targetPath, data) {
+export function syncJsonFile(targetPath: string, data: JsonObject): void {
   if (Object.keys(data).length > 0) {
     writeJsonFile(targetPath, data);
     return;
@@ -274,7 +287,7 @@ export function createConsumerRequire(cwd = process.cwd()) {
   return createRequire(path.join(path.resolve(cwd), "__agentic_tools__.js"));
 }
 
-export function resolvePackageRoot(packageName, cwd = process.cwd()) {
+export function resolvePackageRoot(packageName: string, cwd = process.cwd()): string {
   const consumerRequire = createConsumerRequire(cwd);
   const candidateNames = deduplicatePreservingOrder([
     packageName,
@@ -297,7 +310,7 @@ export function resolvePackageRoot(packageName, cwd = process.cwd()) {
   );
 }
 
-export function isDirectoryLink(targetPath) {
+export function isDirectoryLink(targetPath: string): boolean {
   try {
     return fs.lstatSync(targetPath).isSymbolicLink();
   } catch {
@@ -305,7 +318,7 @@ export function isDirectoryLink(targetPath) {
   }
 }
 
-export function resolveExistingLinkTarget(targetPath) {
+export function resolveExistingLinkTarget(targetPath: string): string {
   if (!isDirectoryLink(targetPath)) {
     throw new ToolError(`Path '${targetPath}' is not a supported directory link.`);
   }
@@ -313,7 +326,7 @@ export function resolveExistingLinkTarget(targetPath) {
   return path.resolve(path.dirname(targetPath), fs.readlinkSync(targetPath));
 }
 
-export function removeDirectoryLink(targetPath) {
+export function removeDirectoryLink(targetPath: string): void {
   if (!isDirectoryLink(targetPath)) {
     throw new ToolError(`Path '${targetPath}' is not a supported directory link.`);
   }
@@ -321,7 +334,7 @@ export function removeDirectoryLink(targetPath) {
   fs.rmSync(targetPath, { recursive: true, force: false });
 }
 
-export function createDirectoryLink(destinationPath, targetPath) {
+export function createDirectoryLink(destinationPath: string, targetPath: string): void {
   fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
   fs.symlinkSync(
     targetPath,
@@ -330,11 +343,11 @@ export function createDirectoryLink(destinationPath, targetPath) {
   );
 }
 
-export function toPosixPath(targetPath) {
+export function toPosixPath(targetPath: string): string {
   return targetPath.split(path.sep).join("/");
 }
 
-function formatLogArg(value) {
+function formatLogArg(value: unknown): string {
   if (typeof value === "string") {
     return value;
   }
@@ -350,7 +363,7 @@ function formatLogArg(value) {
   }
 }
 
-export function createLogger(output) {
+export function createLogger(output?: OutputFn): LoggerLike {
   if (typeof output !== "function") {
     return consola;
   }
@@ -358,10 +371,22 @@ export function createLogger(output) {
   return createConsola({
     reporters: [
       {
-        log(logObject) {
+        log(logObject: { args: unknown[] }) {
           output(logObject.args.map((arg) => formatLogArg(arg)).join(" "));
         },
       },
     ],
   });
+}
+
+export function createExecutionOptions(options: RunOptions = {}): ExecutionOptions {
+  const logger = options.logger ?? createLogger(options.output);
+
+  return {
+    cwd: options.cwd ?? process.cwd(),
+    logger,
+    output: options.output ?? ((message: string) => {
+      logger.log(message);
+    }),
+  };
 }

@@ -5,27 +5,36 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "agents-policy": "./node/bin/agents-policy.js",
-    "agents-policy-import-vscode": "./node/bin/agents-policy-import-vscode.js",
-    "sync-ai-policy": "./node/bin/agents-policy.js",
-    "sync-ai-policy-import-vscode": "./node/bin/agents-policy-import-vscode.js",
-    "skills-management": "./node/bin/skills-management.js",
-    "skills-management-cli": "./node/bin/skills-management.js"
+    "agents-policy": "./bin/agents-policy.mts",
+    "agents-policy-import-vscode": "./bin/agents-policy-import-vscode.mts",
+    "sync-ai-policy": "./bin/agents-policy.mts",
+    "sync-ai-policy-import-vscode": "./bin/agents-policy-import-vscode.mts",
+    "skills-management": "./bin/skills-management.mts",
+    "skills-management-cli": "./bin/skills-management.mts"
   },
   "files": [
     ".agents/skills",
-    "node",
+    "bin",
+    "src/agentic_tools/node_cli/common.ts",
+    "src/agentic_tools/agents_policy/main.ts",
+    "src/agentic_tools/skills_management/main.ts",
     "README.md",
     "LICENSE"
   ],
   "packageManager": "yarn@1.22.22",
   "scripts": {
-    "test:node": "node --test node/test/*.test.js",
+    "test:node": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
     "pack:node": "npm pack --dry-run"
   },
   "dependencies": {
     "citty": "^0.2.2",
     "consola": "^3.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=22"
