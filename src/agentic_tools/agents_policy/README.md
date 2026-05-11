@@ -40,8 +40,10 @@ Use the import command when you want to pull the current VS Code approval maps b
 
 ## Files
 
-- `main.py` contains policy discovery, service selection, sync behavior, and the CLI entrypoints.
-- `main_test.py` covers the focused behavior of the sync logic.
+- `main.py` contains the Python policy discovery, service selection, sync behavior, and CLI entrypoints.
+- `main_test.py` covers the focused Python behavior of the sync logic.
+- `main.ts` contains the Node policy sync implementation and Node CLI entrypoints.
+- `main.test.ts` covers the focused Node CLI behavior through Jest.
 
 ## Canonical commands
 
@@ -62,5 +64,5 @@ uv run python -m pytest src/agentic_tools/agents_policy/main_test.py -q
 ```
 
 ```sh
-node --test node/test/agents-policy.test.js
+corepack yarn test:node --runTestsByPath src/agentic_tools/agents_policy/main.test.ts
 ```

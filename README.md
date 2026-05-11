@@ -59,7 +59,7 @@ yarn skills-management sync
 
 When the source uses `package:agentic-tools`, the linked skill directories come from the installed package location in the current environment, such as `.venv` for Python installs or `node_modules/agentic-tools/.agents/skills` for Node installs.
 
-The Node package ships plain ESM source, so installing it from GitHub works without a separate build step.
+The Node package ships native TypeScript ESM source, so installing it from GitHub works without a separate build step on modern Node.
 
 ### Manage Agent Policy
 
@@ -98,7 +98,13 @@ For Node-based usage, use Node.js 22 or newer. Prefer Yarn for Node-managed inst
 uv sync
 ```
 
+```sh
+corepack yarn install
+```
+
 After this step you may want to close and reopen your terminal or IDE to ensure that the uv-managed virtual environment is activated correctly.
+
+The Node CLI source now lives with the owning features under `src/agentic_tools/<feature>/main.ts`, with colocated Jest coverage in `main.test.ts`.
 
 ### Skills Management
 
@@ -141,6 +147,10 @@ Relative `from` paths resolve from the target repo root. Package sources use `pa
 
 ```sh
 uv run poe test
+```
+
+```sh
+corepack yarn test:node
 ```
 
 ### Linting

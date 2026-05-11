@@ -31,7 +31,9 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 ## Defaults
 
 - Prefer modern ESM syntax.
-- Prefer `.js` for most plain JavaScript modules and `.mjs` when explicit ESM extensions help the runtime or repo conventions stay unambiguous.
+- Prefer TypeScript for modern Node and Deno code when the runtime can execute `.ts` or `.mts` directly; do not stay on plain JavaScript just to avoid a build step.
+- Use plain JavaScript intentionally for browser-delivered code, JSDoc-first modules, or repos that have already chosen JS as the local default.
+- When code intentionally stays JavaScript, prefer `.js` for most modules and `.mjs` when explicit ESM extensions help the runtime or repo conventions stay unambiguous.
 - Prefer JSDoc on exported helpers, shared objects, and non-obvious callbacks.
 - Prefer named constants and helpers over repeated inline logic.
 - Prefer explicit input validation at I/O boundaries.
@@ -71,12 +73,14 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 
 - Prefer `citty` for Node-facing JavaScript CLIs that need argument parsing, subcommands, help text, and a maintainable command surface.
 - Prefer `consola` for Node-facing JavaScript CLI logging so success, warning, and error output stay consistent without hand-rolled terminal formatting.
+- Prefer Jest for Node-facing JavaScript or TypeScript package tests when one runner should cover colocated `*.test.js` and `*.test.ts` files.
 - Keep CLI-specific dependencies narrow: if a local helper plus native APIs are enough, do not add a framework just because it is popular.
 
 ### File extensions and linting
 
-- Use `.mjs` for explicit ESM entrypoints when the runtime executes the file directly and the extension clarifies intent.
-- Keep ordinary feature modules on `.js` unless the repo has a strong reason to make ESM extensions explicit everywhere.
+- If modern Node or Deno can run the file directly, reconsider whether it should be TypeScript before defaulting to `.js`.
+- Use `.mjs` for explicit ESM entrypoints when a file intentionally stays JavaScript and the extension clarifies runtime intent.
+- Keep ordinary feature modules on `.js` only when the surrounding repo or delivery target actually wants JavaScript.
 - When a repo mixes browser modules, repo scripts, and userscripts, split the ESLint flat config by file globs rather than diluting one config with many exceptions.
 
 ## Example Layouts
@@ -117,6 +121,7 @@ src/features/example-data-transform/
 - Repeated or complex logic has been named and isolated.
 - Browser code keeps responsibilities readable.
 - Script inputs and outputs are explicit and predictable.
+- Node and Deno files are still on JavaScript only when that choice is deliberate rather than inertia.
 - Node-based package installs and CLI invocations stay on Yarn unless the repo is intentionally Deno-owned.
 
 ## References

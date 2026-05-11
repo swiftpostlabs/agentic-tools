@@ -34,7 +34,8 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer discriminated unions for stateful variants.
 - Prefer explicit runtime validation at trust boundaries.
 - Prefer inference inside small local scopes and explicit annotations at exported or shared boundaries.
-- Prefer `.ts` for ordinary TypeScript modules and feature code.
+- Prefer TypeScript over plain JavaScript in modern Node and Deno codebases because current runtimes can execute `.ts` and `.mts` directly.
+- Prefer `.ts` for ordinary TypeScript modules, colocated feature tests, and most feature code.
 - Prefer `.mts` for Node ESM scripts that are executed directly by Node and need the extension to communicate module format clearly.
 - Prefer Yarn for dependency management and script execution in Node-based TypeScript projects unless the repo is intentionally Deno-owned.
 
@@ -72,6 +73,7 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Use `.mts` for repo scripts or Node-run ESM entrypoints when the runtime or surrounding repo conventions rely on explicit module extensions.
 - Use `.d.ts` for ambient declarations or globals that support the main code, such as userscript global definitions.
 - Split `tsconfig` files by runtime surface when a repo mixes Node scripts, browser modules, and userscripts instead of forcing one project file to describe incompatible environments.
+- Prefer Jest when a Node-managed package needs one test runner for colocated JavaScript and TypeScript feature tests.
 
 ## Example Layouts
 
@@ -117,6 +119,7 @@ tsconfig.json
 - No new `any` escapes or unchecked casts were introduced without strong justification.
 - External input is validated before domain logic uses it.
 - Shared types are easy to locate and easy to understand.
+- The code does not stay on plain JavaScript merely to avoid a build step that modern runtimes no longer need.
 - The resulting code remains readable to someone who did not write the types.
 
 ## References

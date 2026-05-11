@@ -44,7 +44,7 @@ Example config:
 }
 ```
 
-When `from` uses `package:agentic-tools`, `sync` resolves the installed package in the current environment and links skill folders from the packaged skill tree shipped by that install, including Python virtual environments and Yarn-managed `node_modules` installs. The Node package is published as plain ESM source, so installing from GitHub does not require a separate build step.
+When `from` uses `package:agentic-tools`, `sync` resolves the installed package in the current environment and links skill folders from the packaged skill tree shipped by that install, including Python virtual environments and Yarn-managed `node_modules` installs. The Node package is published as native TypeScript ESM source, so installing from GitHub does not require a separate build step on modern Node.
 
 ### Key Behavior
 
@@ -57,8 +57,10 @@ When `from` uses `package:agentic-tools`, `sync` resolves the installed package 
 
 ## Files
 
-- `main.py` contains manifest parsing, dependency resolution, path resolution, and the CLI command handlers.
-- `main_test.py` covers the core CLI behaviors and linking logic.
+- `main.py` contains the Python manifest parsing, dependency resolution, path resolution, and CLI command handlers.
+- `main_test.py` covers the focused Python linking behavior.
+- `main.ts` contains the Node manifest parsing, dependency resolution, path resolution, and CLI command handlers.
+- `main.test.ts` covers the focused Node CLI behavior through Jest.
 
 ## Canonical commands
 
@@ -82,5 +84,5 @@ uv run python -m pytest src/agentic_tools/skills_management/main_test.py -q
 ```
 
 ```sh
-node --test node/test/skills-management.test.js
+corepack yarn test:node --runTestsByPath src/agentic_tools/skills_management/main.test.ts
 ```
