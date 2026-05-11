@@ -676,6 +676,57 @@ def deduplicate_preserving_order(items: Sequence[str]) -> list[str]:
     return ordered
 
 
+def find_missing_requested_skills(
+    manifests: dict[str, SkillManifest],
+    requested_names: Sequence[str],
+) -> tuple[str, ...]:
+    return tuple(
+        skill_name
+        for skill_name in deduplicate_preserving_order(requested_names)
+        if skill_name not in manifests
+    )
+
+
+def describe_missing_configured_skills(
+    missing_by_source: Sequence[tuple[str, Sequence[str]]],
+) -> str:
+    lines = ["Skills config references missing skills:"]
+    for source, missing_names in missing_by_source:
+        lines.append(f"- source '{source}': {', '.join(missing_names)}")
+    return "\n".join(lines)
+
+
+def cleanup_dead_skill_links(
+    destination_skills_dir: Path,
+    *,
+    dry_run: bool,
+) -> list[str]:
+    if not destination_skills_dir.exists():
+        return []
+    if not destination_skills_dir.is_dir():
+        raise SkillsManagementError(
+            f"Destination skills path is not a directory: {destination_skills_dir}"
+        )
+
+    messages: list[str] = []
+    for child in sorted(destination_skills_dir.iterdir(), key=lambda path: path.name):
+        if not is_directory_link(child):
+            continue
+
+        target = resolve_existing_link_target(child)
+        if target.exists():
+            continue
+
+        if dry_run:
+            messages.append(f"Would remove dead link {child} -> {target}")
+            continue
+
+        remove_directory_link(child)
+        messages.append(f"Removed dead link {child} -> {target}")
+
+    return messages
+
+
 def validate_destination_flags(
     parser: ArgumentParser, *, use_global: bool, destination: str | None
 ) -> None:
@@ -745,6 +796,8 @@ def handle_sync_command(
         use_global=use_global,
     )
 
+    missing_by_source: list[tuple[str, Sequence[str]]] = []
+    manifests_to_link: list[SkillManifest] = []
     linked_skill_names: set[str] = set()
     for configured_source in load_configured_skill_sources(config_path):
         manifests = discover_skill_manifests(
@@ -753,24 +806,47 @@ def handle_sync_command(
                 config_path=config_path,
             )
         )
-        for manifest in resolve_selected_skills(
+
+        requested_skill_names = deduplicate_preserving_order(configured_source.skills)
+        missing_requested_skills = find_missing_requested_skills(
             manifests,
-            deduplicate_preserving_order(configured_source.skills),
-        ):
+            requested_skill_names,
+        )
+        if missing_requested_skills:
+            missing_by_source.append(
+                (configured_source.source, missing_requested_skills)
+            )
+            continue
+
+        for manifest in resolve_selected_skills(manifests, requested_skill_names):
             if manifest.name in linked_skill_names:
                 raise SkillsManagementError(
                     f"Skill '{manifest.name}' is configured more than once across sync sources."
                 )
 
-            print(
-                link_skill_directory(
-                    manifest,
-                    destination_skills_dir,
-                    dry_run=dry_run,
-                    force=force,
-                )
-            )
+            manifests_to_link.append(manifest)
             linked_skill_names.add(manifest.name)
+
+    if missing_by_source:
+        raise SkillsManagementError(
+            describe_missing_configured_skills(missing_by_source)
+        )
+
+    for message in cleanup_dead_skill_links(
+        destination_skills_dir,
+        dry_run=dry_run,
+    ):
+        print(message)
+
+    for manifest in manifests_to_link:
+        print(
+            link_skill_directory(
+                manifest,
+                destination_skills_dir,
+                dry_run=dry_run,
+                force=force,
+            )
+        )
 
     return 0
 

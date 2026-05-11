@@ -419,3 +419,91 @@ def test_main_unlink_dry_run_uses_expected_source_and_destination(
     assert exit_code == 0
     assert str(destination_repo / ".agents" / "skills" / "ref-alpha") in output
     assert str(source_repo / ".agents" / "skills" / "ref-alpha") in output
+
+
+def test_main_sync_reports_missing_configured_skills_by_source(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+    (destination_agents_dir / "skills.json").write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "../source",
+                        "skills": ["ref-alpha", "ref-missing", "ref-missing-too"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = skills_management_main.main(
+        ["sync", "--to", str(destination_repo), "--dry-run"]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 1
+    assert "Skills config references missing skills:" in output
+    assert "source '../source': ref-missing, ref-missing-too" in output
+    assert "Would link" not in output
+
+
+def test_main_sync_dry_run_reports_dead_links_before_linking(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+    (destination_agents_dir / "skills.json").write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "../source",
+                        "skills": ["ref-alpha"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    dead_target = tmp_path / "missing-source" / "ref-orphan"
+    dead_destination = destination_repo / ".agents" / "skills" / "ref-orphan"
+    monkeypatch.setattr(
+        skills_management_main,
+        "cleanup_dead_skill_links",
+        lambda destination_skills_dir, *, dry_run: [
+            f"Would remove dead link {dead_destination} -> {dead_target}"
+        ],
+    )
+
+    exit_code = skills_management_main.main(
+        ["sync", "--to", str(destination_repo), "--dry-run"]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert f"Would remove dead link {dead_destination} -> {dead_target}" in output
+    assert str(destination_repo / ".agents" / "skills" / "ref-alpha") in output

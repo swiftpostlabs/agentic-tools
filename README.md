@@ -34,6 +34,8 @@ uv run skills-management list
 uv run skills-management sync
 ```
 
+`sync` also removes dead skill links already present in the destination `.agents/skills` directory and reports configured skill names that are missing from a source before changing anything.
+
 To declare shared skill sources for `sync`, add `.agents/skills.json` to the target repo:
 
 ```json

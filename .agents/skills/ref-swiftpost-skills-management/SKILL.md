@@ -55,6 +55,8 @@ Document the stable behavior of this repository's `skills-management` CLI, its s
 - Default config path is `<destination>/.agents/skills.json`.
 - With `--global`, `--config` is required because there is no repo root from which to infer a default config file.
 - Each configured source declares a `from` location and a list of `skills` to materialize.
+- Reports missing configured skill names grouped by source before changing the destination.
+- Removes dead skill links already present in the destination `.agents/skills` directory before relinking the configured set.
 - Rejects duplicate skill names across configured sync sources.
 - Supports `--dry-run` and `--force` with the same semantics as `link`.
 

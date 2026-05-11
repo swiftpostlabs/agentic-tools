@@ -40,3 +40,5 @@
 - Use sibling repo paths for local side-by-side development.
 - Use `package:agentic-tools` when the source repo is installed into the consumer environment.
 - Keep the skill list explicit rather than syncing an entire repo by default.
+- During `sync`, missing configured skill names are reported by source before any linking happens.
+- During `sync`, dead links already present under the destination `.agents/skills` directory are cleaned up before the configured skills are linked.
