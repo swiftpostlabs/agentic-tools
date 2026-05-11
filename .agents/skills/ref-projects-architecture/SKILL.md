@@ -34,6 +34,8 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - Keep tests near the code they explain when the project layout allows it.
 - Add a short `README.md` at the root of each real feature folder so the feature's purpose and entrypoints are obvious without reading code first.
 - Extract shared utilities only after real reuse appears.
+- In mixed Python and Node repositories, keep Python package features under `src/<package>/<feature>/` and keep Node or TypeScript package features in the matching feature slice instead of inventing a parallel top-level tree.
+- In mixed Python and Node repositories, use `scripts/` for thin runtime entrypoint shims, dev automation, migrations, or one-off maintenance, not for the owning implementation of installed commands.
 
 ## Task Framing
 
@@ -62,7 +64,15 @@ Provide portable repository and feature-structure defaults that keep codebases m
 
 - If code is a user-facing feature of the product or package, keep it under the main source tree.
 - If code is repo maintenance, migration, scaffolding, or one-off automation, keep it in `scripts/` or the equivalent maintenance area.
+- If an installed CLI needs a runtime entry file, keep the implementation under the owning feature in `src/` and let `scripts/` hold only the smallest executable shim that calls into that feature.
 - Do not leave product behavior buried in maintenance scripts just because it started as a prototype.
+
+### Mixed Python and TypeScript setup
+
+- When a repo ships both Python and TypeScript surfaces, let each language keep its normal packaging and config entrypoints while sharing the same feature names and folder ownership.
+- Prefer colocated `main.py` and `main_test.py` for Python plus `main.ts` and `main.test.ts` for the same feature when both runtimes expose that surface.
+- Keep Python packaging in `pyproject.toml`, keep Node packaging in `package.json`, and split language-specific config such as `tsconfig` files by runtime surface instead of forcing one config file to describe everything.
+- Keep shared cross-runtime helpers narrow and explicit so a feature does not quietly depend on another language surface's internals.
 
 ### Naming and discoverability
 
@@ -92,18 +102,18 @@ src/package_name/
     service_test.py
 ```
 
-### JavaScript or TypeScript package in a monorepo
+### Mixed Python and TypeScript package
 
 ```text
-scripts/ (only for devs, not installed with the package)
-  data-migration.mts
-  generate-docs.mts
-packages/package-name/
-  src/
-    billing/
-      index.ts
-      parse-invoice.ts
-      parse-invoice.test.ts
+scripts/
+  billing-cli.mts
+src/package_name/
+  billing/
+    main.py
+    main_test.py
+    main.ts
+    main.test.ts
+    shared_parser.ts
 ```
 
 ### Standalone browser tool with local assets
