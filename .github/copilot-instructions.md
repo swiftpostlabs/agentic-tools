@@ -71,6 +71,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-coding-patterns`** — Portable coding defaults across languages and CLIs
 - Use when: choosing naming, typing, comments, branching structure, CLI ergonomics, or testing defaults
 
+**`ref-docs-authoring`** — Portable README and documentation authoring guidance
+- Use when: writing or restructuring a README, deciding whether usage or developer setup should come first, or adding concrete documentation examples
+
 **`ref-skills-authoring`** — Guidelines for creating and maintaining project skills
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
@@ -179,6 +182,7 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-setup`.
 - For workflow and structural caution: use `ref-agents-persona`.
 - For portable coding defaults across languages and CLIs: use `ref-coding-patterns`.
+- For README structure, docs audience, and concrete documentation examples: use `ref-docs-authoring`.
 - For generic architecture and feature-boundary decisions: use `ref-projects-architecture`.
 - For security policy config and generated restriction files: use `ref-agents-security`.
 - For this repo's `agents-policy` feature, `.agents/policy.json`, and generated vendor outputs: use `ref-swiftpost-agents-policy`.
