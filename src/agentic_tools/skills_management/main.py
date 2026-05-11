@@ -25,6 +25,7 @@ SHAREABLE_VISIBILITY = "shareable"
 REPO_LOCAL_VISIBILITY = "repo-local"
 SHAREABILITY_WIZARD = "tool-make-skill-shareable"
 PACKAGE_SOURCE_PREFIX = "package:"
+PACKAGED_SKILLS_DIRNAME = "shareable_skills"
 SYNC_CONFIG_FILENAME = "skills.json"
 
 
@@ -122,13 +123,65 @@ def resolve_path(raw_path: str | None) -> Path:
 
 def resolve_source_skills_root(path: Path) -> Path:
     skills_root = to_skills_root(path)
-    if not skills_root.exists():
-        raise SkillsManagementError(f"Could not find skills directory at {skills_root}")
-    if not skills_root.is_dir():
-        raise SkillsManagementError(
-            f"Skills directory path is not a directory: {skills_root}"
+    if skills_root.exists():
+        if not skills_root.is_dir():
+            raise SkillsManagementError(
+                f"Skills directory path is not a directory: {skills_root}"
+            )
+        return skills_root
+
+    if (
+        path.exists()
+        and path.is_dir()
+        and any(
+            child.is_dir() and (child / "SKILL.md").is_file()
+            for child in path.iterdir()
         )
-    return skills_root
+    ):
+        return path
+
+    raise SkillsManagementError(f"Could not find skills directory at {skills_root}")
+
+
+def resolve_packaged_skills_root(package_root: Path) -> Path | None:
+    packaged_skills_root = package_root / PACKAGED_SKILLS_DIRNAME
+    if not packaged_skills_root.is_dir():
+        return None
+
+    if any(
+        child.is_dir() and (child / "SKILL.md").is_file()
+        for child in packaged_skills_root.iterdir()
+    ):
+        return packaged_skills_root
+
+    return None
+
+
+def resolve_repo_skills_root(search_root: Path) -> Path | None:
+    for possible_root in [search_root, *search_root.parents]:
+        if (possible_root / ".agents" / "skills").is_dir():
+            return possible_root
+
+    return None
+
+
+def resolve_search_root(path: Path) -> Path:
+    normalized_path = path.resolve()
+    return normalized_path.parent if normalized_path.is_file() else normalized_path
+
+
+def iter_package_search_roots(
+    spec_origin: str | None,
+    search_locations: Sequence[str] | None,
+) -> tuple[Path, ...]:
+    search_roots: list[Path] = []
+
+    if search_locations is not None:
+        search_roots.extend(Path(entry) for entry in search_locations)
+    if spec_origin is not None:
+        search_roots.append(Path(spec_origin))
+
+    return tuple(search_roots)
 
 
 def resolve_destination_skills_root(path: Path, *, use_global: bool) -> Path:
@@ -250,22 +303,25 @@ def resolve_package_source_root(package_name: str) -> Path:
         if spec is None:
             continue
 
-        search_roots: list[Path] = []
-        if spec.submodule_search_locations is not None:
-            search_roots.extend(
-                Path(entry) for entry in spec.submodule_search_locations
-            )
-        if spec.origin is not None:
-            search_roots.append(Path(spec.origin))
+        search_roots = iter_package_search_roots(
+            spec.origin,
+            (
+                tuple(spec.submodule_search_locations)
+                if spec.submodule_search_locations is not None
+                else None
+            ),
+        )
 
         for search_root in search_roots:
-            normalized_root = search_root.resolve()
-            start_path = (
-                normalized_root.parent if normalized_root.is_file() else normalized_root
-            )
-            for possible_root in [start_path, *start_path.parents]:
-                if (possible_root / ".agents" / "skills").is_dir():
-                    return possible_root
+            start_path = resolve_search_root(search_root)
+
+            packaged_skills_root = resolve_packaged_skills_root(start_path)
+            if packaged_skills_root is not None:
+                return packaged_skills_root
+
+            repo_root = resolve_repo_skills_root(start_path)
+            if repo_root is not None:
+                return repo_root
 
     attempted_names = ", ".join(candidate_names)
     raise SkillsManagementError(

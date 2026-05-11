@@ -2,6 +2,28 @@
 
 This feature packages the repository policy sync logic that turns `.agents/policy.json` into the agent-specific files used by the supported tools.
 
+## For Users
+
+Use `agents-policy` when a repo keeps its agent access rules in `.agents/policy.json` and wants the generated files for Gemini, Claude Code, and Copilot to stay in sync.
+
+### Sync Generated Policy Files
+
+```sh
+uv run agents-policy
+```
+
+This reads `.agents/policy.json` and updates the supported generated outputs for the enabled services.
+
+### Import VS Code Approvals
+
+```sh
+uv run agents-policy-import-vscode
+```
+
+Use the import command when you want to pull the current VS Code approval maps back into `.agents/policy.json` before resyncing.
+
+## For Developers
+
 ## Files
 
 - `main.py` contains policy discovery, service selection, sync behavior, and the CLI entrypoints.

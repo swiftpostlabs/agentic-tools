@@ -1,5 +1,6 @@
 import json
 from collections.abc import Callable
+from importlib.machinery import ModuleSpec
 from pathlib import Path
 
 import pytest
@@ -17,7 +18,20 @@ def write_skill(
     *,
     metadata: dict[str, str] | None = None,
 ) -> None:
-    skill_dir = repo_root / ".agents" / "skills" / name
+    write_skill_in_root(
+        repo_root / ".agents" / "skills",
+        name,
+        metadata=metadata,
+    )
+
+
+def write_skill_in_root(
+    skills_root: Path,
+    name: str,
+    *,
+    metadata: dict[str, str] | None = None,
+) -> None:
+    skill_dir = skills_root / name
     skill_dir.mkdir(parents=True, exist_ok=True)
 
     lines = [
@@ -74,6 +88,41 @@ def test_discover_skill_manifests_accepts_skills_root_path(tmp_path: Path) -> No
     manifests = discover_skill_manifests(tmp_path / ".agents" / "skills")
 
     assert list(manifests) == ["ref-alpha"]
+
+
+def test_discover_skill_manifests_accepts_packaged_skills_root_path(
+    tmp_path: Path,
+) -> None:
+    packaged_skills_root = tmp_path / "agentic_tools" / "shareable_skills"
+    write_skill_in_root(
+        packaged_skills_root,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+
+    manifests = discover_skill_manifests(packaged_skills_root)
+
+    assert list(manifests) == ["ref-alpha"]
+
+
+def test_resolve_package_source_root_prefers_packaged_skills_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package_root = tmp_path / "site-packages" / "agentic_tools"
+    write_skill_in_root(
+        package_root / "shareable_skills",
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+    spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
+    spec.submodule_search_locations = [str(package_root)]
+
+    monkeypatch.setattr(skills_management_main, "find_spec", lambda name: spec)
+
+    resolved_path = skills_management_main.resolve_package_source_root("agentic-tools")
+
+    assert resolved_path == package_root / "shareable_skills"
 
 
 def test_resolve_selected_skills_includes_dependencies_first(tmp_path: Path) -> None:

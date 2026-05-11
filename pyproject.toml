@@ -24,6 +24,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/agentic_tools", "scripts"]
 
+[tool.hatch.build.targets.wheel.force-include]
+".agents/skills" = "agentic_tools/shareable_skills"
+
 [tool.pytest.ini_options]
 minversion = "9.0"
 addopts = "--import-mode=importlib"
