@@ -82,7 +82,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 
 - Read `./references/consolidation-checklist.md` when the maintenance pass reveals duplicated or misplaced guidance.
 - Use `.agents/skills/tool-maintain-agents-instructions/SKILL.md` when skill changes imply drift in `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
-- Use `.agents/skills/ref-local-feature-tracking/SKILL.md` when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
+- Use `.agents/skills/ref-agent-local-tasks/SKILL.md` when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
 - Read `./references/checklist.md` for a quick maintenance review pass.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for branch-aware skill maintenance prompts.
 - Review `./evals/evals.json` when validating output quality for change-to-skill mapping and maintenance decisions.

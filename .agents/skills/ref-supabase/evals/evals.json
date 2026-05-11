@@ -4,9 +4,10 @@
     {
       "id": 1,
       "prompt": "We need to add a new table, apply the change locally, and use the generated types in client code. Outline the Supabase workflow.",
-      "expected_output": "A workflow that uses migrations, local CLI commands, and regenerated types as one coherent path.",
+      "expected_output": "A workflow that uses migrations, local replay, remote promotion, and regenerated types as one coherent path.",
       "assertions": [
         "The response mentions migrations or schema history",
+        "The response mentions a local replay step such as db reset or an equivalent migration check",
         "The response mentions regenerated database types after schema changes",
         "The response keeps the workflow centered on the Supabase CLI"
       ]
@@ -19,6 +20,26 @@
         "The response mentions one clear schema authority",
         "The response calls out split-brain or competing migrations as a risk",
         "The response preserves Supabase-specific platform concerns such as auth, storage, or RLS"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Review this supabase-js CRUD layer. The code mixes publishable and service-role keys, chains filters before select, and expects update() to return rows automatically. What should change?",
+      "expected_output": "Guidance that fixes key placement, read and write chaining order, and mutation return semantics for supabase-js.",
+      "assertions": [
+        "The response keeps service-role or secret keys out of browser code",
+        "The response says select comes before filters on reads",
+        "The response says insert, update, upsert, or delete need select() to return modified rows"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "A dashboard hotfix changed the remote database and now local and remote Supabase migration history disagree. Outline the recovery workflow.",
+      "expected_output": "A workflow that inspects migration drift, repairs history deliberately, and chooses an explicit db pull or db push path.",
+      "assertions": [
+        "The response mentions migration list",
+        "The response mentions migration repair",
+        "The response chooses an explicit db pull or db push path instead of manual history edits"
       ]
     }
   ]

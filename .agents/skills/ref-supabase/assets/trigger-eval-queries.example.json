@@ -12,6 +12,14 @@
     "should_trigger": true
   },
   {
+    "query": "Review these Supabase insert, update, delete, and rpc calls for filter ordering, RLS, and returned-row issues.",
+    "should_trigger": true
+  },
+  {
+    "query": "Our remote Supabase schema changed in the dashboard and migration history is now out of sync. How do we recover?",
+    "should_trigger": true
+  },
+  {
     "query": "Tune this generic PostgreSQL query planner issue.",
     "should_trigger": false
   },

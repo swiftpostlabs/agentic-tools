@@ -16,7 +16,7 @@
     "should_trigger": false
   },
   {
-    "query": "Explain how the skills-management sync command works in this repo.",
+    "query": "Explain how the agentic-tools skills sync command works in this repo.",
     "should_trigger": false
   }
 ]

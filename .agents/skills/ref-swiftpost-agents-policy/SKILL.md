@@ -10,7 +10,7 @@ metadata:
 
 ## Purpose
 
-Document this repository's concrete AI policy implementation: the canonical policy file, the `agents-policy` CLI, the generated client outputs, and the service-selection model that decides which vendors receive managed files.
+Document this repository's concrete AI policy implementation: the canonical policy file, the grouped `agentic-tools policy` CLI surface, the generated client outputs, and the service-selection model that decides which vendors receive managed files.
 
 ## When to use this skill
 
@@ -23,10 +23,12 @@ Document this repository's concrete AI policy implementation: the canonical poli
 
 - Canonical policy file: `.agents/policy.json`
 - Canonical commands:
-  - `uv run agents-policy`
-  - `uv run agents-policy --check`
-  - `uv run agents-policy-import-vscode`
+  - `uv run agentic-tools policy sync`
+  - `uv run agentic-tools policy check`
+  - `uv run agentic-tools policy import-vscode`
 - Compatibility aliases still supported:
+  - `uv run agents-policy`
+  - `uv run agents-policy-import-vscode`
   - `uv run sync-ai-policy`
   - `uv run sync-ai-policy-import-vscode`
 - Implementation path: `src/agentic_tools/agents_policy/main.py`
@@ -54,19 +56,19 @@ If `services` is omitted, the implementation defaults to all supported services.
 
 ## Command Behavior
 
-### `uv run agents-policy`
+### `uv run agentic-tools policy sync`
 
 - Finds the nearest `.agents/policy.json`, with legacy `.ai-policy.json` fallback.
 - Loads the policy file, validates `services`, and syncs the enabled outputs.
 - Cleans managed sections for disabled outputs so stale vendor files do not linger.
 
-### `uv run agents-policy --check`
+### `uv run agentic-tools policy check`
 
 - Resolves the same policy and generated output paths as the normal sync flow.
 - Compares the current managed files to the generated contents without rewriting them.
-- Exits with an error when drift exists and tells the user to run either `uv run agents-policy` or `uv run agents-policy-import-vscode`.
+- Exits with an error when drift exists and tells the user to run either `uv run agentic-tools policy sync` or `uv run agentic-tools policy import-vscode`.
 
-### `uv run agents-policy-import-vscode`
+### `uv run agentic-tools policy import-vscode`
 
 - Imports current VS Code approval maps into the policy file first.
 - Writes the updated policy back to `.agents/policy.json`.
@@ -78,12 +80,12 @@ If `services` is omitted, the implementation defaults to all supported services.
 - Prefer `services` to control vendor coverage instead of hand-editing generated files.
 - Keep `.aiexclude` at the repo root; do not replace it with a made-up Gemini-only ignore file.
 - Treat `.claude/settings.json` and `.vscode/settings.json` as partially managed outputs, not primary authoring surfaces for policy-owned sections.
-- Keep docs and CI on the canonical `agents-policy` command even though compatibility aliases still exist.
+- Keep docs and CI on the canonical `agentic-tools policy` command family even though compatibility aliases still exist.
 
 ## Validation
 
-- Run `uv run agents-policy` after changing `.agents/policy.json` or the sync implementation.
-- Run `uv run agents-policy --check` in CI or before commit flows that should reject policy drift without mutating files.
+- Run `uv run agentic-tools policy sync` after changing `.agents/policy.json` or the sync implementation.
+- Run `uv run agentic-tools policy check` in CI or before commit flows that should reject policy drift without mutating files.
 - Run `uv run python -m pytest src/agentic_tools/agents_policy/main_test.py -q` when changing policy logic.
 - Check CI drift enforcement in `.github/workflows/ci.yaml` if output file names or command names change.
 - Keep `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` aligned with the current policy file.

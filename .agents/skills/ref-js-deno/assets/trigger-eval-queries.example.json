@@ -4,11 +4,19 @@
     "should_trigger": true
   },
   {
+    "query": "Adopt Deno in this repo without throwing away our tsconfig.json and eslint.config.js.",
+    "should_trigger": true
+  },
+  {
     "query": "Review this hybrid repo where Deno scripts and Node tooling keep fighting over the same files.",
     "should_trigger": true
   },
   {
     "query": "What permissions should this Deno CLI request for filesystem and network access?",
+    "should_trigger": true
+  },
+  {
+    "query": "Why does deno lint disagree with our ESLint setup in a hybrid repo?",
     "should_trigger": true
   },
   {

@@ -86,8 +86,8 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-github-dependabot`** — Portable Dependabot configuration guidance
 - Use when: creating or reviewing `.github/dependabot.yml`, tuning update volume, or deciding how version and security updates should be grouped and scoped
 
-**`ref-js-deno`** — Portable Deno guidance for modern runtime usage and hybrid repos
-- Use when: writing Deno code, configuring `deno.json`, or migrating older Deno patterns
+**`ref-js-deno`** — Portable Deno guidance for modern runtime usage, tsconfig or ESLint adoption, and hybrid repos
+- Use when: writing Deno code, configuring `deno.json`, or adopting Deno into an existing TypeScript or Node repo
 
 **`ref-js-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
 - Use when: writing plain JavaScript, adding JSDoc, or keeping JavaScript maintainable without TypeScript
@@ -110,8 +110,8 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
 
-**`ref-supabase`** — Portable Supabase guidance for CLI workflows, edge functions, and ORM boundaries
-- Use when: initializing Supabase, working on local or remote workflows, writing Edge Functions, or deciding how ORMs fit with Supabase
+**`ref-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
+- Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
 **`ref-swiftpost-agents-policy`** — Repo-specific agents-policy guidance
 - Use when: working on `src/agentic_tools/agents_policy`, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
@@ -146,8 +146,11 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`tool-commit`** — Group edited files into logical commits and create focused commits
 - Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing
 
-**`ref-local-feature-tracking`** — Maintain local feature tracking under `.agents/tasks/`
-- Use when: a task needs local planning, temporary feature notes, or structured tracking under `.agents/tasks/`
+**`tool-handle-agents-local-tasks`** — Guided workflow for reading and handling the local `.agents/tasks/` backlog
+- Use when: the user asks to check `.agents/tasks/TODO.md`, continue remaining local tasks, or work through the repo's local task backlog
+
+**`ref-agent-local-tasks`** — Maintain local agent task tracking under `.agents/tasks/`
+- Use when: a task needs local planning, temporary task notes, or structured tracking under `.agents/tasks/`
 
 ## Workflow
 
@@ -169,9 +172,9 @@ When working on this project:
 - `uv run poe typecheck` — Run Pyright strict mode.
 - `uv run poe lint-filter` — Run lint and filter output.
 - `uv run poe typecheck-filter` — Run type-checking and filter output.
-- `uv run skills-management list` — List skills available from the current repo or a specified source.
-- `uv run agents-policy` — Regenerate agent config from `.agents/policy.json`.
-- `uv run agents-policy-import-vscode` — Import VS Code approvals into policy, then sync.
+- `uv run agentic-tools skills list` — List skills available from the current repo or a specified source.
+- `uv run agentic-tools policy sync` — Regenerate agent config from `.agents/policy.json`.
+- `uv run agentic-tools policy import-vscode` — Import VS Code approvals into policy, then sync.
 
 Use the Poe validation tasks above as the default way to run tests, lint, and type-checking in this repo. Only call the underlying tools directly when a task needs flags or behavior that the Poe wrapper does not expose.
 
@@ -185,6 +188,8 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For README structure, docs audience, and concrete documentation examples: use `ref-docs-authoring`.
 - For generic architecture and feature-boundary decisions: use `ref-projects-architecture`.
 - For security policy config and generated restriction files: use `ref-agents-security`.
+- For local `.agents/tasks/` conventions and task-file structure: use `ref-agent-local-tasks`.
+- For working through the local backlog under `.agents/tasks/TODO.md`: use `tool-handle-agents-local-tasks`.
 - For this repo's `agents-policy` feature, `.agents/policy.json`, and generated vendor outputs: use `ref-swiftpost-agents-policy`.
 - For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-agents-instructions-authoring`.
 - For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-github-actions-ci`.
@@ -197,8 +202,8 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For standalone browser apps and no-build web tools: use `ref-app-web-standalone`.
 - For whole React and Next.js app planning and app-level stack choices: use `ref-app-react-next`.
 - For browser userscripts: use `ref-js-userscript`.
-- For Deno runtime and hybrid Deno or Node repos: use `ref-js-deno`.
-- For Supabase CLI, schema, edge functions, and ORM boundaries: use `ref-supabase`.
+- For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-js-deno`.
+- For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-supabase`.
 - For this repo's skills-management CLI and `.agents/skills.json` sync model: use `ref-swiftpost-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-shareable-skills`.
 - For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-export-skills`.

@@ -59,7 +59,7 @@ Use this matrix as the compact default recommendation after the mode is known.
 |------|------------------------|
 | Existing repo already set up | `ref-skills-authoring`, `tool-maintain-skills`, selective `ref-agents-security`, then only the domain skills that match the existing stack |
 | New Python script/tool repo | `ref-skills-authoring`, adapted `ref-code-conventions`, `ref-project-setup`, optional `ref-agents-security` |
-| New Python application repo | recommend this repo as starter, then adapt `ref-agents-persona`, `ref-code-conventions`, `ref-project-setup`, `ref-agents-security`, and `ref-local-feature-tracking` as needed |
+| New Python application repo | recommend this repo as starter, then adapt `ref-agents-persona`, `ref-code-conventions`, `ref-project-setup`, `ref-agents-security`, and `ref-agent-local-tasks` as needed |
 | Security-policy-only adoption | `ref-agents-security`, the sync script, policy file, generated outputs, and provider-routing docs |
 | Other or unclear | ask first; do not recommend a full transplant until the project type is explicit |
 
@@ -76,7 +76,8 @@ Adopt these when they match the target repo's needs:
 - `ref-project-setup` — useful when the target repo also wants centralized `pyproject.toml` guidance and folder layout rules.
 - `ref-skills-authoring` — useful when the target repo expects to keep evolving its own skills.
 - `tool-maintain-skills` — useful once the target repo has enough skills or instruction files that maintenance and consolidation become ongoing concerns.
-- `ref-local-feature-tracking` — useful when the target repo wants structured local task tracking for multi-step work.
+- `ref-agent-local-tasks` — useful when the target repo wants structured local task tracking for multi-step work.
+- `tool-handle-agents-local-tasks` — useful when the target repo also wants a direct workflow for reading `.agents/tasks/TODO.md` and working through it.
 
 ## AI security assets to adopt
 
@@ -131,7 +132,7 @@ Start with the skills that are most transferable across projects:
 - `tool-maintain-skills` for keeping top-level instructions slim, routing clean, and skill guidance in the right owner.
 - `ref-agents-persona` for workflow expectations that are still valid in the target repo.
 - `ref-code-conventions` and `ref-project-setup` only when the target repo is close enough to adapt them quickly.
-- `ref-local-feature-tracking` if the target repo wants task tracking in `.agents/tasks/`.
+- `ref-agent-local-tasks` if the target repo wants task tracking in `.agents/tasks/`.
 
 Do not copy repo-specific skills unchanged into another repo. Treat them as examples of how to author project-specific skills, not as generic guidance.
 

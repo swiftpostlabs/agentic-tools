@@ -1,6 +1,6 @@
 [
   {
-    "query": "Explain how the skills-management sync command and .agents/skills.json work in this repo.",
+    "query": "Explain how the agentic-tools skills sync command and .agents/skills.json work in this repo.",
     "should_trigger": true
   },
   {

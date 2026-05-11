@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Explain how this repo's skills-management sync feature resolves sources and why a target repo would use .agents/skills.json.",
+      "prompt": "Explain how this repo's agentic-tools skills sync feature resolves sources and why a target repo would use .agents/skills.json.",
       "expected_output": "An explanation that covers the JSON shape, relative versus package sources, explicit skill lists, and the destination repo workflow.",
       "assertions": [
         "The response explains .agents/skills.json as the declarative sync input",

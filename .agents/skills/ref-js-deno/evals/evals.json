@@ -20,6 +20,17 @@
         "The response recommends task or command wiring through Deno tooling",
         "The response avoids using -A as the default recommendation"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "We have an existing Node plus TypeScript repo with tsconfig.json and eslint.config.js, but we want Deno to own a utilities folder and use deno check and deno lint there. How should we set that up?",
+      "expected_output": "Guidance that keeps deno.json as the Deno source of truth, scopes tsconfig or ESLint ownership carefully, mentions nodeModulesDir auto when ESLint or editor tooling needs local packages, and keeps Deno activation path-based.",
+      "assertions": [
+        "The response mentions deno.json as the Deno configuration owner",
+        "The response explains when tsconfig.json can stay in the repo",
+        "The response mentions nodeModulesDir or a local node_modules requirement for ESLint or editor tooling",
+        "The response avoids recommending whole-workspace Deno activation"
+      ]
     }
   ]
 }

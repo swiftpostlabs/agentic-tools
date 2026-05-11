@@ -10,7 +10,7 @@ metadata:
 
 ## Purpose
 
-Document the stable behavior of this repository's `skills-management` CLI, its shareability enforcement rules, and the `.agents/skills.json` sync model used to materialize shared skills into another repository.
+Document the stable behavior of this repository's grouped `agentic-tools skills` CLI surface, its shareability enforcement rules, and the `.agents/skills.json` sync model used to materialize shared skills into another repository.
 
 ## When to use this skill
 
@@ -28,7 +28,8 @@ Document the stable behavior of this repository's `skills-management` CLI, its s
 ## Stable Surface
 
 - Distribution name: `agentic-tools`
-- Entry points: `uv run skills-management` and the Node package command `skills-management`
+- Canonical entry points: `uv run agentic-tools skills ...` and the Node package command `agentic-tools skills ...`
+- Compatibility aliases: `uv run skills-management ...` and `skills-management ...`
 - Implementation path: `src/agentic_tools/skills_management/main.py`
 - Node runtime shim: `scripts/skills-management.mts`
 - Default global destination: `~/.agents/skills`
@@ -111,11 +112,12 @@ Document the stable behavior of this repository's `skills-management` CLI, its s
 - Use `sync` for target repos that want a declarative shared-skill setup.
 - Prefer `package:<name>` sources when the source repo is being consumed as an installed package instead of a sibling checkout.
 - Prefer repo-relative filesystem sources when two repos are cloned side by side locally.
+- In `uv`-managed consuming repos that already use Poe, prefer a task like `sync-skills = "uv run agentic-tools skills sync"` instead of creating a local wrapper script just to call the installed CLI.
 
 ## Validation
 
-- Use `uv run skills-management list` to validate discovery and metadata parsing.
-- Use `uv run skills-management sync --dry-run --to <repo>` before a real sync when debugging a target repo.
+- Use `uv run agentic-tools skills list` to validate discovery and metadata parsing.
+- Use `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging a target repo.
 - Check `src/agentic_tools/skills_management/main_test.py` when changing source resolution, dependency handling, or Windows link behavior.
 - Keep README examples aligned with the CLI behavior and config contract.
 

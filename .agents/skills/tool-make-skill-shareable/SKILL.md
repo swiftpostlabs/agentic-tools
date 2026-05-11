@@ -63,4 +63,4 @@ Ask only the questions that are still unanswered after reading the target skill.
 - Review the result against .agents/skills/ref-shareable-skills/references/checklist.md.
 - Confirm the metadata keys stay within the spec's string-to-string model.
 - Confirm every dependency in `shareable-skills.requires` exists and is itself shareable.
-- Run `uv run skills-management link <name> --global --dry-run` once the linker CLI exists.
+- Run `uv run agentic-tools skills link <name> --global --dry-run` once the linker CLI exists.

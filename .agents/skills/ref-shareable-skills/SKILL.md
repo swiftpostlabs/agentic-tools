@@ -43,7 +43,7 @@ Define how this repo decides whether a skill is safe to export, how shareability
 | Classify visibility | Decide whether the skill is `shareable` or `repo-local`. | The linker and export workflows need a clear portability decision. | Whenever a skill is created, reviewed for export, or backfilled with metadata. | The skill has a visibility value that matches its real portability. |
 | Record hard dependencies | List required companion skills in `shareable-skills.requires`. | Shareable skills should bring along only the minimum additional skills needed to work correctly. | When the skill truly relies on another skill's instructions. | The dependency chain is explicit and shallow. |
 | Add a repo-local reason | Explain why a non-shareable skill should stay local. | Future reviews are faster when the portability blocker is explicit. | When `repo-local` would otherwise be surprising. | The metadata explains the portability boundary succinctly. |
-| Run `uv run skills-management link <name> --global --dry-run` | Validate the metadata through the export workflow. | The linker is the cheapest realistic check that the metadata and dependency chain are usable. | After adding or changing shareability metadata, once the CLI exists. | The skill dry-runs cleanly or reports a concrete exportability problem. |
+| Run `uv run agentic-tools skills link <name> --global --dry-run` | Validate the metadata through the export workflow. | The linker is the cheapest realistic check that the metadata and dependency chain are usable. | After adding or changing shareability metadata, once the CLI exists. | The skill dry-runs cleanly or reports a concrete exportability problem. |
 
 ## Gotchas
 
@@ -57,7 +57,7 @@ Define how this repo decides whether a skill is safe to export, how shareability
 - Confirm the skill metadata uses `shareable-skills.visibility` and, when needed, `shareable-skills.requires` and `shareable-skills.reason`.
 - Confirm every dependency in `shareable-skills.requires` points to an existing skill name.
 - Confirm a `shareable` skill does not depend on a `repo-local` skill.
-- Run `uv run skills-management link <name> --global --dry-run` after metadata changes once the CLI exists.
+- Run `uv run agentic-tools skills link <name> --global --dry-run` after metadata changes once the CLI exists.
 
 ## References
 

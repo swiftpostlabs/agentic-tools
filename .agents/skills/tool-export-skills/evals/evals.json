@@ -3,7 +3,7 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Help me export selected skills from this repo into another repo that can use skills-management sync.",
+      "prompt": "Help me export selected skills from this repo into another repo that can use agentic-tools skills sync.",
       "expected_output": "A response that chooses the skills-management mode, includes hard dependencies, and gives a concrete sync-oriented handoff.",
       "assertions": [
         "The response selects the repo or skills-management export mode",
