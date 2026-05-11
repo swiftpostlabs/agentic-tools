@@ -69,6 +69,12 @@ After adding or updating `.agents/policy.json`, sync the generated agent files w
 uv run agents-policy
 ```
 
+To enforce that generated policy files are already in sync during CI or before committing, run:
+
+```sh
+uv run agents-policy --check
+```
+
 Or, in a Node-managed repo:
 
 ```sh
@@ -105,6 +111,7 @@ corepack yarn install
 After this step you may want to close and reopen your terminal or IDE to ensure that the uv-managed virtual environment is activated correctly.
 
 The Node CLI source now lives with the owning features under `src/agentic_tools/<feature>/main.ts`, with colocated Jest coverage in `main.test.ts`.
+The shipped Node command shims now live in `scripts/*.mts`, while the actual implementation stays under the owning feature in `src/agentic_tools/...`.
 
 ### Skills Management
 
@@ -158,6 +165,8 @@ corepack yarn test:node
 ```sh
 uv run poe lint
 ```
+
+This now includes `uv run agents-policy --check` before the Python lint step so generated policy files fail fast in the standard validation flow.
 
 ### Typechecking
 

@@ -171,6 +171,20 @@ def write_text_file(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def build_json_file_content(data: dict[str, Any]) -> str | None:
+    if not data:
+        return None
+
+    return json.dumps(data, indent=2) + "\n"
+
+
+def read_optional_text_file(path: Path) -> str | None:
+    if not path.exists():
+        return None
+
+    return path.read_text(encoding="utf-8")
+
+
 def sync_json_file(path: Path, data: dict[str, Any]) -> None:
     if data:
         write_json_file(path, data)
@@ -446,7 +460,34 @@ def format_policy_label(paths: PolicyPaths) -> str:
         return str(paths.policy_file)
 
 
-def sync_policy_file(policy_file: Path, *, import_vscode: bool) -> list[str]:
+def format_managed_path(path: Path, repo_root: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def build_check_mode_error(paths: PolicyPaths, drift_paths: list[Path]) -> str:
+    drift_summary = ", ".join(
+        format_managed_path(path, paths.repo_root) for path in drift_paths
+    )
+    return (
+        f"Managed policy files are out of sync: {drift_summary}. "
+        "Run `uv run agents-policy` to sync them. "
+        "If you intended to keep VS Code approval edits instead, run "
+        "`uv run agents-policy-import-vscode`."
+    )
+
+
+def sync_policy_file(
+    policy_file: Path, *, import_vscode: bool, check: bool = False
+) -> list[str]:
+    if import_vscode and check:
+        raise AgentsPolicyError(
+            "`--check` cannot be combined with `--import-vscode`. "
+            "Run `uv run agents-policy-import-vscode` instead."
+        )
+
     paths = resolve_policy_paths(policy_file)
     policy = require_json_object(
         read_json_file(paths.policy_file, build_default_policy()),
@@ -473,15 +514,11 @@ def sync_policy_file(policy_file: Path, *, import_vscode: bool) -> list[str]:
     )
 
     gemini_enabled = SERVICE_GEMINI in services
-    if gemini_enabled and (protected_files or excluded_files):
-        write_text_file(
-            paths.ai_exclude,
-            build_ai_exclude_content(effective, policy_label),
-        )
-        messages.append("Synced: Gemini (.aiexclude)")
-    elif paths.ai_exclude.exists():
-        paths.ai_exclude.unlink()
-        messages.append("Removed: Gemini (.aiexclude)")
+    expected_ai_exclude = (
+        build_ai_exclude_content(effective, policy_label)
+        if gemini_enabled and (protected_files or excluded_files)
+        else None
+    )
 
     claude_policy = effective if SERVICE_CLAUDE in services else {"protectedFiles": []}
     claude_settings = require_json_object(
@@ -492,11 +529,7 @@ def sync_policy_file(policy_file: Path, *, import_vscode: bool) -> list[str]:
         claude_settings,
         claude_policy,
     )
-    sync_json_file(paths.claude_settings, updated_claude_settings)
-    if SERVICE_CLAUDE in services:
-        messages.append("Synced: Claude Code (.claude/settings.json)")
-    elif claude_settings:
-        messages.append("Cleaned: Claude Code (.claude/settings.json)")
+    expected_claude_settings = build_json_file_content(updated_claude_settings)
 
     copilot_policy = (
         effective
@@ -515,6 +548,37 @@ def sync_policy_file(policy_file: Path, *, import_vscode: bool) -> list[str]:
         vscode_settings,
         copilot_policy,
     )
+    expected_vscode_settings = build_json_file_content(updated_vscode_settings)
+
+    if check:
+        drift_paths: list[Path] = []
+        if read_optional_text_file(paths.ai_exclude) != expected_ai_exclude:
+            drift_paths.append(paths.ai_exclude)
+        if read_optional_text_file(paths.claude_settings) != expected_claude_settings:
+            drift_paths.append(paths.claude_settings)
+        if read_optional_text_file(paths.vscode_settings) != expected_vscode_settings:
+            drift_paths.append(paths.vscode_settings)
+
+        if drift_paths:
+            raise AgentsPolicyError(build_check_mode_error(paths, drift_paths))
+
+        messages.append("Checked: generated policy files are up to date.")
+        messages.append("Done.")
+        return messages
+
+    if expected_ai_exclude is not None:
+        write_text_file(paths.ai_exclude, expected_ai_exclude)
+        messages.append("Synced: Gemini (.aiexclude)")
+    elif paths.ai_exclude.exists():
+        paths.ai_exclude.unlink()
+        messages.append("Removed: Gemini (.aiexclude)")
+
+    sync_json_file(paths.claude_settings, updated_claude_settings)
+    if SERVICE_CLAUDE in services:
+        messages.append("Synced: Claude Code (.claude/settings.json)")
+    elif claude_settings:
+        messages.append("Cleaned: Claude Code (.claude/settings.json)")
+
     sync_json_file(paths.vscode_settings, updated_vscode_settings)
     if SERVICE_COPILOT in services:
         messages.append("Synced: Copilot local policy (.vscode/settings.json)")
@@ -543,6 +607,11 @@ def run(arguments: list[str] | None = None) -> int:
         action="store_true",
         help="Import VS Code approvals into the policy file first",
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Exit with an error if generated policy files are out of date",
+    )
     args = parser.parse_args(arguments)
 
     try:
@@ -556,6 +625,7 @@ def run(arguments: list[str] | None = None) -> int:
         for message in sync_policy_file(
             policy_path,
             import_vscode=args.import_vscode,
+            check=args.check,
         ):
             print(message)
         return 0

@@ -253,6 +253,22 @@ function buildAiExcludeContent(policy: PolicyState, policyLabel: string): string
   ].join("\n");
 }
 
+function buildJsonFileContent(data: JsonObject): string | null {
+  if (Object.keys(data).length === 0) {
+    return null;
+  }
+
+  return `${JSON.stringify(data, null, 2)}\n`;
+}
+
+function readOptionalTextFile(targetPath: string): string | null {
+  if (!pathExists(targetPath)) {
+    return null;
+  }
+
+  return fs.readFileSync(targetPath, "utf8");
+}
+
 function importPolicyFromVscode(policy: PolicyState, vscodeSettingsPath: string): PolicyState {
   const vscode = ensureJsonObject(
     readJsonFile(vscodeSettingsPath, {}),
@@ -336,10 +352,36 @@ function formatPolicyLabel(paths: { repoRoot: string; policyFile: string }): str
   return relativePath.startsWith("..") ? paths.policyFile : toPosixPath(relativePath);
 }
 
+function formatManagedPath(repoRoot: string, targetPath: string): string {
+  const relativePath = path.relative(repoRoot, targetPath);
+  return relativePath.startsWith("..") ? targetPath : toPosixPath(relativePath);
+}
+
+function buildCheckModeError(
+  repoRoot: string,
+  driftPaths: string[],
+): string {
+  const driftSummary = driftPaths
+    .map((targetPath) => formatManagedPath(repoRoot, targetPath))
+    .join(", ");
+  return (
+    `Managed policy files are out of sync: ${driftSummary}. ` +
+    "Run `uv run agents-policy` to sync them. " +
+    "If you intended to keep VS Code approval edits instead, run " +
+    "`uv run agents-policy-import-vscode`."
+  );
+}
+
 export function syncPolicyFile(
   policyFile: string,
-  { importVscode = false }: { importVscode?: boolean } = {},
+  { importVscode = false, check = false }: { importVscode?: boolean; check?: boolean } = {},
 ): string[] {
+  if (importVscode && check) {
+    throw new ToolError(
+      "`--check` cannot be combined with `--import-vscode`. Run `uv run agents-policy-import-vscode` instead.",
+    );
+  }
+
   const paths = resolvePolicyPaths(policyFile);
   const policy = ensureJsonObject(
     readJsonFile(paths.policyFile, buildDefaultPolicy()),
@@ -364,13 +406,10 @@ export function syncPolicyFile(
     `Loaded ${services.length} services, ${protectedFiles.length} protected patterns and ${excludedFiles.length} excluded patterns`,
   );
 
-  if (services.includes(SERVICE_GEMINI) && (protectedFiles.length > 0 || excludedFiles.length > 0)) {
-    writeTextFile(paths.aiExclude, buildAiExcludeContent(effective, policyLabel));
-    messages.push("Synced: Gemini (.aiexclude)");
-  } else if (pathExists(paths.aiExclude)) {
-    fs.rmSync(paths.aiExclude, { force: true });
-    messages.push("Removed: Gemini (.aiexclude)");
-  }
+  const expectedAiExclude =
+    services.includes(SERVICE_GEMINI) && (protectedFiles.length > 0 || excludedFiles.length > 0)
+      ? buildAiExcludeContent(effective, policyLabel)
+      : null;
 
   const claudePolicy: Pick<PolicyState, "protectedFiles"> = services.includes(SERVICE_CLAUDE)
     ? effective
@@ -383,11 +422,11 @@ export function syncPolicyFile(
     paths.claudeSettings,
     applyPolicyToClaudeSettings(claudeSettings, claudePolicy),
   );
-  if (services.includes(SERVICE_CLAUDE)) {
-    messages.push("Synced: Claude Code (.claude/settings.json)");
-  } else if (Object.keys(claudeSettings).length > 0) {
-    messages.push("Cleaned: Claude Code (.claude/settings.json)");
-  }
+  const expectedClaudeSettings = applyPolicyToClaudeSettings(
+    claudeSettings,
+    claudePolicy,
+  );
+  const expectedClaudeContent = buildJsonFileContent(expectedClaudeSettings);
 
   const copilotPolicy: Pick<PolicyState, "protectedFiles" | "terminalAutoApprove" | "editAutoApprove"> =
     services.includes(SERVICE_COPILOT)
@@ -401,10 +440,49 @@ export function syncPolicyFile(
     readJsonFile(paths.vscodeSettings, {}),
     "VS Code settings",
   );
-  syncJsonFile(
-    paths.vscodeSettings,
-    applyPolicyToVscodeSettings(vscodeSettings, copilotPolicy),
+  const expectedVscodeSettings = applyPolicyToVscodeSettings(
+    vscodeSettings,
+    copilotPolicy,
   );
+  const expectedVscodeContent = buildJsonFileContent(expectedVscodeSettings);
+
+  if (check) {
+    const driftPaths: string[] = [];
+    if (readOptionalTextFile(paths.aiExclude) !== expectedAiExclude) {
+      driftPaths.push(paths.aiExclude);
+    }
+    if (readOptionalTextFile(paths.claudeSettings) !== expectedClaudeContent) {
+      driftPaths.push(paths.claudeSettings);
+    }
+    if (readOptionalTextFile(paths.vscodeSettings) !== expectedVscodeContent) {
+      driftPaths.push(paths.vscodeSettings);
+    }
+
+    if (driftPaths.length > 0) {
+      throw new ToolError(buildCheckModeError(paths.repoRoot, driftPaths));
+    }
+
+    messages.push("Checked: generated policy files are up to date.");
+    messages.push("Done.");
+    return messages;
+  }
+
+  if (expectedAiExclude !== null) {
+    writeTextFile(paths.aiExclude, expectedAiExclude);
+    messages.push("Synced: Gemini (.aiexclude)");
+  } else if (pathExists(paths.aiExclude)) {
+    fs.rmSync(paths.aiExclude, { force: true });
+    messages.push("Removed: Gemini (.aiexclude)");
+  }
+
+  syncJsonFile(paths.claudeSettings, expectedClaudeSettings);
+  if (services.includes(SERVICE_CLAUDE)) {
+    messages.push("Synced: Claude Code (.claude/settings.json)");
+  } else if (Object.keys(claudeSettings).length > 0) {
+    messages.push("Cleaned: Claude Code (.claude/settings.json)");
+  }
+
+  syncJsonFile(paths.vscodeSettings, expectedVscodeSettings);
   if (services.includes(SERVICE_COPILOT)) {
     messages.push("Synced: Copilot local policy (.vscode/settings.json)");
   } else if (Object.keys(vscodeSettings).length > 0) {
@@ -431,6 +509,10 @@ function createAgentsPolicyCommand(options: ExecutionOptions) {
         type: "boolean",
         description: "Import VS Code approval maps back into the policy file before syncing.",
       },
+      check: {
+        type: "boolean",
+        description: "Exit with an error if generated policy files are out of date.",
+      },
     },
     run({ args }: { args: CommandArgs }) {
       if (args._.length > 0) {
@@ -447,6 +529,7 @@ function createAgentsPolicyCommand(options: ExecutionOptions) {
 
       for (const message of syncPolicyFile(policyPath, {
         importVscode: getBooleanArg(args, "import-vscode"),
+        check: getBooleanArg(args, "check"),
       })) {
         options.output(message);
       }

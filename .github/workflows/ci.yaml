@@ -38,10 +38,8 @@ jobs:
           corepack enable
           yarn install --frozen-lockfile
 
-      - name: Sync AI policy and enforce generated files
-        run: |
-          uv run agents-policy
-          git diff --exit-code -- .aiexclude .claude/settings.json .vscode/settings.json
+      - name: Check AI policy generated files
+        run: uv run agents-policy --check
 
       - name: Run tests
         run: uv run poe test

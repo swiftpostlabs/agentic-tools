@@ -58,7 +58,9 @@ skills-management-cli = "agentic_tools.skills_management.main:main"
 skills-management = "agentic_tools.skills_management.main:main"
 
 [tool.poe.tasks]
-lint = "python -m black --check ./src"
+policy-check = "python -m agentic_tools.agents_policy.main --check"
+py-lint = "python -m black --check ./src"
+lint = ["policy-check", "py-lint"]
 lint-fix = "python -m black ./src"
 typecheck = "python -m pyright ./src"
 test = "python -m pytest"

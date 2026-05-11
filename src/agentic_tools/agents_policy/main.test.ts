@@ -132,4 +132,74 @@ describe("agents-policy Node CLI", () => {
       cleanupTempDir(tempDir);
     }
   });
+
+  test("runAgentsPolicy check mode reports drift and suggests sync or import", async () => {
+    const tempDir = createTempDir();
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "policy.json"),
+        JSON.stringify(
+          {
+            services: ["gemini", "claude", "copilot"],
+            protectedFiles: ["*.env"],
+            terminalAutoApprove: { "git status": true },
+          },
+          null,
+          2,
+        ),
+        "utf8",
+      );
+
+      const messages: string[] = [];
+      const exitCode = await runAgentsPolicy(["--check"], {
+        cwd: tempDir,
+        output: (message) => {
+          messages.push(message);
+        },
+      });
+
+      expect(exitCode).toBe(1);
+      expect(messages.join("\n")).toMatch(/Managed policy files are out of sync/u);
+      expect(messages.join("\n")).toMatch(/uv run agents-policy/u);
+      expect(messages.join("\n")).toMatch(/uv run agents-policy-import-vscode/u);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("runAgentsPolicy check mode passes when outputs are current", async () => {
+    const tempDir = createTempDir();
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "policy.json"),
+        JSON.stringify(
+          {
+            services: ["gemini", "claude", "copilot"],
+            protectedFiles: ["*.env"],
+            terminalAutoApprove: { "git status": true },
+          },
+          null,
+          2,
+        ),
+        "utf8",
+      );
+
+      expect(await runAgentsPolicy([], { cwd: tempDir, output: () => {} })).toBe(0);
+
+      const messages: string[] = [];
+      const exitCode = await runAgentsPolicy(["--check"], {
+        cwd: tempDir,
+        output: (message) => {
+          messages.push(message);
+        },
+      });
+
+      expect(exitCode).toBe(0);
+      expect(messages).toContain("Checked: generated policy files are up to date.");
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
 });

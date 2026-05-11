@@ -179,3 +179,64 @@ def test_sync_policy_file_cleans_disabled_copilot_settings(tmp_path: Path) -> No
     assert "chat.tools.edits.autoApprove" not in vscode_settings
     assert vscode_settings["files.associations"] == {"*.txt": "plaintext"}
     assert vscode_settings["github.copilot.enable"] == {"other-language": True}
+
+
+def test_sync_policy_file_check_detects_drift(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    policy_path = repo_root / ".agents" / "policy.json"
+    write_json(
+        policy_path,
+        {
+            "services": ["gemini", "claude", "copilot"],
+            "protectedFiles": ["*.env"],
+            "terminalAutoApprove": {"/^uv run agents-policy$/": True},
+        },
+    )
+
+    with pytest.raises(
+        AgentsPolicyError, match="Managed policy files are out of sync"
+    ) as error:
+        agents_policy_main.sync_policy_file(
+            policy_path,
+            import_vscode=False,
+            check=True,
+        )
+
+    message = str(error.value)
+    assert ".aiexclude" in message
+    assert ".claude/settings.json" in message
+    assert ".vscode/settings.json" in message
+    assert "uv run agents-policy" in message
+    assert "uv run agents-policy-import-vscode" in message
+
+
+def test_sync_policy_file_check_passes_when_outputs_are_current(tmp_path: Path) -> None:
+    repo_root = tmp_path / "repo"
+    policy_path = repo_root / ".agents" / "policy.json"
+    write_json(
+        policy_path,
+        {
+            "services": ["gemini", "claude", "copilot"],
+            "protectedFiles": ["*.env"],
+            "terminalAutoApprove": {"/^uv run agents-policy$/": True},
+        },
+    )
+
+    agents_policy_main.sync_policy_file(policy_path, import_vscode=False)
+
+    messages = agents_policy_main.sync_policy_file(
+        policy_path,
+        import_vscode=False,
+        check=True,
+    )
+
+    assert "Checked: generated policy files are up to date." in messages
+
+
+def test_run_rejects_check_and_import_vscode_together(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    exit_code = agents_policy_main.run(["--check", "--import-vscode"])
+
+    assert exit_code == 1
+    assert "cannot be combined" in capsys.readouterr().out
