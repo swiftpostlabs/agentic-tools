@@ -29,6 +29,7 @@ REPO_LOCAL_VISIBILITY = "repo-local"
 SHAREABILITY_WIZARD = "tool-make-skill-shareable"
 PACKAGE_SOURCE_PREFIX = "package:"
 PACKAGED_SKILLS_DIRNAME = "shareable_skills"
+PACKAGE_INSTALL_BOUNDARY_DIRS = frozenset({"site-packages", "dist-packages"})
 SYNC_CONFIG_FILENAME = "skills.json"
 
 
@@ -160,8 +161,13 @@ def resolve_packaged_skills_root(package_root: Path) -> Path | None:
     return None
 
 
-def resolve_repo_skills_root(search_root: Path) -> Path | None:
+def resolve_repo_skills_root(
+    search_root: Path, *, stop_before: Collection[str] = ()
+) -> Path | None:
+    stop_names = set(stop_before)
     for possible_root in [search_root, *search_root.parents]:
+        if possible_root.name in stop_names:
+            break
         if (possible_root / ".agents" / "skills").is_dir():
             return possible_root
 
@@ -318,7 +324,10 @@ def resolve_package_source_root(package_name: str) -> Path:
         for search_root in search_roots:
             start_path = resolve_search_root(search_root)
 
-            repo_root = resolve_repo_skills_root(start_path)
+            repo_root = resolve_repo_skills_root(
+                start_path,
+                stop_before=PACKAGE_INSTALL_BOUNDARY_DIRS,
+            )
             if repo_root is not None:
                 return repo_root
 

@@ -155,6 +155,30 @@ def test_resolve_package_source_root_prefers_repo_root_over_stale_packaged_copy(
     assert resolved_path == repo_root
 
 
+def test_resolve_package_source_root_ignores_consumer_repo_above_site_packages(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    consumer_repo = tmp_path / "consumer"
+    (consumer_repo / ".agents" / "skills").mkdir(parents=True)
+
+    package_root = consumer_repo / ".venv" / "Lib" / "site-packages" / "agentic_tools"
+    write_skill_in_root(
+        package_root / "shareable_skills",
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+
+    spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
+    spec.submodule_search_locations = [str(package_root)]
+
+    monkeypatch.setattr(skills_management_main, "find_spec", lambda name: spec)
+
+    resolved_path = skills_management_main.resolve_package_source_root("agentic-tools")
+
+    assert resolved_path == package_root / "shareable_skills"
+
+
 def test_resolve_selected_skills_includes_dependencies_first(tmp_path: Path) -> None:
     write_skill(
         tmp_path,
