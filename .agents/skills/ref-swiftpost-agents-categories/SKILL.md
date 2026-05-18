@@ -38,6 +38,7 @@ Use a short lowercase string. The category should describe the domain the skill 
 | --- | --- | --- |
 | `agents` | Agent behavior, instructions, security, local task tracking, skills authoring, skills sharing, policy generation, and repo-specific agent tooling. | `ref-agents-persona`, `ref-skills-authoring`, `ref-swiftpost-agents-policy`, `tool-maintain-skills` |
 | `app` | Whole-app guidance and application-level stack decisions. | `ref-app-web-standalone`, `ref-app-react-next` |
+| `db` | Database modeling, relational and non-relational design, normalization, transactions, and database operations guidance. | `ref-db-management`, `ref-db-relational`, `ref-db-normalization`, `ref-db-nosql` |
 | `dev` | Generic development workflows that are not language-specific, such as coding defaults, commits, versioning, and package-management policy. | `ref-coding-patterns`, `ref-dev-semantic-versioning`, `ref-git-commits`, `tool-commit` |
 | `docs` | Documentation authoring and README structure. | `ref-docs-authoring` |
 | `github` | GitHub platform automation and repository services. | `ref-github-actions-ci`, `ref-github-dependabot` |
@@ -51,6 +52,7 @@ Use a short lowercase string. The category should describe the domain the skill 
 - Choose the domain of the guidance, not the organization-specific prefix. For example, `ref-swiftpost-agents-policy` is category `agents`, not `swiftpost`.
 - Choose the domain of the action, not the `tool-...` prefix. For example, `tool-commit` is category `dev`, while `tool-handle-agents-local-tasks` is category `agents`.
 - Prefer existing categories when a skill name already has a clear family prefix, such as `ref-js-*`, `ref-app-*`, `ref-github-*`, or `ref-agents-*`.
+- Prefer existing categories when a skill name already has a clear family prefix, such as `ref-db-*`, `ref-js-*`, `ref-app-*`, `ref-github-*`, or `ref-agents-*`.
 - Use `dev` for broad development workflows that are not primarily about a language, platform, repository layout, or agent system.
 - Use `project` for structure and architecture, even when the guidance affects developer workflows.
 - Use `py` or `js` when the core guidance depends on language or runtime-specific behavior.
@@ -79,6 +81,7 @@ Before creating a new category, look for a nearby existing one and decide whethe
 | `ref-shareable-skills`, `ref-skills-authoring` | `agents` |
 | `tool-*skills*`, `tool-*agents*`, `tool-adopt-these-skills` | `agents` |
 | `ref-app-*` | `app` |
+| `ref-db-*` | `db` |
 | `ref-coding-patterns`, `ref-dev-*`, `ref-git-commits`, `tool-commit` | `dev` |
 | `ref-docs-authoring` | `docs` |
 | `ref-github-*` | `github` |

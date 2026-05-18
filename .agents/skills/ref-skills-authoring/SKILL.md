@@ -155,7 +155,7 @@ Use `metadata.agentic-tools-category` to group skills by the domain they help wi
 - Pick the action domain for tool skills. For example, commit tooling belongs in `dev`, while local agent task tooling belongs in `agents`.
 - Use `.agents/skills/ref-swiftpost-agents-categories/SKILL.md` for this repo's current category taxonomy and examples.
 
-Common categories in this repo are `agents`, `app`, `dev`, `docs`, `github`, `js`, `project`, `py`, and `supabase`.
+Common categories in this repo are `agents`, `app`, `db`, `dev`, `docs`, `github`, `js`, `project`, `py`, and `supabase`.
 
 ## Description Rules
 
