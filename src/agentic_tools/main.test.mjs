@@ -146,7 +146,8 @@ describe("agentic-tools Node CLI", () => {
     });
 
     expect(exitCode).toBe(1);
-    expect(messages.join("\n")).toMatch(/agentic-tools policy/u);
-    expect(messages.join("\n")).toMatch(/agentic-tools skills/u);
+    expect(messages.join("\n")).toMatch(/agentic-tools policy\|skills/u);
+    expect(messages.join("\n")).toContain("Sync, check, and import generated agent policy files.");
+    expect(messages.join("\n")).toContain("List, link, sync, and unlink shareable skills.");
   });
 });

@@ -648,11 +648,12 @@ const createSharedTargetArgs = (includeConfig = false) => {
 };
 /**
  * @param {ExecutionOptions} options
+ * @param {string} [commandName]
  */
-const createSkillsManagementCommand = (options) => {
+export const createSkillsManagementCommand = (options, commandName = "skills-management") => {
     return defineCommand({
         meta: {
-            name: "skills-management",
+            name: commandName,
             description: "List, link, sync, and unlink shareable skills.",
         },
         subCommands: {
