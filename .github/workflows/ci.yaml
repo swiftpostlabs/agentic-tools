@@ -44,9 +44,13 @@ jobs:
       - name: Run tests
         run: uv run poe test
       - name: Run Node tests
-        run: yarn test:node
+        run: yarn test
       - name: Validate Node package
-        run: npm pack --dry-run
+        run: yarn pack
+      - name: Run Node linting
+        run: yarn lint
+      - name: Run Node typechecking
+        run: yarn typecheck
       - name: Run linting
         run: uv run poe lint
       - name: Run typechecking

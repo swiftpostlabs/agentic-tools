@@ -1,3 +1,5 @@
+// @ts-check
+
 import { describe, expect, test } from "@jest/globals";
 import fs from "node:fs";
 import os from "node:os";
@@ -7,21 +9,28 @@ import {
     discoverSkillManifests,
     resolvePackageSourceRoot,
     runSkillsManagement,
-} from "./main.ts";
+} from "./main.mjs";
 
-function createTempDir(): string {
+/** @returns {string} */
+function createTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-skills-"));
 }
 
-function cleanupTempDir(tempDir: string): void {
+/** @param {string} tempDir */
+function cleanupTempDir(tempDir) {
   fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
+/**
+ * @param {string} skillsRoot
+ * @param {string} name
+ * @param {Record<string, string>} [metadata]
+ */
 function writeSkillInRoot(
-  skillsRoot: string,
-  name: string,
-  metadata: Record<string, string> = {},
-): void {
+  skillsRoot,
+  name,
+  metadata = {},
+) {
   const skillDir = path.join(skillsRoot, name);
   fs.mkdirSync(skillDir, { recursive: true });
 
@@ -37,11 +46,16 @@ function writeSkillInRoot(
   fs.writeFileSync(path.join(skillDir, "SKILL.md"), lines.join("\n"), "utf8");
 }
 
+/**
+ * @param {string} repoRoot
+ * @param {string} name
+ * @param {Record<string, string>} [metadata]
+ */
 function writeRepoSkill(
-  repoRoot: string,
-  name: string,
-  metadata: Record<string, string> = {},
-): void {
+  repoRoot,
+  name,
+  metadata = {},
+) {
   writeSkillInRoot(path.join(repoRoot, ".agents", "skills"), name, metadata);
 }
 
@@ -118,7 +132,8 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
 
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
       const exitCode = await runSkillsManagement(["sync", "--to", tempDir], {
         cwd: tempDir,
         output: (message) => {
@@ -171,7 +186,8 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
 
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
       const exitCode = await runSkillsManagement(["sync", "--to", tempDir], {
         cwd: tempDir,
         output: (message) => {

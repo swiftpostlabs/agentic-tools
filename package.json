@@ -2,28 +2,35 @@
   "name": "agentic-tools",
   "version": "0.1.0",
   "description": "Shared agent skills and CLI tools for Node-based repositories.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/swiftpostlab/agentic-tools.git"
+  },
   "license": "MIT",
   "type": "module",
   "bin": {
-    "agentic-tools": "./scripts/agentic-tools.mts",
-    "agents-policy": "./scripts/agents-policy.mts",
-    "agents-policy-import-vscode": "./scripts/agents-policy-import-vscode.mts",
-    "skills-management": "./scripts/skills-management.mts"
+    "agentic-tools": "./scripts/agentic-tools.mjs",
+    "agents-policy": "./scripts/agents-policy.mjs",
+    "agents-policy-import-vscode": "./scripts/agents-policy-import-vscode.mjs",
+    "skills-management": "./scripts/skills-management.mjs"
   },
   "files": [
     ".agents/skills",
-    "scripts/*.mts",
-    "src/agentic_tools/main.ts",
-    "src/agentic_tools/node_cli/common.ts",
-    "src/agentic_tools/agents_policy/main.ts",
-    "src/agentic_tools/skills_management/main.ts",
+    "scripts/*.mjs",
+    "src/agentic_tools/main.mjs",
+    "src/agentic_tools/utils/common.mjs",
+    "src/agentic_tools/agents_policy/main.mjs",
+    "src/agentic_tools/skills_management/main.mjs",
+    "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],
   "packageManager": "yarn@1.22.22",
   "scripts": {
-    "test:node": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
-    "pack:node": "npm pack --dry-run"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
+    "typecheck": "tsc --project tsconfig.node.json --noEmit",
+    "lint": "node --check scripts/agentic-tools.mjs && node --check scripts/agents-policy.mjs && node --check scripts/agents-policy-import-vscode.mjs && node --check scripts/skills-management.mjs && node --check src/agentic_tools/main.mjs && node --check src/agentic_tools/utils/common.mjs && node --check src/agentic_tools/agents_policy/main.mjs && node --check src/agentic_tools/agents_policy/main.test.mjs && node --check src/agentic_tools/skills_management/main.mjs && node --check src/agentic_tools/skills_management/main.test.mjs && node --check src/agentic_tools/main.test.mjs",
+    "pack": "npm pack --dry-run"
   },
   "dependencies": {
     "citty": "^0.2.2",
@@ -32,7 +39,6 @@
   "devDependencies": {
     "@types/node": "^24.10.1",
     "jest": "^30.2.0",
-    "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"
   },
   "engines": {

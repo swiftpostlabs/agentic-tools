@@ -1,15 +1,19 @@
+// @ts-check
+
 import { describe, expect, test } from "@jest/globals";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { runAgenticTools } from "./main.ts";
+import { runAgenticTools } from "./main.mjs";
 
-function createTempDir(): string {
+/** @returns {string} */
+function createTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-root-"));
 }
 
-function cleanupTempDir(tempDir: string): void {
+/** @param {string} tempDir */
+function cleanupTempDir(tempDir) {
   fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
@@ -36,9 +40,9 @@ describe("agentic-tools Node CLI", () => {
         output: () => {},
       });
 
-      const vscodeSettings = JSON.parse(
+      const vscodeSettings = /** @type {Record<string, Record<string, string>>} */ (JSON.parse(
         fs.readFileSync(path.join(tempDir, ".vscode", "settings.json"), "utf8"),
-      ) as Record<string, Record<string, string>>;
+      ));
 
       expect(exitCode).toBe(0);
       expect(vscodeSettings["files.associations"]).toEqual({
@@ -83,9 +87,9 @@ describe("agentic-tools Node CLI", () => {
         output: () => {},
       });
 
-      const policy = JSON.parse(
+      const policy = /** @type {Record<string, unknown>} */ (JSON.parse(
         fs.readFileSync(path.join(tempDir, ".agents", "policy.json"), "utf8"),
-      ) as Record<string, unknown>;
+      ));
 
       expect(exitCode).toBe(0);
       expect(policy.terminalAutoApprove).toEqual({ "uv run poe test": true });
@@ -115,7 +119,8 @@ describe("agentic-tools Node CLI", () => {
         "utf8",
       );
 
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
       const exitCode = await runAgenticTools(["skills", "list", "--from", tempDir], {
         cwd: tempDir,
         output: (message) => {
@@ -131,7 +136,8 @@ describe("agentic-tools Node CLI", () => {
   });
 
   test("runAgenticTools without arguments prints root usage", async () => {
-    const messages: string[] = [];
+    /** @type {string[]} */
+    const messages = [];
 
     const exitCode = await runAgenticTools([], {
       output: (message) => {

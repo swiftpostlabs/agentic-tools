@@ -3,7 +3,8 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "checkJs": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "strict": true,
@@ -11,7 +12,7 @@
     "types": ["node"]
   },
   "include": [
-    "scripts/**/*.mts",
-    "src/agentic_tools/**/*.ts"
+    "scripts/**/*.mjs",
+    "src/agentic_tools/**/*.mjs"
   ]
 }

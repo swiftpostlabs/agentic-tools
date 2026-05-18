@@ -81,5 +81,5 @@ uv run python -m pytest src/agentic_tools/main_test.py -q
 ```
 
 ```sh
-corepack yarn test:node --runTestsByPath src/agentic_tools/main.test.ts
+yarn test --runTestsByPath src/agentic_tools/main.test.mjs
 ```

@@ -59,8 +59,8 @@ When `from` uses `package:agentic-tools`, `sync` resolves the installed package 
 
 - `main.py` contains the Python manifest parsing, dependency resolution, path resolution, and CLI command handlers.
 - `main_test.py` covers the focused Python linking behavior.
-- `main.ts` contains the Node manifest parsing, dependency resolution, path resolution, and CLI command handlers.
-- `main.test.ts` covers the focused Node CLI behavior through Jest.
+- `main.mjs` contains the Node manifest parsing, dependency resolution, path resolution, and CLI command handlers.
+- `main.test.mjs` covers the focused Node CLI behavior through Jest.
 
 ## Canonical commands
 
@@ -91,5 +91,5 @@ uv run python -m pytest src/agentic_tools/skills_management/main_test.py -q
 ```
 
 ```sh
-corepack yarn test:node --runTestsByPath src/agentic_tools/skills_management/main.test.ts
+yarn test --runTestsByPath src/agentic_tools/skills_management/main.test.mjs
 ```

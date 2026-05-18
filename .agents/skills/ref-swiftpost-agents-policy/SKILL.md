@@ -31,8 +31,9 @@ Document this repository's concrete AI policy implementation: the canonical poli
   - `uv run agents-policy-import-vscode`
   - `uv run sync-ai-policy`
   - `uv run sync-ai-policy-import-vscode`
-- Implementation path: `src/agentic_tools/agents_policy/main.py`
-- Node runtime shims: `scripts/agents-policy.mts` and `scripts/agents-policy-import-vscode.mts`
+- Python implementation path: `src/agentic_tools/agents_policy/main.py`
+- Node implementation path: `src/agentic_tools/agents_policy/main.mjs`
+- Node runtime shims: `scripts/agents-policy.mjs` and `scripts/agents-policy-import-vscode.mjs`
 
 ## Policy Model
 

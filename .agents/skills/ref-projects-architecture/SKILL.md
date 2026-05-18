@@ -67,10 +67,12 @@ Provide portable repository and feature-structure defaults that keep codebases m
 - If an installed CLI needs a runtime entry file, keep the implementation under the owning feature in `src/` and let `scripts/` hold only the smallest executable shim that calls into that feature.
 - Do not leave product behavior buried in maintenance scripts just because it started as a prototype.
 
-### Mixed Python and TypeScript setup
+### Mixed Python and JavaScript or TypeScript setup
 
-- When a repo ships both Python and TypeScript surfaces, let each language keep its normal packaging and config entrypoints while sharing the same feature names and folder ownership.
-- Prefer colocated `main.py` and `main_test.py` for Python plus `main.ts` and `main.test.ts` for the same feature when both runtimes expose that surface.
+- When a repo ships both Python and Node surfaces, let each language keep its normal packaging and config entrypoints while sharing the same feature names and folder ownership.
+- Prefer colocated `main.py` and `main_test.py` for Python plus the matching Node files for the same feature when both runtimes expose that surface.
+- For no-build npm packages or Git-installed CLIs that run from `node_modules`, prefer `.mjs` plus JSDoc, such as `main.mjs` and `main.test.mjs`, so the package does not rely on TypeScript runtime stripping.
+- When TypeScript is the selected Node surface and it is not shipped as directly executed package runtime, use `main.ts` and `main.test.ts` for the same feature.
 - Keep Python packaging in `pyproject.toml`, keep Node packaging in `package.json`, and split language-specific config such as `tsconfig` files by runtime surface instead of forcing one config file to describe everything.
 - Keep shared cross-runtime helpers narrow and explicit so a feature does not quietly depend on another language surface's internals.
 
@@ -102,18 +104,19 @@ src/package_name/
     service_test.py
 ```
 
-### Mixed Python and TypeScript package
+### Mixed Python and no-build Node package
 
 ```text
 scripts/
-  billing-cli.mts
+  billing-cli.mjs
 src/package_name/
   billing/
     main.py
     main_test.py
-    main.ts
-    main.test.ts
-    shared_parser.ts
+    main.mjs
+    main.test.mjs
+  utils/
+    common.mjs
 ```
 
 ### Standalone browser tool with local assets

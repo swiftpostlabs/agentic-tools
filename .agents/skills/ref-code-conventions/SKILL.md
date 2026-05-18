@@ -77,6 +77,7 @@ Help the agent work within this project in a way that respects its structure, ty
 
 - Add shared utilities only after real reuse appears across features.
 - When they are justified, keep them under `src/agentic_tools/utils/` with purpose-based subfolders.
+- The same utility location applies to the JavaScript/JSDoc Node port: keep shared `.mjs` helpers under `src/agentic_tools/utils/` instead of adding a separate Node-only architecture folder.
 - Example:
 - `src/agentic_tools/utils/`
   - `web/`

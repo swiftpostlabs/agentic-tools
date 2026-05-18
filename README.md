@@ -107,13 +107,13 @@ uv sync
 ```
 
 ```sh
-corepack yarn install
+yarn install
 ```
 
 After this step you may want to close and reopen your terminal or IDE to ensure that the uv-managed virtual environment is activated correctly.
 
-The Node CLI source now lives with the owning features under `src/agentic_tools/<feature>/main.ts`, with colocated Jest coverage in `main.test.ts`.
-The shipped Node command shims now live in `scripts/*.mts`, while the actual implementation stays under the owning feature in `src/agentic_tools/...`.
+The Node CLI source is a no-build JavaScript/JSDoc port that lives with the owning features under `src/agentic_tools/<feature>/main.mjs`, with colocated Jest coverage in `main.test.mjs`.
+The shipped Node command shims live in `scripts/*.mjs`, while shared helpers belong under `src/agentic_tools/utils/` when duplication would make the Python and Node ports harder to keep aligned.
 
 ### Skills Management
 
@@ -152,6 +152,58 @@ To declare shared skill sources for `sync`, add `.agents/skills.json` to the tar
 
 Relative `from` paths resolve from the target repo root. Package sources use `package:<name>` and resolve by looking up the installed package location. When the source package is installed instead of cloned, `agentic-tools skills sync` resolves packaged skills from the active environment, including the Python package's `agentic_tools/shareable_skills` directory and the Node package's `.agents/skills` directory.
 
+### Versioning
+
+The repo keeps `VERSION`, `pyproject.toml`, `package.json`, and `uv.lock` aligned.
+
+Commitizen is the intended release owner for the repo's stable release workflow. The local helper script now remains only as a drift check while the migration away from custom version-writing commands settles.
+
+Use these commands for version management:
+
+```sh
+uv run poe version-check
+```
+
+```sh
+uv run cz commit
+```
+
+```sh
+uv run poe version-next
+```
+
+```sh
+uv run poe release-prepare-preview patch
+```
+
+```sh
+uv run poe release-prepare patch
+```
+
+```sh
+uv run poe release-publish-python
+```
+
+```sh
+uv run poe release-publish-node
+```
+
+```sh
+uv run poe release-publish
+```
+
+```sh
+uv run cz check -m "fix(skills): example"
+```
+
+`release-prepare` is the normal release-prep command. It creates the release commit, updates `CHANGELOG.md`, and creates a `vX.Y.Z` tag through Commitizen.
+
+`release-publish` is the local fallback when you already have publish credentials configured. The preferred path is to push the generated release tag and let [release.yaml](.github/workflows/release.yaml) publish both the Python and npm packages from CI.
+
+There is still one manual bootstrap step: the current `0.1.0` baseline needs a matching `v0.1.0` tag before changelog-on-bump works cleanly for future releases. After that bootstrap tag exists, the normal workflow is `uv run poe release-prepare <major|minor|patch>` followed by pushing the resulting commit and tag.
+
+For CI publishing, configure trusted publishing for both registries against [release.yaml](.github/workflows/release.yaml): PyPI should trust the workflow as a publisher for `agentic-tools`, and npm should register the same workflow filename as the package's trusted publisher.
+
 ### Tests
 
 ```sh
@@ -159,13 +211,21 @@ uv run poe test
 ```
 
 ```sh
-corepack yarn test:node
+yarn test
 ```
 
 ### Linting
 
 ```sh
 uv run poe lint
+```
+
+```sh
+yarn lint
+```
+
+```sh
+yarn typecheck
 ```
 
 This now includes `uv run agentic-tools policy check` before the Python lint step so generated policy files fail fast in the standard validation flow.

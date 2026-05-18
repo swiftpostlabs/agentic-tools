@@ -1,15 +1,19 @@
+// @ts-check
+
 import { describe, expect, test } from "@jest/globals";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { runAgentsPolicy, runAgentsPolicyImportVscode } from "./main.ts";
+import { runAgentsPolicy, runAgentsPolicyImportVscode } from "./main.mjs";
 
-function createTempDir(): string {
+/** @returns {string} */
+function createTempDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-policy-"));
 }
 
-function cleanupTempDir(tempDir: string): void {
+/** @param {string} tempDir */
+function cleanupTempDir(tempDir) {
   fs.rmSync(tempDir, { recursive: true, force: true });
 }
 
@@ -44,7 +48,8 @@ describe("agents-policy Node CLI", () => {
         "utf8",
       );
 
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
       const exitCode = await runAgentsPolicy([], {
         cwd: tempDir,
         output: (message) => {
@@ -52,16 +57,15 @@ describe("agents-policy Node CLI", () => {
         },
       });
 
-      const vscodeSettings = JSON.parse(
+      const vscodeSettings = /** @type {Record<string, unknown>} */ (JSON.parse(
         fs.readFileSync(path.join(tempDir, ".vscode", "settings.json"), "utf8"),
-      ) as Record<string, unknown>;
+      ));
 
+      const copilotEnable = /** @type {Record<string, boolean>} */ (
+        vscodeSettings["github.copilot.enable"]
+      );
       expect(exitCode).toBe(0);
-      expect(
-        (vscodeSettings["github.copilot.enable"] as Record<string, boolean>)[
-          "copilot-restricted-file"
-        ],
-      ).toBe(false);
+      expect(copilotEnable["copilot-restricted-file"]).toBe(false);
       expect(vscodeSettings["chat.tools.terminal.autoApprove"]).toEqual({
         "git status": true,
       });
@@ -100,9 +104,9 @@ describe("agents-policy Node CLI", () => {
         cwd: tempDir,
         output: () => {},
       });
-      const policy = JSON.parse(
+      const policy = /** @type {Record<string, unknown>} */ (JSON.parse(
         fs.readFileSync(path.join(tempDir, ".agents", "policy.json"), "utf8"),
-      ) as Record<string, unknown>;
+      ));
 
       expect(exitCode).toBe(0);
       expect(policy.terminalAutoApprove).toEqual({ "uv run poe test": true });
@@ -115,7 +119,8 @@ describe("agents-policy Node CLI", () => {
   test("runAgentsPolicy reports no work when no policy file exists", async () => {
     const tempDir = createTempDir();
     try {
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
 
       const exitCode = await runAgentsPolicy([], {
         cwd: tempDir,
@@ -151,7 +156,8 @@ describe("agents-policy Node CLI", () => {
         "utf8",
       );
 
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
       const exitCode = await runAgentsPolicy(["--check"], {
         cwd: tempDir,
         output: (message) => {
@@ -188,7 +194,8 @@ describe("agents-policy Node CLI", () => {
 
       expect(await runAgentsPolicy([], { cwd: tempDir, output: () => {} })).toBe(0);
 
-      const messages: string[] = [];
+      /** @type {string[]} */
+      const messages = [];
       const exitCode = await runAgentsPolicy(["--check"], {
         cwd: tempDir,
         output: (message) => {
