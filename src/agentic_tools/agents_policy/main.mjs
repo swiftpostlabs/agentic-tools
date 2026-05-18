@@ -35,31 +35,31 @@ const SERVICE_ALIASES = {
  * @param {string} key
  * @returns {string | null}
  */
-function getOptionalStringArg(args, key) {
+const getOptionalStringArg = (args, key) => {
     const value = args[key];
     return typeof value === "string" && value.trim() !== "" ? value : null;
-}
+};
 /**
  * @param {CommandArgs} args
  * @param {string} key
  * @returns {boolean}
  */
-function getBooleanArg(args, key) {
+const getBooleanArg = (args, key) => {
     return args[key] === true;
-}
+};
 /**
  * @param {string} targetPath
  * @param {string} context
  * @returns {JsonObject}
  */
-function readJsonObject(targetPath, context) {
+const readJsonObject = (targetPath, context) => {
     return ensureJsonObject(readJsonFile(targetPath, {}), context);
-}
+};
 /**
  * @param {string} targetPath
  * @returns {PolicyDocument}
  */
-function loadPolicyDocument(targetPath) {
+const loadPolicyDocument = (targetPath) => {
     const rawConfig = readJsonObject(targetPath, "Policy file");
     const rawPolicy = rawConfig.policy;
     if (rawPolicy === undefined) {
@@ -74,25 +74,25 @@ function loadPolicyDocument(targetPath) {
         policy: /** @type {PolicyState} */ (ensureJsonObject(rawPolicy, "Agents config policy")),
         usesUnifiedConfig: true,
     };
-}
+};
 /**
  * @param {string} targetPath
  * @param {PolicyDocument} document
  * @param {PolicyState} policy
  * @returns {void}
  */
-function writePolicyDocument(targetPath, document, policy) {
+const writePolicyDocument = (targetPath, document, policy) => {
     if (!document.usesUnifiedConfig) {
         writeJsonFile(targetPath, policy);
         return;
     }
     writeJsonFile(targetPath, { ...document.rawConfig, policy });
-}
+};
 /**
  * @param {string} targetPath
  * @returns {boolean}
  */
-function agentsConfigHasPolicy(targetPath) {
+const agentsConfigHasPolicy = (targetPath) => {
     try {
         const policy = readJsonObject(targetPath, "Agents config").policy;
         return policy !== null && !Array.isArray(policy) && typeof policy === "object";
@@ -100,36 +100,36 @@ function agentsConfigHasPolicy(targetPath) {
     catch {
         return true;
     }
-}
+};
 /**
  * @param {unknown} value
  * @returns {Record<string, unknown>}
  */
-function getTerminalApprovalMapping(value) {
+const getTerminalApprovalMapping = (value) => {
     if (value === null || Array.isArray(value) || typeof value !== "object") {
         return {};
     }
     return Object.fromEntries(Object.entries(value));
-}
+};
 /**
  * @param {PolicyState} policy
  * @returns {string[]}
  */
-function getProtectedFiles(policy) {
+const getProtectedFiles = (policy) => {
     return getStringList(policy.protectedFiles);
-}
+};
 /**
  * @param {PolicyState} policy
  * @returns {string[]}
  */
-function getExcludedFiles(policy) {
+const getExcludedFiles = (policy) => {
     return getStringList(policy.excludedFiles);
-}
+};
 /**
  * @param {string} rawName
  * @returns {string}
  */
-function normalizeServiceName(rawName) {
+const normalizeServiceName = (rawName) => {
     const normalized = rawName.trim().toLowerCase();
     const serviceName = SERVICE_ALIASES[normalized];
     if (serviceName === undefined) {
@@ -138,12 +138,12 @@ function normalizeServiceName(rawName) {
             .join(", ")}.`);
     }
     return serviceName;
-}
+};
 /**
  * @param {PolicyState} policy
  * @returns {string[]}
  */
-function getServices(policy) {
+const getServices = (policy) => {
     if (policy.services === undefined) {
         return [...SUPPORTED_SERVICES];
     }
@@ -162,31 +162,31 @@ function getServices(policy) {
         }
     }
     return services;
-}
+};
 /**
  * @param {string[]} protectedFiles
  * @returns {string[]}
  */
-function buildProtectedReadRules(protectedFiles) {
+const buildProtectedReadRules = (protectedFiles) => {
     return protectedFiles.map((pattern) => `Read(${pattern})`);
-}
+};
 /**
  * @param {string[]} existing
  * @param {string[]} protectedFiles
  * @returns {string[]}
  */
-function replaceManagedClaudeDenyRules(existing, protectedFiles) {
+const replaceManagedClaudeDenyRules = (existing, protectedFiles) => {
     return [
         ...existing.filter((entry) => !entry.startsWith("Read(")),
         ...buildProtectedReadRules(protectedFiles),
     ];
-}
+};
 /**
  * @param {JsonObject} claudeSettings
  * @param {Pick<PolicyState, "protectedFiles">} policy
  * @returns {JsonObject}
  */
-function applyPolicyToClaudeSettings(claudeSettings, policy) {
+const applyPolicyToClaudeSettings = (claudeSettings, policy) => {
     /** @type {JsonObject} */
     const updated = { ...claudeSettings };
     const permissions = claudeSettings.permissions !== null &&
@@ -208,32 +208,32 @@ function applyPolicyToClaudeSettings(claudeSettings, policy) {
         delete updated.permissions;
     }
     return updated;
-}
+};
 /**
  * @param {string[]} protectedFiles
  * @returns {Record<string, string>}
  */
-function buildProtectedFileAssociations(protectedFiles) {
+const buildProtectedFileAssociations = (protectedFiles) => {
     return Object.fromEntries(protectedFiles.map((pattern) => [pattern, MANAGED_COPILOT_LANGUAGE_ID]));
-}
+};
 /**
  * @param {Record<string, string>} existing
  * @param {string[]} protectedFiles
  * @returns {Record<string, string>}
  */
-function replaceManagedFileAssociations(existing, protectedFiles) {
+const replaceManagedFileAssociations = (existing, protectedFiles) => {
     const preserved = Object.fromEntries(Object.entries(existing).filter(([, language]) => language !== MANAGED_COPILOT_LANGUAGE_ID));
     return {
         ...preserved,
         ...buildProtectedFileAssociations(protectedFiles),
     };
-}
+};
 /**
  * @param {JsonObject} vscodeSettings
  * @param {Pick<PolicyState, "protectedFiles" | "terminalAutoApprove" | "editAutoApprove">} policy
  * @returns {JsonObject}
  */
-function applyPolicyToVscodeSettings(vscodeSettings, policy) {
+const applyPolicyToVscodeSettings = (vscodeSettings, policy) => {
     /** @type {JsonObject} */
     const updated = { ...vscodeSettings };
     const protectedFiles = getProtectedFiles(policy);
@@ -272,13 +272,13 @@ function applyPolicyToVscodeSettings(vscodeSettings, policy) {
         delete updated["chat.tools.edits.autoApprove"];
     }
     return updated;
-}
+};
 /**
  * @param {PolicyState} policy
  * @param {string} policyLabel
  * @returns {string}
  */
-function buildAiExcludeContent(policy, policyLabel) {
+const buildAiExcludeContent = (policy, policyLabel) => {
     return [
         "# ==============================================================================",
         "# AI EXCLUSION FILE",
@@ -293,45 +293,45 @@ function buildAiExcludeContent(policy, policyLabel) {
         ...getExcludedFiles(policy),
         "",
     ].join("\n");
-}
+};
 /**
  * @param {JsonObject} data
  * @returns {string | null}
  */
-function buildJsonFileContent(data) {
+const buildJsonFileContent = (data) => {
     if (Object.keys(data).length === 0) {
         return null;
     }
     return `${JSON.stringify(data, null, 2)}\n`;
-}
+};
 /**
  * @param {string} targetPath
  * @returns {string | null}
  */
-function readOptionalTextFile(targetPath) {
+const readOptionalTextFile = (targetPath) => {
     if (!pathExists(targetPath)) {
         return null;
     }
     return fs.readFileSync(targetPath, "utf8");
-}
+};
 /**
  * @param {PolicyState} policy
  * @param {string} vscodeSettingsPath
  * @returns {PolicyState}
  */
-function importPolicyFromVscode(policy, vscodeSettingsPath) {
+const importPolicyFromVscode = (policy, vscodeSettingsPath) => {
     const vscode = ensureJsonObject(readJsonFile(vscodeSettingsPath, {}), "VS Code settings");
     return {
         ...policy,
         terminalAutoApprove: getTerminalApprovalMapping(vscode["chat.tools.terminal.autoApprove"]),
         editAutoApprove: getBooleanRecord(vscode["chat.tools.edits.autoApprove"]),
     };
-}
+};
 /**
  * @param {string} startPath
  * @returns {string | null}
  */
-function discoverPolicyPath(startPath) {
+const discoverPolicyPath = (startPath) => {
     let currentPath = path.resolve(startPath);
     while (true) {
         const agentsConfigPath = path.join(currentPath, CANONICAL_AGENTS_CONFIG_PATH);
@@ -353,13 +353,13 @@ function discoverPolicyPath(startPath) {
         currentPath = parentPath;
     }
     return null;
-}
+};
 /**
  * @param {string | null} rawConfig
  * @param {string} cwd
  * @returns {string | null}
  */
-function resolvePolicyPath(rawConfig, cwd) {
+const resolvePolicyPath = (rawConfig, cwd) => {
     if (typeof rawConfig === "string") {
         const configPath = resolvePath(rawConfig, cwd);
         if (!isFile(configPath)) {
@@ -368,12 +368,12 @@ function resolvePolicyPath(rawConfig, cwd) {
         return configPath;
     }
     return discoverPolicyPath(resolvePath(null, cwd));
-}
+};
 /**
  * @param {string} policyFile
  * @returns {{ repoRoot: string, policyFile: string, aiExclude: string, vscodeSettings: string, claudeSettings: string }}
  */
-function resolvePolicyPaths(policyFile) {
+const resolvePolicyPaths = (policyFile) => {
     const resolvedPolicy = path.resolve(policyFile);
     let repoRoot = path.dirname(resolvedPolicy);
     if ([
@@ -391,30 +391,30 @@ function resolvePolicyPaths(policyFile) {
         vscodeSettings: path.join(repoRoot, VSCODE_SETTINGS_PATH),
         claudeSettings: path.join(repoRoot, CLAUDE_SETTINGS_PATH),
     };
-}
+};
 /**
  * @param {{ repoRoot: string, policyFile: string }} paths
  * @returns {string}
  */
-function formatPolicyLabel(paths) {
+const formatPolicyLabel = (paths) => {
     const relativePath = path.relative(paths.repoRoot, paths.policyFile);
     return relativePath.startsWith("..") ? paths.policyFile : toPosixPath(relativePath);
-}
+};
 /**
  * @param {string} repoRoot
  * @param {string} targetPath
  * @returns {string}
  */
-function formatManagedPath(repoRoot, targetPath) {
+const formatManagedPath = (repoRoot, targetPath) => {
     const relativePath = path.relative(repoRoot, targetPath);
     return relativePath.startsWith("..") ? targetPath : toPosixPath(relativePath);
-}
+};
 /**
  * @param {string} repoRoot
  * @param {string[]} driftPaths
  * @returns {string}
  */
-function buildCheckModeError(repoRoot, driftPaths) {
+const buildCheckModeError = (repoRoot, driftPaths) => {
     const driftSummary = driftPaths
         .map((targetPath) => formatManagedPath(repoRoot, targetPath))
         .join(", ");
@@ -422,13 +422,13 @@ function buildCheckModeError(repoRoot, driftPaths) {
         "Run `uv run agentic-tools policy sync` to sync them. " +
         "If you intended to keep VS Code approval edits instead, run " +
         "`uv run agentic-tools policy import-vscode`.");
-}
+};
 /**
  * @param {string} policyFile
  * @param {{ importVscode?: boolean, check?: boolean }} [options]
  * @returns {string[]}
  */
-export function syncPolicyFile(policyFile, { importVscode = false, check = false } = {}) {
+export const syncPolicyFile = (policyFile, { importVscode = false, check = false } = {}) => {
     if (importVscode && check) {
         throw new ToolError("`--check` cannot be combined with `--import-vscode`. Run `uv run agentic-tools policy import-vscode` instead.");
     }
@@ -513,11 +513,11 @@ export function syncPolicyFile(policyFile, { importVscode = false, check = false
     }
     messages.push("Done.");
     return messages;
-}
+};
 /**
  * @param {ExecutionOptions} options
  */
-function createAgentsPolicyCommand(options) {
+const createAgentsPolicyCommand = (options) => {
     return defineCommand({
         meta: {
             name: "agents-policy",
@@ -557,13 +557,13 @@ function createAgentsPolicyCommand(options) {
             return 0;
         },
     });
-}
+};
 /**
  * @param {string[]} [argv]
  * @param {RunOptions} [options]
  * @returns {Promise<number>}
  */
-export async function runAgentsPolicy(argv = process.argv.slice(2), options = {}) {
+export const runAgentsPolicy = async (argv = process.argv.slice(2), options = {}) => {
     const effectiveOptions = createExecutionOptions(options);
     const command = createAgentsPolicyCommand(effectiveOptions);
     try {
@@ -578,11 +578,11 @@ export async function runAgentsPolicy(argv = process.argv.slice(2), options = {}
         effectiveOptions.logger.error(message);
         return 1;
     }
-}
+};
 /**
  * @param {RunOptions} [options]
  * @returns {Promise<number>}
  */
-export async function runAgentsPolicyImportVscode(options = {}) {
+export const runAgentsPolicyImportVscode = async (options = {}) => {
     return runAgentsPolicy(["--import-vscode"], options);
-}
+};

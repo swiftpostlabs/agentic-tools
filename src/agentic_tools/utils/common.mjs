@@ -17,77 +17,77 @@ export class ToolError extends Error {}
  * @param {string} [cwd]
  * @returns {string}
  */
-export function resolvePath(rawPath, cwd = process.cwd()) {
+export const resolvePath = (rawPath, cwd = process.cwd()) => {
   return path.resolve(cwd, rawPath ?? ".");
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {boolean}
  */
-export function pathExists(targetPath) {
+export const pathExists = (targetPath) => {
   try {
     fs.accessSync(targetPath);
     return true;
   } catch {
     return false;
   }
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {boolean}
  */
-export function isDirectory(targetPath) {
+export const isDirectory = (targetPath) => {
   try {
     return fs.statSync(targetPath).isDirectory();
   } catch {
     return false;
   }
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {boolean}
  */
-export function isFile(targetPath) {
+export const isFile = (targetPath) => {
   try {
     return fs.statSync(targetPath).isFile();
   } catch {
     return false;
   }
-}
+};
 
 /**
  * @param {unknown} value
  * @param {string} context
  * @returns {JsonObject}
  */
-export function ensureJsonObject(value, context) {
+export const ensureJsonObject = (value, context) => {
   if (value === null || Array.isArray(value) || typeof value !== "object") {
     throw new ToolError(`${context} must be a JSON object.`);
   }
 
   return /** @type {JsonObject} */ (value);
-}
+};
 
 /**
  * @param {unknown} value
  * @returns {string[]}
  */
-export function getStringList(value) {
+export const getStringList = (value) => {
   if (!Array.isArray(value)) {
     return [];
   }
 
   return value.filter((entry) => typeof entry === "string");
-}
+};
 
 /**
  * @param {unknown} value
  * @returns {Record<string, string>}
  */
-export function getStringRecord(value) {
+export const getStringRecord = (value) => {
   if (value === null || Array.isArray(value) || typeof value !== "object") {
     return {};
   }
@@ -95,13 +95,13 @@ export function getStringRecord(value) {
   return Object.fromEntries(
     Object.entries(value).filter(([, entry]) => typeof entry === "string"),
   );
-}
+};
 
 /**
  * @param {unknown} value
  * @returns {Record<string, boolean>}
  */
-export function getBooleanRecord(value) {
+export const getBooleanRecord = (value) => {
   if (value === null || Array.isArray(value) || typeof value !== "object") {
     return {};
   }
@@ -109,13 +109,13 @@ export function getBooleanRecord(value) {
   return Object.fromEntries(
     Object.entries(value).filter(([, entry]) => typeof entry === "boolean"),
   );
-}
+};
 
 /**
  * @param {string[]} items
  * @returns {string[]}
  */
-export function deduplicatePreservingOrder(items) {
+export const deduplicatePreservingOrder = (items) => {
   const seen = new Set();
   /** @type {string[]} */
   const ordered = [];
@@ -130,13 +130,13 @@ export function deduplicatePreservingOrder(items) {
   }
 
   return ordered;
-}
+};
 
 /**
  * @param {string} value
  * @returns {string}
  */
-function stripYamlString(value) {
+const stripYamlString = (value) => {
   const trimmed = value.trim();
   if (
     trimmed.length >= 2 &&
@@ -147,13 +147,13 @@ function stripYamlString(value) {
   }
 
   return trimmed;
-}
+};
 
 /**
  * @param {string} text
  * @returns {JsonObject}
  */
-export function parseFrontmatter(text) {
+export const parseFrontmatter = (text) => {
   const lines = text.split(/\r?\n/u);
   if (lines.length === 0 || lines[0].trim() !== "---") {
     throw new ToolError("Skill file is missing YAML frontmatter.");
@@ -209,13 +209,13 @@ export function parseFrontmatter(text) {
   }
 
   throw new ToolError("Skill file is missing the closing frontmatter delimiter.");
-}
+};
 
 /**
  * @param {string} text
  * @returns {string}
  */
-function stripJsonc(text) {
+const stripJsonc = (text) => {
   let output = "";
   let index = 0;
   let inString = false;
@@ -274,7 +274,7 @@ function stripJsonc(text) {
   }
 
   return output.replace(/,\s*(?=[}\]])/gu, "");
-}
+};
 
 /**
  * @template T
@@ -282,7 +282,7 @@ function stripJsonc(text) {
  * @param {T} fallback
  * @returns {T | unknown}
  */
-export function readJsonFile(targetPath, fallback) {
+export const readJsonFile = (targetPath, fallback) => {
   if (!pathExists(targetPath)) {
     return fallback;
   }
@@ -293,34 +293,34 @@ export function readJsonFile(targetPath, fallback) {
   } catch {
     return JSON.parse(stripJsonc(text));
   }
-}
+};
 
 /**
  * @param {string} targetPath
  * @param {JsonObject} data
  * @returns {void}
  */
-export function writeJsonFile(targetPath, data) {
+export const writeJsonFile = (targetPath, data) => {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, `${JSON.stringify(data, null, 2)}\n`, "utf8");
-}
+};
 
 /**
  * @param {string} targetPath
  * @param {string} content
  * @returns {void}
  */
-export function writeTextFile(targetPath, content) {
+export const writeTextFile = (targetPath, content) => {
   fs.mkdirSync(path.dirname(targetPath), { recursive: true });
   fs.writeFileSync(targetPath, content, "utf8");
-}
+};
 
 /**
  * @param {string} targetPath
  * @param {JsonObject} data
  * @returns {void}
  */
-export function syncJsonFile(targetPath, data) {
+export const syncJsonFile = (targetPath, data) => {
   if (Object.keys(data).length > 0) {
     writeJsonFile(targetPath, data);
     return;
@@ -329,21 +329,21 @@ export function syncJsonFile(targetPath, data) {
   if (pathExists(targetPath)) {
     fs.rmSync(targetPath, { force: true });
   }
-}
+};
 
 /**
  * @param {string} [cwd]
  */
-function createConsumerRequire(cwd = process.cwd()) {
+const createConsumerRequire = (cwd = process.cwd()) => {
   return createRequire(path.join(path.resolve(cwd), "__agentic_tools__.js"));
-}
+};
 
 /**
  * @param {string} packageName
  * @param {string} [cwd]
  * @returns {string}
  */
-export function resolvePackageRoot(packageName, cwd = process.cwd()) {
+export const resolvePackageRoot = (packageName, cwd = process.cwd()) => {
   const consumerRequire = createConsumerRequire(cwd);
   const candidateNames = deduplicatePreservingOrder([
     packageName,
@@ -364,71 +364,71 @@ export function resolvePackageRoot(packageName, cwd = process.cwd()) {
   throw new ToolError(
     `Could not resolve package source '${packageName}'. Checked module names: ${candidateNames.join(", ")}.`,
   );
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {boolean}
  */
-export function isDirectoryLink(targetPath) {
+export const isDirectoryLink = (targetPath) => {
   try {
     return fs.lstatSync(targetPath).isSymbolicLink();
   } catch {
     return false;
   }
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {string}
  */
-export function resolveExistingLinkTarget(targetPath) {
+export const resolveExistingLinkTarget = (targetPath) => {
   if (!isDirectoryLink(targetPath)) {
     throw new ToolError(`Path '${targetPath}' is not a supported directory link.`);
   }
 
   return path.resolve(path.dirname(targetPath), fs.readlinkSync(targetPath));
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {void}
  */
-export function removeDirectoryLink(targetPath) {
+export const removeDirectoryLink = (targetPath) => {
   if (!isDirectoryLink(targetPath)) {
     throw new ToolError(`Path '${targetPath}' is not a supported directory link.`);
   }
 
   fs.rmSync(targetPath, { recursive: true, force: false });
-}
+};
 
 /**
  * @param {string} destinationPath
  * @param {string} targetPath
  * @returns {void}
  */
-export function createDirectoryLink(destinationPath, targetPath) {
+export const createDirectoryLink = (destinationPath, targetPath) => {
   fs.mkdirSync(path.dirname(destinationPath), { recursive: true });
   fs.symlinkSync(
     targetPath,
     destinationPath,
     process.platform === "win32" ? "junction" : "dir",
   );
-}
+};
 
 /**
  * @param {string} targetPath
  * @returns {string}
  */
-export function toPosixPath(targetPath) {
+export const toPosixPath = (targetPath) => {
   return targetPath.split(path.sep).join("/");
-}
+};
 
 /**
  * @param {unknown} value
  * @returns {string}
  */
-function formatLogArg(value) {
+const formatLogArg = (value) => {
   if (typeof value === "string") {
     return value;
   }
@@ -442,13 +442,13 @@ function formatLogArg(value) {
   } catch {
     return String(value);
   }
-}
+};
 
 /**
  * @param {OutputFn} [output]
  * @returns {LoggerLike}
  */
-function createLogger(output) {
+const createLogger = (output) => {
   if (typeof output !== "function") {
     return consola;
   }
@@ -463,13 +463,13 @@ function createLogger(output) {
       },
     ],
   });
-}
+};
 
 /**
  * @param {RunOptions} [options]
  * @returns {ExecutionOptions}
  */
-export function createExecutionOptions(options = {}) {
+export const createExecutionOptions = (options = {}) => {
   const logger = options.logger ?? createLogger(options.output);
   /** @type {OutputFn} */
   const output =
@@ -483,4 +483,4 @@ export function createExecutionOptions(options = {}) {
     logger,
     output,
   };
-}
+};

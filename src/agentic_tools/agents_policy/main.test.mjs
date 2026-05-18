@@ -8,16 +8,16 @@ import path from "node:path";
 import { runAgentsPolicy, runAgentsPolicyImportVscode } from "./main.mjs";
 
 /** @returns {string} */
-function createTempDir() {
+const createTempDir = () => {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-policy-"));
-}
+};
 
 /** @param {string} tempDir */
-function cleanupTempDir(tempDir) {
+const cleanupTempDir = (tempDir) => {
   fs.rmSync(tempDir, { recursive: true, force: true });
-}
+};
 
-function buildDefaultPolicyFixture() {
+const buildDefaultPolicyFixture = () => {
   return {
     services: ["gemini", "claude", "copilot"],
     protectedFiles: [],
@@ -25,7 +25,7 @@ function buildDefaultPolicyFixture() {
     terminalAutoApprove: {},
     editAutoApprove: {},
   };
-}
+};
 
 describe("agents-policy Node CLI", () => {
   test("runAgentsPolicy syncs generated files from .agents/policy.json", async () => {

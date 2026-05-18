@@ -8,14 +8,14 @@ import path from "node:path";
 import { runAgenticTools } from "./main.mjs";
 
 /** @returns {string} */
-function createTempDir() {
+const createTempDir = () => {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-root-"));
-}
+};
 
 /** @param {string} tempDir */
-function cleanupTempDir(tempDir) {
+const cleanupTempDir = (tempDir) => {
   fs.rmSync(tempDir, { recursive: true, force: true });
-}
+};
 
 describe("agentic-tools Node CLI", () => {
   test("runAgenticTools dispatches policy sync", async () => {

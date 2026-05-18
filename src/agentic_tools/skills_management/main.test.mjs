@@ -12,25 +12,25 @@ import {
 } from "./main.mjs";
 
 /** @returns {string} */
-function createTempDir() {
+const createTempDir = () => {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-skills-"));
-}
+};
 
 /** @param {string} tempDir */
-function cleanupTempDir(tempDir) {
+const cleanupTempDir = (tempDir) => {
   fs.rmSync(tempDir, { recursive: true, force: true });
-}
+};
 
 /**
  * @param {string} skillsRoot
  * @param {string} name
  * @param {Record<string, string>} [metadata]
  */
-function writeSkillInRoot(
+const writeSkillInRoot = (
   skillsRoot,
   name,
   metadata = {},
-) {
+) => {
   const skillDir = path.join(skillsRoot, name);
   fs.mkdirSync(skillDir, { recursive: true });
 
@@ -44,20 +44,20 @@ function writeSkillInRoot(
 
   lines.push("---", "", "# Test Skill", "");
   fs.writeFileSync(path.join(skillDir, "SKILL.md"), lines.join("\n"), "utf8");
-}
+};
 
 /**
  * @param {string} repoRoot
  * @param {string} name
  * @param {Record<string, string>} [metadata]
  */
-function writeRepoSkill(
+const writeRepoSkill = (
   repoRoot,
   name,
   metadata = {},
-) {
+) => {
   writeSkillInRoot(path.join(repoRoot, ".agents", "skills"), name, metadata);
-}
+};
 
 describe("skills-management Node CLI", () => {
   test("discoverSkillManifests accepts a packaged skills root path", () => {

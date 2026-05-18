@@ -26,15 +26,15 @@ const POLICY_USAGE_LINES = [
  * @param {string[]} lines
  * @returns {string}
  */
-function renderUsage(lines) {
+const renderUsage = (lines) => {
     return `${lines.join("\n")}\n`;
-}
+};
 /**
  * @param {string} command
  * @param {string[]} args
  * @returns {string[]}
  */
-function buildPolicyArgs(command, args) {
+const buildPolicyArgs = (command, args) => {
     if (command === "check") {
         return ["--check", ...args];
     }
@@ -42,13 +42,13 @@ function buildPolicyArgs(command, args) {
         return ["--import-vscode", ...args];
     }
     return args;
-}
+};
 /**
  * @param {string[]} [argv]
  * @param {RunOptions} [options]
  * @returns {Promise<number>}
  */
-export async function runAgenticTools(argv = process.argv.slice(2), options = {}) {
+export const runAgenticTools = async (argv = process.argv.slice(2), options = {}) => {
     const effectiveOptions = createExecutionOptions(options);
     if (argv.length === 0) {
         effectiveOptions.output(renderUsage(ROOT_USAGE_LINES));
@@ -74,4 +74,4 @@ export async function runAgenticTools(argv = process.argv.slice(2), options = {}
     }
     effectiveOptions.output(renderUsage(ROOT_USAGE_LINES));
     return 1;
-}
+};

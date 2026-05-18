@@ -24,60 +24,60 @@ const SKILLS_CONFIG_SECTION = "skills";
  * @param {unknown} value
  * @returns {string[]}
  */
-function splitRequires(value) {
+const splitRequires = (value) => {
     if (typeof value !== "string") {
         return [];
     }
     return value.split(/\s+/u).filter(Boolean);
-}
+};
 /**
  * @param {CommandArgs} args
  * @param {string} key
  * @returns {string | null}
  */
-function getOptionalStringArg(args, key) {
+const getOptionalStringArg = (args, key) => {
     const value = args[key];
     return typeof value === "string" && value.trim() !== "" ? value : null;
-}
+};
 /**
  * @param {CommandArgs} args
  * @param {string} key
  * @returns {boolean}
  */
-function getBooleanArg(args, key) {
+const getBooleanArg = (args, key) => {
     return args[key] === true;
-}
+};
 /**
  * @param {string} targetPath
  * @returns {boolean}
  */
-function isSkillsRootPath(targetPath) {
+const isSkillsRootPath = (targetPath) => {
     return (path.basename(targetPath) === "skills" &&
         path.basename(path.dirname(targetPath)) === ".agents");
-}
+};
 /**
  * @param {string} targetPath
  * @returns {string}
  */
-function toSkillsRoot(targetPath) {
+const toSkillsRoot = (targetPath) => {
     return isSkillsRootPath(targetPath)
         ? targetPath
         : path.join(targetPath, ".agents", "skills");
-}
+};
 /**
  * @param {string} targetPath
  * @returns {string}
  */
-function toRepoRoot(targetPath) {
+const toRepoRoot = (targetPath) => {
     return isSkillsRootPath(targetPath)
         ? path.dirname(path.dirname(targetPath))
         : targetPath;
-}
+};
 /**
  * @param {string} sourcePath
  * @returns {string}
  */
-export function resolveSourceSkillsRoot(sourcePath) {
+export const resolveSourceSkillsRoot = (sourcePath) => {
     const skillsRoot = toSkillsRoot(sourcePath);
     if (isDirectory(skillsRoot)) {
         return skillsRoot;
@@ -90,20 +90,20 @@ export function resolveSourceSkillsRoot(sourcePath) {
         return sourcePath;
     }
     throw new ToolError(`Could not find skills directory at ${skillsRoot}`);
-}
+};
 /**
  * @param {string} targetPath
  * @param {boolean} useGlobal
  * @returns {string}
  */
-function resolveDestinationSkillsRoot(targetPath, useGlobal) {
+const resolveDestinationSkillsRoot = (targetPath, useGlobal) => {
     return useGlobal ? DEFAULT_GLOBAL_SKILLS_DIR : toSkillsRoot(targetPath);
-}
+};
 /**
  * @param {string} skillDirectory
  * @returns {SkillManifest}
  */
-function readSkillManifest(skillDirectory) {
+const readSkillManifest = (skillDirectory) => {
     const skillFile = path.join(skillDirectory, "SKILL.md");
     const frontmatter = parseFrontmatter(fs.readFileSync(skillFile, "utf8"));
     const rawName = frontmatter.name;
@@ -129,12 +129,12 @@ function readSkillManifest(skillDirectory) {
             ? metadata["shareable-skills.reason"]
             : null,
     };
-}
+};
 /**
  * @param {string} sourcePath
  * @returns {SkillManifestMap}
  */
-export function discoverSkillManifests(sourcePath) {
+export const discoverSkillManifests = (sourcePath) => {
     const skillsRoot = resolveSourceSkillsRoot(sourcePath);
     /** @type {SkillManifestMap} */
     const manifests = {};
@@ -147,23 +147,23 @@ export function discoverSkillManifests(sourcePath) {
         manifests[manifest.name] = manifest;
     }
     return manifests;
-}
+};
 /**
  * @param {string} skillName
  * @returns {string}
  */
-function buildMakeShareableRecommendation(skillName) {
+const buildMakeShareableRecommendation = (skillName) => {
     return (`Recommended next step: use /${SHAREABILITY_WIZARD} on '${skillName}' to decide ` +
         "whether it should be shareable or repo-local and to add " +
         "shareable-skills.visibility, shareable-skills.requires, and " +
         "shareable-skills.reason where needed.");
-}
+};
 /**
  * @param {SkillManifest} manifest
  * @param {SkillManifestMap} manifests
  * @returns {void}
  */
-function ensureShareableManifest(manifest, manifests) {
+const ensureShareableManifest = (manifest, manifests) => {
     if (manifest.visibility !== SHAREABLE_VISIBILITY) {
         const reasonSuffix = manifest.reason ? ` Reason: ${manifest.reason}` : "";
         throw new ToolError(`Skill '${manifest.name}' is not shareable.${reasonSuffix} ${buildMakeShareableRecommendation(manifest.name)}`);
@@ -177,19 +177,19 @@ function ensureShareableManifest(manifest, manifests) {
             throw new ToolError(`Skill '${manifest.name}' depends on '${dependencyName}', which is not shareable.`);
         }
     }
-}
+};
 /**
  * @param {SkillManifestMap} manifests
  * @param {string[]} requestedNames
  * @returns {SkillManifest[]}
  */
-export function resolveSelectedSkills(manifests, requestedNames) {
+export const resolveSelectedSkills = (manifests, requestedNames) => {
     /** @type {SkillManifest[]} */
     const resolved = [];
     const visiting = new Set();
     const visited = new Set();
     /** @param {string} skillName */
-    function visit(skillName) {
+    const visit = (skillName) => {
         if (visited.has(skillName)) {
             return;
         }
@@ -208,17 +208,17 @@ export function resolveSelectedSkills(manifests, requestedNames) {
         visiting.delete(skillName);
         visited.add(skillName);
         resolved.push(manifest);
-    }
+    };
     for (const requestedName of requestedNames) {
         visit(requestedName);
     }
     return resolved;
-}
+};
 /**
  * @param {SkillManifestMap} manifests
  * @returns {string}
  */
-function describeSkills(manifests) {
+const describeSkills = (manifests) => {
     const skillNames = Object.keys(manifests).sort();
     if (skillNames.length === 0) {
         return "No skills found.";
@@ -232,19 +232,19 @@ function describeSkills(manifests) {
         return `${manifest.name}: visibility ${visibility}; requires ${requires}${reason}`;
     })
         .join("\n");
-}
+};
 /**
  * @param {string} sourcePath
  * @param {string} skillName
  * @returns {string}
  */
-function resolveSourceSkillDirectory(sourcePath, skillName) {
+const resolveSourceSkillDirectory = (sourcePath, skillName) => {
     const skillDirectory = path.join(resolveSourceSkillsRoot(sourcePath), skillName);
     if (!isFile(path.join(skillDirectory, "SKILL.md"))) {
         throw new ToolError(`Could not find source skill '${skillName}' at ${skillDirectory}`);
     }
     return path.resolve(skillDirectory);
-}
+};
 /**
  * @param {SkillManifest} manifest
  * @param {string} destinationSkillsDir
@@ -252,7 +252,7 @@ function resolveSourceSkillDirectory(sourcePath, skillName) {
  * @param {boolean} force
  * @returns {string}
  */
-function linkSkillDirectory(manifest, destinationSkillsDir, dryRun, force) {
+const linkSkillDirectory = (manifest, destinationSkillsDir, dryRun, force) => {
     const destination = path.join(destinationSkillsDir, manifest.name);
     const target = path.resolve(manifest.directory);
     if (dryRun) {
@@ -274,7 +274,7 @@ function linkSkillDirectory(manifest, destinationSkillsDir, dryRun, force) {
     }
     createDirectoryLink(destination, target);
     return `Linked ${destination} -> ${target}`;
-}
+};
 /**
  * @param {string} skillName
  * @param {string} destinationSkillsDir
@@ -282,7 +282,7 @@ function linkSkillDirectory(manifest, destinationSkillsDir, dryRun, force) {
  * @param {string | null} expectedTarget
  * @returns {string}
  */
-function unlinkSkillDirectory(skillName, destinationSkillsDir, dryRun, expectedTarget) {
+const unlinkSkillDirectory = (skillName, destinationSkillsDir, dryRun, expectedTarget) => {
     const destination = path.join(destinationSkillsDir, skillName);
     if (dryRun) {
         return expectedTarget === null
@@ -301,23 +301,23 @@ function unlinkSkillDirectory(skillName, destinationSkillsDir, dryRun, expectedT
     }
     removeDirectoryLink(destination);
     return `Unlinked ${destination} -> ${existingTarget}`;
-}
+};
 /**
  * @param {string} configPath
  * @returns {string}
  */
-function inferConfigBaseRoot(configPath) {
+const inferConfigBaseRoot = (configPath) => {
     return path.basename(path.dirname(configPath)) === ".agents"
         ? path.dirname(path.dirname(configPath))
         : path.dirname(configPath);
-}
+};
 /**
  * @param {string} destinationPath
  * @param {boolean} useGlobal
  * @param {string | null} rawConfig
  * @returns {string}
  */
-function resolveSyncConfigPath(destinationPath, useGlobal, rawConfig) {
+const resolveSyncConfigPath = (destinationPath, useGlobal, rawConfig) => {
     if (typeof rawConfig === "string") {
         return path.resolve(rawConfig);
     }
@@ -336,22 +336,22 @@ function resolveSyncConfigPath(destinationPath, useGlobal, rawConfig) {
         return legacySkillsConfig;
     }
     return agentsConfig;
-}
+};
 /**
  * @param {string} packageName
  * @param {string} [cwd]
  * @returns {string}
  */
-export function resolvePackageSourceRoot(packageName, cwd = process.cwd()) {
+export const resolvePackageSourceRoot = (packageName, cwd = process.cwd()) => {
     return resolvePackageRoot(packageName, cwd);
-}
+};
 /**
  * @param {string} configSource
  * @param {string} configPath
  * @param {string} cwd
  * @returns {string}
  */
-function resolveConfiguredSourceRoot(configSource, configPath, cwd) {
+const resolveConfiguredSourceRoot = (configSource, configPath, cwd) => {
     if (configSource.startsWith(PACKAGE_SOURCE_PREFIX)) {
         const packageName = configSource.slice(PACKAGE_SOURCE_PREFIX.length).trim();
         if (packageName === "") {
@@ -362,13 +362,13 @@ function resolveConfiguredSourceRoot(configSource, configPath, cwd) {
     return path.isAbsolute(configSource)
         ? path.resolve(configSource)
         : path.resolve(inferConfigBaseRoot(configPath), configSource);
-}
+};
 /**
  * @param {unknown} value
  * @param {string} context
  * @returns {string[]}
  */
-function requireStringList(value, context) {
+const requireStringList = (value, context) => {
     if (!Array.isArray(value)) {
         throw new ToolError(`${context} must be an array of strings.`);
     }
@@ -380,12 +380,12 @@ function requireStringList(value, context) {
         throw new ToolError(`${context} must not be empty.`);
     }
     return entries;
-}
+};
 /**
  * @param {string} text
  * @returns {ConfiguredSkillSource[]}
  */
-function parseConfiguredSkillSources(text) {
+const parseConfiguredSkillSources = (text) => {
     let parsed;
     try {
         parsed = JSON.parse(text);
@@ -410,12 +410,12 @@ function parseConfiguredSkillSources(text) {
             skills: requireStringList(sourceObject.skills, `Skills config source '${sourceObject.from}' skills`),
         };
     });
-}
+};
 /**
  * @param {string} configPath
  * @returns {boolean}
  */
-function agentsConfigHasSkills(configPath) {
+const agentsConfigHasSkills = (configPath) => {
     try {
         const parsed = ensureJsonObject(
             JSON.parse(fs.readFileSync(configPath, "utf8")),
@@ -429,41 +429,41 @@ function agentsConfigHasSkills(configPath) {
     catch {
         return true;
     }
-}
+};
 /**
  * @param {string} configPath
  * @returns {ConfiguredSkillSource[]}
  */
-function loadConfiguredSkillSources(configPath) {
+const loadConfiguredSkillSources = (configPath) => {
     if (!isFile(configPath)) {
         throw new ToolError(`Could not find skills config at ${configPath}`);
     }
     return parseConfiguredSkillSources(fs.readFileSync(configPath, "utf8"));
-}
+};
 /**
  * @param {SkillManifestMap} manifests
  * @param {string[]} requestedNames
  * @returns {string[]}
  */
-function findMissingRequestedSkills(manifests, requestedNames) {
+const findMissingRequestedSkills = (manifests, requestedNames) => {
     return deduplicatePreservingOrder(requestedNames).filter((skillName) => manifests[skillName] === undefined);
-}
+};
 /**
  * @param {Array<[string, string[]]>} missingBySource
  * @returns {string}
  */
-function describeMissingConfiguredSkills(missingBySource) {
+const describeMissingConfiguredSkills = (missingBySource) => {
     return [
         "Skills config references missing skills:",
         ...missingBySource.map(([source, missingNames]) => `- source '${source}': ${missingNames.join(", ")}`),
     ].join("\n");
-}
+};
 /**
  * @param {string} destinationSkillsDir
  * @param {boolean} dryRun
  * @returns {string[]}
  */
-function cleanupDeadSkillLinks(destinationSkillsDir, dryRun) {
+const cleanupDeadSkillLinks = (destinationSkillsDir, dryRun) => {
     if (!pathExists(destinationSkillsDir)) {
         return [];
     }
@@ -489,33 +489,33 @@ function cleanupDeadSkillLinks(destinationSkillsDir, dryRun) {
         messages.push(`Removed dead link ${candidatePath} -> ${targetPath}`);
     }
     return messages;
-}
+};
 /**
  * @param {boolean} useGlobal
  * @param {string | null} destination
  * @returns {void}
  */
-function validateDestinationFlags(useGlobal, destination) {
+const validateDestinationFlags = (useGlobal, destination) => {
     if (useGlobal && destination !== null) {
         throw new ToolError("cannot combine --global with --to");
     }
-}
+};
 /**
  * @param {{ source: string | null }} listState
  * @param {ExecutionOptions} options
  * @returns {number}
  */
-function handleListCommand({ source }, options) {
+const handleListCommand = ({ source }, options) => {
     const manifests = discoverSkillManifests(resolvePath(source, options.cwd));
     options.output(describeSkills(manifests));
     return 0;
-}
+};
 /**
  * @param {TargetCommandState} parsed
  * @param {ExecutionOptions} options
  * @returns {number}
  */
-function handleLinkCommand(parsed, options) {
+const handleLinkCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
     const manifests = discoverSkillManifests(resolvePath(parsed.source, options.cwd));
     const destinationSkillsDir = resolveDestinationSkillsRoot(resolvePath(parsed.destination, options.cwd), parsed.useGlobal);
@@ -523,13 +523,13 @@ function handleLinkCommand(parsed, options) {
         options.output(linkSkillDirectory(manifest, destinationSkillsDir, parsed.dryRun, parsed.force));
     }
     return 0;
-}
+};
 /**
  * @param {TargetCommandState} parsed
  * @param {ExecutionOptions} options
  * @returns {number}
  */
-function handleSyncCommand(parsed, options) {
+const handleSyncCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
     const destinationPath = resolvePath(parsed.destination, options.cwd);
     const configPath = resolveSyncConfigPath(destinationPath, parsed.useGlobal, parsed.config);
@@ -565,13 +565,13 @@ function handleSyncCommand(parsed, options) {
         options.output(linkSkillDirectory(manifest, destinationSkillsDir, parsed.dryRun, parsed.force));
     }
     return 0;
-}
+};
 /**
  * @param {TargetCommandState} parsed
  * @param {ExecutionOptions} options
  * @returns {number}
  */
-function handleUnlinkCommand(parsed, options) {
+const handleUnlinkCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
     const sourcePath = resolvePath(parsed.source, options.cwd);
     const destinationSkillsDir = resolveDestinationSkillsRoot(resolvePath(parsed.destination, options.cwd), parsed.useGlobal);
@@ -580,33 +580,33 @@ function handleUnlinkCommand(parsed, options) {
         options.output(unlinkSkillDirectory(skillName, destinationSkillsDir, parsed.dryRun, expectedTarget));
     }
     return 0;
-}
+};
 /**
  * @param {CommandArgs} args
  * @param {string} context
  * @returns {void}
  */
-function assertNoPositionals(args, context) {
+const assertNoPositionals = (args, context) => {
     if (args._.length > 0) {
         throw new ToolError(`${context} does not accept positional arguments.`);
     }
-}
+};
 /**
  * @param {CommandArgs} args
  * @returns {string[]}
  */
-function getRequiredSkills(args) {
+const getRequiredSkills = (args) => {
     const skills = deduplicatePreservingOrder(args._);
     if (skills.length === 0) {
         throw new ToolError("expected at least one skill name.");
     }
     return skills;
-}
+};
 /**
  * @param {boolean} [includeConfig]
  * @returns {import("citty").ArgsDef}
  */
-function createSharedTargetArgs(includeConfig = false) {
+const createSharedTargetArgs = (includeConfig = false) => {
     /** @type {import("citty").ArgsDef} */
     const sharedArgs = {
         from: {
@@ -641,11 +641,11 @@ function createSharedTargetArgs(includeConfig = false) {
         };
     }
     return sharedArgs;
-}
+};
 /**
  * @param {ExecutionOptions} options
  */
-function createSkillsManagementCommand(options) {
+const createSkillsManagementCommand = (options) => {
     return defineCommand({
         meta: {
             name: "skills-management",
@@ -730,13 +730,13 @@ function createSkillsManagementCommand(options) {
             }),
         },
     });
-}
+};
 /**
  * @param {string[]} [argv]
  * @param {RunOptions} [options]
  * @returns {Promise<number>}
  */
-export async function runSkillsManagement(argv = process.argv.slice(2), options = {}) {
+export const runSkillsManagement = async (argv = process.argv.slice(2), options = {}) => {
     const effectiveOptions = createExecutionOptions(options);
     const command = createSkillsManagementCommand(effectiveOptions);
     if (argv.length === 0) {
@@ -755,4 +755,4 @@ export async function runSkillsManagement(argv = process.argv.slice(2), options 
         effectiveOptions.logger.error(message);
         return 1;
     }
-}
+};
