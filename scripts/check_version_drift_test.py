@@ -1,22 +1,23 @@
-"""Tests for repository version management."""
+"""Tests for repository version drift checking."""
 
 from importlib import util
 import json
 from pathlib import Path
+
 import pytest
 
 
-def load_manage_version_module():
-    module_path = Path(__file__).parent / "manage_version.py"
-    spec = util.spec_from_file_location("manage_version", module_path)
+def load_check_version_drift_module():
+    module_path = Path(__file__).parent / "check_version_drift.py"
+    spec = util.spec_from_file_location("check_version_drift", module_path)
     if spec is None or spec.loader is None:
-        raise RuntimeError("Could not load manage_version.py")
+        raise RuntimeError("Could not load check_version_drift.py")
 
     module = util.module_from_spec(spec)
     loader = spec.loader
     exec_module = getattr(loader, "exec_module", None)
     if exec_module is None or not callable(exec_module):
-        raise RuntimeError("manage_version.py loader cannot execute the module")
+        raise RuntimeError("check_version_drift.py loader cannot execute the module")
 
     exec_module(module)
     return module
@@ -57,15 +58,15 @@ def write_repo_files(
     )
 
 
-def test_sync_from_version_file_updates_all_metadata(tmp_path: Path) -> None:
-    module = load_manage_version_module()
+def test_check_repository_version_accepts_aligned_metadata(tmp_path: Path) -> None:
+    module = load_check_version_drift_module()
     write_repo_files(tmp_path, source_version="1.2.3", metadata_version="1.2.3")
 
     assert module.check_repository_version(tmp_path) == "1.2.3"
 
 
 def test_check_repository_version_reports_drift(tmp_path: Path) -> None:
-    module = load_manage_version_module()
+    module = load_check_version_drift_module()
     write_repo_files(tmp_path, source_version="0.1.0", metadata_version="0.2.0")
 
     with pytest.raises(ValueError, match="package.json=0.2.0"):

@@ -17,7 +17,7 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ### Changed
 
 - Replaced the repo's custom version-writing commands with a Commitizen-led `release-prepare` and `release-publish` workflow for stable releases.
-- Reduced `scripts/manage_version.py` to drift checking instead of version mutation.
+- Reduced the old version-management helper to drift checking instead of version mutation, and renamed it to `scripts/check_version_drift.py`.
 
 ## [0.1.0] - 2026-05-14
 

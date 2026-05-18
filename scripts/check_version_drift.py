@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate repository version alignment across metadata files."""
+"""Validate repository version drift across metadata files."""
 
 import argparse
 from collections.abc import Sequence
@@ -125,11 +125,11 @@ def check_repository_version(root: Path) -> str:
 def build_parser() -> argparse.ArgumentParser:
     """Build the CLI argument parser."""
     parser = argparse.ArgumentParser(
-        description="Validate repository version alignment across VERSION, pyproject.toml, package.json, and uv.lock."
+        description="Validate repository version drift across VERSION, pyproject.toml, package.json, and uv.lock."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser(
-        "check", help="Fail if VERSION and derived metadata files differ"
+        "check", help="Fail if VERSION and derived metadata files drift"
     )
 
     return parser

@@ -71,7 +71,7 @@ skills-management = "agentic_tools.skills_management.main:main"
 
 [tool.poe.tasks]
 policy-check = "uv run agentic-tools policy check"
-version-check = "python scripts/manage_version.py check"
+version-check = "python scripts/check_version_drift.py check"
 version-next = "cz bump --get-next --yes"
 release-prepare-preview = { help = "Preview the next Commitizen-managed release bump without changing files", shell = "cz bump --dry-run --check-consistency --allow-no-commit --increment ${part} --yes", args = [
   { name = "part", positional = true, required = true },
