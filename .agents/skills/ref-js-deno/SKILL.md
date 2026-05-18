@@ -25,6 +25,7 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - Prefer `deno check`, `deno task`, `deno fmt`, `deno lint`, and `deno test` over ad hoc wrappers when Deno owns the workflow.
 - Deno's native tooling is sufficient for Deno-owned code; use Yarn only when the repository also has Node-managed packages or scripts outside the Deno boundary.
 - Keep `tsconfig.json` only for Node-owned paths or for TypeScript project-graph cases that Deno workspaces and directory scopes cannot express cleanly.
+- Remember that modern Node also runs TypeScript directly through built-in type stripping; choose Deno for its runtime, permissions, dependency, and tooling model, not merely to avoid `tsc` or `ts-node`.
 - Prefer `deno lint` and `deno fmt` for Deno-owned files; add ESLint only when the repo or editor truly needs the ESLint ecosystem.
 - When npm-backed editor tooling such as ESLint must run inside a Deno repo, set `nodeModulesDir: "auto"` and wrap the command in `deno task`.
 - Prefer `.ts` modules by default in Deno-owned code; do not drop to JavaScript just to avoid a build step that Deno does not require.
@@ -67,6 +68,7 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 ### Node compatibility and hybrid repositories
 
 - Deno 2 understands `package.json`, `node_modules`, npm workspaces, and Node built-ins; hybrid repos are a supported path, not a workaround.
+- Modern Node can execute TypeScript directly too. In hybrid repos, decide Node versus Deno ownership by permissions, dependency model, task runner, and deployment target rather than by TypeScript execution alone.
 - If a `package.json` exists and you want Deno to auto-create and refresh `node_modules`, set `nodeModulesDir: "auto"`. With `package.json`, Deno 2 otherwise defaults to `"manual"`.
 - `nodeModulesDir` is a workspace-root setting; do not try to set it per workspace member.
 - Use `deno install` or `deno add` when Deno owns the dependency update flow. Do not assume Deno 1 auto-install behavior.

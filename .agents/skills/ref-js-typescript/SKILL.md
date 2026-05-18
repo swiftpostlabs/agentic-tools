@@ -35,6 +35,7 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer explicit runtime validation at trust boundaries.
 - Prefer inference inside small local scopes and explicit annotations at exported or shared boundaries.
 - Prefer TypeScript over plain JavaScript in modern Node and Deno codebases because current runtimes can execute `.ts` and `.mts` directly.
+- Modern Node can run TypeScript directly through built-in type stripping; do not add `ts-node`, `tsx`, or a build step just to execute ordinary Node-owned `.ts` or `.mts` scripts.
 - Prefer `.ts` for ordinary TypeScript modules, colocated feature tests, and most feature code.
 - Prefer `.mts` for Node ESM scripts that are executed directly by Node and need the extension to communicate module format clearly.
 - Prefer `const` arrow functions for TypeScript helpers, callbacks, components, and script-local functions.
@@ -61,6 +62,13 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Treat network data, filesystem data, environment variables, and parsed JSON as untrusted until validated.
 - Narrow `unknown` with guards or validation helpers before use.
 - Do not let compile-time confidence hide missing runtime checks.
+
+### Direct Node execution
+
+- Use direct Node TypeScript execution for Node-owned scripts when the supported Node version includes built-in type stripping; older Node 22 releases may need `--experimental-strip-types`.
+- Keep directly executed TypeScript erasable: avoid syntax that requires transformation, such as enums, namespaces with runtime output, or parameter properties, unless the repo intentionally enables a transform path.
+- Direct execution is not type checking. Keep `tsc --noEmit`, editor checks, or another explicit checker when correctness depends on TypeScript diagnostics.
+- Do not ship directly executed `.ts` or `.mts` files as no-build package runtime from `node_modules`; Node rejects type stripping there, so publish JavaScript or use `.mjs` plus JSDoc/checkJs when no build exists.
 
 ### Code structure
 
@@ -115,6 +123,8 @@ tsconfig.json
 - Strict compile-time checks do not replace runtime validation for external data.
 - `unknown` is only safer than `any` if the code actually narrows it before use.
 - Large type-level abstractions can hide the domain model instead of clarifying it.
+- Node's TypeScript execution strips types; it does not replace a checker or make non-erasable TypeScript syntax safe in every runtime mode.
+- No-build package runtime under `node_modules` is the important exception: use emitted JavaScript or JSDoc-backed `.mjs` there.
 
 ## Validation
 
@@ -122,7 +132,7 @@ tsconfig.json
 - External input is validated before domain logic uses it.
 - Shared types are easy to locate and easy to understand.
 - Functions follow the local const-arrow default unless overloads, generators, intentional hoisting, or an API convention justify a declaration.
-- The code does not stay on plain JavaScript merely to avoid a build step that modern runtimes no longer need.
+- The code does not stay on plain JavaScript merely to avoid `tsc`, `ts-node`, or a build step that modern Node and Deno runtimes no longer need.
 - The resulting code remains readable to someone who did not write the types.
 
 ## References

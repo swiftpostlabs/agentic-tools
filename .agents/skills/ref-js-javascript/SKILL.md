@@ -32,6 +32,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 
 - Prefer modern ESM syntax.
 - Prefer TypeScript for modern Node and Deno code when the runtime can execute `.ts` or `.mts` directly and the files are not shipped as package runtime from `node_modules`.
+- Modern Node can execute TypeScript directly through built-in type stripping, so do not choose JavaScript merely to avoid `tsc`, `ts-node`, or a build runner.
 - For no-build npm packages or Git-installed CLIs that execute from `node_modules`, use `.mjs` JavaScript with JSDoc and active `checkJs` type checking instead of shipping `.ts` or `.mts` runtime files.
 - Use plain JavaScript intentionally for browser-delivered code, JSDoc-first modules, or repos that have already chosen JS as the local default.
 - When code intentionally stays JavaScript, prefer `.js` for most modules and `.mjs` for executable ESM scripts or entrypoints where the runtime boundary should be unambiguous.
@@ -55,6 +56,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 
 ### JSDoc and typing
 
+- Before choosing JSDoc-backed JavaScript for Node scripts, check whether the repo can use direct TypeScript execution in its supported Node version.
 - Use `@typedef`, `@param`, and `@returns` where they materially improve editor tooling and readability.
 - Document object shapes and callback contracts that would otherwise be implicit.
 - Keep JSDoc synchronized with the code; stale type comments are worse than no comments.
@@ -83,6 +85,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 ### File extensions and linting
 
 - If modern Node or Deno can run the file directly, reconsider whether it should be TypeScript before defaulting to `.js`.
+- Use JavaScript for Node CLIs shipped from `node_modules` without a build only because Node refuses type stripping under `node_modules`, not because Node generally needs `tsc` or `ts-node` to execute TypeScript.
 - Use `.mjs` for explicit ESM entrypoints and runnable script shims when a file intentionally stays JavaScript and the extension clarifies runtime intent.
 - Keep ordinary feature modules on `.js` only when the surrounding repo or delivery target actually wants JavaScript.
 - When a repo mixes browser modules, repo scripts, and userscripts, split the ESLint flat config by file globs rather than diluting one config with many exceptions.
