@@ -4,5 +4,6 @@
 - The userscript filename clearly signals `.user.js` or `.user.ts`, and TypeScript-authored userscripts have the ambient globals support they need.
 - UI injection, styles, and event listeners are idempotent.
 - Selectors, storage keys, and injected identifiers are centralized and namespaced.
+- Helper functions follow the const-arrow default unless a userscript compatibility constraint justifies a function declaration.
 - Dynamic-page handling prefers observers or targeted state checks over blind polling loops.
 - Failures degrade cleanly when the host page structure changes.

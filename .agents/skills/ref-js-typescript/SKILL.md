@@ -37,6 +37,7 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer TypeScript over plain JavaScript in modern Node and Deno codebases because current runtimes can execute `.ts` and `.mts` directly.
 - Prefer `.ts` for ordinary TypeScript modules, colocated feature tests, and most feature code.
 - Prefer `.mts` for Node ESM scripts that are executed directly by Node and need the extension to communicate module format clearly.
+- Prefer `const` arrow functions for TypeScript helpers, callbacks, components, and script-local functions.
 - Prefer Yarn for dependency management and script execution in Node-based TypeScript projects unless the repo is intentionally Deno-owned.
 
 ## Task Framing
@@ -65,7 +66,8 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 
 - Keep types close to the feature or module that owns them.
 - Extract shared types only when they are truly shared.
-- Prefer readable named functions and objects over dense callback chains.
+- Prefer readable named `const` arrow functions and objects over dense callback chains.
+- Use function declarations only when the declaration form is materially useful, such as overload implementations, generators, intentional hoisting, or matching an existing framework/API convention.
 
 ### File and config conventions
 
@@ -119,6 +121,7 @@ tsconfig.json
 - No new `any` escapes or unchecked casts were introduced without strong justification.
 - External input is validated before domain logic uses it.
 - Shared types are easy to locate and easy to understand.
+- Functions follow the local const-arrow default unless overloads, generators, intentional hoisting, or an API convention justify a declaration.
 - The code does not stay on plain JavaScript merely to avoid a build step that modern runtimes no longer need.
 - The resulting code remains readable to someone who did not write the types.
 

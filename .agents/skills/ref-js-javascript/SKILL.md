@@ -37,6 +37,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - When code intentionally stays JavaScript, prefer `.js` for most modules and `.mjs` for executable ESM scripts or entrypoints where the runtime boundary should be unambiguous.
 - Prefer JSDoc on exported helpers, shared objects, and non-obvious callbacks.
 - Prefer named constants and helpers over repeated inline logic.
+- Prefer `const` arrow functions for JavaScript helpers, callbacks, and script-local functions.
 - Prefer explicit input validation at I/O boundaries.
 - Prefer simple data flow over mutation-heavy code.
 - Prefer Yarn for dependency management and script execution in Node-based JavaScript projects unless the repo is intentionally Deno-owned.
@@ -61,6 +62,8 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 ### Structure
 
 - Break repeated or mentally heavy logic into named helpers.
+- Use `const name = (...) => { ... }` as the default function shape for helpers, callbacks, and script-local functions.
+- Use a function declaration only when the declaration-specific behavior matters, such as intentional hoisting, generators, or compatibility with an existing API shape.
 - Keep DOM access, state transitions, rendering, and event wiring conceptually separate in browser code.
 - Avoid giant anonymous functions when a named local helper would clarify intent.
 
@@ -122,6 +125,7 @@ src/features/example-data-transform/
 - Repeated or complex logic has been named and isolated.
 - Browser code keeps responsibilities readable.
 - Script inputs and outputs are explicit and predictable.
+- Functions follow the local const-arrow default unless a declaration-specific behavior is intentionally needed.
 - Node and Deno files are still on JavaScript only when that choice is deliberate rather than inertia.
 - Node-based package installs and CLI invocations stay on Yarn unless the repo is intentionally Deno-owned.
 
