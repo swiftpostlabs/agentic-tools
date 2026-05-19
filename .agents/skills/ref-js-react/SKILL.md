@@ -36,6 +36,7 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Prefer one coherent UI system when a component library is justified.
 - Prefer runtime validation and async caching libraries only when the feature actually crosses those boundaries.
 - Prefer native `Date` and `Intl` first, and use `date-fns` only when date logic becomes genuinely complex.
+- For closed component variant maps, label tables, and route or status dictionaries, prefer const literals as the source of truth and derive unions from them instead of maintaining a second parallel type.
 - For Node-based React projects, prefer Yarn for dependency management and script execution unless the repo is intentionally Deno-owned.
 
 ## Task Framing
@@ -54,6 +55,7 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Split components when one file heavily mixes layout, data loading, mutations, and event choreography.
 - Prefer composition and explicit props over deep wrapper stacks or implicit children contracts.
 - Preserve semantic HTML even when a component library provides generic wrappers.
+- When a component relies on a closed set of variants or labels, keep the canonical list in a const object or tuple and derive the prop or state union from that value.
 
 ### Hooks and state
 
@@ -63,6 +65,7 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Treat effects as synchronization with external systems, not as a fallback place for ordinary calculations.
 - Prefer `useEffectEvent`, `startTransition`, and `useDeferredValue` when they clarify event or effect boundaries or keep interactions responsive.
 - Do not add `useMemo` or `useCallback` by default unless profiling or an established repo convention shows that they earn their keep.
+- Avoid hand-maintained variant unions that duplicate a const dictionary used for rendering badges, tabs, labels, or route metadata; derive those types from the value instead.
 
 ### Library recommendations
 

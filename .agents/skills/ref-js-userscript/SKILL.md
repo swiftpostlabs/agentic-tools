@@ -33,6 +33,7 @@ Provide portable defaults for userscripts that are resilient to DOM changes, sco
 - Declare grants deliberately; do not request APIs you do not use.
 - Keep startup idempotent so re-runs do not duplicate UI or listeners.
 - Isolate selectors, storage keys, and injected class names as constants.
+- Keep fixed mode names, labels, and state tags as const literals and derive any needed unions from those values instead of repeating them in a separate type declaration.
 - Prefer `const` arrow functions for userscript helpers. If a wrapper is useful, prefer an arrow IIFE such as `(() => { ... })();` unless an existing file already uses a different wrapper consistently.
 
 ## Core Rules
@@ -54,6 +55,7 @@ Provide portable defaults for userscripts that are resilient to DOM changes, sco
 - Make UI injection and event binding idempotent.
 - Keep selectors and mutation rules centralized so page changes are easier to repair.
 - Keep helper functions in the same const-arrow style as ordinary JavaScript and TypeScript modules unless a userscript-manager compatibility constraint forces a different shape.
+- In JSDoc-checked userscripts, keep closed lookup objects on `/** @type {const} */` and derive `keyof typeof` or value unions from the literal instead of widening them to generic records.
 - Fail softly when the page no longer matches expectations.
 
 ### File and type support

@@ -36,6 +36,7 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer explicit runtime validation at trust boundaries.
 - Prefer inference inside small local scopes and explicit annotations at exported or shared boundaries.
 - Prefer `as const` for fixed literal maps and tuples when the exact keys or values matter; do not widen them to `Record<string, ...>` or `string[]` unless the surface is intentionally open-ended.
+- Prefer const data as the source of truth for closed sets: derive key and value unions from `as const` objects or tuples instead of maintaining a parallel hand-written type that can drift.
 - Prefer TypeScript over plain JavaScript in modern Node and Deno codebases because current runtimes can execute `.ts` and `.mts` directly.
 - Modern Node can run TypeScript directly through built-in type stripping; do not add `ts-node`, `tsx`, or a build step just to execute ordinary Node-owned `.ts` or `.mts` scripts.
 - Prefer `.ts` for ordinary TypeScript modules, colocated feature tests, and most feature code.
@@ -58,7 +59,29 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Model states and variants with unions instead of optional-property soup.
 - Use utility types sparingly and only when they clarify intent.
 - Keep literal lookup tables precise with `as const`, then narrow dynamic keys with `keyof typeof ...` or a guard instead of throwing away the literal information.
+- When a fixed lookup object already defines the allowed states, labels, or variants, derive unions from it instead of duplicating the same domain in a separate alias or enum.
+- Small helpers such as `type Keys<T extends object> = keyof T` and `type Values<T extends object> = T[Keys<T>]` are fine when they make those derived unions easier to read and reuse.
 - Avoid deep type-level cleverness when a simple domain type would read better.
+
+### Const-first modeling
+
+- Prefer this pattern for closed maps and label sets:
+
+```ts
+export const statValueLabels = {
+  1: 'Basso',
+  2: 'Medio',
+  3: 'Alto',
+} as const;
+
+export type Keys<T extends object> = keyof T;
+export type Values<T extends object> = T[Keys<T>];
+
+export type StatValue = Keys<typeof statValueLabels>;
+export type StatValueLabel = Values<typeof statValueLabels>;
+```
+
+- Use an explicit `Record<...>` annotation only when the object is intentionally open-ended or must satisfy a broader external contract.
 
 ### Runtime boundaries
 
@@ -126,6 +149,7 @@ tsconfig.json
 - Strict compile-time checks do not replace runtime validation for external data.
 - `unknown` is only safer than `any` if the code actually narrows it before use.
 - Large type-level abstractions can hide the domain model instead of clarifying it.
+- Parallel literal types and literal objects drift unless one becomes the clear source of truth; prefer the const object and derive from it.
 - Node's TypeScript execution strips types; it does not replace a checker or make non-erasable TypeScript syntax safe in every runtime mode.
 - No-build package runtime under `node_modules` is the important exception: use emitted JavaScript or JSDoc-backed `.mjs` there.
 

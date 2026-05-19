@@ -39,6 +39,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - When code intentionally stays JavaScript, prefer `.js` for most modules and `.mjs` for executable ESM scripts or entrypoints where the runtime boundary should be unambiguous.
 - Prefer JSDoc on exported helpers, shared objects, and non-obvious callbacks.
 - Prefer `/** @type {const} */` on fixed literal maps and tuples when the exact keys or values matter; do not widen them to broad `Record<string, ...>` or `string[]` annotations just to make indexing easier.
+- Prefer const-backed source-of-truth objects for closed sets of labels, states, or variants, and derive key or value unions from those literals in JSDoc-aware tooling instead of maintaining a parallel hand-written union.
 - Prefer named constants and helpers over repeated inline logic.
 - Prefer `const` arrow functions for JavaScript helpers, callbacks, and script-local functions.
 - Prefer explicit input validation at I/O boundaries.
@@ -62,8 +63,22 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Use `@typedef`, `@param`, and `@returns` where they materially improve editor tooling and readability.
 - Document object shapes and callback contracts that would otherwise be implicit.
 - For fixed literal lookup objects or tuples, prefer `/** @type {const} */` so TypeScript infers the specific keys and values from the literal.
+- If checked JavaScript needs a derived union from a fixed lookup object, prefer a `typeof ...[keyof typeof ...]` style typedef over a duplicated string-literal union.
 - If a dynamic string needs to index a const-typed lookup object, narrow the key first with a guard or a targeted cast instead of widening the whole object to `Record<string, ...>`.
 - Keep JSDoc synchronized with the code; stale type comments are worse than no comments.
+
+Example:
+
+```js
+export const statValueLabels = /** @type {const} */ ({
+  1: 'Basso',
+  2: 'Medio',
+  3: 'Alto',
+});
+
+/** @typedef {keyof typeof statValueLabels} StatValue */
+/** @typedef {typeof statValueLabels[keyof typeof statValueLabels]} StatValueLabel */
+```
 
 ### Structure
 
@@ -130,6 +145,7 @@ src/features/example-data-transform/
 
 - Exported helpers and shared objects have useful JSDoc where needed.
 - Repeated or complex logic has been named and isolated.
+- Fixed literal maps stay const-typed and do not duplicate the same closed set in a separate hand-written union unless the toolchain truly requires it.
 - Browser code keeps responsibilities readable.
 - Script inputs and outputs are explicit and predictable.
 - Functions follow the local const-arrow default unless a declaration-specific behavior is intentionally needed.
