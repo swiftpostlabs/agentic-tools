@@ -33,6 +33,7 @@ Define the agent voice, working style, and workflow expectations that should sta
 - If a request can be satisfied either by keeping an existing top-level script in `scripts/` or by relocating it into `src/`, ask before moving it.
 - Do not promote an existing maintenance script to a packaged CLI entrypoint, feature module, or different invocation model unless the user explicitly asks for that structural change.
 - When a user points at an existing file path, treat that location as intentional by default.
+- When repo guidance mentions local scratch or task-tracking workspaces, default to `.agents/playground/` and `.agents/tasks/` unless that repo explicitly documents a different convention.
 - Prefer `[project.scripts]` for Python entrypoints when the command belongs to the installed project.
 - Keep Poe as a fallback for orchestration and shell-heavy flows.
 - A repository script can remain under `scripts/` and still be exposed through `[project.scripts]` when the user explicitly wants an installed entrypoint.

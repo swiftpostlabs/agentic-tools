@@ -11,6 +11,7 @@ metadata:
 ## Purpose
 
 Define how this repo uses `.agents/tasks/` as a gitignored local workspace for backlog tracking, working notes, temporary delivery artifacts, and per-task execution context.
+Treat `.agents/tasks/` for task tracking and `.agents/playground/` for scratch artifacts as the default paired local workspaces unless the current repo explicitly documents a different convention.
 
 ## When to use this skill
 
@@ -71,6 +72,7 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 ## Decision Rules
 
 - Treat `.agents/tasks/` as local working state, not as committed product documentation.
+- Use `.agents/tasks/` and `.agents/playground/` together as the default local workspace pair unless the current repo explicitly documents a different convention.
 - Keep `.agents/tasks/` gitignored and promote durable guidance elsewhere instead of relying on local notes to survive cloning or review.
 - If a TODO item is simple and well-defined, execute it directly instead of forcing a planning ritual first.
 - If a TODO item is broad, ambiguous, or underdefined, ask the missing questions first and treat that clarification as part of the task rather than guessing.
