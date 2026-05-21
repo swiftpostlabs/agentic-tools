@@ -134,7 +134,6 @@ export const deduplicatePreservingOrder = (items) => {
 
 /**
  * @param {string} value
- * @returns {string}
  */
 const stripYamlString = (value) => {
   const trimmed = value.trim();
@@ -213,7 +212,6 @@ export const parseFrontmatter = (text) => {
 
 /**
  * @param {string} text
- * @returns {string}
  */
 const stripJsonc = (text) => {
   let output = "";
@@ -426,7 +424,6 @@ export const toPosixPath = (targetPath) => {
 
 /**
  * @param {unknown} value
- * @returns {string}
  */
 const formatLogArg = (value) => {
   if (typeof value === "string") {
@@ -446,7 +443,6 @@ const formatLogArg = (value) => {
 
 /**
  * @param {OutputFn} [output]
- * @returns {LoggerLike}
  */
 const createLogger = (output) => {
   if (typeof output !== "function") {

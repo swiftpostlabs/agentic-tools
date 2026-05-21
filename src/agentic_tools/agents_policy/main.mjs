@@ -4,9 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ToolError, createExecutionOptions, ensureJsonObject, getBooleanRecord, getStringList, getStringRecord, isFile, pathExists, readJsonFile, resolvePath, syncJsonFile, toPosixPath, writeJsonFile, writeTextFile, } from "../utils/common.mjs";
 
-/** @typedef {import("../utils/common.mjs").JsonObject} JsonObject */
-/** @typedef {import("../utils/common.mjs").RunOptions} RunOptions */
-/** @typedef {import("../utils/common.mjs").ExecutionOptions} ExecutionOptions */
+/** @import { JsonObject, RunOptions, ExecutionOptions } from "../utils/common.mjs" */
 /** @typedef {JsonObject & { services?: unknown, protectedFiles?: unknown, excludedFiles?: unknown, terminalAutoApprove?: unknown, editAutoApprove?: unknown }} PolicyState */
 /** @typedef {{ rawConfig: JsonObject, policy: PolicyState, usesUnifiedConfig: boolean }} PolicyDocument */
 /** @typedef {{ _: string[], [key: string]: unknown }} CommandArgs */
@@ -43,7 +41,6 @@ const isSupportedServiceAlias = (rawName) => {
 /**
  * @param {CommandArgs} args
  * @param {string} key
- * @returns {string | null}
  */
 const getOptionalStringArg = (args, key) => {
     const value = args[key];
@@ -52,7 +49,6 @@ const getOptionalStringArg = (args, key) => {
 /**
  * @param {CommandArgs} args
  * @param {string} key
- * @returns {boolean}
  */
 const getBooleanArg = (args, key) => {
     return args[key] === true;
@@ -60,14 +56,12 @@ const getBooleanArg = (args, key) => {
 /**
  * @param {string} targetPath
  * @param {string} context
- * @returns {JsonObject}
  */
 const readJsonObject = (targetPath, context) => {
     return ensureJsonObject(readJsonFile(targetPath, {}), context);
 };
 /**
  * @param {string} targetPath
- * @returns {PolicyDocument}
  */
 const loadPolicyDocument = (targetPath) => {
     const rawConfig = readJsonObject(targetPath, "Policy file");
@@ -89,7 +83,6 @@ const loadPolicyDocument = (targetPath) => {
  * @param {string} targetPath
  * @param {PolicyDocument} document
  * @param {PolicyState} policy
- * @returns {void}
  */
 const writePolicyDocument = (targetPath, document, policy) => {
     if (!document.usesUnifiedConfig) {
@@ -100,7 +93,6 @@ const writePolicyDocument = (targetPath, document, policy) => {
 };
 /**
  * @param {string} targetPath
- * @returns {boolean}
  */
 const agentsConfigHasPolicy = (targetPath) => {
     try {
@@ -113,7 +105,6 @@ const agentsConfigHasPolicy = (targetPath) => {
 };
 /**
  * @param {unknown} value
- * @returns {Record<string, unknown>}
  */
 const getTerminalApprovalMapping = (value) => {
     if (value === null || Array.isArray(value) || typeof value !== "object") {
@@ -123,21 +114,18 @@ const getTerminalApprovalMapping = (value) => {
 };
 /**
  * @param {PolicyState} policy
- * @returns {string[]}
  */
 const getProtectedFiles = (policy) => {
     return getStringList(policy.protectedFiles);
 };
 /**
  * @param {PolicyState} policy
- * @returns {string[]}
  */
 const getExcludedFiles = (policy) => {
     return getStringList(policy.excludedFiles);
 };
 /**
  * @param {string} rawName
- * @returns {string}
  */
 const normalizeServiceName = (rawName) => {
     const normalized = rawName.trim().toLowerCase();
@@ -150,7 +138,6 @@ const normalizeServiceName = (rawName) => {
 };
 /**
  * @param {PolicyState} policy
- * @returns {string[]}
  */
 const getServices = (policy) => {
     if (policy.services === undefined) {
@@ -174,7 +161,6 @@ const getServices = (policy) => {
 };
 /**
  * @param {string[]} protectedFiles
- * @returns {string[]}
  */
 const buildProtectedReadRules = (protectedFiles) => {
     return protectedFiles.map((pattern) => `Read(${pattern})`);
@@ -182,7 +168,6 @@ const buildProtectedReadRules = (protectedFiles) => {
 /**
  * @param {string[]} existing
  * @param {string[]} protectedFiles
- * @returns {string[]}
  */
 const replaceManagedClaudeDenyRules = (existing, protectedFiles) => {
     return [
@@ -193,7 +178,6 @@ const replaceManagedClaudeDenyRules = (existing, protectedFiles) => {
 /**
  * @param {JsonObject} claudeSettings
  * @param {Pick<PolicyState, "protectedFiles">} policy
- * @returns {JsonObject}
  */
 const applyPolicyToClaudeSettings = (claudeSettings, policy) => {
     /** @type {JsonObject} */
@@ -220,7 +204,6 @@ const applyPolicyToClaudeSettings = (claudeSettings, policy) => {
 };
 /**
  * @param {string[]} protectedFiles
- * @returns {Record<string, string>}
  */
 const buildProtectedFileAssociations = (protectedFiles) => {
     return Object.fromEntries(protectedFiles.map((pattern) => [pattern, MANAGED_COPILOT_LANGUAGE_ID]));
@@ -228,7 +211,6 @@ const buildProtectedFileAssociations = (protectedFiles) => {
 /**
  * @param {Record<string, string>} existing
  * @param {string[]} protectedFiles
- * @returns {Record<string, string>}
  */
 const replaceManagedFileAssociations = (existing, protectedFiles) => {
     const preserved = Object.fromEntries(Object.entries(existing).filter(([, language]) => language !== MANAGED_COPILOT_LANGUAGE_ID));
@@ -240,7 +222,6 @@ const replaceManagedFileAssociations = (existing, protectedFiles) => {
 /**
  * @param {JsonObject} vscodeSettings
  * @param {Pick<PolicyState, "protectedFiles" | "terminalAutoApprove" | "editAutoApprove">} policy
- * @returns {JsonObject}
  */
 const applyPolicyToVscodeSettings = (vscodeSettings, policy) => {
     /** @type {JsonObject} */
@@ -285,7 +266,6 @@ const applyPolicyToVscodeSettings = (vscodeSettings, policy) => {
 /**
  * @param {PolicyState} policy
  * @param {string} policyLabel
- * @returns {string}
  */
 const buildAiExcludeContent = (policy, policyLabel) => {
     return [
@@ -305,7 +285,6 @@ const buildAiExcludeContent = (policy, policyLabel) => {
 };
 /**
  * @param {JsonObject} data
- * @returns {string | null}
  */
 const buildJsonFileContent = (data) => {
     if (Object.keys(data).length === 0) {
@@ -315,7 +294,6 @@ const buildJsonFileContent = (data) => {
 };
 /**
  * @param {string} targetPath
- * @returns {string | null}
  */
 const readOptionalTextFile = (targetPath) => {
     if (!pathExists(targetPath)) {
@@ -326,7 +304,6 @@ const readOptionalTextFile = (targetPath) => {
 /**
  * @param {PolicyState} policy
  * @param {string} vscodeSettingsPath
- * @returns {PolicyState}
  */
 const importPolicyFromVscode = (policy, vscodeSettingsPath) => {
     const vscode = ensureJsonObject(readJsonFile(vscodeSettingsPath, {}), "VS Code settings");
@@ -338,7 +315,6 @@ const importPolicyFromVscode = (policy, vscodeSettingsPath) => {
 };
 /**
  * @param {string} startPath
- * @returns {string | null}
  */
 const discoverPolicyPath = (startPath) => {
     let currentPath = path.resolve(startPath);
@@ -366,7 +342,6 @@ const discoverPolicyPath = (startPath) => {
 /**
  * @param {string | null} rawConfig
  * @param {string} cwd
- * @returns {string | null}
  */
 const resolvePolicyPath = (rawConfig, cwd) => {
     if (typeof rawConfig === "string") {
@@ -380,7 +355,6 @@ const resolvePolicyPath = (rawConfig, cwd) => {
 };
 /**
  * @param {string} policyFile
- * @returns {{ repoRoot: string, policyFile: string, aiExclude: string, vscodeSettings: string, claudeSettings: string }}
  */
 const resolvePolicyPaths = (policyFile) => {
     const resolvedPolicy = path.resolve(policyFile);
@@ -403,7 +377,6 @@ const resolvePolicyPaths = (policyFile) => {
 };
 /**
  * @param {{ repoRoot: string, policyFile: string }} paths
- * @returns {string}
  */
 const formatPolicyLabel = (paths) => {
     const relativePath = path.relative(paths.repoRoot, paths.policyFile);
@@ -412,7 +385,6 @@ const formatPolicyLabel = (paths) => {
 /**
  * @param {string} repoRoot
  * @param {string} targetPath
- * @returns {string}
  */
 const formatManagedPath = (repoRoot, targetPath) => {
     const relativePath = path.relative(repoRoot, targetPath);
@@ -421,7 +393,6 @@ const formatManagedPath = (repoRoot, targetPath) => {
 /**
  * @param {string} repoRoot
  * @param {string[]} driftPaths
- * @returns {string}
  */
 const buildCheckModeError = (repoRoot, driftPaths) => {
     const driftSummary = driftPaths

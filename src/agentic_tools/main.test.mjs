@@ -7,7 +7,6 @@ import path from "node:path";
 
 import { runAgenticTools } from "./main.mjs";
 
-/** @returns {string} */
 const createTempDir = () => {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-root-"));
 };

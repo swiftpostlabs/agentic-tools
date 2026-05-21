@@ -5,8 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { ToolError, createDirectoryLink, createExecutionOptions, deduplicatePreservingOrder, ensureJsonObject, isDirectory, isDirectoryLink, isFile, parseFrontmatter, pathExists, removeDirectoryLink, resolveExistingLinkTarget, resolvePackageRoot, resolvePath, } from "../utils/common.mjs";
 
-/** @typedef {import("../utils/common.mjs").ExecutionOptions} ExecutionOptions */
-/** @typedef {import("../utils/common.mjs").RunOptions} RunOptions */
+/** @import { ExecutionOptions, RunOptions } from "../utils/common.mjs" */
 /** @typedef {{ name: string, directory: string, category: string | null, visibility: string | null, requires: string[], reason: string | null }} SkillManifest */
 /** @typedef {Record<string, SkillManifest>} SkillManifestMap */
 /** @typedef {{ skills: string[], source: string | null, destination: string | null, useGlobal: boolean, dryRun: boolean, force: boolean, config: string | null }} TargetCommandState */
@@ -22,7 +21,6 @@ const AGENTS_CONFIG_FILENAME = "config.json";
 const SKILLS_CONFIG_SECTION = "skills";
 /**
  * @param {unknown} value
- * @returns {string[]}
  */
 const splitRequires = (value) => {
     if (typeof value !== "string") {
@@ -33,7 +31,6 @@ const splitRequires = (value) => {
 /**
  * @param {CommandArgs} args
  * @param {string} key
- * @returns {string | null}
  */
 const getOptionalStringArg = (args, key) => {
     const value = args[key];
@@ -42,14 +39,12 @@ const getOptionalStringArg = (args, key) => {
 /**
  * @param {CommandArgs} args
  * @param {string} key
- * @returns {boolean}
  */
 const getBooleanArg = (args, key) => {
     return args[key] === true;
 };
 /**
  * @param {string} targetPath
- * @returns {boolean}
  */
 const isSkillsRootPath = (targetPath) => {
     return (path.basename(targetPath) === "skills" &&
@@ -57,7 +52,6 @@ const isSkillsRootPath = (targetPath) => {
 };
 /**
  * @param {string} targetPath
- * @returns {string}
  */
 const toSkillsRoot = (targetPath) => {
     return isSkillsRootPath(targetPath)
@@ -66,7 +60,6 @@ const toSkillsRoot = (targetPath) => {
 };
 /**
  * @param {string} targetPath
- * @returns {string}
  */
 const toRepoRoot = (targetPath) => {
     return isSkillsRootPath(targetPath)
@@ -94,14 +87,12 @@ export const resolveSourceSkillsRoot = (sourcePath) => {
 /**
  * @param {string} targetPath
  * @param {boolean} useGlobal
- * @returns {string}
  */
 const resolveDestinationSkillsRoot = (targetPath, useGlobal) => {
     return useGlobal ? DEFAULT_GLOBAL_SKILLS_DIR : toSkillsRoot(targetPath);
 };
 /**
  * @param {string} skillDirectory
- * @returns {SkillManifest}
  */
 const readSkillManifest = (skillDirectory) => {
     const skillFile = path.join(skillDirectory, "SKILL.md");
@@ -153,7 +144,6 @@ export const discoverSkillManifests = (sourcePath) => {
 };
 /**
  * @param {string} skillName
- * @returns {string}
  */
 const buildMakeShareableRecommendation = (skillName) => {
     return (`Recommended next step: use /${SHAREABILITY_WIZARD} on '${skillName}' to decide ` +
@@ -164,7 +154,6 @@ const buildMakeShareableRecommendation = (skillName) => {
 /**
  * @param {SkillManifest} manifest
  * @param {SkillManifestMap} manifests
- * @returns {void}
  */
 const ensureShareableManifest = (manifest, manifests) => {
     if (manifest.visibility !== SHAREABLE_VISIBILITY) {
@@ -219,7 +208,6 @@ export const resolveSelectedSkills = (manifests, requestedNames) => {
 };
 /**
  * @param {SkillManifestMap} manifests
- * @returns {string}
  */
 const describeSkills = (manifests) => {
     const skillNames = Object.keys(manifests).sort();
@@ -240,7 +228,6 @@ const describeSkills = (manifests) => {
 /**
  * @param {string} sourcePath
  * @param {string} skillName
- * @returns {string}
  */
 const resolveSourceSkillDirectory = (sourcePath, skillName) => {
     const skillDirectory = path.join(resolveSourceSkillsRoot(sourcePath), skillName);
@@ -254,7 +241,6 @@ const resolveSourceSkillDirectory = (sourcePath, skillName) => {
  * @param {string} destinationSkillsDir
  * @param {boolean} dryRun
  * @param {boolean} force
- * @returns {string}
  */
 const linkSkillDirectory = (manifest, destinationSkillsDir, dryRun, force) => {
     const destination = path.join(destinationSkillsDir, manifest.name);
@@ -284,7 +270,6 @@ const linkSkillDirectory = (manifest, destinationSkillsDir, dryRun, force) => {
  * @param {string} destinationSkillsDir
  * @param {boolean} dryRun
  * @param {string | null} expectedTarget
- * @returns {string}
  */
 const unlinkSkillDirectory = (skillName, destinationSkillsDir, dryRun, expectedTarget) => {
     const destination = path.join(destinationSkillsDir, skillName);
@@ -308,7 +293,6 @@ const unlinkSkillDirectory = (skillName, destinationSkillsDir, dryRun, expectedT
 };
 /**
  * @param {string} configPath
- * @returns {string}
  */
 const inferConfigBaseRoot = (configPath) => {
     return path.basename(path.dirname(configPath)) === ".agents"
@@ -319,7 +303,6 @@ const inferConfigBaseRoot = (configPath) => {
  * @param {string} destinationPath
  * @param {boolean} useGlobal
  * @param {string | null} rawConfig
- * @returns {string}
  */
 const resolveSyncConfigPath = (destinationPath, useGlobal, rawConfig) => {
     if (typeof rawConfig === "string") {
@@ -353,7 +336,6 @@ export const resolvePackageSourceRoot = (packageName, cwd = process.cwd()) => {
  * @param {string} configSource
  * @param {string} configPath
  * @param {string} cwd
- * @returns {string}
  */
 const resolveConfiguredSourceRoot = (configSource, configPath, cwd) => {
     if (configSource.startsWith(PACKAGE_SOURCE_PREFIX)) {
@@ -370,7 +352,6 @@ const resolveConfiguredSourceRoot = (configSource, configPath, cwd) => {
 /**
  * @param {unknown} value
  * @param {string} context
- * @returns {string[]}
  */
 const requireStringList = (value, context) => {
     if (!Array.isArray(value)) {
@@ -387,7 +368,6 @@ const requireStringList = (value, context) => {
 };
 /**
  * @param {string} text
- * @returns {ConfiguredSkillSource[]}
  */
 const parseConfiguredSkillSources = (text) => {
     let parsed;
@@ -417,7 +397,6 @@ const parseConfiguredSkillSources = (text) => {
 };
 /**
  * @param {string} configPath
- * @returns {boolean}
  */
 const agentsConfigHasSkills = (configPath) => {
     try {
@@ -436,7 +415,6 @@ const agentsConfigHasSkills = (configPath) => {
 };
 /**
  * @param {string} configPath
- * @returns {ConfiguredSkillSource[]}
  */
 const loadConfiguredSkillSources = (configPath) => {
     if (!isFile(configPath)) {
@@ -447,14 +425,12 @@ const loadConfiguredSkillSources = (configPath) => {
 /**
  * @param {SkillManifestMap} manifests
  * @param {string[]} requestedNames
- * @returns {string[]}
  */
 const findMissingRequestedSkills = (manifests, requestedNames) => {
     return deduplicatePreservingOrder(requestedNames).filter((skillName) => manifests[skillName] === undefined);
 };
 /**
  * @param {Array<[string, string[]]>} missingBySource
- * @returns {string}
  */
 const describeMissingConfiguredSkills = (missingBySource) => {
     return [
@@ -465,7 +441,6 @@ const describeMissingConfiguredSkills = (missingBySource) => {
 /**
  * @param {string} destinationSkillsDir
  * @param {boolean} dryRun
- * @returns {string[]}
  */
 const cleanupDeadSkillLinks = (destinationSkillsDir, dryRun) => {
     if (!pathExists(destinationSkillsDir)) {
@@ -497,7 +472,6 @@ const cleanupDeadSkillLinks = (destinationSkillsDir, dryRun) => {
 /**
  * @param {boolean} useGlobal
  * @param {string | null} destination
- * @returns {void}
  */
 const validateDestinationFlags = (useGlobal, destination) => {
     if (useGlobal && destination !== null) {
@@ -507,7 +481,6 @@ const validateDestinationFlags = (useGlobal, destination) => {
 /**
  * @param {{ source: string | null }} listState
  * @param {ExecutionOptions} options
- * @returns {number}
  */
 const handleListCommand = ({ source }, options) => {
     const manifests = discoverSkillManifests(resolvePath(source, options.cwd));
@@ -517,7 +490,6 @@ const handleListCommand = ({ source }, options) => {
 /**
  * @param {TargetCommandState} parsed
  * @param {ExecutionOptions} options
- * @returns {number}
  */
 const handleLinkCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
@@ -531,7 +503,6 @@ const handleLinkCommand = (parsed, options) => {
 /**
  * @param {TargetCommandState} parsed
  * @param {ExecutionOptions} options
- * @returns {number}
  */
 const handleSyncCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
@@ -573,7 +544,6 @@ const handleSyncCommand = (parsed, options) => {
 /**
  * @param {TargetCommandState} parsed
  * @param {ExecutionOptions} options
- * @returns {number}
  */
 const handleUnlinkCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
@@ -588,7 +558,6 @@ const handleUnlinkCommand = (parsed, options) => {
 /**
  * @param {CommandArgs} args
  * @param {string} context
- * @returns {void}
  */
 const assertNoPositionals = (args, context) => {
     if (args._.length > 0) {
@@ -597,7 +566,6 @@ const assertNoPositionals = (args, context) => {
 };
 /**
  * @param {CommandArgs} args
- * @returns {string[]}
  */
 const getRequiredSkills = (args) => {
     const skills = deduplicatePreservingOrder(args._);

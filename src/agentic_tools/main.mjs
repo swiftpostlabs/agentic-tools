@@ -4,14 +4,12 @@ import { runAgentsPolicy } from "./agents_policy/main.mjs";
 import { createSkillsManagementCommand } from "./skills_management/main.mjs";
 import { ToolError, createExecutionOptions } from "./utils/common.mjs";
 
-/** @typedef {import("./utils/common.mjs").RunOptions} RunOptions */
-/** @typedef {import("./utils/common.mjs").ExecutionOptions} ExecutionOptions */
+/** @import { RunOptions, ExecutionOptions } from "./utils/common.mjs" */
 /** @typedef {{ _: string[], [key: string]: unknown }} CommandArgs */
 
 /**
  * @param {CommandArgs} args
  * @param {string} key
- * @returns {string | null}
  */
 const getOptionalStringArg = (args, key) => {
     const value = args[key];
@@ -20,7 +18,6 @@ const getOptionalStringArg = (args, key) => {
 /**
  * @param {CommandArgs} args
  * @param {string} context
- * @returns {void}
  */
 const assertNoPositionals = (args, context) => {
     if (args._.length > 0) {
@@ -30,7 +27,6 @@ const assertNoPositionals = (args, context) => {
 /**
  * @param {"sync" | "check" | "import-vscode"} command
  * @param {string | null} configPath
- * @returns {string[]}
  */
 const buildPolicyArgs = (command, configPath) => {
     /** @type {string[]} */
