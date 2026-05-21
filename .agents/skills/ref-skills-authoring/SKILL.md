@@ -42,6 +42,7 @@ Core local references for this skill:
 - `./references/description-guide.md` when drafting or fixing the `description` field.
 - `./references/evaluation-guide.md` when testing trigger quality or output quality.
 - `./references/quality-evaluation.md` when a skill needs a rigorous human-plus-quantitative review loop.
+- `./references/consolidation-checklist.md` when moving, deduplicating, or rehoming guidance across skills.
 - `./references/scripts-and-resources.md` when deciding what belongs in `references/`, `scripts/`, or `assets/`.
 - `./references/task-framing.md` when a skill needs commands or actions framed by what, why, when, and expected outcome.
 - `./references/agent-components.md` when a skill feels conceptually correct but still does not improve agent behavior.
