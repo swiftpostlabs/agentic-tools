@@ -61,11 +61,19 @@ def as_int(value: object, default: int = 0) -> int:
 
 
 def as_float(value: object, default: float = 0.0) -> float:
-    return float(value) if isinstance(value, int | float) and not isinstance(value, bool) else default
+    return (
+        float(value)
+        if isinstance(value, int | float) and not isinstance(value, bool)
+        else default
+    )
 
 
 def optional_float(value: object) -> float | None:
-    return float(value) if isinstance(value, int | float) and not isinstance(value, bool) else None
+    return (
+        float(value)
+        if isinstance(value, int | float) and not isinstance(value, bool)
+        else None
+    )
 
 
 def infer_configuration(root: Path, grading_path: Path) -> str:
@@ -88,8 +96,16 @@ def load_run(root: Path, grading_path: Path) -> RunResult:
     summary = grading.get("summary")
     if not isinstance(summary, dict):
         raw_expectations = grading.get("expectations", [])
-        expectations = cast(list[object], raw_expectations) if isinstance(raw_expectations, list) else []
-        passed = sum(1 for item in expectations if isinstance(item, dict) and item.get("passed") is True)
+        expectations = (
+            cast(list[object], raw_expectations)
+            if isinstance(raw_expectations, list)
+            else []
+        )
+        passed = sum(
+            1
+            for item in expectations
+            if isinstance(item, dict) and item.get("passed") is True
+        )
         total = len(expectations)
         failed = total - passed
         pass_rate = passed / total if total else 0.0
@@ -98,12 +114,16 @@ def load_run(root: Path, grading_path: Path) -> RunResult:
         passed = as_int(summary_mapping.get("passed"))
         failed = as_int(summary_mapping.get("failed"))
         total = as_int(summary_mapping.get("total"), passed + failed)
-        pass_rate = as_float(summary_mapping.get("pass_rate"), passed / total if total else 0.0)
+        pass_rate = as_float(
+            summary_mapping.get("pass_rate"), passed / total if total else 0.0
+        )
 
     timing = grading.get("timing")
     time_seconds = None
     if isinstance(timing, dict) and "total_duration_seconds" in timing:
-        time_seconds = optional_float(cast(dict[str, object], timing).get("total_duration_seconds"))
+        time_seconds = optional_float(
+            cast(dict[str, object], timing).get("total_duration_seconds")
+        )
     else:
         timing_path = grading_path.parent / "timing.json"
         if timing_path.is_file():
@@ -130,14 +150,20 @@ def summarize(results: list[RunResult]) -> EvalSummary:
     configurations: dict[str, ConfigurationSummary] = {}
     for configuration, config_results in sorted(by_configuration.items()):
         pass_rates = [result.pass_rate for result in config_results]
-        times = [result.time_seconds for result in config_results if result.time_seconds is not None]
+        times = [
+            result.time_seconds
+            for result in config_results
+            if result.time_seconds is not None
+        ]
         configurations[configuration] = {
             "runs": len(config_results),
             "passed": sum(result.passed for result in config_results),
             "failed": sum(result.failed for result in config_results),
             "total": sum(result.total for result in config_results),
             "pass_rate_mean": statistics.fmean(pass_rates) if pass_rates else 0.0,
-            "pass_rate_stdev": statistics.stdev(pass_rates) if len(pass_rates) > 1 else 0.0,
+            "pass_rate_stdev": (
+                statistics.stdev(pass_rates) if len(pass_rates) > 1 else 0.0
+            ),
             "time_seconds_mean": statistics.fmean(times) if times else None,
             "time_seconds_stdev": statistics.stdev(times) if len(times) > 1 else None,
         }
@@ -149,22 +175,39 @@ def summarize(results: list[RunResult]) -> EvalSummary:
 
 
 def render_markdown(summary: EvalSummary) -> str:
-    lines = ["# Skill Eval Summary", "", "| Configuration | Runs | Pass Rate | Time |", "| --- | ---: | ---: | ---: |"]
+    lines = [
+        "# Skill Eval Summary",
+        "",
+        "| Configuration | Runs | Pass Rate | Time |",
+        "| --- | ---: | ---: | ---: |",
+    ]
     for configuration, data in summary["configurations"].items():
         pass_rate = data["pass_rate_mean"] * 100
         pass_stdev = data["pass_rate_stdev"] * 100
         time_mean = data["time_seconds_mean"]
         time_stdev = data["time_seconds_stdev"]
-        time_text = "n/a" if time_mean is None else f"{time_mean:.1f}s +/- {(time_stdev or 0.0):.1f}s"
-        lines.append(f"| {configuration} | {data['runs']} | {pass_rate:.1f}% +/- {pass_stdev:.1f}% | {time_text} |")
+        time_text = (
+            "n/a"
+            if time_mean is None
+            else f"{time_mean:.1f}s +/- {(time_stdev or 0.0):.1f}s"
+        )
+        lines.append(
+            f"| {configuration} | {data['runs']} | {pass_rate:.1f}% +/- {pass_stdev:.1f}% | {time_text} |"
+        )
     return "\n".join(lines) + "\n"
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Aggregate grading.json files from a skill eval workspace")
-    parser.add_argument("workspace", type=Path, help="Directory containing eval run outputs")
+    parser = argparse.ArgumentParser(
+        description="Aggregate grading.json files from a skill eval workspace"
+    )
+    parser.add_argument(
+        "workspace", type=Path, help="Directory containing eval run outputs"
+    )
     parser.add_argument("--output", type=Path, help="Optional path for summary JSON")
-    parser.add_argument("--markdown", type=Path, help="Optional path for a Markdown summary")
+    parser.add_argument(
+        "--markdown", type=Path, help="Optional path for a Markdown summary"
+    )
     args = parser.parse_args()
 
     workspace = args.workspace.resolve()
