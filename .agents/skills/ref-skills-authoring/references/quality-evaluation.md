@@ -6,6 +6,23 @@ Use this file when a skill is important enough to test with realistic runs, huma
 
 This workflow adapts portable practices from the Apache-2.0 Claude skill-creator bundle kept at `.agents/tasks/claude-skills-creator/skill-creator/`. The source bundle's Claude-only trigger harness, CLI assumptions, and browser workflow are not copied as requirements. Keep this skill compatible with the Agent Skills format and the repo's provider-agnostic rules.
 
+## Claude Bundle Adoption Decisions
+
+Use this table when reviewing why only part of the local Claude skill-creator bundle was promoted into `ref-skills-authoring`.
+
+| Source artifact | Decision | Reason |
+| --- | --- | --- |
+| `scripts/quick_validate.py` | Adapted as `./scripts/validate_skill.py`. | The validation idea is portable, but the implementation was rewritten to avoid a PyYAML dependency, support catalog-wide checks, respect this repo's metadata conventions, and report warnings/errors predictably. |
+| `scripts/aggregate_benchmark.py` | Adapted as `./scripts/aggregate_eval_results.py`. | Aggregating `grading.json` results is provider-agnostic, but the local version is simplified around generic eval workspaces and stable JSON/Markdown output. |
+| `scripts/run_eval.py`, `scripts/run_loop.py`, and `scripts/improve_description.py` | Not copied; only the trigger-eval concepts were retained. | These scripts depend on `claude -p`, `.claude/commands`, Claude stream events, Claude auth/session behavior, and description optimization against Claude's available-skills mechanism. That would violate this skill's provider-agnostic Agent Skills compatibility. |
+| `scripts/generate_report.py`, `eval-viewer/generate_review.py`, and `eval-viewer/viewer.html` | Not copied. | The report and viewer are useful for a specific generated-run workflow, but they introduce a browser/server review surface and UI assumptions that are not required for the portable skill-authoring workflow. |
+| `scripts/package_skill.py` | Not copied. | This repo currently shares skills through source directories, package installation, and symlink/sync tooling rather than a `.skill` zip package flow; the source packager also excludes root `evals/` by default and depends on the source validator shape. |
+| `scripts/utils.py` | Not copied as a standalone helper. | Its useful parsing behavior was folded into the rewritten validator where needed; the rest only supports the Claude-specific runner scripts. |
+| `agents/analyzer.md`, `agents/comparator.md`, and `agents/grader.md` | Not copied as agent files. | Their roles were preserved as review practices in this document: evidence-backed grading, baseline comparison, trace review, and human review. Keeping client-specific agent prompt files would make the skill less portable. |
+| `references/schemas.md` | Partially summarized instead of copied wholesale. | The stable field expectations that matter for aggregation, especially `text`, `passed`, and `evidence`, are documented here without importing viewer-specific schema requirements. |
+
+Adopt future source artifacts only when they are deterministic, non-interactive, dependency-light, useful outside one client, and compatible with the Agent Skills package shape. Otherwise, preserve the principle in prose or an eval rather than copying the implementation.
+
 ## Intake
 
 Before writing or revising evals, capture the intent:
