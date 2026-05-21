@@ -27,7 +27,8 @@ Treat `.agents/tasks/` for task tracking and `.agents/playground/` for scratch a
 3. Use one kebab-case folder per active task under `.agents/tasks/<task-name>/` when the work is complex enough to need a dedicated local workspace.
 4. Keep one anchor file for the task when the work is broad enough to need a running brief, explicit subtasks, or a refinement record.
 5. Update progress, blockers, assumptions, and next steps as the task changes.
-6. Remove or refresh stale local files once the task is done or no longer relevant.
+6. For complex tasks, prepare a concise closeout answer that explains what was done, what was not done, how and why important decisions were made, validation, and any remaining caveats.
+7. Remove or refresh stale local files once the task is done or no longer relevant.
 
 ## Directory Model
 
@@ -67,6 +68,7 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 | Create `.agents/tasks/<task-name>/` | Open a local workspace for one task or PR-sized slice. | Keeping one folder per task prevents unrelated notes from mixing together. | When a task is large enough to need its own running notes or temporary artifacts. | The task has a clearly named local workspace. |
 | Add or update an anchor file such as `README.md` or `plan.md` | Keep a running summary of objective, status, blockers, and next steps. | Multi-step work becomes hard to recover if the local context is scattered across chat only. | When the task has enough moving parts that a single summary file will reduce drift. | Another pass can resume the task from the local file without reconstructing context from scratch. |
 | Store a temporary artifact such as `pr-description.md` or `validation.md` | Save work product that is useful during the task but does not belong in the committed repo. | Temporary drafts and scratch outputs should stay near the task they support. | When you need a local draft, notes, or validation log for the active task. | The artifact is easy to find and scoped to the right task folder. |
+| Prepare a complex-task closeout answer | Summarize done, not done, how, why, validation, and residual caveats. | Complex tasks create context and tradeoffs that should not disappear into local notes. | When a TODO led to feature work, significant edits, cross-skill changes, or important design/quality decisions. | The user can understand the outcome without rereading the whole transcript or local task files. |
 | Prune stale local files | Remove or update local tracking that no longer reflects real work. | Gitignored local notes become misleading if they outlive the task or drift from the code. | After scope changes, task completion, or abandonment. | `.agents/tasks/` stays useful instead of becoming a graveyard of stale notes. |
 
 ## Decision Rules
@@ -75,10 +77,14 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 - Use `.agents/tasks/` and `.agents/playground/` together as the default local workspace pair unless the current repo explicitly documents a different convention.
 - Keep `.agents/tasks/` gitignored and promote durable guidance elsewhere instead of relying on local notes to survive cloning or review.
 - If a TODO item is simple and well-defined, execute it directly instead of forcing a planning ritual first.
+- Treat mundane chores such as creating a branch, running a simple command, or applying a narrow typo fix as simple unless they reveal broader decisions or blockers.
+- Treat feature development, broad refactors, multi-file skill or workflow changes, cross-repo updates, and tasks with meaningful tradeoffs as complex.
 - If a TODO item is broad, ambiguous, or underdefined, ask the missing questions first and treat that clarification as part of the task rather than guessing.
 - If a TODO item needs refinement before implementation, create `.agents/tasks/<task-name>/README.md` and capture the clarified goal, assumptions, and subtasks there before starting execution.
 - If the work still cannot be executed cleanly after initial clarification, run an interactive breakdown with the user and record the resulting subtasks in the task `README.md`.
 - If a TODO item relies on an incorrect assumption, state the problem calmly, explain the misunderstanding, and correct it with the user before proceeding.
+- When a complex TODO is completed or blocked, the user-facing answer should state what was done, what was not done, how the work was approached, why notable decisions were made, what validation ran, and what caveats or next steps remain.
+- Do not inflate simple tasks with a long closeout. A short status and validation note is enough when there were no meaningful decisions or residual risks.
 - Prefer task- or PR-style, kebab-case folder names such as `.agents/tasks/add-button-for-language/`.
 - When a temporary helper script or generated scratch file is needed, put it under `.agents/playground/` and create or edit it with the edit tools rather than shell heredocs, redirection, or inline terminal-generated files.
 - Do not require every task folder to have a `README.md`. Use one only when the work needs a durable running brief.
@@ -185,3 +191,4 @@ main();
 - Any helper or workflow that scans `.agents/tasks/TODO.md` recognizes plain bullets, `[]`, and `[ ]` as open items, and skips `[x]` or `[X]` items.
 - After a major shift in scope, confirm that `.agents/tasks/TODO.md` and the active task folder still describe the same task you are actually performing.
 - Before concluding a task, check whether any durable guidance discovered in local notes should be moved into committed repo files.
+- Before concluding a complex TODO, confirm the user-facing answer explains done, not done, how, why, validation, and remaining caveats at the level the task deserves.
