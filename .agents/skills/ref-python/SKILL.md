@@ -31,6 +31,7 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 
 - Prefer modern Python with type hints throughout public and shared code.
 - If the repo already targets a modern Python baseline such as 3.14+, do not add `from __future__ import annotations` or similar compatibility boilerplate just to mimic older code.
+- Prefer inferred return types for local helpers when the type checker can infer them cleanly; add return annotations when the function defines an API contract or inference would hide ambiguity.
 - Prefer `pathlib.Path` over raw path strings.
 - Prefer dataclasses, typed dicts, or small domain objects over loose dictionaries when structure matters.
 - Prefer explicit exceptions and clear error messages over silent fallbacks.
@@ -50,7 +51,9 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 
 ### Typing
 
-- Type function parameters and shared return values clearly.
+- Type function parameters clearly.
+- Prefer inferred return types for private/local helpers whose implementation makes the result obvious to the checker and reader.
+- Add return annotations for public APIs, shared protocol or callback contracts, abstract methods, recursive functions, overload-style dispatch, CLI entrypoints, and cases where inference would become `Any`, `object`, or an overly broad union.
 - On modern Python baselines, use standard annotation syntax directly instead of future-compatibility imports for postponed annotations.
 - Prefer precise container types like `list[str]` or `dict[str, int]`.
 - Prefer `object` plus narrowing, focused casts, or type guards at unknown input boundaries instead of defaulting to `Any`.

@@ -42,6 +42,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Prefer const-backed source-of-truth objects for closed sets of labels, states, or variants, and derive key or value unions from those literals in JSDoc-aware tooling instead of maintaining a parallel hand-written union.
 - Prefer named constants and helpers over repeated inline logic.
 - Prefer `const` arrow functions for JavaScript helpers, callbacks, and script-local functions.
+- Prefer inferred return types for local helpers when JSDoc-aware tooling can infer them cleanly; write `@returns` only when the return value is part of an API contract, exported callback contract, or otherwise ambiguous.
 - Prefer explicit input validation at I/O boundaries.
 - Prefer simple data flow over mutation-heavy code.
 - Prefer Yarn for dependency management and script execution in Node-based JavaScript projects unless the repo is intentionally Deno-owned.
@@ -60,7 +61,10 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 ### JSDoc and typing
 
 - Before choosing JSDoc-backed JavaScript for Node scripts, check whether the repo can use direct TypeScript execution in its supported Node version.
-- Use `@typedef`, `@param`, and `@returns` where they materially improve editor tooling and readability.
+- Use `/** @import { SomeType } from './somewhere.js' */` for imported types instead of duplicating them with local `@typedef` blocks.
+- Use local `@typedef` only for shapes owned by the file or for derived const-backed types that do not exist elsewhere.
+- Use `@param` where it materially improves editor tooling and readability.
+- Prefer inferred return types over `@returns` by default; add `@returns` for exported API contracts, complex callbacks, non-obvious unions, or cases where tooling would infer a misleading type.
 - Document object shapes and callback contracts that would otherwise be implicit.
 - For fixed literal lookup objects or tuples, prefer `/** @type {const} */` so TypeScript infers the specific keys and values from the literal.
 - If checked JavaScript needs a derived union from a fixed lookup object, prefer a `typeof ...[keyof typeof ...]` style typedef over a duplicated string-literal union.
@@ -70,6 +74,8 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 Example:
 
 ```js
+/** @import { ReportRow } from './report-types.js' */
+
 export const statValueLabels = /** @type {const} */ ({
   1: 'Basso',
   2: 'Medio',

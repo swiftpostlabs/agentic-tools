@@ -94,7 +94,8 @@ Help the agent work within this project in a way that respects its structure, ty
   - Prefer precise types such as `dict[str, str]`, `list[int]`, `tuple[str, int]`, etc.
 - For complex types, consider defining custom type aliases or data classes to improve readability.
 - Inference is encouraged over explicit typing when typing is sound.
-- For functions, always provide type annotations for parameters, but return types can be omitted if they are `None` or if the function has sound typing and is well-named. 
+- For functions, always provide type annotations for parameters, but prefer inferred return types when the checker can infer them cleanly and the function is well-named.
+- Add explicit return annotations when the function defines a public or shared API contract, implements a protocol/callback/interface, is recursive or overloaded, or would otherwise infer `Any`, `object`, or a misleading broad union.
 - Treat Pyright strict mode seriously:
   - Fix type issues by improving annotations, adding type guards, or restructuring code.
   - Prefer explicit checks and type guards (e.g. `isinstance` checks) over `# type: ignore`.

@@ -37,6 +37,7 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Prefer runtime validation and async caching libraries only when the feature actually crosses those boundaries.
 - Prefer native `Date` and `Intl` first, and use `date-fns` only when date logic becomes genuinely complex.
 - For closed component variant maps, label tables, and route or status dictionaries, prefer const literals as the source of truth and derive unions from them instead of maintaining a second parallel type.
+- Prefer inferred return types for components, hooks, and local helpers; annotate returns only for exported API contracts, framework callbacks, reusable hooks with non-obvious contracts, or cases where inference would widen the type incorrectly.
 - For Node-based React projects, prefer Yarn for dependency management and script execution unless the repo is intentionally Deno-owned.
 
 ## Task Framing
@@ -56,6 +57,7 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Prefer composition and explicit props over deep wrapper stacks or implicit children contracts.
 - Preserve semantic HTML even when a component library provides generic wrappers.
 - When a component relies on a closed set of variants or labels, keep the canonical list in a const object or tuple and derive the prop or state union from that value.
+- In JSDoc-backed React files, import external types with `/** @import { SomeType } from './somewhere.js' */` instead of duplicating typedefs locally.
 
 ### Hooks and state
 

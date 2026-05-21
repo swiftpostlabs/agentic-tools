@@ -34,7 +34,8 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Prefer `unknown` plus narrowing over `any`.
 - Prefer discriminated unions for stateful variants.
 - Prefer explicit runtime validation at trust boundaries.
-- Prefer inference inside small local scopes and explicit annotations at exported or shared boundaries.
+- Prefer inferred function return types by default when TypeScript can express the result cleanly from the implementation.
+- Add explicit return annotations when the function defines a public API contract, implements an interface or overload, is recursive or generic enough to infer poorly, returns a deliberately narrow union, or crosses a framework/library boundary where the contract matters more than the implementation.
 - Prefer `as const` for fixed literal maps and tuples when the exact keys or values matter; do not widen them to `Record<string, ...>` or `string[]` unless the surface is intentionally open-ended.
 - Prefer const data as the source of truth for closed sets: derive key and value unions from `as const` objects or tuples instead of maintaining a parallel hand-written type that can drift.
 - Prefer TypeScript over plain JavaScript in modern Node and Deno codebases because current runtimes can execute `.ts` and `.mts` directly.
@@ -102,6 +103,7 @@ export type StatValueLabel = Values<typeof statValueLabels>;
 - Extract shared types only when they are truly shared.
 - Prefer readable named `const` arrow functions and objects over dense callback chains.
 - Use function declarations only when the declaration form is materially useful, such as overload implementations, generators, intentional hoisting, or matching an existing framework/API convention.
+- Let ordinary helper return types be inferred; annotate return types when they communicate an API boundary or prevent accidental widening.
 
 ### File and config conventions
 

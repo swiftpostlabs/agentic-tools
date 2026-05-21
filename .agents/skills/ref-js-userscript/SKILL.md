@@ -56,6 +56,8 @@ Provide portable defaults for userscripts that are resilient to DOM changes, sco
 - Keep selectors and mutation rules centralized so page changes are easier to repair.
 - Keep helper functions in the same const-arrow style as ordinary JavaScript and TypeScript modules unless a userscript-manager compatibility constraint forces a different shape.
 - In JSDoc-checked userscripts, keep closed lookup objects on `/** @type {const} */` and derive `keyof typeof` or value unions from the literal instead of widening them to generic records.
+- In JSDoc-checked userscripts, import external types with `/** @import { SomeType } from './somewhere.js' */` instead of duplicating upstream typedefs locally.
+- Let helper return types be inferred unless the userscript exposes a public API, callback contract, or non-obvious union that needs an explicit annotation.
 - Fail softly when the page no longer matches expectations.
 
 ### File and type support
