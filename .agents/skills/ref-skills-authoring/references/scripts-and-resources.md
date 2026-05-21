@@ -11,6 +11,7 @@ Use:
 - `references/` for documentation the agent reads on demand.
 - `scripts/` for executable logic.
 - `assets/` for templates, schemas, examples, or static resources.
+- `evals/` for maintained evaluation prompts, input files, and assertions that test this skill.
 
 Do not move important behavioral guidance into support files if the agent needs that guidance immediately upon activation.
 
@@ -78,6 +79,18 @@ Good examples:
 - example JSON payloads,
 - sample prompt sets.
 
+## When To Use `evals/`
+
+Use `evals/` when the skill has a maintained test set, not just an example format.
+
+Good examples:
+
+- `evals/evals.json` for realistic output-quality prompts.
+- `evals/files/` for stable input fixtures used by those prompts.
+- small assertion files that make a regression easy to rerun.
+
+Keep generated run outputs, temporary workspaces, and large benchmark artifacts outside the skill package unless they are intentionally curated fixtures.
+
 ## Reference Style
 
 Point to support files with explicit conditions.
@@ -85,7 +98,8 @@ Point to support files with explicit conditions.
 Path rule:
 
 - Use relative paths like `./references/...`, `./assets/...`, and `./scripts/...` only for files inside the current skill.
-- If you refer to a different skill, use an absolute filesystem path to that other skill's file.
+- If you refer to a different skill in this repo, use a repo-root-relative path to that other skill's file.
+- Use absolute filesystem paths only for references outside the current repository or for clients that cannot resolve repo-root-relative paths reliably.
 
 Good:
 

@@ -8,13 +8,13 @@ This document records local extensions, interpretations, and stricter convention
 
 These conventions are allowed, but they should not be mistaken for official Agent Skills spec requirements.
 
-Last verified: 2026-05-10
+Last verified: 2026-05-21
 
 ## Conventions Registry
 
 | Convention | Why we use it | Relationship to original references | Review trigger | Last verified |
 | --- | --- | --- | --- | --- |
-| Use absolute filesystem paths when referencing another skill. | Cross-skill references are otherwise easy to resolve incorrectly across different clients, sandboxes, and working directories. | The original docs explicitly support relative paths for files inside the current skill, but they do not define a stable cross-skill reference convention. | Revisit if Agent Skills publishes an explicit cross-skill reference standard. | 2026-05-01 |
+| Use repo-root-relative paths when referencing another skill in this repository. | Repo-root-relative paths survive clones and exports better than machine-specific absolute paths while avoiding ambiguous `../` hops. | The original docs explicitly support relative paths for files inside the current skill, but they do not define a stable cross-skill reference convention. | Revisit if Agent Skills publishes an explicit cross-skill reference standard. | 2026-05-21 |
 | Use relative paths for files inside the current skill. | This matches the official skill-root relative reference model and keeps local references portable. | Directly aligned with the official references. | Revisit only if the official spec changes. | 2026-05-01 |
 | Prefix reference-heavy skills with `ref-` and action-heavy skills with `tool-`. | The prefix makes the skill's role discoverable before the agent loads the body. It also distinguishes passive guidance from action workflows. | This is a local naming convention layered on top of the base Agent Skills name constraints. | Revisit if the repo's skill mix changes or if a better role signal proves more reliable. | 2026-05-09 |
 | Track skill exportability and hard skill dependencies in `metadata` using `shareable-skills.visibility`, `shareable-skills.requires`, and `shareable-skills.reason`. | Names should stay focused on discovery and activation, while metadata can drive export and dependency tooling without polluting the trigger surface. | This is a local convention built on top of the spec's arbitrary string metadata field. | Revisit if Agent Skills standardizes shareability or dependency metadata. | 2026-05-10 |
@@ -24,16 +24,17 @@ Last verified: 2026-05-10
 
 ## Convention Details
 
-## Absolute Cross-Skill Paths
+## Repo-Root-Relative Cross-Skill Paths
 
 Decision:
 
-- When one skill needs to reference a different skill, use an absolute filesystem path.
+- When one skill needs to reference a different skill in this repository, use a repo-root-relative path such as `.agents/skills/ref-code-conventions/SKILL.md`.
+- Use absolute filesystem paths only when the target is outside the current repository or when the client cannot resolve repo-root-relative paths reliably.
 
 Reason:
 
 - The official references clearly support same-skill relative paths, but do not define a stable cross-skill reference convention.
-- Absolute paths remove ambiguity across clients, working directories, and sandbox setups.
+- Repo-root-relative paths remove ambiguity without baking one developer machine path into a shareable skill.
 
 Scope:
 

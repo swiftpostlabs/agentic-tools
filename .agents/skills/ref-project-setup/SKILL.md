@@ -251,6 +251,6 @@ If the implementation intentionally stays in `scripts/`, keep it a repo-local ma
 - .agents/skills/ref-js-javascript/SKILL.md — JavaScript structure and JSDoc guidance
 - .agents/skills/ref-js-typescript/SKILL.md — TypeScript layout and runtime-boundary guidance
 - .agents/skills/ref-agents-persona/SKILL.md — Agent persona and workflow expectations
-- [pyproject.toml reference](../../pyproject.toml) — Actual configuration file
+- `pyproject.toml` — Actual configuration file
 - [uv documentation](https://docs.astral.sh/uv/) — Package manager and runner
 - [poethepoet documentation](https://poethepoet.naiveapproach.com/) — Task runner

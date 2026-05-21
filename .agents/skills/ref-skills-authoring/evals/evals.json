@@ -1,0 +1,32 @@
+{
+  "skill_name": "ref-skills-authoring",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review a copied skill that still contains another repo's package manager, feature paths, and tool names. Adapt it so it follows this repository's Agent Skills conventions without preserving stale source-project details.",
+      "expected_output": "A revised skill or review plan that preserves the useful workflow while replacing foreign repo assumptions with this repo's real conventions.",
+      "files": [
+        "evals/files/copied-skill/SKILL.md"
+      ],
+      "assertions": [
+        "The result keeps one clear skill responsibility",
+        "The result removes stale source-project commands, paths, and stack assumptions",
+        "The result uses relative same-skill support paths and repo-root-relative cross-skill paths",
+        "The result records any adapted source guidance when traceability matters"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Create a quality review plan for an important workflow skill, including trigger checks, output evals, grading, and how to use scripts without depending on a single client.",
+      "expected_output": "A provider-agnostic evaluation plan with realistic prompts, baseline comparison, evidence-backed grading, and script promotion guidance.",
+      "files": [],
+      "assertions": [
+        "The plan tests both trigger quality and execution quality",
+        "The plan includes should-trigger and should-not-trigger near misses",
+        "The plan compares with-skill output to a baseline or previous version",
+        "The plan uses deterministic scripts for mechanical checks and human review for holistic quality",
+        "The plan avoids Claude-only CLI or viewer assumptions unless explicitly scoped to Claude"
+      ]
+    }
+  ]
+}

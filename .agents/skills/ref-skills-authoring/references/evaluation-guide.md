@@ -52,6 +52,8 @@ If outputs are flaky, missing steps, or using the wrong command at the wrong tim
 
 See `../assets/evals.example.json` for a starter structure.
 
+For rigorous review loops, read `./quality-evaluation.md` before running evals. It records the portable parts of the Claude skill-creator workflow without inheriting Claude-only execution assumptions.
+
 ## Baselines
 
 Run the same task:
@@ -84,6 +86,8 @@ Weak examples:
 
 Use humans for holistic quality and scripts for mechanical checks.
 
+Name assertions so they read clearly in a report. A good assertion should be hard to satisfy accidentally: check the content, structure, or trace behavior that proves the work was actually done, not only that a file exists or a heading was printed.
+
 ## Evidence Standards
 
 Do not pass vague outputs on benefit of the doubt. Require evidence.
@@ -100,6 +104,18 @@ Useful signals from traces:
 - The agent spent time on an irrelevant branch.
 - The agent repeatedly rebuilt a helper that should be scripted.
 - The agent got stuck because the skill gave too many equal choices.
+
+If several runs rebuild the same helper logic, move that logic into `scripts/` and reference the script from `SKILL.md`. Repeated script reinvention is evidence that the skill is carrying mechanical work in prose.
+
+## Portable Helper Scripts
+
+Use these scripts from the `ref-skills-authoring` skill when they fit the local environment:
+
+- `../scripts/validate_skill.py <skill-dir>` checks frontmatter, naming, metadata shape, support-file references, and basic authoring expectations.
+- `../scripts/validate_skill.py .agents/skills --all` checks a whole skill catalog.
+- `../scripts/aggregate_eval_results.py <eval-workspace>` summarizes `grading.json` files into aggregate pass-rate and timing data.
+
+These scripts are intentionally provider-agnostic. Do not replace them with a client-specific trigger harness unless the user is deliberately testing one client.
 
 ## What To Change After Evals
 

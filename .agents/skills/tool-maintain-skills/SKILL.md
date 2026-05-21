@@ -25,6 +25,7 @@ Keep project guidance simple by giving each rule one clear home when maintenance
 ## First Step
 
 Read `.agents/skills/ref-skills-authoring/SKILL.md` before planning updates.
+If the maintenance pass touches skill quality, evals, scripts, or copied guidance, also read `.agents/skills/ref-skills-authoring/references/quality-evaluation.md`.
 
 ## Core Workflow
 
@@ -33,7 +34,8 @@ Read `.agents/skills/ref-skills-authoring/SKILL.md` before planning updates.
 3. Map changed code, workflows, commands, and directories to the skills that should describe them.
 4. Update only the affected skills, metadata, supporting references, and top-level routing that actually drifted.
 5. If you discover repeated or misplaced guidance, consolidate it into the correct owner instead of copying the same fix across multiple skills.
-6. Validate trigger quality, file diagnostics, and skill discovery before concluding.
+6. Run the portable skill validator and address real findings in the touched or drifted skills.
+7. Validate trigger quality, file diagnostics, and skill discovery before concluding.
 
 ## Defaults
 
@@ -42,6 +44,7 @@ Read `.agents/skills/ref-skills-authoring/SKILL.md` before planning updates.
 - Prefer focused edits to the affected skill and its support files over sweeping rewrites.
 - Prefer consolidating duplicated guidance into one owner instead of preserving near-copies across several skills.
 - When the branch adds a new domain, decide whether an existing skill should expand, a new skill should be created, or the change is too repo-specific to generalize.
+- When a maintenance pass reveals repeated eval failures or repeated helper-code recreation, promote the durable fix into the owning skill as a default, gotcha, validation rule, or `scripts/` helper.
 - If no skill update is actually needed, say so explicitly and explain why the current skill set still covers the change.
 
 ## Wizard Questions
@@ -74,6 +77,8 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 
 - Check the result against `./references/checklist.md`.
 - If guidance moved between skills or out of top-level instructions, check `./references/consolidation-checklist.md` too.
+- Run `.agents/skills/ref-skills-authoring/scripts/validate_skill.py <skill-dir>` for touched skills, or `.agents/skills/ref-skills-authoring/scripts/validate_skill.py .agents/skills --all` when the pass covers the catalog.
+- If output-quality evals produced `grading.json` files, summarize them with `.agents/skills/ref-skills-authoring/scripts/aggregate_eval_results.py <eval-workspace>`.
 - Run a targeted error check on the touched skill files.
 - Run the repo's skill-discovery or catalog-validation command when one exists.
 - Confirm that new or renamed skills are reflected in top-level routing if needed.
@@ -84,6 +89,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 - Read `./references/consolidation-checklist.md` when the maintenance pass reveals duplicated or misplaced guidance.
 - Use `.agents/skills/tool-maintain-agents-instructions/SKILL.md` when skill changes imply drift in `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
 - Use `.agents/skills/ref-agents-local-tasks/SKILL.md` when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
+- Read `.agents/skills/ref-skills-authoring/references/quality-evaluation.md` when reviewing important skills against the stricter quality bar adopted from the local Claude skill-creator task.
 - Read `./references/checklist.md` for a quick maintenance review pass.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for branch-aware skill maintenance prompts.
 - Review `./evals/evals.json` when validating output quality for change-to-skill mapping and maintenance decisions.

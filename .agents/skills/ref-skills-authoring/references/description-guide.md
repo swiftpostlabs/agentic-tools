@@ -86,6 +86,7 @@ Fix:
 4. Run each query multiple times if the client is nondeterministic.
 5. Measure trigger rate, not just one run.
 6. Split train and validation queries to avoid overfitting.
+7. Make queries substantive enough that an agent would plausibly need the skill. Very simple one-step prompts often test the base model more than the skill trigger.
 
 ## What To Put In Query Sets
 
@@ -113,6 +114,7 @@ When tuning a description:
 - Narrow by boundary, not by becoming vague.
 - Prefer structural rewrites over endless tiny edits if the description stalls.
 - Stop if validation performance stops improving; the query set may be the problem.
+- Review false positives and false negatives as intent categories, not as strings to stuff into the description.
 
 ## Practical Standard
 

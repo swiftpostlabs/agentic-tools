@@ -20,13 +20,15 @@ Use this checklist when creating, reviewing, or refactoring a skill.
 - If the skill is repo-specific, is that made explicit in the name or wording?
 - Does `SKILL.md` stay concise, with long checklists, templates, or examples moved into `references/`, `assets/`, or `scripts/`?
 - Are all links to supporting files relative `./references/...`, `./assets/...`, or `./scripts/...` paths?
-- If the skill references a different skill, does it use an absolute path instead of a relative cross-skill path?
+- If the skill references a different skill in this repo, does it use a repo-root-relative path instead of `../` or a machine-specific absolute path?
 - For important commands or actions, does the skill make `what`, `why`, `when`, and expected outcome explicit?
 - Does the skill cover the operational pieces the agent needs: what to inspect, how to plan, what tools to call, how to validate, and what to output?
 - Are critical gotchas kept in `SKILL.md` when the agent must see them before hitting the failure?
 - Does the skill provide a default approach instead of a menu of equally weighted options?
 - If scripts are included, are they non-interactive, predictable, and described clearly enough for agent use?
 - If the skill is important or complex, is there at least a lightweight evaluation plan for trigger quality and output quality?
+- If the skill has maintained evals, do they include realistic prompts, expectations/assertions, and a baseline or previous-version comparison plan?
+- Are graded results supported by evidence rather than benefit-of-the-doubt judgments?
 - Does the skill avoid provider-specific assumptions unless a real platform-specific exception is required?
 - If provider files are mentioned, does the skill preserve the reference-first pattern where `.github/copilot-instructions.md` is the source of truth and `GEMINI.md` / `.claude/CLAUDE.md` are thin stubs by default?
 - Are workflow labels concrete and operational instead of vague?
@@ -39,6 +41,7 @@ Typical fixes:
 - Move recurring helper logic into `scripts/`.
 - Add a gotchas section for repeated agent mistakes.
 - Replace equal-option lists with one default plus a fallback.
+- Promote helper code that multiple eval traces rebuild into `scripts/`.
 - Replace inherited package-manager or framework examples with this repo's real stack.
 - Replace copied feature-folder and script names with clearly synthetic placeholders unless the example is intentionally documenting a real repo surface.
 - Split mixed guidance into separate skills when one file is trying to cover multiple domains.

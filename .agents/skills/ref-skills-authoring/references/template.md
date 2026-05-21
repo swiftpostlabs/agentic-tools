@@ -52,7 +52,7 @@ Use this table when the skill includes important commands or operational steps:
 ## References
 
 - Read `./references/example.md` when a specific condition is true.
-- Read `C:/absolute/path/to/other-skill/SKILL.md` only when you intentionally need to hand off to another skill.
+- Read `.agents/skills/ref-example/SKILL.md` only when you intentionally need to hand off to another skill in this repo.
 
 ## Scripts
 

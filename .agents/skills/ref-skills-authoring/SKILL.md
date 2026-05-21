@@ -41,6 +41,7 @@ Core local references for this skill:
 - `./references/playbook.md` for the full authoring workflow.
 - `./references/description-guide.md` when drafting or fixing the `description` field.
 - `./references/evaluation-guide.md` when testing trigger quality or output quality.
+- `./references/quality-evaluation.md` when a skill needs a rigorous human-plus-quantitative review loop.
 - `./references/scripts-and-resources.md` when deciding what belongs in `references/`, `scripts/`, or `assets/`.
 - `./references/task-framing.md` when a skill needs commands or actions framed by what, why, when, and expected outcome.
 - `./references/agent-components.md` when a skill feels conceptually correct but still does not improve agent behavior.
@@ -91,12 +92,13 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 ├── SKILL.md
 ├── references/
 ├── scripts/
-└── assets/
+├── assets/
+└── evals/
 ```
 
 - **Open format:** Skills should remain compatible with the Agent Skills format rather than depending on one client's private conventions.
 - **Supporting files are allowed:** Put long checklists, detailed examples, templates, or helper scripts in subfolders instead of cramming everything into `SKILL.md`.
-- **Use relative paths only within the same skill:** Link this skill's own resources from `SKILL.md` with `./references/...`, `./scripts/...`, or `./assets/...` paths.
+- **Use relative paths only within the same skill:** Link this skill's own resources from `SKILL.md` with `./references/...`, `./scripts/...`, `./assets/...`, or `./evals/...` paths.
 - **Use repo-root-relative paths for other skills in the same repo:** If one skill must point to another skill's `SKILL.md` or files in this repository, use an explicit repo-root-relative path such as `.agents/skills/ref-code-conventions/SKILL.md` so clones, exports, and local folder renames do not break the reference.
 - **Reserve absolute paths for outside-the-repo targets:** Use absolute filesystem paths only when the target is genuinely outside the current repository or when the client cannot resolve repo-root-relative paths reliably.
 - **Keep loading progressive:** Keep `SKILL.md` concise and move large supporting material into subfiles. Prefer one-level-deep references from `SKILL.md` and tell the agent when to load each file.
@@ -213,7 +215,7 @@ Read `./references/task-framing.md` when the skill includes multiple commands, s
 - Keep the main `SKILL.md` under roughly 500 lines and under roughly 5,000 tokens unless there is a strong reason not to.
 - Put detailed references in focused files rather than one giant appendix.
 - When pointing to a support file, explain the trigger condition.
-- Use relative paths for files inside the current skill and absolute paths for files that live in a different skill.
+- Use relative paths for files inside the current skill and repo-root-relative paths for files that live in a different skill in this repo.
 
 ## Tool And Script Rules
 
@@ -260,6 +262,13 @@ Use `./references/evaluation-guide.md` for the detailed evaluation loop. Example
 
 - `./assets/trigger-eval-queries.example.json`
 - `./assets/evals.example.json`
+
+Portable helper scripts live at:
+
+- `./scripts/validate_skill.py` to validate one skill or a whole skills directory against Agent Skills structure and this repo's local quality rules.
+- `./scripts/aggregate_eval_results.py` to summarize `grading.json` files from output-quality eval runs.
+
+Use `./evals/evals.json` as the maintained evaluation set for this skill itself.
 
 ## Cross-Platform Parity
 

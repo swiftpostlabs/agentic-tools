@@ -1,6 +1,6 @@
 ---
 name: ref-agents-local-tasks
-description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace for task backlogs, temporary working files, and per-task notes. Use when: reading or updating `.agents/tasks/TODO.md`, maintaining `.agents/tasks/<task-name>/`, or checking whether local agent task notes still match the active work."
+description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace for task backlogs, temporary working files, and per-task notes. Use when: reading or updating `.agents/tasks/TODO.md`, maintaining task-specific folders under `.agents/tasks/`, or checking whether local agent task notes still match the active work."
 metadata:
   agentic-tools-category: "agents"
   shareable-skills.visibility: "shareable"
