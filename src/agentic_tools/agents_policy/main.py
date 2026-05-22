@@ -8,7 +8,7 @@ Canonical usage:
 """
 
 from argparse import ArgumentParser
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from importlib import import_module
 from json import JSONDecodeError
@@ -38,8 +38,9 @@ SERVICE_ALIASES = {
 }
 
 JsonObject: TypeAlias = dict[str, object]
-AiPolicy: TypeAlias = JsonObject
-VscodeSettings: TypeAlias = JsonObject
+JsonMapping: TypeAlias = Mapping[str, object]
+AiPolicy: TypeAlias = JsonMapping
+VscodeSettings: TypeAlias = JsonMapping
 JsonLoader: TypeAlias = Callable[[str], object]
 
 
@@ -328,7 +329,9 @@ def replace_managed_claude_deny_rules(
     return preserved_rules + build_protected_read_rules(protected_files)
 
 
-def apply_policy_to_claude_settings(claude: JsonObject, policy: AiPolicy) -> JsonObject:
+def apply_policy_to_claude_settings(
+    claude: JsonMapping, policy: AiPolicy
+) -> JsonObject:
     updated = dict(claude)
     raw_permissions = claude.get("permissions", {})
     permissions = (
@@ -372,7 +375,7 @@ def replace_managed_file_associations(
 
 def apply_policy_to_vscode_settings(
     vscode: VscodeSettings, policy: AiPolicy
-) -> VscodeSettings:
+) -> JsonObject:
     updated = dict(vscode)
     protected_files = get_protected_files(policy)
     associations = replace_managed_file_associations(

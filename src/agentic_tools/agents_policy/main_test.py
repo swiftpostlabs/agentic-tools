@@ -58,8 +58,12 @@ def test_apply_policy_to_claude_settings_replaces_managed_read_rules() -> None:
     }
 
     updated = agents_policy_main.apply_policy_to_claude_settings(claude, policy)
+    permissions = agents_policy_main.require_json_object(
+        updated["permissions"],
+        context="Test Claude permissions",
+    )
 
-    assert updated["permissions"]["deny"] == [
+    assert permissions["deny"] == [
         "Bash(rm -rf /)",
         "Read(*.env)",
         "Read(secrets/)",
