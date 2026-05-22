@@ -19,6 +19,8 @@ Provide portable defaults for operating databases as durable systems of record, 
 - Reviewing indexing, storage layout, read-write workload balance, or database tuning.
 - Reviewing the overall operational posture for a database-backed system, including change, recovery, and ownership boundaries.
 - Deciding how normalized source-of-truth tables relate to denormalized caches, marts, or read models.
+- Reviewing web-facing database integration, DB-backed application boundaries, or browser-accessible database workflows.
+- Separating transactional source-of-truth needs from analytical or OLAP-style reporting expectations.
 
 ## Defaults
 
@@ -30,6 +32,8 @@ Provide portable defaults for operating databases as durable systems of record, 
 - Plan for failures explicitly: bad migrations, partial writes, lock contention, replication lag, corruption, and operator mistakes.
 - Keep backup and restore workflows rehearsed, not theoretical.
 - Optimize for the observed workload and access pattern, not for imagined worst cases.
+- Treat web integration as an application boundary around the DBMS, not as permission for clients to bypass access control, transaction handling, or vendor portability.
+- For analytical or OLAP workloads, define multidimensional views, data-source transparency, reporting performance, and aggregation expectations separately from OLTP schema design.
 
 ## Core Rules
 
@@ -40,6 +44,14 @@ Provide portable defaults for operating databases as durable systems of record, 
 - Separate decisions about what the data means from decisions about how the DBMS stores or serves it.
 - Choose centralized, client-server, parallel, or distributed deployment intentionally instead of inheriting topology by accident.
 
+### Treat web DBMS integration as a boundary design
+
+- Keep browser, web server, application logic, and DBMS responsibilities distinct in multi-tier systems.
+- Prefer standards-based, vendor-portable connectivity when a web application may need to change DBMS, browser, server, or integration technology later.
+- Preserve DBMS features through the web layer: transactions, constraints, authorization, auditing, and recovery should still apply.
+- Design request flows that can handle transactions spanning more than one HTTP request without leaving partial writes or hidden session state.
+- Keep administration overhead, scalability, and interoperability explicit instead of assuming a web interface makes the database simpler.
+
 ### Model and constrain first
 
 - Start by defining the data the system must preserve, the relationships it must enforce, and the invariants that must remain true.
@@ -49,6 +61,7 @@ Provide portable defaults for operating databases as durable systems of record, 
 ### Make transaction boundaries explicit
 
 - Use transactions for multi-step writes that must preserve consistency across several rows or tables.
+- Name the ACID contract for important writes: atomicity, consistency, isolation, and durability should each have an owner in the DBMS or application design.
 - Assume concurrent access is normal, not exceptional.
 - Choose isolation and locking behavior deliberately when the workload can create races, lost updates, or inconsistent reads.
 - Use lock-based or timestamp-based approaches deliberately when the system must coordinate simultaneous writers.
@@ -67,6 +80,14 @@ Provide portable defaults for operating databases as durable systems of record, 
 - Keep database statistics current enough for the optimizer to make sane choices.
 - Inspect query plans, join order, predicate selectivity, and decomposition before adding ad hoc indexes or application-side workarounds.
 - Use query tuning to support the model, not to excuse a broken schema.
+
+### Separate transactional and analytical expectations
+
+- Keep OLTP source-of-truth design distinct from analytical cubes, marts, or reporting models.
+- For OLAP-style tools, define multidimensional business views, dimensions, hierarchy and aggregation behavior, sparse-data handling, and cross-dimensional operations explicitly.
+- Set reporting-performance expectations as dimensions, data volume, and aggregation levels grow.
+- Make accessibility to heterogeneous sources transparent to analysts without hiding data ownership, lineage, or freshness rules from maintainers.
+- Require multi-user support, flexible reporting, and intuitive analysis workflows only where the workload is truly analytical.
 
 ### Treat change as a first-class workflow
 
@@ -101,6 +122,8 @@ Provide portable defaults for operating databases as durable systems of record, 
 - Topology changes add failure modes and operational cost even when the logical schema stays the same.
 - ORM abstractions do not remove the need to understand transactions, constraints, locks, or indexing.
 - A migration that works on a small local dataset can still fail on production volume, lock duration, or rollback behavior.
+- A web interface does not remove the need for transaction design, authorization, vendor portability, or explicit DBMS boundaries.
+- OLAP-friendly reporting structures are not replacements for transactional integrity in the source-of-truth schema.
 
 ## Validation
 
@@ -111,6 +134,8 @@ Provide portable defaults for operating databases as durable systems of record, 
 - If sensitive data or privileged access is in scope, the design delegates database-specific protection and auditing details to a dedicated security review.
 - If the system is distributed or replicated, the design delegates fragmentation, sync, and locality decisions to a dedicated distributed-data review instead of hand-waving them.
 - Schema and data changes have a staged migration path instead of a hand-waved one-step rewrite.
+- Web-facing database flows preserve DBMS guarantees across the application boundary and do not expose direct data access casually.
+- Analytical or OLAP requirements state dimensions, aggregations, source transparency, reporting performance, and freshness separately from OLTP requirements.
 
 ## References
 
@@ -118,191 +143,7 @@ Provide portable defaults for operating databases as durable systems of record, 
 - W3Schools DBMS Introduction: <https://www.w3schools.in/dbms/intro>
 - W3Schools Database Architecture: <https://www.w3schools.in/dbms/database-architecture>
 - W3Schools Data Recovery in DBMS: <https://www.w3schools.in/dbms/data-recovery-in-dbms>
-*** Add File: c:\Users\fcole\Projects\agentic-tools\.agents\skills\ref-db-security\SKILL.md
----
-name: ref-db-security
-description: "Portable database-security guidance for threats, access control, views, auditing, encryption, integrity, and secure recovery. Use when: protecting database-backed systems, designing authorization models, reviewing confidentiality, integrity, or availability risks, or securing backups, logs, and administrative access."
-metadata:
-  agentic-tools-category: "db"
-  shareable-skills.visibility: "shareable"
----
-
-# Database Security
-
-## Purpose
-
-Provide portable defaults for protecting databases as socio-technical systems where confidentiality, integrity, availability, and privacy depend on more than SQL permissions alone.
-
-## When to use this skill
-
-- Designing or reviewing database access-control models, roles, and privileges.
-- Protecting sensitive datasets, regulated data, or administrative interfaces.
-- Deciding how to use views, auditing, encryption, integrity controls, or secure recovery workflows.
-- Reviewing how backups, logs, replicas, exports, and operational tooling expose database data.
-- Building a database threat model that includes accidental damage as well as malicious misuse.
-
-## Defaults
-
-- Treat database security as a combination of confidentiality, integrity, availability, and privacy, not as authentication alone.
-- Assume the DBMS is only as secure as the surrounding operating system, network, procedures, and human controls.
-- Grant the narrowest privileges that still let each user, service, or operator do its job.
-- Prefer role separation and controlled access paths over broad direct table access.
-- Treat backups, logs, replicas, exports, and recovery artifacts as sensitive data, not as harmless copies.
-- Pair preventive controls with detection, auditability, and tested recovery paths.
-
-## Core Rules
-
-### Start from threats and risk, not from vendor features
-
-- Identify both intentional and accidental threats, including theft, fraud, misuse, privacy loss, corruption, hardware failure, and loss of availability.
-- Decide which datasets require confidentiality, integrity, availability, or privacy most strongly.
-- Include insiders, operators, applications, infrastructure failures, and physical media exposure in the threat model.
-- Match controls to realistic business damage rather than applying every feature uniformly.
-
-### Control access explicitly
-
-- Grant and revoke privileges deliberately instead of relying on default broad access.
-- Separate application roles, read-only users, administrators, and auditors so each path has only the permissions it needs.
-- Use discretionary access control when object owners can safely manage sharing, and mandatory access control when centrally enforced classification rules are required.
-- Restrict privileged utilities and direct administrative access as tightly as ordinary data access.
-
-### Reduce exposure with views, boundaries, and integrity controls
-
-- Use views, stored interfaces, masking, or row and column restrictions to minimize direct exposure of underlying tables.
-- Enforce integrity rules in the database so unauthorized or malformed changes cannot silently corrupt trusted data.
-- Encrypt sensitive data at rest and in transit, and keep key management separated from routine application access.
-- Treat redundancy technologies such as RAID as availability controls, not as substitutes for confidentiality or authorization.
-
-### Audit and recover securely
-
-- Log meaningful access, schema changes, privileged actions, and failed authorization attempts when the workload needs accountability.
-- Protect audit logs from tampering and uncontrolled retention.
-- Keep backup copies, log files, and restore media in secure locations with controlled access.
-- Recovery plans should restore the latest consistent state without bypassing the normal protection model.
-
-### Treat procedures and people as part of the design
-
-- Define onboarding, offboarding, credential rotation, incident response, and emergency access procedures.
-- Limit direct production access and make break-glass paths explicit, monitored, and reviewable.
-- Patch and harden the DBMS, operating system, drivers, and adjacent tooling together instead of assuming the database can be secured in isolation.
-- Test restore and incident procedures so security controls still hold during failures.
-
-## Gotchas
-
-- Database permissions alone do not secure exported files, backups, replicas, or logs.
-- Encryption without good key management or role design is incomplete protection.
-- Backups improve recovery but also expand the attack surface if they are copied broadly or stored carelessly.
-- Views reduce exposure but do not replace least privilege or auditing.
-- Security designs that ignore operations, people, or the surrounding host environment are brittle.
-
-## Validation
-
-- The design names the major confidentiality, integrity, availability, and privacy risks for the database.
-- Roles, privileges, and administrative paths are explicit enough to verify least privilege.
-- Views, auditing, encryption, and integrity controls match the sensitivity of the stored data.
-- Backups, logs, replicas, and exports receive the same security attention as primary tables.
-- Incident response and restore procedures preserve both availability and access control expectations.
-
-## References
-
-- W3Schools Database Security: <https://www.w3schools.in/dbms/database-security>
-- W3Schools Data Recovery in DBMS: <https://www.w3schools.in/dbms/data-recovery-in-dbms>
-- W3Schools Database Architecture: <https://www.w3schools.in/dbms/database-architecture>
-- Wikipedia: <https://en.wikipedia.org/wiki/Database>
-*** Add File: c:\Users\fcole\Projects\agentic-tools\.agents\skills\ref-db-distributed\SKILL.md
----
-name: ref-db-distributed
-description: "Portable distributed-database guidance for fragmentation, replica placement, local and global applications, parallel DBMS topologies, and disconnected synchronization. Use when: designing distributed or replicated databases, choosing site layout, planning mobile or intermittently connected data flows, or separating topology decisions from data-model decisions."
-metadata:
-  agentic-tools-category: "db"
-  shareable-skills.visibility: "shareable"
----
-
-# Distributed Databases
-
-## Purpose
-
-Provide portable defaults for designing databases that span multiple sites, processors, or intermittently connected clients without confusing topology with data model.
-
-## When to use this skill
-
-- Choosing between centralized, client-server, parallel, or distributed database deployment.
-- Planning fragmentation, allocation, replication, or locality for major datasets.
-- Designing local and global application paths across multiple database sites.
-- Supporting mobile, offline-capable, or intermittently connected workflows.
-- Reviewing whether distribution is justified by geography, autonomy, availability, throughput, or disconnected work.
-
-## Defaults
-
-- Treat distribution as a topology decision separate from relational versus NoSQL modeling.
-- Keep one logical data model even when fragments or replicas are physically spread across sites.
-- Start from data ownership, latency, failure domains, and required cross-site transactions before choosing fragmentation or replication.
-- Prefer local processing for local workloads, and make global operations explicit and narrower.
-- Replicate data only when availability, read locality, or disconnected work justify the synchronization cost.
-- Define synchronization, freshness, and reconciliation rules before allowing disconnected or multi-site writes.
-
-## Core Rules
-
-### Separate logical design from physical placement
-
-- Keep the distributed system understandable as one logical database even when data is fragmented or replicated across sites.
-- Choose fragmentation boundaries based on access locality, autonomy, and failure domains rather than arbitrary organizational charts.
-- Allocate fragments and replicas deliberately to sites based on who uses the data, who administers it, and what must remain available during failures.
-- Make transparency goals explicit: decide which applications can ignore location, fragmentation, or replication details and which cannot.
-
-### Distinguish local and global applications
-
-- Local applications should complete against local data whenever the business rules allow it.
-- Global applications must make remote dependencies, distributed joins, and cross-site failure handling explicit.
-- Limit chatty cross-site transactions; prefer coarser workflows or asynchronous coordination when business rules permit it.
-- Decide which invariants are enforced locally versus globally instead of assuming every rule must be synchronous everywhere.
-
-### Use replication for concrete reasons
-
-- Replicate for availability, read scaling, disconnected operation, or geographic locality, not because it sounds safer in the abstract.
-- Choose full versus partial replication based on access frequency, storage cost, and update churn.
-- Document the propagation model and freshness expectations: synchronous, near-real-time, batch, or manual reconciliation.
-- Plan conflict detection and resolution whenever more than one site can update the same replicated fact.
-
-### Design for failure and local autonomy
-
-- Assume site failures and network partitions are normal distributed events, not rare edge cases.
-- Define what each site can continue to do independently when peers are unreachable.
-- Be explicit about degraded modes, queued writes, and what happens when reconnection reveals conflicts.
-- Monitor replication lag, queue growth, link health, and cross-site recovery paths as first-class operational signals.
-
-### Choose parallel architecture intentionally when scale is the real driver
-
-- Distinguish a distributed DBMS across multiple sites from a parallel DBMS that uses multiple processors or disks to accelerate one system.
-- Understand the tradeoffs among shared-memory, shared-disk, and shared-nothing parallel architectures.
-- Avoid introducing cross-site coordination when a parallel deployment solves the actual throughput problem more simply.
-
-### Treat mobile and intermittent clients as distributed peers
-
-- Decide what data is downloaded, what can be created or edited offline, and how uploads are validated on reconnect.
-- Design synchronization units for limited bandwidth and short-lived connections instead of assuming permanent sessions.
-- Treat mobile replication metadata, retry behavior, and conflict repair as part of the database design, not as UI glue.
-
-## Gotchas
-
-- Distribution improves locality and availability for some workloads, but it also adds consistency, debugging, and operational complexity.
-- Replication without freshness contracts or ownership rules creates silent drift.
-- Distributed databases are not automatically NoSQL systems, and NoSQL systems are not automatically geographically distributed.
-- A logically clean schema can still perform badly if fragmentation and site placement ignore workload locality.
-- Offline support fails when synchronization and conflict repair are left as post-launch cleanup.
-
-## Validation
-
-- The design states why distribution exists: geography, autonomy, availability, throughput, disconnected work, or another concrete driver.
-- Fragmentation, allocation, and replication rules are documented for the important datasets.
-- Local and global application paths are explicit enough to reason about latency, failure, and integrity.
-- Synchronization, freshness, and conflict-handling expectations are defined before multi-site writes go live.
-- The design names the relevant architecture style clearly enough to distinguish centralized, client-server, parallel, and distributed concerns.
-
-## References
-
-- W3Schools Distributed DBMS: <https://www.w3schools.in/dbms/distributed-dbms>
-- W3Schools Database Replication: <https://www.w3schools.in/dbms/database-replication>
-- W3Schools Mobile Databases: <https://www.w3schools.in/dbms/mobile-databases>
-- W3Schools Database Architecture: <https://www.w3schools.in/dbms/database-architecture>
-- Wikipedia: <https://en.wikipedia.org/wiki/Database>
+- W3Schools DBMS Transaction: <https://www.w3schools.in/dbms/transaction>
+- W3Schools DBMS Query: <https://www.w3schools.in/DBMS/query>
+- W3Schools Web-based Database Management System: <https://www.w3schools.in/dbms/web-based-database-management-system>
+- W3Schools Codd's 12 Rules for DBMS / OLAP tools: <https://www.w3schools.in/dbms/codds-rules>
