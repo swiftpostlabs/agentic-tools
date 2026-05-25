@@ -31,6 +31,17 @@
         "The response mentions nodeModulesDir or a local node_modules requirement for ESLint or editor tooling",
         "The response avoids recommending whole-workspace Deno activation"
       ]
+    },
+    {
+      "id": 4,
+      "prompt": "Install and set up an npm-backed CLI as a dev dependency in a Deno-owned repo, then add a task so contributors can run it.",
+      "expected_output": "Guidance that installs the CLI with Deno's dependency manager, records the manifest and lockfile changes, and exposes the installed binary through a same-named deno task.",
+      "assertions": [
+        "The response recommends deno add --dev npm:<package> or an equivalent concrete package-specific command",
+        "The response says to check in deno.json and lockfile changes",
+        "The response adds a deno task that invokes the installed binary by name",
+        "The response does not replace installation with a deno run npm:<package> task alias"
+      ]
     }
   ]
 }

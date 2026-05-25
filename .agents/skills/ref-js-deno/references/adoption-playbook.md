@@ -95,7 +95,31 @@ Avoid making `deno lint` and ESLint both act as full style owners for the same f
 - Keep Deno-specific commands in `deno task` and Node-specific commands in the Node task runner rather than mixing them blindly.
 - Use `deno.enablePaths` in editor settings so diagnostics stay scoped to the Deno-owned subtree.
 
-## 6. Permissions and environment strategy
+## 6. Install npm-backed CLI tooling through Deno
+
+When Deno owns the dependency graph, installation and task exposure are separate steps:
+
+1. Add the package with Deno, using `--dev` for development-only CLIs.
+
+```powershell
+deno add --dev npm:sample-tool
+```
+
+1. Add a `deno.json` task with the same name as the tool that invokes the installed binary.
+
+```json
+{
+  "tasks": {
+    "sample-tool": "sample-tool"
+  }
+}
+```
+
+1. Verify through the task, for example `deno task sample-tool --version`.
+
+Do not replace the installation step with a task such as `"sample-tool": "deno run -A npm:sample-tool"`. That is a one-off execution shortcut, not a manifest-managed dev dependency.
+
+## 7. Permissions and environment strategy
 
 - Prefer named permission sets in `deno.json` over repeating long flag lists.
 - Use `-P` or `--permission-set=<name>` when the repo defines them.
@@ -104,7 +128,7 @@ Avoid making `deno lint` and ESLint both act as full style owners for the same f
 - Use `DENO_TRACE_PERMISSIONS=1` to capture permission stack traces and `DENO_AUDIT_PERMISSIONS=<path>` to write a JSONL audit log.
 - Avoid broad `--allow-run` and `--allow-ffi`; both weaken the sandbox substantially.
 
-## 7. Troubleshooting checklist
+## 8. Troubleshooting checklist
 
 - `deno check --all <entrypoint>` when runtime success and type-check behavior diverge.
 - `deno run --check=all <entrypoint>` when the command should fail before execution on type errors.
@@ -116,7 +140,7 @@ Avoid making `deno lint` and ESLint both act as full style owners for the same f
 - `deno run --cpu-prof --cpu-prof-flamegraph ...` when the real problem is performance.
 - `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` when dependency fetches or network calls behave differently across environments.
 
-## 8. Deno 2 migration notes worth remembering
+## 9. Deno 2 migration notes worth remembering
 
 - `nodeModulesDir` uses `"none" | "auto" | "manual"`.
 - `deno cache` became `deno install --entrypoint`.

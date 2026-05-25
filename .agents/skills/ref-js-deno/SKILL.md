@@ -31,9 +31,11 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - When replacing ESLint with `deno lint`, inspect and carry forward the existing ESLint intent into `deno.json` includes, excludes, lint rules, or documented exceptions instead of discarding the config wholesale.
 - When replacing `tsc` with `deno check`, inspect the existing `tsconfig.json` and translate relevant compiler options, includes, excludes, libs, and strictness expectations into `deno.json` or a clearly scoped retained `tsconfig.json`.
 - When npm-backed editor tooling such as ESLint must run inside a Deno repo, set `nodeModulesDir: "auto"` and wrap the command in `deno task`.
+- When Deno owns dependency management, install dependencies with `deno add`, not by treating `deno run npm:<package>` as a substitute for installation. Use `deno add --dev npm:<package>` for development-only CLIs and tooling.
+- For installed CLI tools, name the `deno task` after the tool and invoke the installed binary by name, for example after `deno add --dev npm:sample-tool`, add `"sample-tool": "sample-tool"`.
 - Prefer `.ts` modules by default in Deno-owned code; do not drop to JavaScript just to avoid a build step that Deno does not require.
 - Prefer JSR packages, `npm:` specifiers, or explicit import-map entries over scattered legacy URL imports.
-- When an npm-backed CLI has install or postinstall behavior that does not cooperate cleanly with `deno run npm:...`, prefer `nodeModulesDir: "auto"`, allow the package in `allowScripts`, and invoke the installed binary from a `deno task`.
+- When an npm-backed CLI has install or postinstall behavior that does not cooperate cleanly with one-off execution, prefer `nodeModulesDir: "auto"`, allow the package in `allowScripts`, add the dependency with `deno add` or `deno add --dev`, and invoke the installed binary from a `deno task`.
 - Deno 2 is intentionally compatible with `package.json`, npm packages, and Node built-ins; keep Deno-specific configuration in `deno.json` instead of trying to make `tsconfig.json` carry both worlds.
 - Prefer Web-standard APIs and `Deno.serve` for servers.
 - Treat permissions as a design decision, not an afterthought.
@@ -44,6 +46,7 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 | --- | --- | --- | --- | --- |
 | Adopt `tsconfig.json` and ESLint carefully | Decide what stays in Node-owned config and what moves into `deno.json`. | Hybrid repos get noisy fast when both toolchains try to own the same files. | When introducing Deno into an existing TypeScript or Node codebase. | Deno and Node tooling each have explicit ownership boundaries. |
 | Configure `deno.json` | Define tasks, compiler options, and dependency conventions in Deno's config file. | Deno should own its own workflow rather than borrowing Node-centric config by accident. | When starting or restructuring a Deno project. | Deno commands and editor behavior are consistent. |
+| Install a Deno-owned npm CLI | Run `deno add --dev npm:<package>` for development tooling, then add a same-named task that invokes the installed binary. | The dependency, lockfile, local binary, and task entrypoint stay aligned under Deno's package manager. | When adding tools such as code generators, browser automation CLIs, linters, or formatters to a Deno-owned workflow. | `deno.json` and the lockfile record the dependency, and `deno task <tool>` runs the installed CLI. |
 | Set hybrid boundaries | Separate Deno-owned paths from Node-owned paths in mixed repositories. | Tooling conflicts are one of the most common hybrid-repo failures. | When Deno code lives beside Node or TS tooling. | Editors and commands do not fight over the same files. |
 | Review permissions | Choose explicit permissions and task wrappers for runtime access. | Deno's security model only helps when permissions are deliberate. | Before running new scripts or exposing a Deno CLI workflow. | Filesystem, network, and environment access are intentional and auditable. |
 | Troubleshoot Deno workflows | Use Deno-native checks, debugger flags, and module-graph tooling before guessing. | Many Deno problems are configuration, permission, or ownership issues rather than code bugs. | When a hybrid repo or migrated toolchain behaves unexpectedly. | The root cause is narrowed to config, permissions, or runtime behavior. |
@@ -77,6 +80,8 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - If a `package.json` exists and you want Deno to auto-create and refresh `node_modules`, set `nodeModulesDir: "auto"`. With `package.json`, Deno 2 otherwise defaults to `"manual"`.
 - `nodeModulesDir` is a workspace-root setting; do not try to set it per workspace member.
 - Use `deno install` or `deno add` when Deno owns the dependency update flow. Do not assume Deno 1 auto-install behavior.
+- Use `deno add --dev npm:<package>` for dev-only npm CLIs in Deno-owned repositories. After the add, expose the binary through a `deno task` such as `"sample-tool": "sample-tool"` instead of `"sample-tool": "deno run -A npm:sample-tool"`.
+- Check in the manifest and lockfile updates produced by `deno add`; a task alias alone is not a dependency installation.
 - Do not enable Deno tooling for an entire mixed workspace if only one subtree is Deno.
 - Prefer path-based editor activation such as `deno.enablePaths` so Node and Deno tooling do not fight over the same files.
 - Keep the Deno boundary explicit in folder structure, tasks, and docs.
@@ -106,6 +111,7 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - If `package.json` exists, Deno 2 defaults `nodeModulesDir` to `"manual"`; forgetting this is a common reason npm-backed tools look half-installed.
 - If the VS Code ESLint extension is part of the workflow, it will not resolve packages from Deno's global cache alone; it needs a local `node_modules` directory.
 - `deno run` skips type checking by default, so a passing run is not evidence that `deno check` will pass.
+- A `deno task` that shells out to `deno run npm:<package>` is a one-off execution shortcut, not a proper dependency installation. Do not use it as the default answer to "install and set up this CLI" in a Deno-owned repo.
 - `-A` is acceptable for trusted tooling, but it is the wrong default for ordinary application code.
 - Some npm CLIs, including Supabase in real mixed-runtime repos, rely on install-time behavior that can be less reliable through `deno run npm:...` than through an installed binary under `node_modules`.
 - Old URL-import and whole-workspace-activation patterns are transition aids, not modern defaults.
@@ -117,6 +123,7 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - Replacing ESLint or `tsc` preserves the useful behavior from the existing config or documents why it was intentionally dropped.
 - The Deno and Node parts of a hybrid repo do not fight over tooling.
 - Dependency specifiers are modern and explicit.
+- Deno-owned npm CLIs are added with `deno add` or `deno add --dev`, recorded in the manifest and lockfile, and run through tasks that invoke installed binary names.
 - `nodeModulesDir`, editor activation, and any npm-backed Deno tooling are configured intentionally.
 - If an npm CLI is driven from Deno tasks, the repo intentionally configures `nodeModulesDir` and `allowScripts` rather than relying on accidental install side effects.
 - Permissions are intentional and documented where they matter.
