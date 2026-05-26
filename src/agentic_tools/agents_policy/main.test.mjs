@@ -5,7 +5,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { runAgentsPolicy, runAgentsPolicyImportVscode } from "./main.mjs";
+import {
+    discoverPolicyPath,
+    runAgentsPolicy,
+    runAgentsPolicyImportVscode,
+    syncPolicyFile,
+} from "./main.mjs";
 
 const createTempDir = () => {
   return fs.mkdtempSync(path.join(os.tmpdir(), "agentic-tools-node-policy-"));
@@ -302,6 +307,141 @@ describe("agents-policy Node CLI", () => {
 
       expect(exitCode).toBe(0);
       expect(messages).toContain("Checked: generated policy files are up to date.");
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("syncPolicyFile normalizes service aliases and cleans gemini output when disabled", () => {
+    const tempDir = createTempDir();
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "policy.json"),
+        JSON.stringify(
+          {
+            services: ["github-copilot", "claude-code", "copilot"],
+            protectedFiles: ["*.env"],
+          },
+          null,
+          2,
+        ),
+        "utf8",
+      );
+      fs.writeFileSync(path.join(tempDir, ".aiexclude"), "stale\n", "utf8");
+
+      const messages = syncPolicyFile(path.join(tempDir, ".agents", "policy.json"));
+      const vscodeSettings = /** @type {Record<string, unknown>} */ (JSON.parse(
+        fs.readFileSync(path.join(tempDir, ".vscode", "settings.json"), "utf8"),
+      ));
+      const claudeSettings = /** @type {Record<string, unknown>} */ (JSON.parse(
+        fs.readFileSync(path.join(tempDir, ".claude", "settings.json"), "utf8"),
+      ));
+
+      expect(messages).toContain("Removed: Gemini (.aiexclude)");
+      expect(fs.existsSync(path.join(tempDir, ".aiexclude"))).toBe(false);
+      expect(vscodeSettings["files.associations"]).toEqual({
+        "*.env": "copilot-restricted-file",
+      });
+      expect(claudeSettings).toEqual({
+        permissions: { deny: ["Read(*.env)"] },
+      });
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("syncPolicyFile rejects invalid protectedFiles", () => {
+    const tempDir = createTempDir();
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "policy.json"),
+        JSON.stringify({ protectedFiles: ["*.env", 42] }, null, 2),
+        "utf8",
+      );
+
+      expect(() =>
+        syncPolicyFile(path.join(tempDir, ".agents", "policy.json")),
+      ).toThrow(/protectedFiles/u);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("syncPolicyFile cleans disabled copilot settings", () => {
+    const tempDir = createTempDir();
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.mkdirSync(path.join(tempDir, ".vscode"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "policy.json"),
+        JSON.stringify(
+          {
+            services: ["claude"],
+            protectedFiles: ["*.env"],
+          },
+          null,
+          2,
+        ),
+        "utf8",
+      );
+      fs.writeFileSync(
+        path.join(tempDir, ".vscode", "settings.json"),
+        JSON.stringify(
+          {
+            "chat.tools.terminal.autoApprove": { stale: true },
+            "chat.tools.edits.autoApprove": { stale: false },
+            "files.associations": {
+              "*.txt": "plaintext",
+              "*.env": "copilot-restricted-file",
+            },
+            "github.copilot.enable": {
+              "other-language": true,
+              "copilot-restricted-file": false,
+            },
+          },
+          null,
+          2,
+        ),
+        "utf8",
+      );
+
+      const messages = syncPolicyFile(path.join(tempDir, ".agents", "policy.json"));
+      const vscodeSettings = /** @type {Record<string, unknown>} */ (JSON.parse(
+        fs.readFileSync(path.join(tempDir, ".vscode", "settings.json"), "utf8"),
+      ));
+
+      expect(messages).toContain(
+        "Cleaned: Copilot local policy (.vscode/settings.json)",
+      );
+      expect(vscodeSettings).toEqual({
+        "files.associations": { "*.txt": "plaintext" },
+        "github.copilot.enable": { "other-language": true },
+      });
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("discoverPolicyPath prefers unified agents config", () => {
+    const tempDir = createTempDir();
+    try {
+      fs.mkdirSync(path.join(tempDir, ".agents"), { recursive: true });
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "config.json"),
+        JSON.stringify({ policy: { services: ["copilot"] } }, null, 2),
+        "utf8",
+      );
+      fs.writeFileSync(
+        path.join(tempDir, ".agents", "policy.json"),
+        JSON.stringify({ services: ["claude"] }, null, 2),
+        "utf8",
+      );
+
+      expect(discoverPolicyPath(tempDir)).toBe(
+        path.join(tempDir, ".agents", "config.json"),
+      );
     } finally {
       cleanupTempDir(tempDir);
     }

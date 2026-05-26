@@ -2,12 +2,23 @@
 import { defineCommand, runCommand } from "citty";
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError, createExecutionOptions, ensureJsonObject, getBooleanRecord, getStringList, getStringRecord, isFile, pathExists, readJsonFile, resolvePath, syncJsonFile, toPosixPath, writeJsonFile, writeTextFile, } from "../utils/common.mjs";
+
+import {
+    ToolError,
+    createExecutionOptions,
+    ensureJsonObject,
+    isFile,
+    pathExists,
+    readJsonFile,
+    resolvePath,
+    toPosixPath,
+} from "../utils/common.mjs";
 
 /** @import { JsonObject, RunOptions, ExecutionOptions } from "../utils/common.mjs" */
-/** @typedef {JsonObject & { services?: unknown, protectedFiles?: unknown, excludedFiles?: unknown, terminalAutoApprove?: unknown, editAutoApprove?: unknown }} PolicyState */
-/** @typedef {{ rawConfig: JsonObject, policy: PolicyState, usesUnifiedConfig: boolean }} PolicyDocument */
+
 /** @typedef {{ _: string[], [key: string]: unknown }} CommandArgs */
+/** @typedef {boolean | Record<string, boolean>} TerminalApprovalValue */
+/** @typedef {{ repoRoot: string, policyFile: string, aiExclude: string, vscodeSettings: string, claudeSettings: string }} PolicyPaths */
 
 const CANONICAL_AGENTS_CONFIG_PATH = path.join(".agents", "config.json");
 const CANONICAL_POLICY_PATH = path.join(".agents", "policy.json");
@@ -16,14 +27,17 @@ const AI_EXCLUDE_PATH = ".aiexclude";
 const VSCODE_SETTINGS_PATH = path.join(".vscode", "settings.json");
 const CLAUDE_SETTINGS_PATH = path.join(".claude", "settings.json");
 const MANAGED_COPILOT_LANGUAGE_ID = "copilot-restricted-file";
+
 const SERVICE_GEMINI = "gemini";
 const SERVICE_CLAUDE = "claude";
 const SERVICE_COPILOT = "copilot";
+
 const SUPPORTED_SERVICES = /** @type {const} */ ([
     SERVICE_GEMINI,
     SERVICE_CLAUDE,
     SERVICE_COPILOT,
 ]);
+
 const SERVICE_ALIASES = /** @type {const} */ ({
     gemini: SERVICE_GEMINI,
     claude: SERVICE_CLAUDE,
@@ -31,243 +45,847 @@ const SERVICE_ALIASES = /** @type {const} */ ({
     copilot: SERVICE_COPILOT,
     "github-copilot": SERVICE_COPILOT,
 });
-/**
- * @param {string} rawName
- * @returns {rawName is keyof typeof SERVICE_ALIASES}
- */
-const isSupportedServiceAlias = (rawName) => {
-    return Object.hasOwn(SERVICE_ALIASES, rawName);
+
+const POLICY_KEYS = new Set([
+    "services",
+    "protectedFiles",
+    "excludedFiles",
+    "terminalAutoApprove",
+    "editAutoApprove",
+]);
+
+const cloneBooleanRecord = (
+    /** @type {Record<string, boolean>} */ value,
+) => {
+    return { ...value };
 };
-/**
- * @param {CommandArgs} args
- * @param {string} key
- */
-const getOptionalStringArg = (args, key) => {
-    const value = args[key];
-    return typeof value === "string" && value.trim() !== "" ? value : null;
+
+const cloneTerminalApprovalValue = (
+    /** @type {TerminalApprovalValue} */ value,
+) => {
+    return typeof value === "boolean" ? value : { ...value };
 };
-/**
- * @param {CommandArgs} args
- * @param {string} key
- */
-const getBooleanArg = (args, key) => {
-    return args[key] === true;
+
+const cloneTerminalApprovalRecord = (
+    /** @type {Record<string, TerminalApprovalValue>} */ value,
+) => {
+    return Object.fromEntries(
+        Object.entries(value).map(([key, item]) => [key, cloneTerminalApprovalValue(item)]),
+    );
 };
-/**
- * @param {string} targetPath
- * @param {string} context
- */
-const readJsonObject = (targetPath, context) => {
-    return ensureJsonObject(readJsonFile(targetPath, {}), context);
+
+const isObjectRecord = (/** @type {unknown} */ value) => {
+    return value !== null && !Array.isArray(value) && typeof value === "object";
 };
-/**
- * @param {string} targetPath
- */
-const loadPolicyDocument = (targetPath) => {
-    const rawConfig = readJsonObject(targetPath, "Policy file");
-    const rawPolicy = rawConfig.policy;
-    if (rawPolicy === undefined) {
-        return {
-            rawConfig,
-            policy: /** @type {PolicyState} */ (rawConfig),
-            usesUnifiedConfig: false,
-        };
+
+const loadJsonDocument = (
+    /** @type {string} */ targetPath,
+    /** @type {string} */ context,
+) => {
+    if (!pathExists(targetPath)) {
+        return {};
     }
-    return {
-        rawConfig,
-        policy: /** @type {PolicyState} */ (ensureJsonObject(rawPolicy, "Agents config policy")),
-        usesUnifiedConfig: true,
-    };
+
+    try {
+        return ensureJsonObject(readJsonFile(targetPath, {}), context);
+    } catch (error) {
+        if (error instanceof ToolError) {
+            throw error;
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+        throw new ToolError(`${context} contains invalid JSON: ${message}`);
+    }
 };
-/**
- * @param {string} targetPath
- * @param {PolicyDocument} document
- * @param {PolicyState} policy
- */
-const writePolicyDocument = (targetPath, document, policy) => {
-    if (!document.usesUnifiedConfig) {
-        writeJsonFile(targetPath, policy);
+
+const writeJsonText = (
+    /** @type {string} */ targetPath,
+    /** @type {JsonObject | null} */ payload,
+) => {
+    if (payload !== null) {
+        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+        fs.writeFileSync(targetPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+        return true;
+    }
+
+    if (pathExists(targetPath)) {
+        fs.rmSync(targetPath, { force: true });
+    }
+    return false;
+};
+
+const writeTextOrRemove = (
+    /** @type {string} */ targetPath,
+    /** @type {string | null} */ content,
+) => {
+    if (content !== null) {
+        fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+        fs.writeFileSync(targetPath, content, "utf8");
         return;
     }
-    writeJsonFile(targetPath, { ...document.rawConfig, policy });
-};
-/**
- * @param {string} targetPath
- */
-const agentsConfigHasPolicy = (targetPath) => {
-    try {
-        const policy = readJsonObject(targetPath, "Agents config").policy;
-        return policy !== null && !Array.isArray(policy) && typeof policy === "object";
+
+    if (pathExists(targetPath)) {
+        fs.rmSync(targetPath, { force: true });
     }
-    catch {
+};
+
+const readTextOrNull = (/** @type {string} */ targetPath) => {
+    return pathExists(targetPath) ? fs.readFileSync(targetPath, "utf8") : null;
+};
+
+const normalizeServiceName = (/** @type {string} */ rawName) => {
+    const normalized = rawName.trim().toLowerCase();
+    if (!Object.hasOwn(SERVICE_ALIASES, normalized)) {
+        throw new ToolError(
+            `Unsupported policy service '${rawName}'. Supported values: ${Object.keys(SERVICE_ALIASES)
+                .sort()
+                .join(", ")}.`,
+        );
+    }
+    const serviceName = SERVICE_ALIASES[/** @type {keyof typeof SERVICE_ALIASES} */ (normalized)];
+    return serviceName;
+};
+
+const parseStringList = (
+    /** @type {unknown} */ value,
+    /** @type {string} */ fieldName,
+) => {
+    if (value === undefined || value === null) {
+        return [];
+    }
+    if (!Array.isArray(value)) {
+        throw new ToolError(`Policy '${fieldName}' must be an array of strings.`);
+    }
+    if (!value.every((item) => typeof item === "string")) {
+        throw new ToolError(`Policy '${fieldName}' must contain only strings.`);
+    }
+    return [...value];
+};
+
+const parseBooleanRecord = (
+    /** @type {unknown} */ value,
+    /** @type {string} */ fieldName,
+) => {
+    if (value === undefined || value === null) {
+        return {};
+    }
+    if (!isObjectRecord(value)) {
+        throw new ToolError(`Policy '${fieldName}' must be a JSON object.`);
+    }
+
+    /** @type {Record<string, boolean>} */
+    const record = {};
+    for (const [key, entry] of Object.entries(value)) {
+        if (typeof entry !== "boolean") {
+            throw new ToolError(`Policy '${fieldName}' must contain only booleans.`);
+        }
+        record[key] = entry;
+    }
+    return record;
+};
+
+const parseTerminalApprovalValue = (
+    /** @type {unknown} */ value,
+    /** @type {string} */ fieldName,
+) => {
+    if (typeof value === "boolean") {
+        return value;
+    }
+    if (!isObjectRecord(value)) {
+        throw new ToolError(
+            `Policy '${fieldName}' values must be booleans or JSON objects of booleans.`,
+        );
+    }
+
+    /** @type {Record<string, boolean>} */
+    const record = {};
+    for (const [key, entry] of Object.entries(/** @type {Record<string, unknown>} */ (value))) {
+        if (typeof entry !== "boolean") {
+            throw new ToolError(
+                `Policy '${fieldName}' values must be booleans or JSON objects of booleans.`,
+            );
+        }
+        record[key] = entry;
+    }
+    return record;
+};
+
+const parseTerminalApprovalRecord = (
+    /** @type {unknown} */ value,
+    /** @type {string} */ fieldName,
+) => {
+    if (value === undefined || value === null) {
+        return {};
+    }
+    if (!isObjectRecord(value)) {
+        throw new ToolError(`Policy '${fieldName}' must be a JSON object.`);
+    }
+
+    /** @type {Record<string, TerminalApprovalValue>} */
+    const record = {};
+    for (const [key, entry] of Object.entries(value)) {
+        record[key] = parseTerminalApprovalValue(entry, fieldName);
+    }
+    return record;
+};
+
+class AiPolicy {
+    /**
+     * @param {{
+     *   services?: string[],
+     *   protectedFiles?: string[],
+     *   excludedFiles?: string[],
+     *   terminalAutoApprove?: Record<string, TerminalApprovalValue>,
+     *   editAutoApprove?: Record<string, boolean>,
+     *   explicitFields?: Iterable<string>,
+     * }} [values]
+     */
+    constructor(values = {}) {
+        this.services = [...(values.services ?? SUPPORTED_SERVICES)];
+        this.protectedFiles = [...(values.protectedFiles ?? [])];
+        this.excludedFiles = [...(values.excludedFiles ?? [])];
+        this.terminalAutoApprove = cloneTerminalApprovalRecord(
+            values.terminalAutoApprove ?? {},
+        );
+        this.editAutoApprove = cloneBooleanRecord(values.editAutoApprove ?? {});
+        this.explicitFields = new Set(values.explicitFields ?? []);
+    }
+
+    /** @type {string[]} */
+    services;
+
+    /** @type {string[]} */
+    protectedFiles;
+
+    /** @type {string[]} */
+    excludedFiles;
+
+    /** @type {Record<string, TerminalApprovalValue>} */
+    terminalAutoApprove;
+
+    /** @type {Record<string, boolean>} */
+    editAutoApprove;
+
+    /** @type {Set<string>} */
+    explicitFields;
+
+    /**
+     * @param {unknown} value
+     * @param {string} context
+     */
+    static parse(value, context) {
+        const raw = ensureJsonObject(value, context);
+        const unknownKeys = Object.keys(raw).filter((key) => !POLICY_KEYS.has(key));
+        if (unknownKeys.length > 0) {
+            throw new ToolError(
+                `${context} is invalid at ${unknownKeys[0]}: Extra inputs are not permitted.`,
+            );
+        }
+
+        /** @type {string[]} */
+        const services = [];
+        if (raw.services === undefined) {
+            services.push(...SUPPORTED_SERVICES);
+        } else {
+            if (!Array.isArray(raw.services)) {
+                throw new ToolError("Policy 'services' must be an array of strings.");
+            }
+            for (const entry of raw.services) {
+                if (typeof entry !== "string" || entry.trim() === "") {
+                    throw new ToolError(
+                        "Policy 'services' must contain only non-empty strings.",
+                    );
+                }
+                const serviceName = normalizeServiceName(entry);
+                if (!services.includes(serviceName)) {
+                    services.push(serviceName);
+                }
+            }
+        }
+
+        return new AiPolicy({
+            services,
+            protectedFiles: parseStringList(raw.protectedFiles, "protectedFiles"),
+            excludedFiles: parseStringList(raw.excludedFiles, "excludedFiles"),
+            terminalAutoApprove: parseTerminalApprovalRecord(
+                raw.terminalAutoApprove,
+                "terminalAutoApprove",
+            ),
+            editAutoApprove: parseBooleanRecord(raw.editAutoApprove, "editAutoApprove"),
+            explicitFields: Object.keys(raw),
+        });
+    }
+
+    /**
+     * @param {string} targetPath
+     * @param {string} context
+     */
+    static loadFile(targetPath, context) {
+        if (!pathExists(targetPath)) {
+            return new AiPolicy();
+        }
+        return AiPolicy.parse(loadJsonDocument(targetPath, context), context);
+    }
+
+    /**
+     * @param {Partial<AiPolicy>} updates
+     */
+    withUpdates(updates) {
+        const explicitFields = new Set(this.explicitFields);
+        for (const field of Object.keys(updates)) {
+            explicitFields.add(field);
+        }
+        return new AiPolicy({
+            services: updates.services ?? this.services,
+            protectedFiles: updates.protectedFiles ?? this.protectedFiles,
+            excludedFiles: updates.excludedFiles ?? this.excludedFiles,
+            terminalAutoApprove:
+                updates.terminalAutoApprove ?? this.terminalAutoApprove,
+            editAutoApprove: updates.editAutoApprove ?? this.editAutoApprove,
+            explicitFields,
+        });
+    }
+
+    toJsonObject() {
+        /** @type {JsonObject} */
+        const payload = {};
+        if (this.explicitFields.has("services")) {
+            payload.services = [...this.services];
+        }
+        if (this.explicitFields.has("protectedFiles")) {
+            payload.protectedFiles = [...this.protectedFiles];
+        }
+        if (this.explicitFields.has("excludedFiles")) {
+            payload.excludedFiles = [...this.excludedFiles];
+        }
+        if (this.explicitFields.has("terminalAutoApprove")) {
+            payload.terminalAutoApprove = cloneTerminalApprovalRecord(
+                this.terminalAutoApprove,
+            );
+        }
+        if (this.explicitFields.has("editAutoApprove")) {
+            payload.editAutoApprove = cloneBooleanRecord(this.editAutoApprove);
+        }
+        return payload;
+    }
+
+    dumpText() {
+        const payload = this.toJsonObject();
+        return Object.keys(payload).length === 0
+            ? null
+            : `${JSON.stringify(payload, null, 2)}\n`;
+    }
+
+    /** @param {string} targetPath */
+    writeOrRemove(targetPath) {
+        return writeJsonText(targetPath, this.toJsonObject());
+    }
+}
+
+class ClaudePermissions {
+    /**
+     * @param {{ deny?: string[], extra?: JsonObject }} [values]
+     */
+    constructor(values = {}) {
+        this.deny = [...(values.deny ?? [])];
+        this.extra = { ...(values.extra ?? {}) };
+    }
+
+    /** @type {string[]} */
+    deny;
+
+    /** @type {JsonObject} */
+    extra;
+
+    /**
+     * @param {unknown} value
+     * @param {string} context
+     */
+    static parse(value, context) {
+        const raw = ensureJsonObject(value, context);
+        /** @type {JsonObject} */
+        const extra = {};
+        for (const [key, entry] of Object.entries(raw)) {
+            if (key !== "deny") {
+                extra[key] = entry;
+            }
+        }
+        return new ClaudePermissions({
+            deny: parseStringList(raw.deny, "deny"),
+            extra,
+        });
+    }
+
+    hasContent() {
+        return this.deny.length > 0 || Object.keys(this.extra).length > 0;
+    }
+
+    toJsonObject() {
+        /** @type {JsonObject} */
+        const payload = { ...this.extra };
+        if (this.deny.length > 0) {
+            payload.deny = [...this.deny];
+        }
+        return payload;
+    }
+}
+
+class ClaudeSettings {
+    /**
+     * @param {{ permissions?: ClaudePermissions | null, extra?: JsonObject }} [values]
+     */
+    constructor(values = {}) {
+        this.permissions = values.permissions ?? null;
+        this.extra = { ...(values.extra ?? {}) };
+    }
+
+    /** @type {ClaudePermissions | null} */
+    permissions;
+
+    /** @type {JsonObject} */
+    extra;
+
+    /**
+     * @param {string} targetPath
+     * @param {string} context
+     */
+    static loadFile(targetPath, context) {
+        if (!pathExists(targetPath)) {
+            return new ClaudeSettings();
+        }
+        const raw = loadJsonDocument(targetPath, context);
+        /** @type {JsonObject} */
+        const extra = {};
+        for (const [key, entry] of Object.entries(raw)) {
+            if (key !== "permissions") {
+                extra[key] = entry;
+            }
+        }
+        return new ClaudeSettings({
+            permissions:
+                raw.permissions === undefined || raw.permissions === null
+                    ? null
+                    : ClaudePermissions.parse(raw.permissions, `${context} permissions`),
+            extra,
+        });
+    }
+
+    toJsonObject() {
+        /** @type {JsonObject} */
+        const payload = { ...this.extra };
+        if (this.permissions?.hasContent()) {
+            payload.permissions = this.permissions.toJsonObject();
+        }
+        return payload;
+    }
+
+    hasContent() {
+        return Object.keys(this.toJsonObject()).length > 0;
+    }
+
+    dumpText() {
+        const payload = this.toJsonObject();
+        return Object.keys(payload).length === 0
+            ? null
+            : `${JSON.stringify(payload, null, 2)}\n`;
+    }
+
+    /** @param {string} targetPath */
+    writeOrRemove(targetPath) {
+        return writeJsonText(targetPath, this.toJsonObject());
+    }
+}
+
+class VscodeSettings {
+    /**
+     * @param {{
+     *   extra?: JsonObject,
+     *   filesAssociations?: Record<string, string> | null,
+     *   copilotEnable?: Record<string, boolean> | null,
+     *   terminalAutoApprove?: Record<string, TerminalApprovalValue> | null,
+     *   editAutoApprove?: Record<string, boolean> | null,
+     * }} [values]
+     */
+    constructor(values = {}) {
+        this.extra = { ...(values.extra ?? {}) };
+        this.filesAssociations = values.filesAssociations ?? null;
+        this.copilotEnable = values.copilotEnable ?? null;
+        this.terminalAutoApprove = values.terminalAutoApprove ?? null;
+        this.editAutoApprove = values.editAutoApprove ?? null;
+    }
+
+    /** @type {JsonObject} */
+    extra;
+
+    /** @type {Record<string, string> | null} */
+    filesAssociations;
+
+    /** @type {Record<string, boolean> | null} */
+    copilotEnable;
+
+    /** @type {Record<string, TerminalApprovalValue> | null} */
+    terminalAutoApprove;
+
+    /** @type {Record<string, boolean> | null} */
+    editAutoApprove;
+
+    /**
+     * @param {string} targetPath
+     * @param {string} context
+     */
+    static loadFile(targetPath, context) {
+        if (!pathExists(targetPath)) {
+            return new VscodeSettings();
+        }
+        const raw = loadJsonDocument(targetPath, context);
+        /** @type {JsonObject} */
+        const extra = {};
+        for (const [key, entry] of Object.entries(raw)) {
+            if (
+                key !== "files.associations" &&
+                key !== "github.copilot.enable" &&
+                key !== "chat.tools.terminal.autoApprove" &&
+                key !== "chat.tools.edits.autoApprove"
+            ) {
+                extra[key] = entry;
+            }
+        }
+
+        return new VscodeSettings({
+            extra,
+            filesAssociations:
+                raw["files.associations"] === undefined
+                    ? null
+                    : parseStringRecord(raw["files.associations"], "files.associations"),
+            copilotEnable:
+                raw["github.copilot.enable"] === undefined
+                    ? null
+                    : parseBooleanRecord(
+                            raw["github.copilot.enable"],
+                            "github.copilot.enable",
+                        ),
+            terminalAutoApprove:
+                raw["chat.tools.terminal.autoApprove"] === undefined
+                    ? null
+                    : parseTerminalApprovalRecord(
+                            raw["chat.tools.terminal.autoApprove"],
+                            "chat.tools.terminal.autoApprove",
+                        ),
+            editAutoApprove:
+                raw["chat.tools.edits.autoApprove"] === undefined
+                    ? null
+                    : parseBooleanRecord(
+                            raw["chat.tools.edits.autoApprove"],
+                            "chat.tools.edits.autoApprove",
+                        ),
+        });
+    }
+
+    /**
+     * @param {Partial<VscodeSettings>} updates
+     */
+    withUpdates(updates) {
+        return new VscodeSettings({
+            extra: this.extra,
+            filesAssociations:
+                Object.hasOwn(updates, "filesAssociations")
+                    ? updates.filesAssociations
+                    : this.filesAssociations,
+            copilotEnable:
+                Object.hasOwn(updates, "copilotEnable")
+                    ? updates.copilotEnable
+                    : this.copilotEnable,
+            terminalAutoApprove:
+                Object.hasOwn(updates, "terminalAutoApprove")
+                    ? updates.terminalAutoApprove
+                    : this.terminalAutoApprove,
+            editAutoApprove:
+                Object.hasOwn(updates, "editAutoApprove")
+                    ? updates.editAutoApprove
+                    : this.editAutoApprove,
+        });
+    }
+
+    toJsonObject() {
+        /** @type {JsonObject} */
+        const payload = { ...this.extra };
+        if (this.filesAssociations !== null) {
+            payload["files.associations"] = { ...this.filesAssociations };
+        }
+        if (this.copilotEnable !== null) {
+            payload["github.copilot.enable"] = { ...this.copilotEnable };
+        }
+        if (this.terminalAutoApprove !== null) {
+            payload["chat.tools.terminal.autoApprove"] = cloneTerminalApprovalRecord(
+                this.terminalAutoApprove,
+            );
+        }
+        if (this.editAutoApprove !== null) {
+            payload["chat.tools.edits.autoApprove"] = { ...this.editAutoApprove };
+        }
+        return payload;
+    }
+
+    hasContent() {
+        return Object.keys(this.toJsonObject()).length > 0;
+    }
+
+    dumpText() {
+        const payload = this.toJsonObject();
+        return Object.keys(payload).length === 0
+            ? null
+            : `${JSON.stringify(payload, null, 2)}\n`;
+    }
+
+    /** @param {string} targetPath */
+    writeOrRemove(targetPath) {
+        return writeJsonText(targetPath, this.toJsonObject());
+    }
+}
+
+class AgentsConfig {
+    /**
+     * @param {{ policy?: AiPolicy | null, extra?: JsonObject }} [values]
+     */
+    constructor(values = {}) {
+        this.policy = values.policy ?? null;
+        this.extra = { ...(values.extra ?? {}) };
+    }
+
+    /** @type {AiPolicy | null} */
+    policy;
+
+    /** @type {JsonObject} */
+    extra;
+
+    /**
+     * @param {string} targetPath
+     * @param {string} context
+     */
+    static loadFile(targetPath, context) {
+        if (!pathExists(targetPath)) {
+            return new AgentsConfig();
+        }
+        const raw = loadJsonDocument(targetPath, context);
+        /** @type {JsonObject} */
+        const extra = {};
+        for (const [key, entry] of Object.entries(raw)) {
+            if (key !== "policy") {
+                extra[key] = entry;
+            }
+        }
+        return new AgentsConfig({
+            extra,
+            policy:
+                raw.policy === undefined
+                    ? null
+                    : AiPolicy.parse(raw.policy, "Agents config policy"),
+        });
+    }
+
+    /** @param {AiPolicy | null} policy */
+    withPolicy(policy) {
+        return new AgentsConfig({ extra: this.extra, policy });
+    }
+
+    toJsonObject() {
+        /** @type {JsonObject} */
+        const payload = { ...this.extra };
+        if (this.policy !== null) {
+            payload.policy = this.policy.toJsonObject();
+        }
+        return payload;
+    }
+
+    dumpText() {
+        const payload = this.toJsonObject();
+        return Object.keys(payload).length === 0
+            ? null
+            : `${JSON.stringify(payload, null, 2)}\n`;
+    }
+
+    /** @param {string} targetPath */
+    writeOrRemove(targetPath) {
+        return writeJsonText(targetPath, this.toJsonObject());
+    }
+}
+
+const parseStringRecord = (
+    /** @type {unknown} */ value,
+    /** @type {string} */ fieldName,
+) => {
+    if (value === undefined || value === null) {
+        return {};
+    }
+    if (!isObjectRecord(value)) {
+        throw new ToolError(`${fieldName} must be a JSON object.`);
+    }
+
+    /** @type {Record<string, string>} */
+    const record = {};
+    for (const [key, entry] of Object.entries(value)) {
+        if (typeof entry !== "string") {
+            throw new ToolError(`${fieldName} must contain only strings.`);
+        }
+        record[key] = entry;
+    }
+    return record;
+};
+
+class PolicyDocument {
+    /**
+     * @param {{ config: AgentsConfig, isUnified: boolean }} values
+     */
+    constructor(values) {
+        this.config = values.config;
+        this.isUnified = values.isUnified;
+    }
+
+    /** @type {AgentsConfig} */
+    config;
+
+    /** @type {boolean} */
+    isUnified;
+}
+
+const extractPolicyApprovalMaps = (
+    /** @type {VscodeSettings} */ vscode,
+) => {
+    return {
+        terminalAutoApprove: cloneTerminalApprovalRecord(
+            vscode.terminalAutoApprove ?? {},
+        ),
+        editAutoApprove: cloneBooleanRecord(vscode.editAutoApprove ?? {}),
+    };
+};
+
+const buildManagedReadRules = (/** @type {string[]} */ protectedFiles) => {
+    return protectedFiles.map((pattern) => `Read(${pattern})`);
+};
+
+const applyPolicyToClaudeSettings = (
+    /** @type {ClaudeSettings} */ claude,
+    /** @type {string[]} */ protectedFiles,
+) => {
+    const existingPermissions = claude.permissions ?? new ClaudePermissions();
+    const deny = [
+        ...existingPermissions.deny.filter((entry) => !entry.startsWith("Read(")),
+        ...buildManagedReadRules(protectedFiles),
+    ];
+    const permissions = new ClaudePermissions({
+        deny,
+        extra: existingPermissions.extra,
+    });
+
+    return new ClaudeSettings({
+        extra: claude.extra,
+        permissions: permissions.hasContent() ? permissions : null,
+    });
+};
+
+const mergeManagedAssociations = (
+    /** @type {Record<string, string> | null} */ existing,
+    /** @type {string[]} */ protectedFiles,
+) => {
+    const preserved = Object.fromEntries(
+        Object.entries(existing ?? {}).filter(
+            ([, language]) => language !== MANAGED_COPILOT_LANGUAGE_ID,
+        ),
+    );
+    const managed = Object.fromEntries(
+        protectedFiles.map((pattern) => [pattern, MANAGED_COPILOT_LANGUAGE_ID]),
+    );
+    const merged = { ...preserved, ...managed };
+    return Object.keys(merged).length > 0 ? merged : null;
+};
+
+const mergeCopilotEnable = (
+    /** @type {Record<string, boolean> | null} */ existing,
+    /** @type {string[]} */ protectedFiles,
+) => {
+    const enable = Object.fromEntries(
+        Object.entries(existing ?? {}).filter(
+            ([key]) => key !== MANAGED_COPILOT_LANGUAGE_ID,
+        ),
+    );
+    if (protectedFiles.length > 0) {
+        enable[MANAGED_COPILOT_LANGUAGE_ID] = false;
+    }
+    return Object.keys(enable).length > 0 ? enable : null;
+};
+
+const applyPolicyToVscodeSettings = (
+    /** @type {VscodeSettings} */ vscode,
+    /** @type {{
+     *   protectedFiles: string[],
+     *   terminalAutoApprove: Record<string, TerminalApprovalValue>,
+     *   editAutoApprove: Record<string, boolean>,
+     * }} */ policy,
+) => {
+    return vscode.withUpdates({
+        filesAssociations: mergeManagedAssociations(
+            vscode.filesAssociations,
+            policy.protectedFiles,
+        ),
+        copilotEnable: mergeCopilotEnable(
+            vscode.copilotEnable,
+            policy.protectedFiles,
+        ),
+        terminalAutoApprove:
+            Object.keys(policy.terminalAutoApprove).length > 0
+                ? cloneTerminalApprovalRecord(policy.terminalAutoApprove)
+                : null,
+        editAutoApprove:
+            Object.keys(policy.editAutoApprove).length > 0
+                ? cloneBooleanRecord(policy.editAutoApprove)
+                : null,
+    });
+};
+
+const loadPolicyDocument = (/** @type {string} */ targetPath) => {
+    const config = AgentsConfig.loadFile(targetPath, "Policy file");
+    if (config.policy !== null) {
+        return new PolicyDocument({ config, isUnified: true });
+    }
+    const policy = AiPolicy.loadFile(targetPath, "Policy file");
+    return new PolicyDocument({
+        config: new AgentsConfig({ policy }),
+        isUnified: false,
+    });
+};
+
+const writePolicyDocument = (
+    /** @type {string} */ targetPath,
+    /** @type {PolicyDocument} */ document,
+    /** @type {AiPolicy} */ policy,
+) => {
+    if (document.isUnified) {
+        document.config.withPolicy(policy).writeOrRemove(targetPath);
+        return;
+    }
+    policy.writeOrRemove(targetPath);
+};
+
+const agentsConfigHasPolicy = (/** @type {string} */ targetPath) => {
+    try {
+        return AgentsConfig.loadFile(targetPath, "Agents config").policy !== null;
+    } catch {
         return true;
     }
 };
-/**
- * @param {unknown} value
- */
-const getTerminalApprovalMapping = (value) => {
-    if (value === null || Array.isArray(value) || typeof value !== "object") {
-        return {};
-    }
-    return Object.fromEntries(Object.entries(value));
+
+const importPolicyFromVscode = (
+    /** @type {AiPolicy} */ policy,
+    /** @type {string} */ vscodeSettingsPath,
+) => {
+    const vscode = VscodeSettings.loadFile(vscodeSettingsPath, "VS Code settings");
+    return policy.withUpdates(extractPolicyApprovalMaps(vscode));
 };
-/**
- * @param {PolicyState} policy
- */
-const getProtectedFiles = (policy) => {
-    return getStringList(policy.protectedFiles);
-};
-/**
- * @param {PolicyState} policy
- */
-const getExcludedFiles = (policy) => {
-    return getStringList(policy.excludedFiles);
-};
-/**
- * @param {string} rawName
- */
-const normalizeServiceName = (rawName) => {
-    const normalized = rawName.trim().toLowerCase();
-    if (!isSupportedServiceAlias(normalized)) {
-        throw new ToolError(`Unsupported policy service '${rawName}'. Supported values: ${Object.keys(SERVICE_ALIASES)
-            .sort()
-            .join(", ")}.`);
-    }
-    return SERVICE_ALIASES[normalized];
-};
-/**
- * @param {PolicyState} policy
- */
-const getServices = (policy) => {
-    if (policy.services === undefined) {
-        return [...SUPPORTED_SERVICES];
-    }
-    if (!Array.isArray(policy.services)) {
-        throw new ToolError("Policy 'services' must be an array of strings.");
-    }
-    /** @type {string[]} */
-    const services = [];
-    for (const entry of policy.services) {
-        if (typeof entry !== "string" || entry.trim() === "") {
-            throw new ToolError("Policy 'services' must contain only non-empty strings.");
-        }
-        const serviceName = normalizeServiceName(entry);
-        if (!services.includes(serviceName)) {
-            services.push(serviceName);
-        }
-    }
-    return services;
-};
-/**
- * @param {string[]} protectedFiles
- */
-const buildProtectedReadRules = (protectedFiles) => {
-    return protectedFiles.map((pattern) => `Read(${pattern})`);
-};
-/**
- * @param {string[]} existing
- * @param {string[]} protectedFiles
- */
-const replaceManagedClaudeDenyRules = (existing, protectedFiles) => {
-    return [
-        ...existing.filter((entry) => !entry.startsWith("Read(")),
-        ...buildProtectedReadRules(protectedFiles),
-    ];
-};
-/**
- * @param {JsonObject} claudeSettings
- * @param {Pick<PolicyState, "protectedFiles">} policy
- */
-const applyPolicyToClaudeSettings = (claudeSettings, policy) => {
-    /** @type {JsonObject} */
-    const updated = { ...claudeSettings };
-    const permissions = claudeSettings.permissions !== null &&
-        !Array.isArray(claudeSettings.permissions) &&
-        typeof claudeSettings.permissions === "object"
-        ? { .../** @type {JsonObject} */ (claudeSettings.permissions) }
-        : {};
-    const denyRules = replaceManagedClaudeDenyRules(getStringList(permissions.deny), getProtectedFiles(policy));
-    if (denyRules.length > 0) {
-        permissions.deny = denyRules;
-    }
-    else {
-        delete permissions.deny;
-    }
-    if (Object.keys(permissions).length > 0) {
-        updated.permissions = permissions;
-    }
-    else {
-        delete updated.permissions;
-    }
-    return updated;
-};
-/**
- * @param {string[]} protectedFiles
- */
-const buildProtectedFileAssociations = (protectedFiles) => {
-    return Object.fromEntries(protectedFiles.map((pattern) => [pattern, MANAGED_COPILOT_LANGUAGE_ID]));
-};
-/**
- * @param {Record<string, string>} existing
- * @param {string[]} protectedFiles
- */
-const replaceManagedFileAssociations = (existing, protectedFiles) => {
-    const preserved = Object.fromEntries(Object.entries(existing).filter(([, language]) => language !== MANAGED_COPILOT_LANGUAGE_ID));
-    return {
-        ...preserved,
-        ...buildProtectedFileAssociations(protectedFiles),
-    };
-};
-/**
- * @param {JsonObject} vscodeSettings
- * @param {Pick<PolicyState, "protectedFiles" | "terminalAutoApprove" | "editAutoApprove">} policy
- */
-const applyPolicyToVscodeSettings = (vscodeSettings, policy) => {
-    /** @type {JsonObject} */
-    const updated = { ...vscodeSettings };
-    const protectedFiles = getProtectedFiles(policy);
-    const associations = replaceManagedFileAssociations(getStringRecord(updated["files.associations"]), protectedFiles);
-    if (Object.keys(associations).length > 0) {
-        updated["files.associations"] = associations;
-    }
-    else {
-        delete updated["files.associations"];
-    }
-    const copilotEnable = getBooleanRecord(updated["github.copilot.enable"]);
-    if (protectedFiles.length > 0) {
-        copilotEnable[MANAGED_COPILOT_LANGUAGE_ID] = false;
-    }
-    else {
-        delete copilotEnable[MANAGED_COPILOT_LANGUAGE_ID];
-    }
-    if (Object.keys(copilotEnable).length > 0) {
-        updated["github.copilot.enable"] = copilotEnable;
-    }
-    else {
-        delete updated["github.copilot.enable"];
-    }
-    const terminalAutoApprove = getTerminalApprovalMapping(policy.terminalAutoApprove);
-    if (Object.keys(terminalAutoApprove).length > 0) {
-        updated["chat.tools.terminal.autoApprove"] = terminalAutoApprove;
-    }
-    else {
-        delete updated["chat.tools.terminal.autoApprove"];
-    }
-    const editAutoApprove = getBooleanRecord(policy.editAutoApprove);
-    if (Object.keys(editAutoApprove).length > 0) {
-        updated["chat.tools.edits.autoApprove"] = editAutoApprove;
-    }
-    else {
-        delete updated["chat.tools.edits.autoApprove"];
-    }
-    return updated;
-};
-/**
- * @param {PolicyState} policy
- * @param {string} policyLabel
- */
-const buildAiExcludeContent = (policy, policyLabel) => {
+
+const buildAiExcludeContent = (
+    /** @type {AiPolicy} */ policy,
+    /** @type {string} */ policyLabel,
+) => {
     return [
         "# ==============================================================================",
         "# AI EXCLUSION FILE",
@@ -276,97 +894,70 @@ const buildAiExcludeContent = (policy, policyLabel) => {
         "# ==============================================================================",
         "",
         "# --- 1. Protected files ---",
-        ...getProtectedFiles(policy),
+        ...policy.protectedFiles,
         "",
         "# --- 2. Excluded noise / generated output ---",
-        ...getExcludedFiles(policy),
+        ...policy.excludedFiles,
         "",
     ].join("\n");
 };
-/**
- * @param {JsonObject} data
- */
-const buildJsonFileContent = (data) => {
-    if (Object.keys(data).length === 0) {
-        return null;
-    }
-    return `${JSON.stringify(data, null, 2)}\n`;
-};
-/**
- * @param {string} targetPath
- */
-const readOptionalTextFile = (targetPath) => {
-    if (!pathExists(targetPath)) {
-        return null;
-    }
-    return fs.readFileSync(targetPath, "utf8");
-};
-/**
- * @param {PolicyState} policy
- * @param {string} vscodeSettingsPath
- */
-const importPolicyFromVscode = (policy, vscodeSettingsPath) => {
-    const vscode = ensureJsonObject(readJsonFile(vscodeSettingsPath, {}), "VS Code settings");
-    return {
-        ...policy,
-        terminalAutoApprove: getTerminalApprovalMapping(vscode["chat.tools.terminal.autoApprove"]),
-        editAutoApprove: getBooleanRecord(vscode["chat.tools.edits.autoApprove"]),
-    };
-};
-/**
- * @param {string} startPath
- */
-const discoverPolicyPath = (startPath) => {
+
+const discoverPolicyPath = (/** @type {string} */ startPath) => {
     let currentPath = path.resolve(startPath);
     while (true) {
         const agentsConfigPath = path.join(currentPath, CANONICAL_AGENTS_CONFIG_PATH);
         if (isFile(agentsConfigPath) && agentsConfigHasPolicy(agentsConfigPath)) {
             return agentsConfigPath;
         }
+
         const canonicalPath = path.join(currentPath, CANONICAL_POLICY_PATH);
         if (isFile(canonicalPath)) {
             return canonicalPath;
         }
+
         const legacyPath = path.join(currentPath, LEGACY_POLICY_PATH);
         if (isFile(legacyPath)) {
             return legacyPath;
         }
+
         const parentPath = path.dirname(currentPath);
         if (parentPath === currentPath) {
-            break;
+            return null;
         }
         currentPath = parentPath;
     }
-    return null;
 };
-/**
- * @param {string | null} rawConfig
- * @param {string} cwd
- */
-const resolvePolicyPath = (rawConfig, cwd) => {
-    if (typeof rawConfig === "string") {
+
+const resolvePolicyPath = (
+    /** @type {string | null} */ rawConfig,
+    /** @type {string} */ cwd,
+) => {
+    if (rawConfig !== null) {
         const configPath = resolvePath(rawConfig, cwd);
         if (!isFile(configPath)) {
             throw new ToolError(`Could not find policy file at ${configPath}`);
         }
         return configPath;
     }
+
     return discoverPolicyPath(resolvePath(null, cwd));
 };
-/**
- * @param {string} policyFile
- */
-const resolvePolicyPaths = (policyFile) => {
+
+const resolvePolicyPaths = (/** @type {string} */ policyFile) => {
     const resolvedPolicy = path.resolve(policyFile);
     let repoRoot = path.dirname(resolvedPolicy);
-    if ([
-        path.basename(CANONICAL_AGENTS_CONFIG_PATH),
-        path.basename(CANONICAL_POLICY_PATH),
-    ].includes(path.basename(resolvedPolicy)) &&
+    if (
+        [path.basename(CANONICAL_AGENTS_CONFIG_PATH), path.basename(CANONICAL_POLICY_PATH)].includes(
+            path.basename(resolvedPolicy),
+        ) &&
         path.basename(path.dirname(resolvedPolicy)) ===
-            path.basename(path.dirname(CANONICAL_POLICY_PATH))) {
+            path.basename(path.dirname(CANONICAL_POLICY_PATH))
+    ) {
         repoRoot = path.dirname(path.dirname(resolvedPolicy));
+    } else if (path.basename(resolvedPolicy) === path.basename(LEGACY_POLICY_PATH)) {
+        repoRoot = path.dirname(resolvedPolicy);
     }
+
     return {
         repoRoot,
         policyFile: resolvedPolicy,
@@ -375,129 +966,160 @@ const resolvePolicyPaths = (policyFile) => {
         claudeSettings: path.join(repoRoot, CLAUDE_SETTINGS_PATH),
     };
 };
-/**
- * @param {{ repoRoot: string, policyFile: string }} paths
- */
-const formatPolicyLabel = (paths) => {
-    const relativePath = path.relative(paths.repoRoot, paths.policyFile);
-    return relativePath.startsWith("..") ? paths.policyFile : toPosixPath(relativePath);
-};
-/**
- * @param {string} repoRoot
- * @param {string} targetPath
- */
-const formatManagedPath = (repoRoot, targetPath) => {
+
+const formatRelativePath = (
+    /** @type {string} */ repoRoot,
+    /** @type {string} */ targetPath,
+) => {
     const relativePath = path.relative(repoRoot, targetPath);
     return relativePath.startsWith("..") ? targetPath : toPosixPath(relativePath);
 };
-/**
- * @param {string} repoRoot
- * @param {string[]} driftPaths
- */
-const buildCheckModeError = (repoRoot, driftPaths) => {
+
+const buildCheckModeError = (
+    /** @type {PolicyPaths} */ paths,
+    /** @type {string[]} */ driftPaths,
+) => {
     const driftSummary = driftPaths
-        .map((targetPath) => formatManagedPath(repoRoot, targetPath))
+        .map((targetPath) => formatRelativePath(paths.repoRoot, targetPath))
         .join(", ");
-    return (`Managed policy files are out of sync: ${driftSummary}. ` +
+    return (
+        `Managed policy files are out of sync: ${driftSummary}. ` +
         "Run `uv run agentic-tools policy sync` to sync them. " +
         "If you intended to keep VS Code approval edits instead, run " +
-        "`uv run agentic-tools policy import-vscode`.");
+        "`uv run agentic-tools policy import-vscode`."
+    );
 };
+
 /**
  * @param {string} policyFile
  * @param {{ importVscode?: boolean, check?: boolean }} [options]
- * @returns {string[]}
  */
 export const syncPolicyFile = (policyFile, { importVscode = false, check = false } = {}) => {
     if (importVscode && check) {
-        throw new ToolError("`--check` cannot be combined with `--import-vscode`. Run `uv run agentic-tools policy import-vscode` instead.");
+        throw new ToolError(
+            "`--check` cannot be combined with `--import-vscode`. Run `uv run agentic-tools policy import-vscode` instead.",
+        );
     }
+
     const paths = resolvePolicyPaths(policyFile);
     const document = loadPolicyDocument(paths.policyFile);
-    const policy = document.policy;
+    if (document.config.policy === null) {
+        throw new ToolError("Policy file did not resolve to a valid policy.");
+    }
+
     const effective = importVscode
-        ? importPolicyFromVscode(policy, paths.vscodeSettings)
-        : policy;
+        ? importPolicyFromVscode(document.config.policy, paths.vscodeSettings)
+        : document.config.policy;
+
     /** @type {string[]} */
     const messages = [];
-    const policyLabel = formatPolicyLabel(paths);
+    const policyLabel = formatRelativePath(paths.repoRoot, paths.policyFile);
     if (importVscode) {
         writePolicyDocument(paths.policyFile, document, effective);
         messages.push(`Imported: VS Code approvals into ${policyLabel}`);
     }
-    const services = getServices(effective);
-    const protectedFiles = getProtectedFiles(effective);
-    const excludedFiles = getExcludedFiles(effective);
-    messages.push(`Loaded ${services.length} services, ${protectedFiles.length} protected patterns and ${excludedFiles.length} excluded patterns`);
-    const expectedAiExclude = services.includes(SERVICE_GEMINI) && (protectedFiles.length > 0 || excludedFiles.length > 0)
-        ? buildAiExcludeContent(effective, policyLabel)
-        : null;
-    /** @type {Pick<PolicyState, "protectedFiles">} */
-    const claudePolicy = services.includes(SERVICE_CLAUDE)
-        ? effective
-        : { protectedFiles: [] };
-    const claudeSettings = ensureJsonObject(readJsonFile(paths.claudeSettings, {}), "Claude settings");
-    const expectedClaudeSettings = applyPolicyToClaudeSettings(claudeSettings, claudePolicy);
-    const expectedClaudeContent = buildJsonFileContent(expectedClaudeSettings);
-    /** @type {Pick<PolicyState, "protectedFiles" | "terminalAutoApprove" | "editAutoApprove">} */
-    const copilotPolicy = services.includes(SERVICE_COPILOT)
-        ? effective
-        : {
-            protectedFiles: [],
-            terminalAutoApprove: {},
-            editAutoApprove: {},
-        };
-    const vscodeSettings = ensureJsonObject(readJsonFile(paths.vscodeSettings, {}), "VS Code settings");
-    const expectedVscodeSettings = applyPolicyToVscodeSettings(vscodeSettings, copilotPolicy);
-    const expectedVscodeContent = buildJsonFileContent(expectedVscodeSettings);
+
+    messages.push(
+        `Loaded ${effective.services.length} services, ${effective.protectedFiles.length} protected patterns and ${effective.excludedFiles.length} excluded patterns`,
+    );
+
+    const expectedAiExclude =
+        effective.services.includes(SERVICE_GEMINI) &&
+        (effective.protectedFiles.length > 0 || effective.excludedFiles.length > 0)
+            ? buildAiExcludeContent(effective, policyLabel)
+            : null;
+
+    const claudeExisting = ClaudeSettings.loadFile(
+        paths.claudeSettings,
+        "Claude settings",
+    );
+    const updatedClaude = applyPolicyToClaudeSettings(
+        claudeExisting,
+        effective.services.includes(SERVICE_CLAUDE) ? effective.protectedFiles : [],
+    );
+    const expectedClaudeText = updatedClaude.dumpText();
+
+    const vscodeExisting = VscodeSettings.loadFile(
+        paths.vscodeSettings,
+        "VS Code settings",
+    );
+    const updatedVscode = applyPolicyToVscodeSettings(vscodeExisting, {
+        protectedFiles: effective.services.includes(SERVICE_COPILOT)
+            ? effective.protectedFiles
+            : [],
+        terminalAutoApprove: effective.services.includes(SERVICE_COPILOT)
+            ? effective.terminalAutoApprove
+            : {},
+        editAutoApprove: effective.services.includes(SERVICE_COPILOT)
+            ? effective.editAutoApprove
+            : {},
+    });
+    const expectedVscodeText = updatedVscode.dumpText();
+
     if (check) {
-        /** @type {string[]} */
-        const driftPaths = [];
-        if (readOptionalTextFile(paths.aiExclude) !== expectedAiExclude) {
-            driftPaths.push(paths.aiExclude);
-        }
-        if (readOptionalTextFile(paths.claudeSettings) !== expectedClaudeContent) {
-            driftPaths.push(paths.claudeSettings);
-        }
-        if (readOptionalTextFile(paths.vscodeSettings) !== expectedVscodeContent) {
-            driftPaths.push(paths.vscodeSettings);
-        }
+        /** @type {[string, string | null][]} */
+        const expectedOutputs = [
+            [paths.aiExclude, expectedAiExclude],
+            [paths.claudeSettings, expectedClaudeText],
+            [paths.vscodeSettings, expectedVscodeText],
+        ];
+        const driftPaths = expectedOutputs
+            .filter(([targetPath, expected]) => readTextOrNull(targetPath) !== expected)
+            .map(([targetPath]) => targetPath);
+
         if (driftPaths.length > 0) {
-            throw new ToolError(buildCheckModeError(paths.repoRoot, driftPaths));
+            throw new ToolError(buildCheckModeError(paths, driftPaths));
         }
+
         messages.push("Checked: generated policy files are up to date.");
         messages.push("Done.");
         return messages;
     }
+
+    const hadGeminiFile = pathExists(paths.aiExclude);
+    writeTextOrRemove(paths.aiExclude, expectedAiExclude);
     if (expectedAiExclude !== null) {
-        writeTextFile(paths.aiExclude, expectedAiExclude);
         messages.push("Synced: Gemini (.aiexclude)");
-    }
-    else if (pathExists(paths.aiExclude)) {
-        fs.rmSync(paths.aiExclude, { force: true });
+    } else if (hadGeminiFile) {
         messages.push("Removed: Gemini (.aiexclude)");
     }
-    syncJsonFile(paths.claudeSettings, expectedClaudeSettings);
-    if (services.includes(SERVICE_CLAUDE)) {
+
+    const claudeExistingHadContent = claudeExisting.hasContent();
+    updatedClaude.writeOrRemove(paths.claudeSettings);
+    if (effective.services.includes(SERVICE_CLAUDE)) {
         messages.push("Synced: Claude Code (.claude/settings.json)");
-    }
-    else if (Object.keys(claudeSettings).length > 0) {
+    } else if (claudeExistingHadContent) {
         messages.push("Cleaned: Claude Code (.claude/settings.json)");
     }
-    syncJsonFile(paths.vscodeSettings, expectedVscodeSettings);
-    if (services.includes(SERVICE_COPILOT)) {
+
+    const vscodeExistingHadContent = vscodeExisting.hasContent();
+    updatedVscode.writeOrRemove(paths.vscodeSettings);
+    if (effective.services.includes(SERVICE_COPILOT)) {
         messages.push("Synced: Copilot local policy (.vscode/settings.json)");
-    }
-    else if (Object.keys(vscodeSettings).length > 0) {
+    } else if (vscodeExistingHadContent) {
         messages.push("Cleaned: Copilot local policy (.vscode/settings.json)");
     }
+
     messages.push("Done.");
     return messages;
 };
-/**
- * @param {ExecutionOptions} options
- */
-const createAgentsPolicyCommand = (options) => {
+
+const getOptionalStringArg = (
+    /** @type {CommandArgs} */ args,
+    /** @type {string} */ key,
+) => {
+    const value = args[key];
+    return typeof value === "string" && value.trim() !== "" ? value : null;
+};
+
+const getBooleanArg = (
+    /** @type {CommandArgs} */ args,
+    /** @type {string} */ key,
+) => {
+    return args[key] === true;
+};
+
+const createAgentsPolicyCommand = (/** @type {ExecutionOptions} */ options) => {
     return defineCommand({
         meta: {
             name: "agents-policy",
@@ -523,11 +1145,18 @@ const createAgentsPolicyCommand = (options) => {
             if (args._.length > 0) {
                 throw new ToolError("agents-policy does not accept positional arguments.");
             }
-            const policyPath = resolvePolicyPath(getOptionalStringArg(args, "config"), options.cwd);
+
+            const policyPath = resolvePolicyPath(
+                getOptionalStringArg(args, "config"),
+                options.cwd,
+            );
             if (policyPath === null) {
-                options.output("No .agents/config.json policy, .agents/policy.json, or legacy .ai-policy.json found. Nothing to sync.");
+                options.output(
+                    "No .agents/config.json policy, .agents/policy.json, or legacy .ai-policy.json found. Nothing to sync.",
+                );
                 return 0;
             }
+
             for (const message of syncPolicyFile(policyPath, {
                 importVscode: getBooleanArg(args, "import-vscode"),
                 check: getBooleanArg(args, "check"),
@@ -538,6 +1167,7 @@ const createAgentsPolicyCommand = (options) => {
         },
     });
 };
+
 /**
  * @param {string[]} [argv]
  * @param {RunOptions} [options]
@@ -552,13 +1182,13 @@ export const runAgentsPolicy = async (argv = process.argv.slice(2), options = {}
             showUsage: true,
         });
         return typeof result === "number" ? result : 0;
-    }
-    catch (error) {
+    } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         effectiveOptions.logger.error(message);
         return 1;
     }
 };
+
 /**
  * @param {RunOptions} [options]
  * @returns {Promise<number>}
@@ -566,3 +1196,5 @@ export const runAgentsPolicy = async (argv = process.argv.slice(2), options = {}
 export const runAgentsPolicyImportVscode = async (options = {}) => {
     return runAgentsPolicy(["--import-vscode"], options);
 };
+
+export { discoverPolicyPath };
