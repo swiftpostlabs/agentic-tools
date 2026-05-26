@@ -48,7 +48,9 @@ Use the import command when you want to pull the current VS Code approval maps b
 
 ## Files
 
-- `main.py` contains the Python policy discovery, service selection, and sync behavior used by the grouped CLI.
+- `main.py` contains the Python policy handler used by the grouped CLI.
+- `policy.py` contains the Python policy schema and parsing helpers.
+- `claude.py`, `gemini.py`, and `vscode.py` contain provider-specific Python transforms.
 - `main_test.py` covers the focused Python behavior of the sync logic.
 - `main.mjs` contains the Node policy sync implementation used by the grouped CLI.
 - `main.test.mjs` covers the focused Node CLI behavior through Jest.

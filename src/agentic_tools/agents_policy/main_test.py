@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+from agentic_tools.agents_policy.constants import Constants
 import agentic_tools.agents_policy.main as agents_policy_main
 from agentic_tools.agents_policy.main import AgentsPolicyError
 
@@ -16,54 +17,92 @@ def read_json(path: Path) -> dict[str, object]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def test_ai_policy_defaults_to_all_services_without_serializing_defaults() -> None:
+    policy = agents_policy_main.parse_ai_policy({}, context="Policy")
+
+    assert policy.services == list(agents_policy_main.SupportedService)
+    assert policy.to_json_object() == {}
+
+
+def test_ai_policy_normalizes_service_aliases() -> None:
+    policy = agents_policy_main.parse_ai_policy(
+        {"services": ["github-copilot", "claude-code", "copilot"]},
+        context="Policy",
+    )
+
+    assert policy.services == [
+        agents_policy_main.SupportedService.COPILOT,
+        agents_policy_main.SupportedService.CLAUDE,
+    ]
+    assert policy.to_json_object() == {"services": ["copilot", "claude"]}
+
+
+def test_ai_policy_rejects_invalid_protected_files() -> None:
+    with pytest.raises(AgentsPolicyError, match="protectedFiles"):
+        agents_policy_main.parse_ai_policy(
+            {"protectedFiles": ["*.env", 42]},
+            context="Policy",
+        )
+
+
 def test_apply_policy_to_vscode_settings_replaces_managed_entries() -> None:
-    policy = {
-        "protectedFiles": ["*.env"],
-        "terminalAutoApprove": {"/^uv run poe lint$/": True},
-        "editAutoApprove": {"**/*.py": True},
-    }
-    vscode = {
-        "chat.tools.terminal.autoApprove": {"old": True},
-        "chat.tools.edits.autoApprove": {"old": True},
-        "files.associations": {
-            "stale": agents_policy_main.MANAGED_COPILOT_LANGUAGE_ID,
-            "*.txt": "plaintext",
+    policy = agents_policy_main.parse_ai_policy(
+        {
+            "protectedFiles": ["*.env"],
+            "terminalAutoApprove": {"/^uv run poe lint$/": True},
+            "editAutoApprove": {"**/*.py": True},
         },
-        "github.copilot.enable": {"other-language": True},
-    }
+        context="Policy",
+    )
+    vscode = agents_policy_main.VscodeSettings.model_validate(
+        {
+            "chat.tools.terminal.autoApprove": {"old": True},
+            "chat.tools.edits.autoApprove": {"old": True},
+            "files.associations": {
+                "stale": Constants.RESTRICTED_FILE_FOR_COPILOT.value,
+                "*.txt": "plaintext",
+            },
+            "github.copilot.enable": {"other-language": True},
+        }
+    )
 
-    updated = agents_policy_main.apply_policy_to_vscode_settings(vscode, policy)
+    updated = agents_policy_main.apply_policy_to_vscode_settings(
+        vscode,
+        protected_files=policy.protected_files,
+        terminal_auto_approve=policy.terminal_auto_approve,
+        edit_auto_approve=policy.edit_auto_approve,
+    )
 
-    assert updated["chat.tools.terminal.autoApprove"] == {"/^uv run poe lint$/": True}
-    assert updated["chat.tools.edits.autoApprove"] == {"**/*.py": True}
-    assert updated["files.associations"] == {
+    assert updated.terminal_auto_approve == {"/^uv run poe lint$/": True}
+    assert updated.edit_auto_approve == {"**/*.py": True}
+    assert updated.files_associations == {
         "*.txt": "plaintext",
-        "*.env": agents_policy_main.MANAGED_COPILOT_LANGUAGE_ID,
+        "*.env": Constants.RESTRICTED_FILE_FOR_COPILOT.value,
     }
-    assert updated["github.copilot.enable"] == {
+    assert updated.copilot_enable == {
         "other-language": True,
-        agents_policy_main.MANAGED_COPILOT_LANGUAGE_ID: False,
+        Constants.RESTRICTED_FILE_FOR_COPILOT.value: False,
     }
 
 
 def test_apply_policy_to_claude_settings_replaces_managed_read_rules() -> None:
-    policy = {"protectedFiles": ["*.env", "secrets/"]}
-    claude = {
-        "permissions": {
-            "deny": [
-                "Read(old-secret)",
-                "Bash(rm -rf /)",
-            ],
-        },
-    }
-
-    updated = agents_policy_main.apply_policy_to_claude_settings(claude, policy)
-    permissions = agents_policy_main.require_json_object(
-        updated["permissions"],
-        context="Test Claude permissions",
+    claude = agents_policy_main.ClaudeSettings.model_validate(
+        {
+            "permissions": {
+                "deny": [
+                    "Read(old-secret)",
+                    "Bash(rm -rf /)",
+                ],
+            },
+        }
     )
 
-    assert permissions["deny"] == [
+    updated = agents_policy_main.apply_policy_to_claude_settings(
+        claude, ["*.env", "secrets/"]
+    )
+
+    assert updated.permissions is not None
+    assert updated.permissions.deny == [
         "Bash(rm -rf /)",
         "Read(*.env)",
         "Read(secrets/)",
@@ -73,10 +112,13 @@ def test_apply_policy_to_claude_settings_replaces_managed_read_rules() -> None:
 def test_import_policy_from_vscode_replaces_policy_approval_maps(
     tmp_path: Path,
 ) -> None:
-    policy = {
-        "terminalAutoApprove": {"stale": True},
-        "editAutoApprove": {"old": False},
-    }
+    policy = agents_policy_main.parse_ai_policy(
+        {
+            "terminalAutoApprove": {"stale": True},
+            "editAutoApprove": {"old": False},
+        },
+        context="Policy",
+    )
     vscode_settings_path = tmp_path / ".vscode" / "settings.json"
     write_json(
         vscode_settings_path,
@@ -88,30 +130,33 @@ def test_import_policy_from_vscode_replaces_policy_approval_maps(
 
     updated = agents_policy_main.import_policy_from_vscode(policy, vscode_settings_path)
 
-    assert updated["terminalAutoApprove"] == {"/^uv run poe test$/": True}
-    assert updated["editAutoApprove"] == {"**/*.py": True}
+    assert updated.terminal_auto_approve == {"/^uv run poe test$/": True}
+    assert updated.edit_auto_approve == {"**/*.py": True}
 
 
 def test_import_policy_from_vscode_clears_missing_policy_approval_maps(
     tmp_path: Path,
 ) -> None:
-    policy = {
-        "terminalAutoApprove": {"stale": True},
-        "editAutoApprove": {"old": False},
-    }
+    policy = agents_policy_main.parse_ai_policy(
+        {
+            "terminalAutoApprove": {"stale": True},
+            "editAutoApprove": {"old": False},
+        },
+        context="Policy",
+    )
 
     updated = agents_policy_main.import_policy_from_vscode(
         policy,
         tmp_path / ".vscode" / "settings.json",
     )
 
-    assert updated["terminalAutoApprove"] == {}
-    assert updated["editAutoApprove"] == {}
+    assert updated.terminal_auto_approve == {}
+    assert updated.edit_auto_approve == {}
 
 
-def test_get_services_rejects_unknown_service() -> None:
+def test_parse_ai_policy_rejects_unknown_service() -> None:
     with pytest.raises(AgentsPolicyError, match="Unsupported policy service"):
-        agents_policy_main.get_services({"services": ["unknown"]})
+        agents_policy_main.parse_ai_policy({"services": ["unknown"]}, context="Policy")
 
 
 def test_sync_policy_file_respects_selected_services(tmp_path: Path) -> None:
@@ -145,7 +190,7 @@ def test_sync_policy_file_respects_selected_services(tmp_path: Path) -> None:
     }
     assert vscode_settings["chat.tools.edits.autoApprove"] == {"**/*.py": True}
     assert vscode_settings["files.associations"] == {
-        "*.env": agents_policy_main.MANAGED_COPILOT_LANGUAGE_ID
+        "*.env": Constants.RESTRICTED_FILE_FOR_COPILOT.value
     }
 
 
@@ -242,11 +287,11 @@ def test_sync_policy_file_cleans_disabled_copilot_settings(tmp_path: Path) -> No
             "chat.tools.edits.autoApprove": {"stale": False},
             "files.associations": {
                 "*.txt": "plaintext",
-                "*.env": agents_policy_main.MANAGED_COPILOT_LANGUAGE_ID,
+                "*.env": Constants.RESTRICTED_FILE_FOR_COPILOT.value,
             },
             "github.copilot.enable": {
                 "other-language": True,
-                agents_policy_main.MANAGED_COPILOT_LANGUAGE_ID: False,
+                Constants.RESTRICTED_FILE_FOR_COPILOT.value: False,
             },
         },
     )

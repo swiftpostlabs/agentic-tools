@@ -20,15 +20,15 @@ import subprocess
 from typing import Any
 from typing import Sequence
 
-DEFAULT_GLOBAL_SKILLS_DIR = Path.home() / ".agents" / "skills"
+from agentic_tools.utils.paths import AgenticToolsPaths
+
+DEFAULT_GLOBAL_SKILLS_DIR = Path.home() / AgenticToolsPaths.skills_path()
 SHAREABLE_VISIBILITY = "shareable"
 REPO_LOCAL_VISIBILITY = "repo-local"
 SHAREABILITY_WIZARD = "tool-make-skill-shareable"
 PACKAGE_SOURCE_PREFIX = "package:"
 PACKAGED_SKILLS_DIRNAME = "shareable_skills"
 PACKAGE_INSTALL_BOUNDARY_DIRS = frozenset({"site-packages", "dist-packages"})
-AGENTS_CONFIG_FILENAME = "config.json"
-SYNC_CONFIG_FILENAME = "skills.json"
 SKILLS_CONFIG_SECTION = "skills"
 
 
@@ -113,11 +113,14 @@ def split_requires(value: str | None) -> tuple[str, ...]:
 
 
 def is_skills_root(path: Path) -> bool:
-    return path.name == "skills" and path.parent.name == ".agents"
+    return (
+        path.name == AgenticToolsPaths.SKILLS.value
+        and path.parent.name == AgenticToolsPaths.ROOT.value
+    )
 
 
 def to_skills_root(path: Path) -> Path:
-    return path if is_skills_root(path) else path / ".agents" / "skills"
+    return path if is_skills_root(path) else path / AgenticToolsPaths.skills_path()
 
 
 def resolve_path(raw_path: str | None) -> Path:
@@ -168,7 +171,7 @@ def resolve_repo_skills_root(
     for possible_root in [search_root, *search_root.parents]:
         if possible_root.name in stop_names:
             break
-        if (possible_root / ".agents" / "skills").is_dir():
+        if (possible_root / AgenticToolsPaths.skills_path()).is_dir():
             return possible_root
 
     return None
@@ -300,7 +303,7 @@ def load_configured_skill_sources(
 
 
 def infer_config_base_root(config_path: Path) -> Path:
-    if config_path.parent.name == ".agents":
+    if config_path.parent.name == AgenticToolsPaths.ROOT.value:
         return config_path.parent.parent
     return config_path.parent
 
@@ -317,9 +320,9 @@ def resolve_sync_config_path(
     if use_global:
         raise SkillsManagementError("sync with --global requires --config")
 
-    agents_dir = to_repo_root(destination_path) / ".agents"
-    agents_config = agents_dir / AGENTS_CONFIG_FILENAME
-    legacy_skills_config = agents_dir / SYNC_CONFIG_FILENAME
+    agents_dir = to_repo_root(destination_path) / AgenticToolsPaths.root_path()
+    agents_config = agents_dir / AgenticToolsPaths.CONFIG.value
+    legacy_skills_config = agents_dir / AgenticToolsPaths.SKILLS_CONFIG.value
     if agents_config.is_file():
         if (
             agents_config_has_skills(agents_config)
@@ -749,7 +752,8 @@ def build_parser() -> ArgumentParser:
         dest="config",
         help=(
             "Path to an agents config or skills config file. Defaults to "
-            "<destination>/.agents/config.json, with .agents/skills.json fallback."
+            f"<destination>/{AgenticToolsPaths.config_path().as_posix()}, with "
+            f"{AgenticToolsPaths.skills_config_path().as_posix()} fallback."
         ),
     )
     sync_parser.add_argument(

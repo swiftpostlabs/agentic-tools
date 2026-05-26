@@ -1,51 +1,32 @@
-"""Synchronize the shared agents policy into agent-specific config files.
-
-Canonical usage:
-- Sync policy-managed files: `uv run agentic-tools policy sync`
-- Check policy-managed files: `uv run agentic-tools policy check`
-- Import VS Code approvals first: `uv run agentic-tools policy import-vscode`
-
-"""
+"""Policy command handler used by the grouped agentic-tools CLI."""
 
 from argparse import ArgumentParser
-from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from importlib import import_module
-from json import JSONDecodeError
-import json
-import re
 from pathlib import Path
-from typing import TypeAlias, cast
 
-CANONICAL_AGENTS_CONFIG_PATH = Path(".agents") / "config.json"
-CANONICAL_POLICY_PATH = Path(".agents") / "policy.json"
-LEGACY_POLICY_PATH = Path(".ai-policy.json")
-AI_EXCLUDE_PATH = Path(".aiexclude")
-VSCODE_SETTINGS_PATH = Path(".vscode") / "settings.json"
-CLAUDE_SETTINGS_PATH = Path(".claude") / "settings.json"
-MANAGED_COPILOT_LANGUAGE_ID = "copilot-restricted-file"
-
-SERVICE_GEMINI = "gemini"
-SERVICE_CLAUDE = "claude"
-SERVICE_COPILOT = "copilot"
-SUPPORTED_SERVICES = (SERVICE_GEMINI, SERVICE_CLAUDE, SERVICE_COPILOT)
-SERVICE_ALIASES = {
-    SERVICE_GEMINI: SERVICE_GEMINI,
-    SERVICE_CLAUDE: SERVICE_CLAUDE,
-    "claude-code": SERVICE_CLAUDE,
-    SERVICE_COPILOT: SERVICE_COPILOT,
-    "github-copilot": SERVICE_COPILOT,
-}
-
-JsonObject: TypeAlias = dict[str, object]
-JsonMapping: TypeAlias = Mapping[str, object]
-AiPolicy: TypeAlias = JsonMapping
-VscodeSettings: TypeAlias = JsonMapping
-JsonLoader: TypeAlias = Callable[[str], object]
-
-
-class AgentsPolicyError(Exception):
-    """Raised when the policy file or sync workflow is invalid."""
+from agentic_tools.agents_policy.claude import apply_policy_to_claude_settings
+from agentic_tools.agents_policy.gemini import (
+    build_ai_exclude_content as build_gemini_ai_exclude_content,
+)
+from agentic_tools.agents_policy.policy import (
+    AgentsConfig,
+    AgentsPolicyError,
+    AiPolicy,
+    ClaudeSettings,
+    VscodeSettings,
+    parse_ai_policy,
+)
+from agentic_tools.agents_policy.vscode import (
+    apply_policy_to_vscode_settings,
+    extract_policy_approval_maps,
+)
+from agentic_tools.utils.paths import (
+    AgenticToolsPaths,
+    ClaudePaths,
+    GeminiPaths,
+    VscodePaths,
+)
+from agentic_tools.utils.services import SupportedService
 
 
 @dataclass(frozen=True)
@@ -57,414 +38,75 @@ class PolicyPaths:
     claude_settings: Path
 
 
+def _format_relative(path: Path, repo_root: Path) -> str:
+    try:
+        return path.relative_to(repo_root).as_posix()
+    except ValueError:
+        return str(path)
+
+
 @dataclass(frozen=True)
 class PolicyDocument:
-    raw_config: JsonObject
-    policy: AiPolicy
-    uses_unified_config: bool
-
-
-def load_optional_json5_loader() -> JsonLoader | None:
-    try:
-        json5_module = import_module("json5")
-    except ModuleNotFoundError:
-        return None
-
-    loads = getattr(json5_module, "loads", None)
-    return loads if callable(loads) else None
-
-
-JSON5_LOADS = load_optional_json5_loader()
-
-
-def require_json_object(value: object, *, context: str) -> JsonObject:
-    if not isinstance(value, dict):
-        raise AgentsPolicyError(f"{context} must be a JSON object.")
-
-    items = cast(dict[object, object], value)
-    if not all(isinstance(key, str) for key in items):
-        raise AgentsPolicyError(f"{context} must use string keys.")
-
-    return {key: item for key, item in items.items() if isinstance(key, str)}
-
-
-def read_json_file(path: Path, fallback: object) -> object:
-    if not path.exists():
-        return fallback
-
-    text = path.read_text(encoding="utf-8")
-    if JSON5_LOADS is not None:
-        try:
-            return JSON5_LOADS(text)
-        except Exception:
-            pass
-
-    try:
-        return json.loads(text)
-    except JSONDecodeError:
-        cleaned = strip_jsonc(text)
-        return json.loads(cleaned)
-
-
-def read_json_object(path: Path, *, context: str) -> JsonObject:
-    return require_json_object(read_json_file(path, {}), context=context)
+    config: AgentsConfig
+    is_unified: bool
 
 
 def load_policy_document(path: Path) -> PolicyDocument:
-    raw_config = read_json_object(path, context="Policy file")
-    if "policy" not in raw_config:
-        return PolicyDocument(
-            raw_config=raw_config,
-            policy=raw_config,
-            uses_unified_config=False,
-        )
-
-    raw_policy = raw_config["policy"]
-
-    return PolicyDocument(
-        raw_config=raw_config,
-        policy=require_json_object(raw_policy, context="Agents config policy"),
-        uses_unified_config=True,
-    )
+    """Load a policy file. Detects whether it's a unified config or a bare policy."""
+    config = AgentsConfig.load_file(path, context="Policy file")
+    if config.policy is not None:
+        return PolicyDocument(config=config, is_unified=True)
+    # No ``policy`` key: treat the whole file as a raw AiPolicy.
+    policy = AiPolicy.load_file(path, context="Policy file")
+    return PolicyDocument(config=AgentsConfig(policy=policy), is_unified=False)
 
 
 def write_policy_document(
     path: Path, document: PolicyDocument, policy: AiPolicy
 ) -> None:
-    if not document.uses_unified_config:
-        write_json_file(path, policy)
-        return
-
-    updated_config = dict(document.raw_config)
-    updated_config["policy"] = policy
-    write_json_file(path, updated_config)
+    """Persist *policy* into *path*, preserving sibling sections when unified."""
+    if document.is_unified:
+        document.config.model_copy(update={"policy": policy}).write_or_remove(path)
+    else:
+        policy.write_or_remove(path)
 
 
 def agents_config_has_policy(path: Path) -> bool:
+    """Return True if *path* looks like a unified config that owns a policy section."""
     try:
-        raw_config = read_json_object(path, context="Agents config")
-    except json.JSONDecodeError, AgentsPolicyError:
+        config = AgentsConfig.load_file(path, context="Agents config")
+    except AgentsPolicyError:
         return True
-
-    return isinstance(raw_config.get("policy"), dict)
-
-
-def strip_jsonc(text: str) -> str:
-    def remove_comments(content: str) -> str:
-        output: list[str] = []
-        index = 0
-        length = len(content)
-        in_string = False
-        quote_char = ""
-
-        while index < length:
-            char = content[index]
-
-            if in_string:
-                output.append(char)
-                if char == "\\":
-                    if index + 1 < length:
-                        output.append(content[index + 1])
-                        index += 2
-                        continue
-                elif char == quote_char:
-                    in_string = False
-                index += 1
-                continue
-
-            if char in {'"', "'"}:
-                in_string = True
-                quote_char = char
-                output.append(char)
-                index += 1
-                continue
-
-            if char == "/" and index + 1 < length and content[index + 1] == "/":
-                index += 2
-                while index < length and content[index] != "\n":
-                    index += 1
-                continue
-
-            if char == "/" and index + 1 < length and content[index + 1] == "*":
-                index += 2
-                while index + 1 < length and not (
-                    content[index] == "*" and content[index + 1] == "/"
-                ):
-                    index += 1
-                index += 2 if index + 1 < length else 1
-                continue
-
-            output.append(char)
-            index += 1
-
-        return "".join(output)
-
-    return re.sub(r",\s*(?=[}\]])", "", remove_comments(text))
-
-
-def write_json_file(path: Path, data: object) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8") as file_handle:
-        json.dump(data, file_handle, indent=2)
-        file_handle.write("\n")
-
-
-def write_text_file(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
-
-
-def build_json_file_content(data: JsonObject) -> str | None:
-    if not data:
-        return None
-
-    return json.dumps(data, indent=2) + "\n"
-
-
-def read_optional_text_file(path: Path) -> str | None:
-    if not path.exists():
-        return None
-
-    return path.read_text(encoding="utf-8")
-
-
-def sync_json_file(path: Path, data: JsonObject) -> None:
-    if data:
-        write_json_file(path, data)
-        return
-
-    if path.exists():
-        path.unlink()
-
-
-def get_string_list(value: object) -> list[str]:
-    if not isinstance(value, list):
-        return []
-
-    items = cast(list[object], value)
-    return [item for item in items if isinstance(item, str)]
-
-
-def get_string_mapping(value: object) -> dict[str, str]:
-    if not isinstance(value, dict):
-        return {}
-
-    items = cast(dict[object, object], value)
-    return {
-        key: item
-        for key, item in items.items()
-        if isinstance(key, str) and isinstance(item, str)
-    }
-
-
-def get_boolean_mapping(value: object) -> dict[str, bool]:
-    if not isinstance(value, dict):
-        return {}
-
-    items = cast(dict[object, object], value)
-    return {
-        key: item
-        for key, item in items.items()
-        if isinstance(key, str) and isinstance(item, bool)
-    }
-
-
-def get_terminal_approval_mapping(value: object) -> JsonObject:
-    if not isinstance(value, dict):
-        return {}
-
-    items = cast(dict[object, object], value)
-    return {key: item for key, item in items.items() if isinstance(key, str)}
-
-
-def get_protected_files(policy: AiPolicy) -> list[str]:
-    return get_string_list(policy.get("protectedFiles", []))
-
-
-def get_excluded_files(policy: AiPolicy) -> list[str]:
-    return get_string_list(policy.get("excludedFiles", []))
-
-
-def normalize_service_name(raw_name: str) -> str:
-    normalized = raw_name.strip().lower()
-    service_name = SERVICE_ALIASES.get(normalized)
-    if service_name is None:
-        supported = ", ".join(sorted(SERVICE_ALIASES))
-        raise AgentsPolicyError(
-            f"Unsupported policy service '{raw_name}'. Supported values: {supported}."
-        )
-    return service_name
-
-
-def get_services(policy: AiPolicy) -> list[str]:
-    raw_services = policy.get("services")
-    if raw_services is None:
-        return list(SUPPORTED_SERVICES)
-
-    if not isinstance(raw_services, list):
-        raise AgentsPolicyError("Policy 'services' must be an array of strings.")
-
-    services: list[str] = []
-    for entry in cast(list[object], raw_services):
-        if not isinstance(entry, str) or entry.strip() == "":
-            raise AgentsPolicyError(
-                "Policy 'services' must contain only non-empty strings."
-            )
-
-        service_name = normalize_service_name(entry)
-        if service_name not in services:
-            services.append(service_name)
-
-    return services
-
-
-def build_protected_read_rules(protected_files: list[str]) -> list[str]:
-    return [f"Read({pattern})" for pattern in protected_files]
-
-
-def replace_managed_claude_deny_rules(
-    existing: list[str], protected_files: list[str]
-) -> list[str]:
-    preserved_rules = [entry for entry in existing if not entry.startswith("Read(")]
-    return preserved_rules + build_protected_read_rules(protected_files)
-
-
-def apply_policy_to_claude_settings(
-    claude: JsonMapping, policy: AiPolicy
-) -> JsonObject:
-    updated = dict(claude)
-    raw_permissions = claude.get("permissions", {})
-    permissions = (
-        dict(require_json_object(raw_permissions, context="Claude permissions"))
-        if isinstance(raw_permissions, dict)
-        else {}
-    )
-    existing_deny = get_string_list(permissions.get("deny", []))
-    deny_rules = replace_managed_claude_deny_rules(
-        existing_deny,
-        get_protected_files(policy),
-    )
-
-    if deny_rules:
-        permissions["deny"] = deny_rules
-    else:
-        permissions.pop("deny", None)
-
-    if permissions:
-        updated["permissions"] = permissions
-    else:
-        updated.pop("permissions", None)
-
-    return updated
-
-
-def build_protected_file_associations(protected_files: list[str]) -> dict[str, str]:
-    return {pattern: MANAGED_COPILOT_LANGUAGE_ID for pattern in protected_files}
-
-
-def replace_managed_file_associations(
-    existing: dict[str, str], protected_files: list[str]
-) -> dict[str, str]:
-    preserved_rules = {
-        pattern: language
-        for pattern, language in existing.items()
-        if language != MANAGED_COPILOT_LANGUAGE_ID
-    }
-    return preserved_rules | build_protected_file_associations(protected_files)
-
-
-def apply_policy_to_vscode_settings(
-    vscode: VscodeSettings, policy: AiPolicy
-) -> JsonObject:
-    updated = dict(vscode)
-    protected_files = get_protected_files(policy)
-    associations = replace_managed_file_associations(
-        get_string_mapping(updated.get("files.associations", {})),
-        protected_files,
-    )
-
-    if associations:
-        updated["files.associations"] = associations
-    else:
-        updated.pop("files.associations", None)
-
-    copilot_enable = get_boolean_mapping(updated.get("github.copilot.enable", {}))
-    if protected_files:
-        copilot_enable[MANAGED_COPILOT_LANGUAGE_ID] = False
-    else:
-        copilot_enable.pop(MANAGED_COPILOT_LANGUAGE_ID, None)
-
-    if copilot_enable:
-        updated["github.copilot.enable"] = copilot_enable
-    else:
-        updated.pop("github.copilot.enable", None)
-
-    terminal_auto_approve = get_terminal_approval_mapping(
-        policy.get("terminalAutoApprove", {}),
-    )
-    if terminal_auto_approve:
-        updated["chat.tools.terminal.autoApprove"] = terminal_auto_approve
-    else:
-        updated.pop("chat.tools.terminal.autoApprove", None)
-
-    edit_auto_approve = get_boolean_mapping(policy.get("editAutoApprove", {}))
-    if edit_auto_approve:
-        updated["chat.tools.edits.autoApprove"] = edit_auto_approve
-    else:
-        updated.pop("chat.tools.edits.autoApprove", None)
-
-    return updated
-
-
-def build_ai_exclude_content(policy: AiPolicy, policy_label: str) -> str:
-    lines: list[str] = [
-        "# ==============================================================================",
-        "# AI EXCLUSION FILE",
-        f"# Generated from {policy_label}",
-        "# Protected files are sensitive; excluded files are mostly noise or generated output.",
-        "# ==============================================================================",
-        "",
-        "# --- 1. Protected files ---",
-    ]
-
-    lines.extend(get_protected_files(policy))
-    lines.append("")
-    lines.append("# --- 2. Excluded noise / generated output ---")
-    lines.extend(get_excluded_files(policy))
-    lines.append("")
-    return "\n".join(lines)
+    return config.policy is not None
 
 
 def import_policy_from_vscode(policy: AiPolicy, vscode_settings_path: Path) -> AiPolicy:
-    vscode: VscodeSettings = require_json_object(
-        read_json_file(vscode_settings_path, {}),
-        context="VS Code settings",
+    vscode = VscodeSettings.load_file(vscode_settings_path, context="VS Code settings")
+    merged = {**policy.to_json_object(), **extract_policy_approval_maps(vscode)}
+    return parse_ai_policy(merged, context="Imported policy")
+
+
+def build_ai_exclude_content(policy: AiPolicy, policy_label: str) -> str:
+    return build_gemini_ai_exclude_content(
+        protected_files=policy.protected_files,
+        excluded_files=policy.excluded_files,
+        policy_label=policy_label,
     )
-    return {
-        **policy,
-        "terminalAutoApprove": get_terminal_approval_mapping(
-            vscode.get("chat.tools.terminal.autoApprove", {})
-        ),
-        "editAutoApprove": get_boolean_mapping(
-            vscode.get("chat.tools.edits.autoApprove", {})
-        ),
-    }
 
 
 def discover_policy_path(start_path: Path) -> Path | None:
-    search_roots = [start_path, *start_path.parents]
-    for candidate_root in search_roots:
-        agents_config_path = candidate_root / CANONICAL_AGENTS_CONFIG_PATH
+    for candidate_root in [start_path, *start_path.parents]:
+        agents_config_path = candidate_root / AgenticToolsPaths.config_path()
         if agents_config_path.is_file() and agents_config_has_policy(
             agents_config_path
         ):
             return agents_config_path.resolve()
 
-        canonical_path = candidate_root / CANONICAL_POLICY_PATH
+        canonical_path = candidate_root / AgenticToolsPaths.policy_path()
         if canonical_path.is_file():
             return canonical_path.resolve()
 
-        legacy_path = candidate_root / LEGACY_POLICY_PATH
+        legacy_path = candidate_root / AgenticToolsPaths.legacy_policy_path()
         if legacy_path.is_file():
             return legacy_path.resolve()
 
@@ -486,11 +128,11 @@ def resolve_policy_paths(policy_file: Path) -> PolicyPaths:
 
     if (
         resolved_policy.name
-        in {CANONICAL_AGENTS_CONFIG_PATH.name, CANONICAL_POLICY_PATH.name}
-        and resolved_policy.parent.name == CANONICAL_POLICY_PATH.parent.name
+        in {AgenticToolsPaths.CONFIG.value, AgenticToolsPaths.POLICY.value}
+        and resolved_policy.parent.name == AgenticToolsPaths.ROOT.value
     ):
         repo_root = resolved_policy.parent.parent
-    elif resolved_policy.name == LEGACY_POLICY_PATH.name:
+    elif resolved_policy.name == AgenticToolsPaths.LEGACY_POLICY.value:
         repo_root = resolved_policy.parent
     else:
         repo_root = resolved_policy.parent
@@ -498,29 +140,15 @@ def resolve_policy_paths(policy_file: Path) -> PolicyPaths:
     return PolicyPaths(
         repo_root=repo_root,
         policy_file=resolved_policy,
-        ai_exclude=repo_root / AI_EXCLUDE_PATH,
-        vscode_settings=repo_root / VSCODE_SETTINGS_PATH,
-        claude_settings=repo_root / CLAUDE_SETTINGS_PATH,
+        ai_exclude=repo_root / GeminiPaths.ai_exclude_path(),
+        vscode_settings=repo_root / VscodePaths.settings_path(),
+        claude_settings=repo_root / ClaudePaths.project_settings_path(),
     )
-
-
-def format_policy_label(paths: PolicyPaths) -> str:
-    try:
-        return paths.policy_file.relative_to(paths.repo_root).as_posix()
-    except ValueError:
-        return str(paths.policy_file)
-
-
-def format_managed_path(path: Path, repo_root: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return str(path)
 
 
 def build_check_mode_error(paths: PolicyPaths, drift_paths: list[Path]) -> str:
     drift_summary = ", ".join(
-        format_managed_path(path, paths.repo_root) for path in drift_paths
+        _format_relative(path, paths.repo_root) for path in drift_paths
     )
     return (
         f"Managed policy files are out of sync: {drift_summary}. "
@@ -528,6 +156,18 @@ def build_check_mode_error(paths: PolicyPaths, drift_paths: list[Path]) -> str:
         "If you intended to keep VS Code approval edits instead, run "
         "`uv run agentic-tools policy import-vscode`."
     )
+
+
+def _read_text_or_none(path: Path) -> str | None:
+    return path.read_text(encoding="utf-8") if path.exists() else None
+
+
+def _write_or_remove_text(path: Path, content: str | None) -> None:
+    if content is not None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    elif path.exists():
+        path.unlink()
 
 
 def sync_policy_file(
@@ -541,75 +181,72 @@ def sync_policy_file(
 
     paths = resolve_policy_paths(policy_file)
     document = load_policy_document(paths.policy_file)
-    policy = document.policy
+    assert document.config.policy is not None
     effective = (
-        import_policy_from_vscode(policy, paths.vscode_settings)
+        import_policy_from_vscode(document.config.policy, paths.vscode_settings)
         if import_vscode
-        else policy
+        else document.config.policy
     )
 
-    policy_label = format_policy_label(paths)
+    policy_label = _format_relative(paths.policy_file, paths.repo_root)
     messages: list[str] = []
     if import_vscode:
         write_policy_document(paths.policy_file, document, effective)
         messages.append(f"Imported: VS Code approvals into {policy_label}")
 
-    services = get_services(effective)
-    protected_files = get_protected_files(effective)
-    excluded_files = get_excluded_files(effective)
-
+    services = effective.services
     messages.append(
-        f"Loaded {len(services)} services, {len(protected_files)} protected patterns and {len(excluded_files)} excluded patterns"
+        f"Loaded {len(services)} services, "
+        f"{len(effective.protected_files)} protected patterns and "
+        f"{len(effective.excluded_files)} excluded patterns"
     )
 
-    gemini_enabled = SERVICE_GEMINI in services
     expected_ai_exclude = (
         build_ai_exclude_content(effective, policy_label)
-        if gemini_enabled and (protected_files or excluded_files)
+        if SupportedService.GEMINI in services
+        and (effective.protected_files or effective.excluded_files)
         else None
     )
 
-    claude_policy: AiPolicy = (
-        effective if SERVICE_CLAUDE in services else {"protectedFiles": []}
-    )
-    claude_settings = require_json_object(
-        read_json_file(paths.claude_settings, {}),
-        context="Claude settings",
-    )
-    updated_claude_settings = apply_policy_to_claude_settings(
-        claude_settings,
-        claude_policy,
-    )
-    expected_claude_settings = build_json_file_content(updated_claude_settings)
-
-    copilot_policy: AiPolicy = (
+    claude_policy = (
         effective
-        if SERVICE_COPILOT in services
-        else {
-            "protectedFiles": [],
-            "terminalAutoApprove": {},
-            "editAutoApprove": {},
-        }
+        if SupportedService.CLAUDE in services
+        else AiPolicy(protectedFiles=[])
     )
-    vscode_settings = require_json_object(
-        read_json_file(paths.vscode_settings, {}),
-        context="VS Code settings",
+    claude_existing = ClaudeSettings.load_file(
+        paths.claude_settings, context="Claude settings"
     )
-    updated_vscode_settings = apply_policy_to_vscode_settings(
-        vscode_settings,
-        copilot_policy,
+    updated_claude = apply_policy_to_claude_settings(
+        claude_existing, claude_policy.protected_files
     )
-    expected_vscode_settings = build_json_file_content(updated_vscode_settings)
+    expected_claude_text = updated_claude.dump_text()
+
+    copilot_policy = (
+        effective
+        if SupportedService.COPILOT in services
+        else AiPolicy(protectedFiles=[], terminalAutoApprove={}, editAutoApprove={})
+    )
+    vscode_existing = VscodeSettings.load_file(
+        paths.vscode_settings, context="VS Code settings"
+    )
+    updated_vscode = apply_policy_to_vscode_settings(
+        vscode_existing,
+        protected_files=copilot_policy.protected_files,
+        terminal_auto_approve=copilot_policy.terminal_auto_approve,
+        edit_auto_approve=copilot_policy.edit_auto_approve,
+    )
+    expected_vscode_text = updated_vscode.dump_text()
 
     if check:
-        drift_paths: list[Path] = []
-        if read_optional_text_file(paths.ai_exclude) != expected_ai_exclude:
-            drift_paths.append(paths.ai_exclude)
-        if read_optional_text_file(paths.claude_settings) != expected_claude_settings:
-            drift_paths.append(paths.claude_settings)
-        if read_optional_text_file(paths.vscode_settings) != expected_vscode_settings:
-            drift_paths.append(paths.vscode_settings)
-
+        drift_paths = [
+            path
+            for path, expected in (
+                (paths.ai_exclude, expected_ai_exclude),
+                (paths.claude_settings, expected_claude_text),
+                (paths.vscode_settings, expected_vscode_text),
+            )
+            if _read_text_or_none(path) != expected
+        ]
         if drift_paths:
             raise AgentsPolicyError(build_check_mode_error(paths, drift_paths))
 
@@ -617,24 +254,33 @@ def sync_policy_file(
         messages.append("Done.")
         return messages
 
+    gemini_label = GeminiPaths.ai_exclude_path().as_posix()
+    had_gemini_file = paths.ai_exclude.exists()
+    _write_or_remove_text(paths.ai_exclude, expected_ai_exclude)
     if expected_ai_exclude is not None:
-        write_text_file(paths.ai_exclude, expected_ai_exclude)
-        messages.append("Synced: Gemini (.aiexclude)")
-    elif paths.ai_exclude.exists():
-        paths.ai_exclude.unlink()
-        messages.append("Removed: Gemini (.aiexclude)")
+        messages.append(f"Synced: Gemini ({gemini_label})")
+    elif had_gemini_file:
+        messages.append(f"Removed: Gemini ({gemini_label})")
 
-    sync_json_file(paths.claude_settings, updated_claude_settings)
-    if SERVICE_CLAUDE in services:
-        messages.append("Synced: Claude Code (.claude/settings.json)")
-    elif claude_settings:
-        messages.append("Cleaned: Claude Code (.claude/settings.json)")
+    claude_label = ClaudePaths.project_settings_path().as_posix()
+    claude_existing_had_content = bool(
+        claude_existing.model_dump(exclude_none=True, exclude_defaults=True)
+    )
+    updated_claude.write_or_remove(paths.claude_settings)
+    if SupportedService.CLAUDE in services:
+        messages.append(f"Synced: Claude Code ({claude_label})")
+    elif claude_existing_had_content:
+        messages.append(f"Cleaned: Claude Code ({claude_label})")
 
-    sync_json_file(paths.vscode_settings, updated_vscode_settings)
-    if SERVICE_COPILOT in services:
-        messages.append("Synced: Copilot local policy (.vscode/settings.json)")
-    elif vscode_settings:
-        messages.append("Cleaned: Copilot local policy (.vscode/settings.json)")
+    vscode_label = VscodePaths.settings_path().as_posix()
+    vscode_existing_had_content = bool(
+        vscode_existing.model_dump(exclude_none=True, exclude_defaults=True)
+    )
+    updated_vscode.write_or_remove(paths.vscode_settings)
+    if SupportedService.COPILOT in services:
+        messages.append(f"Synced: Copilot local policy ({vscode_label})")
+    elif vscode_existing_had_content:
+        messages.append(f"Cleaned: Copilot local policy ({vscode_label})")
 
     messages.append("Done.")
     return messages
@@ -642,7 +288,10 @@ def sync_policy_file(
 
 def run(arguments: list[str] | None = None) -> int:
     parser = ArgumentParser(
-        description="Sync .agents/config.json policy into agent-specific configuration files."
+        description=(
+            f"Sync {AgenticToolsPaths.config_path().as_posix()} policy into "
+            "agent-specific configuration files."
+        )
     )
     parser.add_argument(
         "-c",
@@ -650,8 +299,9 @@ def run(arguments: list[str] | None = None) -> int:
         dest="config",
         help=(
             "Path to an agents config or policy file. Defaults to the nearest "
-            ".agents/config.json with a policy section, then .agents/policy.json, "
-            "then legacy .ai-policy.json."
+            f"{AgenticToolsPaths.config_path().as_posix()} with a policy section, "
+            f"then {AgenticToolsPaths.policy_path().as_posix()}, then legacy "
+            f"{AgenticToolsPaths.legacy_policy_path().as_posix()}."
         ),
     )
     parser.add_argument(
@@ -670,7 +320,10 @@ def run(arguments: list[str] | None = None) -> int:
         policy_path = resolve_policy_path(args.config)
         if policy_path is None:
             print(
-                "No .agents/config.json policy, .agents/policy.json, or legacy .ai-policy.json found. Nothing to sync."
+                f"No {AgenticToolsPaths.config_path().as_posix()} policy, "
+                f"{AgenticToolsPaths.policy_path().as_posix()}, or legacy "
+                f"{AgenticToolsPaths.legacy_policy_path().as_posix()} found. "
+                "Nothing to sync."
             )
             return 0
 
@@ -684,15 +337,3 @@ def run(arguments: list[str] | None = None) -> int:
     except AgentsPolicyError as error:
         print(error)
         return 1
-
-
-def main(arguments: list[str] | None = None) -> int:
-    return run(arguments)
-
-
-def import_vscode_main() -> int:
-    return run(["--import-vscode"])
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

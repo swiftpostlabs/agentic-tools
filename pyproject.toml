@@ -6,7 +6,10 @@ authors = [{ name = "swiftpost", email = "swiftpostlab@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.14,<4.0"
-dependencies = []
+dependencies = [
+    "json5>=0.14.0",
+    "pydantic>=2.13.4",
+]
 
 [dependency-groups]
 dev = [
@@ -14,7 +17,6 @@ dev = [
   "pytest>=9.0",
   "black>=25.1.0",
   "pyright>=1.1.400",
-  "json5>=0.9",
   "commitizen>=4.16.0",
 ]
 
