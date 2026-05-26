@@ -20,6 +20,7 @@ Guide agents through using the Python `commitizen` package as the owner for conv
 - Designing `cz bump`, `cz changelog`, `cz check`, or project wrapper commands.
 - Debugging version drift, missing release tags, changelog ranges, or conventional-commit parsing.
 - Deciding whether Commitizen should replace custom version or changelog scripts.
+- Deciding whether a mixed Python/Node repo should keep Commitizen or move to an explicit release-intent workflow such as Changesets.
 
 ## Scope Boundaries
 
@@ -33,6 +34,8 @@ Guide agents through using the Python `commitizen` package as the owner for conv
 Prefer Commitizen when a repo already wants conventional commits and generated changelogs. Let it own the normal release-prep step instead of maintaining separate custom version writers, unless the repo needs behavior Commitizen cannot express.
 
 For Python projects using uv, prefer `version_provider = "uv"` so Commitizen updates both `project.version` in `pyproject.toml` and the matching package version in `uv.lock`. Use `version_files` for additional secondary files such as `package.json:version` or `VERSION`.
+
+For mixed Python/Node repositories, Commitizen can remain the release owner when one stable bump, one changelog, and one tag describe the whole project. Consider Changesets or another explicit-intent tool only when per-change release summaries, monorepo package-level bumps, or commit-history-independent release notes solve a real workflow problem.
 
 ## Core Configuration
 
@@ -99,6 +102,8 @@ For a Commitizen-led stable release flow:
 
 Use project tasks such as `release-prepare-preview`, `release-prepare`, and `release-publish` when the repo defines them. Prefer pushing a tag to CI over publishing from a developer machine when the registry supports trusted publishing.
 
+Commitizen should prepare the release; registry authentication should normally belong to the release workflow. For PyPI and npm, prefer trusted publishers with OIDC over stored publish tokens, and keep `id-token: write` scoped to the CI jobs that publish.
+
 ## Changelog Guidance
 
 Commitizen changelogs depend on parseable commit history and matching release tags.
@@ -117,6 +122,7 @@ Commitizen changelogs depend on parseable commit history and matching release ta
 - `--allow-no-commit` can still create a changelog entry when changelog generation is enabled. Use it deliberately, not as a default escape hatch.
 - `major_version_zero = true` keeps breaking changes in the `0.x` development line from bumping to `1.0.0`; remove it deliberately when the project is ready for stable major version semantics.
 - `--check-consistency` catches drift, but if a bump command partially changed files before failing, inspect and restore only those attempted bump changes before retrying. Do not use broad destructive git commands.
+- Commitizen-generated changelogs are only as good as the commit history. If the team routinely needs richer per-change release notes before merge, that is a reason to evaluate an explicit-intent workflow rather than adding fragile commit-message rules.
 
 ## Validation
 
@@ -125,6 +131,7 @@ Commitizen changelogs depend on parseable commit history and matching release ta
 - Every file in `version_files` contains the current version before a real bump.
 - The generated changelog uses the intended tag format and commit range.
 - Release docs or task names make clear whether Commitizen prepares the release, publishes it, or both.
+- Publishing workflows use trusted publishing or document why stored registry tokens remain necessary.
 
 ## References
 

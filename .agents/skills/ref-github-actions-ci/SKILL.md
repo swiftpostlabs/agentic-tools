@@ -18,6 +18,7 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Designing CI triggers, job graphs, or matrix coverage.
 - Choosing runner types, action pinning, or token permissions.
 - Hardening workflows that process pull requests, forks, or deployment credentials.
+- Designing release workflows that publish packages with OIDC trusted publishing, npm provenance, or npm staged publishing.
 
 ## Defaults
 
@@ -30,6 +31,8 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Prefer GitHub-hosted runners unless a self-hosted runner solves a concrete need that justifies its security and maintenance cost.
 - Prefer pinning third-party actions and reusable workflows to full commit SHAs; use version tags only when the trust and drift tradeoff is intentional.
 - Prefer first-party setup actions with built-in dependency caching when available, and use `actions/cache` only with explicit keys and paths.
+- For release publishing, prefer registry trusted publishing through OIDC over stored publish tokens, and grant `id-token: write` only to the publish job.
+- For npm release jobs, keep provenance enabled when supported and consider `npm stage publish` when a maintainer approval step is required before the package goes live.
 
 ## Task Framing
 
@@ -38,6 +41,7 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 | Define workflow triggers | Choose `on`, branch filters, path filters, schedules, and manual inputs deliberately. | CI becomes noisy or fragile when workflows fire on every event without boundaries. | When adding or reviewing a workflow entry point. | The workflow runs when the repo needs it and stays quiet otherwise. |
 | Design the job graph | Split jobs, matrices, `needs`, and outputs around real failure and reuse boundaries. | CI is easier to debug when each job owns one concern and reports failures clearly. | When a workflow mixes validation, packaging, and deployment behavior. | Workflow runs stay understandable and parallelism is intentional. |
 | Harden workflow execution | Set token permissions, action pinning, secret flow, runner choice, and PR trust boundaries. | Most Actions incidents come from over-privileged tokens, unpinned dependencies, or untrusted PR execution. | When the workflow touches secrets, comments, deployments, or third-party actions. | The workflow can do its job without quietly expanding the attack surface. |
+| Configure package publishing | Wire release jobs to trusted publishers, provenance, staging, and environment protections. | Package publishing is a high-impact write path and should not depend on reusable long-lived secrets. | When a workflow publishes to PyPI, npm, or another package registry. | Releases use short-lived credentials and the human approval boundary is explicit. |
 
 ## Core Rules
 
@@ -66,6 +70,8 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Prefer OIDC or other short-lived credentials over long-lived cloud secrets when the platform supports it.
 - Use environment protections and required reviewers for sensitive deployment secrets.
 - Never assume secrets are available on forked pull requests or Dependabot-triggered workflow runs.
+- For trusted publisher release jobs, configure `id-token: write` only where the registry token is minted, not across the whole workflow by default.
+- Match the registry's trusted-publisher rule exactly: repository, workflow filename, environment name when used, and supported runner type all matter.
 
 ### Third-party actions and reusable workflows
 
@@ -80,6 +86,7 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Prefer `pull_request` for normal validation of contributor changes.
 - When inline shell must consume untrusted event input, pass it through environment variables rather than interpolating it directly into shell source.
 - Prefer an action or dedicated script over large inline shell when the logic touches untrusted input.
+- Treat `workflow_run` as privileged when it is used after an untrusted validation workflow; it can access secrets and write tokens even when the triggering workflow could not. Do not download or execute untrusted artifacts without validation.
 
 ### Runners and caching
 
@@ -87,6 +94,7 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Use self-hosted runners only when the hardware, network, or toolchain need is concrete and the trust boundary is controlled.
 - Avoid self-hosted runners for public-repo workflows that execute untrusted PR code.
 - Cache dependency installs intentionally and with stable keys; do not cache the whole workspace blindly.
+- For release publishing jobs, keep caching conservative and follow registry-specific requirements; npm trusted publishing and provenance require supported cloud CI and runner combinations.
 - Keep `defaults.run.shell` and `defaults.run.working-directory` explicit when they materially improve consistency.
 
 ## Gotchas
@@ -96,6 +104,8 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - `branches` and `branches-ignore` cannot be combined on the same event.
 - `queue: max` and `cancel-in-progress: true` are mutually exclusive in `concurrency`.
 - Dependabot can update GitHub Actions referenced with repository syntax such as `actions/checkout@v6` or SHA pins, but not local `./.github/...` references or `docker://` action references.
+- npm trusted publishing requires a recent npm CLI and supported Node version; staged publishing requires an even newer npm CLI and cannot stage a package that has never been published before.
+- npm trusted publishing can generate provenance automatically for supported public package/public repository publishes, but private repository and unsupported provider cases need an explicit decision.
 
 ## Validation
 
@@ -104,6 +114,8 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Token permissions and secret access are least-privileged.
 - Third-party actions are pinned and reviewed appropriately.
 - Pull request workflows do not mix untrusted code execution with write tokens or secrets.
+- Release jobs use OIDC/trusted publishing where available, with exact registry trust rules and minimal job-level permissions.
+- npm workflows state whether they publish directly, publish with provenance, or stage the package for 2FA approval.
 
 ## References
 

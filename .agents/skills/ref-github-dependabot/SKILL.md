@@ -18,6 +18,7 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - Choosing which ecosystems and directories Dependabot should monitor.
 - Reducing PR noise with schedules, grouping, cooldowns, or open PR limits.
 - Configuring updates for GitHub Actions, private registries, or multi-directory repositories.
+- Automating safe Dependabot PR handling, such as metadata-driven labels, approvals, automerge, or release-intent file generation.
 
 ## Defaults
 
@@ -29,6 +30,8 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - Use `package-ecosystem: github-actions` with `directory: "/"` when workflows depend on external actions or reusable workflows.
 - Keep private registry credentials in Dependabot registry configuration and secrets, never hard-coded in the file.
 - Use `ignore` and `allow` narrowly and document why when blocking major upgrades or noisy packages.
+- Let required CI and branch protection decide whether Dependabot PRs can merge; automation should enable auto-merge only after metadata, update type, and dependency scope match the policy.
+- If the release workflow requires explicit release-intent files, generate dependency-update changesets or release notes only through metadata-only automation that does not execute PR code.
 
 ## Task Framing
 
@@ -37,6 +40,7 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 | Define update boundaries | Choose ecosystems, directories, and target branches deliberately. | Dependabot becomes noisy or incomplete when ecosystems overlap or scan the wrong roots. | When first enabling Dependabot or expanding it to more manifests. | Every maintained dependency surface has one clear configuration owner. |
 | Tune PR volume | Set schedules, groups, cooldowns, and open-PR limits. | Good automation should reduce toil, not create an unread queue. | When Dependabot is either too noisy or too stale. | Update flow matches the team’s review capacity. |
 | Secure non-public dependencies | Configure registries, credentials, and Actions updates safely. | Private registries and workflow dependencies fail silently or dangerously when wired casually. | When the repo depends on private packages or GitHub Actions updates. | Dependabot can resolve the real dependency graph without leaking credentials. |
+| Automate PR handling | Fetch Dependabot metadata and apply labels, approvals, auto-merge, or release-intent files under tight conditions. | Dependency automation should remove routine toil without granting broad write paths to untrusted changes. | When low-risk update classes have a clear merge policy. | Dependabot PRs receive predictable handling while required checks remain authoritative. |
 
 ## Core Rules
 
@@ -76,6 +80,9 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - Use `commit-message` settings when the repo expects a consistent PR and commit style.
 - Keep labels, assignees, and milestones aligned with the review process instead of accepting whatever the defaults happen to generate.
 - Use `pull-request-branch-name.separator` only when it solves a concrete branch naming or tooling issue.
+- Use `dependabot/fetch-metadata` or the GitHub API when automation needs to distinguish direct production dependencies, development dependencies, patch updates, minor updates, or major updates.
+- Prefer enabling GitHub auto-merge for approved low-risk PR classes over force-merging directly; branch protection and required checks should remain the gate.
+- Keep auto-merge policies narrow, such as patch-only development dependencies or grouped GitHub Actions updates, until the repo has evidence that broader automation is safe.
 
 ### Private registries and restricted ecosystems
 
@@ -91,6 +98,13 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - Remember that local `./.github/...` references and `docker://` action references are not Dependabot-updateable in the same way.
 - Treat Actions updates as part of CI maintenance, not as a separate afterthought.
 
+### Dependabot release automation
+
+- If the repo uses Changesets or another explicit release-intent model, decide whether dependency updates should create user-visible release notes before adding automation.
+- For routine dependency maintenance, prefer a generic patch changeset only when the package itself should publish because dependency versions changed.
+- Use `pull_request_target` only for metadata-only operations such as labels, comments, or writing a simple release-intent file; never install dependencies or run code from the Dependabot branch in that privileged context.
+- Avoid adding a fine-grained PAT solely for Dependabot automerge unless the native `GITHUB_TOKEN`, branch protection, and auto-merge model cannot express the required workflow.
+
 ## Gotchas
 
 - Forks do not automatically enable Dependabot version updates just because the file exists; the fork owner must enable them.
@@ -98,6 +112,9 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - `groups` combine matching dependencies in the first matching group, so ordering matters.
 - `directory` and `directories` are not interchangeable; use the plural form only when the ecosystem supports it and the grouping is intentional.
 - Dependabot can update GitHub Actions referenced by repository syntax, but not arbitrary local action paths or `docker://` references.
+- Dependabot PR workflows are constrained like forked PRs: assume no ordinary Actions secrets and a limited token unless the workflow deliberately uses a trusted event.
+- `pull_request_target` runs with the base repository context. It is useful for Dependabot metadata automation, but unsafe if it checks out and runs PR-controlled code.
+- Auto-generating release-intent files for dependency updates can create noisy releases if every dev-only update publishes a package version.
 
 ## Validation
 
@@ -106,6 +123,8 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - PR volume matches review capacity through schedules, grouping, and PR limits.
 - Private registry access is explicit and credential handling stays secret-backed.
 - Workflow dependencies are covered if the repository depends on GitHub Actions.
+- Dependabot automation conditions on actor, repository, dependency metadata, update type, and dependency scope before approving or enabling auto-merge.
+- Any generated changeset or release-intent file matches the package's real release policy and does not run untrusted PR code.
 
 ## References
 
