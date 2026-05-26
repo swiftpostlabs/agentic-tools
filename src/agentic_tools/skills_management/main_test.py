@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from agentic_tools.main import main as agentic_tools_main
 import agentic_tools.skills_management.main as skills_management_main
 from agentic_tools.skills_management.main import SkillsManagementError
 from agentic_tools.skills_management.main import discover_skill_manifests
@@ -321,7 +322,7 @@ def test_main_list_prints_all_skills_from_source(
     )
     write_skill(tmp_path, "tool-beta")
 
-    exit_code = skills_management_main.main(["list", "--from", str(tmp_path)])
+    exit_code = agentic_tools_main(["skills", "list", "--from", str(tmp_path)])
     output = capsys.readouterr().out
 
     assert exit_code == 0
@@ -345,8 +346,8 @@ def test_main_link_dry_run_defaults_destination_to_current_repo(
     )
     monkeypatch.chdir(destination_repo)
 
-    exit_code = skills_management_main.main(
-        ["link", "ref-alpha", "--from", str(source_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "link", "ref-alpha", "--from", str(source_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
@@ -369,8 +370,9 @@ def test_main_link_dry_run_accepts_skills_root_source_path(
         metadata={"shareable-skills.visibility": "shareable"},
     )
 
-    exit_code = skills_management_main.main(
+    exit_code = agentic_tools_main(
         [
+            "skills",
             "link",
             "ref-alpha",
             "--from",
@@ -403,8 +405,16 @@ def test_main_link_global_dry_run_uses_global_destination(
         skills_management_main, "DEFAULT_GLOBAL_SKILLS_DIR", global_skills_dir
     )
 
-    exit_code = skills_management_main.main(
-        ["link", "ref-alpha", "--from", str(source_repo), "--global", "--dry-run"]
+    exit_code = agentic_tools_main(
+        [
+            "skills",
+            "link",
+            "ref-alpha",
+            "--from",
+            str(source_repo),
+            "--global",
+            "--dry-run",
+        ]
     )
     output = capsys.readouterr().out
 
@@ -440,8 +450,8 @@ def test_main_sync_dry_run_reads_relative_sources_from_repo_root(
         encoding="utf-8",
     )
 
-    exit_code = skills_management_main.main(
-        ["sync", "--to", str(destination_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
@@ -480,8 +490,8 @@ def test_main_sync_dry_run_reads_unified_agents_config(
         encoding="utf-8",
     )
 
-    exit_code = skills_management_main.main(
-        ["sync", "--to", str(destination_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
@@ -522,8 +532,8 @@ def test_main_sync_dry_run_falls_back_to_legacy_skills_config(
         encoding="utf-8",
     )
 
-    exit_code = skills_management_main.main(
-        ["sync", "--to", str(destination_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
@@ -565,8 +575,8 @@ def test_main_sync_dry_run_supports_package_sources(
         lambda package_name: source_repo,
     )
 
-    exit_code = skills_management_main.main(
-        ["sync", "--to", str(destination_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
@@ -589,8 +599,9 @@ def test_main_unlink_dry_run_uses_expected_source_and_destination(
         metadata={"shareable-skills.visibility": "shareable"},
     )
 
-    exit_code = skills_management_main.main(
+    exit_code = agentic_tools_main(
         [
+            "skills",
             "unlink",
             "ref-alpha",
             "--from",
@@ -635,8 +646,8 @@ def test_main_sync_reports_missing_configured_skills_by_source(
         encoding="utf-8",
     )
 
-    exit_code = skills_management_main.main(
-        ["sync", "--to", str(destination_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
@@ -685,8 +696,8 @@ def test_main_sync_dry_run_reports_dead_links_before_linking(
         ],
     )
 
-    exit_code = skills_management_main.main(
-        ["sync", "--to", str(destination_repo), "--dry-run"]
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 

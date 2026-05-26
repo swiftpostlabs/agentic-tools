@@ -1,6 +1,5 @@
 """Policy command handler used by the grouped agentic-tools CLI."""
 
-from argparse import ArgumentParser
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -286,38 +285,11 @@ def sync_policy_file(
     return messages
 
 
-def run(arguments: list[str] | None = None) -> int:
-    parser = ArgumentParser(
-        description=(
-            f"Sync {AgenticToolsPaths.config_path().as_posix()} policy into "
-            "agent-specific configuration files."
-        )
-    )
-    parser.add_argument(
-        "-c",
-        "--config",
-        dest="config",
-        help=(
-            "Path to an agents config or policy file. Defaults to the nearest "
-            f"{AgenticToolsPaths.config_path().as_posix()} with a policy section, "
-            f"then {AgenticToolsPaths.policy_path().as_posix()}, then legacy "
-            f"{AgenticToolsPaths.legacy_policy_path().as_posix()}."
-        ),
-    )
-    parser.add_argument(
-        "--import-vscode",
-        action="store_true",
-        help="Import VS Code approvals into the policy file first",
-    )
-    parser.add_argument(
-        "--check",
-        action="store_true",
-        help="Exit with an error if generated policy files are out of date",
-    )
-    args = parser.parse_args(arguments)
-
+def execute_policy_command(
+    *, config: str | None = None, import_vscode: bool = False, check: bool = False
+) -> int:
     try:
-        policy_path = resolve_policy_path(args.config)
+        policy_path = resolve_policy_path(config)
         if policy_path is None:
             print(
                 f"No {AgenticToolsPaths.config_path().as_posix()} policy, "
@@ -329,8 +301,8 @@ def run(arguments: list[str] | None = None) -> int:
 
         for message in sync_policy_file(
             policy_path,
-            import_vscode=args.import_vscode,
-            check=args.check,
+            import_vscode=import_vscode,
+            check=check,
         ):
             print(message)
         return 0

@@ -6,6 +6,7 @@ import pytest
 from agentic_tools.agents_policy.constants import Constants
 import agentic_tools.agents_policy.main as agents_policy_main
 from agentic_tools.agents_policy.main import AgentsPolicyError
+from agentic_tools.main import main as agentic_tools_main
 
 
 def write_json(path: Path, data: object) -> None:
@@ -358,10 +359,10 @@ def test_sync_policy_file_check_passes_when_outputs_are_current(tmp_path: Path) 
     assert "Checked: generated policy files are up to date." in messages
 
 
-def test_run_rejects_check_and_import_vscode_together(
+def test_policy_scope_without_subcommand_prints_help(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    exit_code = agents_policy_main.run(["--check", "--import-vscode"])
+    exit_code = agentic_tools_main(["policy"])
 
     assert exit_code == 1
-    assert "cannot be combined" in capsys.readouterr().out
+    assert "sync" in capsys.readouterr().out

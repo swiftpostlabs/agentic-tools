@@ -8,7 +8,6 @@ Canonical usage:
 
 """
 
-from argparse import ArgumentParser
 from collections.abc import Collection
 import json
 from json import JSONDecodeError
@@ -690,97 +689,6 @@ def unlink_skill_directory(
     return f"Unlinked {destination} -> {existing_target}"
 
 
-def add_source_argument(parser: ArgumentParser) -> None:
-    parser.add_argument(
-        "-f",
-        "--from",
-        dest="source",
-        help="Source repository root or exact .agents/skills directory. Defaults to the current working directory.",
-    )
-
-
-def add_target_arguments(parser: ArgumentParser) -> None:
-    parser.add_argument(
-        "-t",
-        "--to",
-        dest="destination",
-        help="Destination repository root or exact .agents/skills directory. Defaults to the current working directory.",
-    )
-    parser.add_argument(
-        "-g",
-        "--global",
-        dest="use_global",
-        action="store_true",
-        help="Use ~/.agents/skills as the destination.",
-    )
-
-
-def add_destination_arguments(parser: ArgumentParser) -> None:
-    add_source_argument(parser)
-    add_target_arguments(parser)
-
-
-def build_parser() -> ArgumentParser:
-    parser = ArgumentParser(description=__doc__)
-    subparsers = parser.add_subparsers(dest="command", required=True)
-
-    list_parser = subparsers.add_parser("list", help="List skills from a source repo.")
-    add_source_argument(list_parser)
-
-    link_parser = subparsers.add_parser("link", help="Link skills from a source repo.")
-    link_parser.add_argument("skills", nargs="+", help="Skill names to link")
-    add_destination_arguments(link_parser)
-    link_parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the link plan without creating any symlinks.",
-    )
-    link_parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Replace an existing symlink that points somewhere else.",
-    )
-
-    sync_parser = subparsers.add_parser(
-        "sync",
-        help="Link skills declared in a skills config.",
-    )
-    add_target_arguments(sync_parser)
-    sync_parser.add_argument(
-        "-c",
-        "--config",
-        dest="config",
-        help=(
-            "Path to an agents config or skills config file. Defaults to "
-            f"<destination>/{AgenticToolsPaths.config_path().as_posix()}, with "
-            f"{AgenticToolsPaths.skills_config_path().as_posix()} fallback."
-        ),
-    )
-    sync_parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the sync plan without creating any symlinks.",
-    )
-    sync_parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Replace an existing symlink that points somewhere else.",
-    )
-
-    unlink_parser = subparsers.add_parser(
-        "unlink", help="Remove linked skills from a destination repo."
-    )
-    unlink_parser.add_argument("skills", nargs="+", help="Skill names to unlink")
-    add_destination_arguments(unlink_parser)
-    unlink_parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the unlink plan without removing any symlinks.",
-    )
-
-    return parser
-
-
 def deduplicate_preserving_order(items: Sequence[str]) -> list[str]:
     seen: set[str] = set()
     ordered: list[str] = []
@@ -873,11 +781,9 @@ def cleanup_unconfigured_skill_links(
     return messages
 
 
-def validate_destination_flags(
-    parser: ArgumentParser, *, use_global: bool, destination: str | None
-) -> None:
+def validate_destination_flags(*, use_global: bool, destination: str | None) -> None:
     if use_global and destination is not None:
-        parser.error("cannot combine --global with --to")
+        raise SkillsManagementError("cannot combine --global with --to")
 
 
 def handle_list_command(source: str | None) -> int:
@@ -887,7 +793,6 @@ def handle_list_command(source: str | None) -> int:
 
 
 def handle_link_command(
-    parser: ArgumentParser,
     *,
     skills: Sequence[str],
     source: str | None,
@@ -896,7 +801,7 @@ def handle_link_command(
     dry_run: bool,
     force: bool,
 ) -> int:
-    validate_destination_flags(parser, use_global=use_global, destination=destination)
+    validate_destination_flags(use_global=use_global, destination=destination)
 
     manifests = discover_skill_manifests(resolve_path(source))
     destination_skills_dir = resolve_destination_skills_root(
@@ -921,7 +826,6 @@ def handle_link_command(
 
 
 def handle_sync_command(
-    parser: ArgumentParser,
     *,
     destination: str | None,
     use_global: bool,
@@ -929,7 +833,7 @@ def handle_sync_command(
     dry_run: bool,
     force: bool,
 ) -> int:
-    validate_destination_flags(parser, use_global=use_global, destination=destination)
+    validate_destination_flags(use_global=use_global, destination=destination)
 
     destination_path = resolve_path(destination)
     config_path = resolve_sync_config_path(
@@ -1005,7 +909,6 @@ def handle_sync_command(
 
 
 def handle_unlink_command(
-    parser: ArgumentParser,
     *,
     skills: Sequence[str],
     source: str | None,
@@ -1013,7 +916,7 @@ def handle_unlink_command(
     use_global: bool,
     dry_run: bool,
 ) -> int:
-    validate_destination_flags(parser, use_global=use_global, destination=destination)
+    validate_destination_flags(use_global=use_global, destination=destination)
 
     source_path = resolve_path(source)
     destination_skills_dir = resolve_destination_skills_root(
@@ -1033,46 +936,3 @@ def handle_unlink_command(
         )
 
     return 0
-
-
-def main(argv: Sequence[str] | None = None) -> int:
-    parser = build_parser()
-    args = parser.parse_args(argv)
-
-    try:
-        if args.command == "list":
-            return handle_list_command(args.source)
-        if args.command == "link":
-            return handle_link_command(
-                parser,
-                skills=args.skills,
-                source=args.source,
-                destination=args.destination,
-                use_global=args.use_global,
-                dry_run=args.dry_run,
-                force=args.force,
-            )
-        if args.command == "sync":
-            return handle_sync_command(
-                parser,
-                destination=args.destination,
-                use_global=args.use_global,
-                config=args.config,
-                dry_run=args.dry_run,
-                force=args.force,
-            )
-        return handle_unlink_command(
-            parser,
-            skills=args.skills,
-            source=args.source,
-            destination=args.destination,
-            use_global=args.use_global,
-            dry_run=args.dry_run,
-        )
-    except SkillsManagementError as error:
-        print(error)
-        return 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
