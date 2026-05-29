@@ -3,11 +3,11 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from agentic_tools.agents_policy.claude import apply_policy_to_claude_settings
-from agentic_tools.agents_policy.gemini import (
+from agentic_tools_old.agents_policy.claude import apply_policy_to_claude_settings
+from agentic_tools_old.agents_policy.gemini import (
     build_ai_exclude_content as build_gemini_ai_exclude_content,
 )
-from agentic_tools.agents_policy.policy import (
+from agentic_tools_old.agents_policy.policy import (
     AgentsConfig,
     AgentsPolicyError,
     AiPolicy,
@@ -15,17 +15,17 @@ from agentic_tools.agents_policy.policy import (
     VscodeSettings,
     parse_ai_policy,
 )
-from agentic_tools.agents_policy.vscode import (
+from agentic_tools_old.agents_policy.vscode import (
     apply_policy_to_vscode_settings,
     extract_policy_approval_maps,
 )
-from agentic_tools.utils.paths import (
+from agentic_tools_old.utils.paths import (
     AgenticToolsPaths,
     ClaudePaths,
     GeminiPaths,
     VscodePaths,
 )
-from agentic_tools.utils.services import SupportedService
+from agentic_tools_old.utils.services import SupportedService
 
 
 @dataclass(frozen=True)
@@ -151,9 +151,9 @@ def build_check_mode_error(paths: PolicyPaths, drift_paths: list[Path]) -> str:
     )
     return (
         f"Managed policy files are out of sync: {drift_summary}. "
-        "Run `uv run agentic-tools policy sync` to sync them. "
+        "Run `uv run python -m agentic_tools_old.main policy sync` to sync them. "
         "If you intended to keep VS Code approval edits instead, run "
-        "`uv run agentic-tools policy import-vscode`."
+        "`uv run python -m agentic_tools_old.main policy import-vscode`."
     )
 
 
@@ -175,7 +175,7 @@ def sync_policy_file(
     if import_vscode and check:
         raise AgentsPolicyError(
             "`--check` cannot be combined with `--import-vscode`. "
-            "Run `uv run agentic-tools policy import-vscode` instead."
+            "Run `uv run python -m agentic_tools_old.main policy import-vscode` instead."
         )
 
     paths = resolve_policy_paths(policy_file)

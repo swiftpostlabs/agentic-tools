@@ -13,7 +13,7 @@ from pydantic import (
     field_validator,
 )
 
-from agentic_tools.utils.services import SERVICE_ALIASES, SupportedService
+from agentic_tools_old.utils.services import SERVICE_ALIASES, SupportedService
 
 # VS Code accepts either a boolean or an object such as
 # {"approve": true, "matchCommandLine": true} per pattern.

@@ -13,6 +13,6 @@
   },
   "include": [
     "scripts/**/*.mjs",
-    "src/agentic_tools/**/*.mjs"
+    "src/agentic_tools_old/**/*.mjs"
   ]
 }

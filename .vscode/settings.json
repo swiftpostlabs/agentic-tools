@@ -34,6 +34,10 @@
     "**/*.{pem,key,pub}": false,
     "**/internal-config.yml": false
   },
+  "files.watcherExclude": {
+    "**/.venv/**": true,
+    "**/__pycache__/**": true
+  },
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit",
     "source.fixAll": "explicit"

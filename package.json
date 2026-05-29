@@ -14,10 +14,10 @@
   "files": [
     ".agents/skills",
     "scripts/agentic-tools.mjs",
-    "src/agentic_tools/main.mjs",
-    "src/agentic_tools/utils/common.mjs",
-    "src/agentic_tools/agents_policy/main.mjs",
-    "src/agentic_tools/skills_management/main.mjs",
+    "src/agentic_tools_old/main.mjs",
+    "src/agentic_tools_old/utils/common.mjs",
+    "src/agentic_tools_old/agents_policy/main.mjs",
+    "src/agentic_tools_old/skills_management/main.mjs",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"
@@ -26,7 +26,7 @@
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
     "typecheck": "tsc --project tsconfig.node.json --noEmit",
-    "lint": "node --check scripts/agentic-tools.mjs && node --check src/agentic_tools/main.mjs && node --check src/agentic_tools/utils/common.mjs && node --check src/agentic_tools/agents_policy/main.mjs && node --check src/agentic_tools/agents_policy/main.test.mjs && node --check src/agentic_tools/skills_management/main.mjs && node --check src/agentic_tools/skills_management/main.test.mjs && node --check src/agentic_tools/main.test.mjs",
+    "lint": "node --check scripts/agentic-tools.mjs && node --check src/agentic_tools_old/main.mjs && node --check src/agentic_tools_old/utils/common.mjs && node --check src/agentic_tools_old/agents_policy/main.mjs && node --check src/agentic_tools_old/agents_policy/main.test.mjs && node --check src/agentic_tools_old/skills_management/main.mjs && node --check src/agentic_tools_old/skills_management/main.test.mjs && node --check src/agentic_tools_old/main.test.mjs",
     "pack": "npm pack --dry-run"
   },
   "dependencies": {

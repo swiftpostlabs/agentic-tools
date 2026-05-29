@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from agentic_tools.main import main
+from agentic_tools_old.main import main
 
 
 def write_json(path: Path, data: object) -> None:

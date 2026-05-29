@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from agentic_tools.main import main as agentic_tools_main
-import agentic_tools.skills_management.main as skills_management_main
-from agentic_tools.skills_management.main import SkillsManagementError
-from agentic_tools.skills_management.main import discover_skill_manifests
-from agentic_tools.skills_management.main import link_skill_directory
-from agentic_tools.skills_management.main import resolve_selected_skills
+from agentic_tools_old.main import main as agentic_tools_main
+import agentic_tools_old.skills_management.main as skills_management_main
+from agentic_tools_old.skills_management.main import SkillsManagementError
+from agentic_tools_old.skills_management.main import discover_skill_manifests
+from agentic_tools_old.skills_management.main import link_skill_directory
+from agentic_tools_old.skills_management.main import resolve_selected_skills
 
 
 def write_skill(
@@ -96,7 +96,7 @@ def test_discover_skill_manifests_accepts_skills_root_path(tmp_path: Path) -> No
 def test_discover_skill_manifests_accepts_packaged_skills_root_path(
     tmp_path: Path,
 ) -> None:
-    packaged_skills_root = tmp_path / "agentic_tools" / "shareable_skills"
+    packaged_skills_root = tmp_path / "agentic_tools_old" / "shareable_skills"
     write_skill_in_root(
         packaged_skills_root,
         "ref-alpha",
@@ -112,13 +112,13 @@ def test_resolve_package_source_root_prefers_packaged_skills_root(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    package_root = tmp_path / "site-packages" / "agentic_tools"
+    package_root = tmp_path / "site-packages" / "agentic_tools_old"
     write_skill_in_root(
         package_root / "shareable_skills",
         "ref-alpha",
         metadata={"shareable-skills.visibility": "shareable"},
     )
-    spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
+    spec = ModuleSpec("agentic_tools_old", loader=None, is_package=True)
     spec.submodule_search_locations = [str(package_root)]
 
     monkeypatch.setattr(skills_management_main, "find_spec", lambda name: spec)
@@ -132,7 +132,7 @@ def test_resolve_package_source_root_prefers_repo_root_over_stale_packaged_copy(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    package_root = tmp_path / "site-packages" / "agentic_tools"
+    package_root = tmp_path / "site-packages" / "agentic_tools_old"
     write_skill_in_root(
         package_root / "shareable_skills",
         "ref-stale",
@@ -145,10 +145,10 @@ def test_resolve_package_source_root_prefers_repo_root_over_stale_packaged_copy(
         "ref-alpha",
         metadata={"shareable-skills.visibility": "shareable"},
     )
-    source_root = repo_root / "src" / "agentic_tools"
+    source_root = repo_root / "src" / "agentic_tools_old"
     source_root.mkdir(parents=True)
 
-    spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
+    spec = ModuleSpec("agentic_tools_old", loader=None, is_package=True)
     spec.submodule_search_locations = [str(package_root), str(source_root)]
 
     monkeypatch.setattr(skills_management_main, "find_spec", lambda name: spec)
@@ -165,14 +165,16 @@ def test_resolve_package_source_root_ignores_consumer_repo_above_site_packages(
     consumer_repo = tmp_path / "consumer"
     (consumer_repo / ".agents" / "skills").mkdir(parents=True)
 
-    package_root = consumer_repo / ".venv" / "Lib" / "site-packages" / "agentic_tools"
+    package_root = (
+        consumer_repo / ".venv" / "Lib" / "site-packages" / "agentic_tools_old"
+    )
     write_skill_in_root(
         package_root / "shareable_skills",
         "ref-alpha",
         metadata={"shareable-skills.visibility": "shareable"},
     )
 
-    spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
+    spec = ModuleSpec("agentic_tools_old", loader=None, is_package=True)
     spec.submodule_search_locations = [str(package_root)]
 
     monkeypatch.setattr(skills_management_main, "find_spec", lambda name: spec)

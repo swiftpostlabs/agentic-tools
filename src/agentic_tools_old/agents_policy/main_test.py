@@ -3,10 +3,10 @@ from pathlib import Path
 
 import pytest
 
-from agentic_tools.agents_policy.constants import Constants
-import agentic_tools.agents_policy.main as agents_policy_main
-from agentic_tools.agents_policy.main import AgentsPolicyError
-from agentic_tools.main import main as agentic_tools_main
+from agentic_tools_old.agents_policy.constants import Constants
+import agentic_tools_old.agents_policy.main as agents_policy_main
+from agentic_tools_old.agents_policy.main import AgentsPolicyError
+from agentic_tools_old.main import main as agentic_tools_main
 
 
 def write_json(path: Path, data: object) -> None:
@@ -169,7 +169,9 @@ def test_sync_policy_file_respects_selected_services(tmp_path: Path) -> None:
             "services": ["copilot", "claude"],
             "protectedFiles": ["*.env"],
             "excludedFiles": ["dist/"],
-            "terminalAutoApprove": {"/^uv run agentic-tools policy sync$/": True},
+            "terminalAutoApprove": {
+                "/^uv run python -m agentic_tools_old.main policy sync$/": True
+            },
             "editAutoApprove": {"**/*.py": True},
         },
     )
@@ -187,7 +189,7 @@ def test_sync_policy_file_respects_selected_services(tmp_path: Path) -> None:
 
     vscode_settings = read_json(repo_root / ".vscode" / "settings.json")
     assert vscode_settings["chat.tools.terminal.autoApprove"] == {
-        "/^uv run agentic-tools policy sync$/": True
+        "/^uv run python -m agentic_tools_old.main policy sync$/": True
     }
     assert vscode_settings["chat.tools.edits.autoApprove"] == {"**/*.py": True}
     assert vscode_settings["files.associations"] == {
@@ -315,7 +317,9 @@ def test_sync_policy_file_check_detects_drift(tmp_path: Path) -> None:
         {
             "services": ["gemini", "claude", "copilot"],
             "protectedFiles": ["*.env"],
-            "terminalAutoApprove": {"/^uv run agentic-tools policy sync$/": True},
+            "terminalAutoApprove": {
+                "/^uv run python -m agentic_tools_old.main policy sync$/": True
+            },
         },
     )
 
@@ -332,8 +336,8 @@ def test_sync_policy_file_check_detects_drift(tmp_path: Path) -> None:
     assert ".aiexclude" in message
     assert ".claude/settings.json" in message
     assert ".vscode/settings.json" in message
-    assert "uv run agentic-tools policy sync" in message
-    assert "uv run agentic-tools policy import-vscode" in message
+    assert "uv run python -m agentic_tools_old.main policy sync" in message
+    assert "uv run python -m agentic_tools_old.main policy import-vscode" in message
 
 
 def test_sync_policy_file_check_passes_when_outputs_are_current(tmp_path: Path) -> None:
@@ -344,7 +348,9 @@ def test_sync_policy_file_check_passes_when_outputs_are_current(tmp_path: Path) 
         {
             "services": ["gemini", "claude", "copilot"],
             "protectedFiles": ["*.env"],
-            "terminalAutoApprove": {"/^uv run agentic-tools policy sync$/": True},
+            "terminalAutoApprove": {
+                "/^uv run python -m agentic_tools_old.main policy sync$/": True
+            },
         },
     )
 

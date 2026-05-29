@@ -1,7 +1,7 @@
 """VS Code / GitHub Copilot policy settings transformation."""
 
-from agentic_tools.agents_policy.constants import Constants
-from agentic_tools.agents_policy.policy import (
+from agentic_tools_old.agents_policy.constants import Constants
+from agentic_tools_old.agents_policy.policy import (
     TerminalApprovalValue,
     VscodeSettings,
 )

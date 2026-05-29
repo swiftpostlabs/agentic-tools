@@ -19,7 +19,7 @@ import subprocess
 from typing import Any
 from typing import Sequence
 
-from agentic_tools.utils.paths import AgenticToolsPaths
+from agentic_tools_old.utils.paths import AgenticToolsPaths
 
 DEFAULT_GLOBAL_SKILLS_DIR = Path.home() / AgenticToolsPaths.skills_path()
 SHAREABLE_VISIBILITY = "shareable"

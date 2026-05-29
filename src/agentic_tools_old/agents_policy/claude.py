@@ -1,6 +1,6 @@
 """Claude Code policy settings transformation."""
 
-from agentic_tools.agents_policy.policy import ClaudePermissions, ClaudeSettings
+from agentic_tools_old.agents_policy.policy import ClaudePermissions, ClaudeSettings
 
 
 def _build_managed_deny_rules(protected_files: list[str]) -> list[str]:

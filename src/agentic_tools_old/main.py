@@ -1,10 +1,10 @@
 """Run the grouped agentic-tools CLI.
 
 Canonical usage:
-- `uv run agentic-tools policy sync`
-- `uv run agentic-tools policy check`
-- `uv run agentic-tools policy import-vscode`
-- `uv run agentic-tools skills sync`
+- `uv run python -m agentic_tools_old.main policy sync`
+- `uv run python -m agentic_tools_old.main policy check`
+- `uv run python -m agentic_tools_old.main policy import-vscode`
+- `uv run python -m agentic_tools_old.main skills sync`
 """
 
 from collections.abc import Sequence
@@ -16,9 +16,9 @@ from typing import Annotated, Callable
 import click
 import typer
 
-import agentic_tools.agents_policy.main as agents_policy_main
-import agentic_tools.skills_management.main as skills_management_main
-from agentic_tools.utils.paths import AgenticToolsPaths
+import agentic_tools_old.agents_policy.main as agents_policy_main
+import agentic_tools_old.skills_management.main as skills_management_main
+from agentic_tools_old.utils.paths import AgenticToolsPaths
 
 app = typer.Typer(
     add_completion=False,
