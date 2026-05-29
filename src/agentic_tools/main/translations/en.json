@@ -1,0 +1,5 @@
+{
+  "app.name": "agentic-tools",
+  "app.description": "Scaffold CLI for the next agentic-tools implementation.",
+  "skills.list.placeholder": "skills scaffold: no actions implemented yet"
+}
