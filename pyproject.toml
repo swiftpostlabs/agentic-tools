@@ -76,8 +76,17 @@ release-publish = ["release-publish-python", "release-publish-node"]
 py-lint = "python -m black --check ./src"
 lint = ["policy-check", "version-check", "py-lint"]
 lint-fix = "python -m black ./src"
+lint-focused = { help = "Check formatting for selected paths", shell = "python -m black --check ${paths}", args = [
+  { name = "paths", positional = true, required = true, multiple = true },
+] }
 typecheck = "python -m pyright ./src"
+typecheck-focused = { help = "Run Pyright for selected paths", shell = "python -m pyright ${paths}", args = [
+  { name = "paths", positional = true, required = true, multiple = true },
+] }
 test = "python -m pytest"
+test-focused = { help = "Run pytest for selected paths", shell = "python -m pytest ${paths}", args = [
+  { name = "paths", positional = true, required = true, multiple = true },
+] }
 # --- AI Secure Parameterized Tasks ---
 lint-filter = { help = "Run linter and filter output", shell = "python -m black --check ./src | grep -i -E ${filter_term}", args = [
   { name = "filter_term", positional = true, required = true },

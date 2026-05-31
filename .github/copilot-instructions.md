@@ -182,9 +182,12 @@ When working on this project:
 
 - `uv sync` — Install or refresh dependencies.
 - `uv run poe test` — Run tests.
+- `uv run poe test-focused <path> [<path> ...]` — Run tests only for the touched slice.
 - `uv run poe lint` — Check formatting.
+- `uv run poe lint-focused <path> [<path> ...]` — Check formatting only for the touched slice.
 - `uv run poe lint-fix` — Auto-format code.
 - `uv run poe typecheck` — Run Pyright strict mode.
+- `uv run poe typecheck-focused <path> [<path> ...]` — Run Pyright only for the touched slice.
 - `uv run poe lint-filter` — Run lint and filter output.
 - `uv run poe typecheck-filter` — Run type-checking and filter output.
 - `uv run agentic-tools skills list` — List skills available from the current repo or a specified source.
@@ -192,6 +195,7 @@ When working on this project:
 - `uv run agentic-tools policy import-vscode` — Import VS Code approvals into policy, then sync.
 
 Use the Poe validation tasks above as the default way to run tests, lint, and type-checking in this repo. Only call the underlying tools directly when a task needs flags or behavior that the Poe wrapper does not expose.
+For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run poe lint-focused`, and `uv run poe typecheck-focused` on the touched files or folders first, then run the full repo-wide Poe validation tasks before committing.
 
 ## Asking for Help
 
