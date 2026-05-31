@@ -13,10 +13,11 @@ type JsonValue = None | bool | int | float | str | list[JsonValue] | dict[
     str, JsonValue
 ]
 type TranslationTree = dict[str, JsonValue]
-type TranslationCatalog = dict[str, TranslationTree]
+type LocaleTag = str
+type TranslationCatalog = dict[LocaleTag, TranslationTree]
 
 INTERPOLATION_PATTERN = re.compile(r"\{\{\s*(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*\}\}")
-DEFAULT_LOCALE = "en"
+DEFAULT_LOCALE: LocaleTag = "en"
 
 
 class I18nError(Exception):
@@ -33,6 +34,20 @@ def _read_json_object(path: Path) -> dict[str, JsonValue]:
         raise I18nError(f"Translation file must contain a JSON object: {path}")
 
     return cast(dict[str, JsonValue], parsed)
+
+
+def _normalize_locale_tag(locale: LocaleTag) -> LocaleTag:
+    parts = locale.split("-")
+    normalized_parts = [parts[0].lower()]
+    for part in parts[1:]:
+        if len(part) == 4 and part.isalpha():
+            normalized_parts.append(part.title())
+        elif (len(part) == 2 and part.isalpha()) or (len(part) == 3 and part.isdigit()):
+            normalized_parts.append(part.upper())
+        else:
+            normalized_parts.append(part.lower())
+
+    return "-".join(normalized_parts)
 
 
 def _merge_translation_tree(
@@ -62,7 +77,7 @@ def _load_translation_catalog(directories: Iterable[Path]) -> TranslationCatalog
                     )
 
                 _merge_translation_tree(
-                    catalog.setdefault(locale, {}),
+                    catalog.setdefault(_normalize_locale_tag(locale), {}),
                     translations,
                 )
 
@@ -89,6 +104,22 @@ def _interpolate(text: str, values: Mapping[str, object]) -> str:
     return INTERPOLATION_PATTERN.sub(replace_match, text)
 
 
+def _locale_candidates(
+    locale: LocaleTag,
+    fallback_locale: LocaleTag,
+) -> tuple[LocaleTag, ...]:
+    normalized_locale = _normalize_locale_tag(locale)
+    normalized_fallback_locale = _normalize_locale_tag(fallback_locale)
+    candidates = [normalized_locale]
+    while "-" in candidates[-1]:
+        candidates.append(candidates[-1].rsplit("-", 1)[0])
+
+    if normalized_fallback_locale not in candidates:
+        candidates.append(normalized_fallback_locale)
+
+    return tuple(candidates)
+
+
 class I18n:
     """Translation catalog with context-local locale selection."""
 
@@ -96,24 +127,24 @@ class I18n:
         self,
         translation_directories: Iterable[Path],
         *,
-        fallback_locale: str = DEFAULT_LOCALE,
+        fallback_locale: LocaleTag = DEFAULT_LOCALE,
     ) -> None:
         self._catalog = _load_translation_catalog(translation_directories)
-        self._fallback_locale = fallback_locale
-        self._active_locale = ContextVar("i18n_locale", default=fallback_locale)
+        self._fallback_locale = _normalize_locale_tag(fallback_locale)
+        self._active_locale = ContextVar("i18n_locale", default=self._fallback_locale)
 
     @property
-    def locale(self) -> str:
+    def locale(self) -> LocaleTag:
         return self._active_locale.get()
 
-    def set_locale(self, locale: str) -> Token[str]:
-        return self._active_locale.set(locale)
+    def set_locale(self, locale: LocaleTag) -> Token[LocaleTag]:
+        return self._active_locale.set(_normalize_locale_tag(locale))
 
-    def reset_locale(self, token: Token[str]) -> None:
+    def reset_locale(self, token: Token[LocaleTag]) -> None:
         self._active_locale.reset(token)
 
     @contextmanager
-    def use_locale(self, locale: str) -> Iterator[None]:
+    def use_locale(self, locale: LocaleTag) -> Iterator[None]:
         token = self.set_locale(locale)
         try:
             yield
@@ -130,9 +161,9 @@ class I18n:
         return _interpolate(translated, values)
 
     def _find_translation(self, key: str) -> JsonValue:
-        locale = self.locale
-        translated = _lookup(self._catalog.get(locale, {}), key)
-        if translated is not None or locale == self._fallback_locale:
-            return translated
+        for locale in _locale_candidates(self.locale, self._fallback_locale):
+            translated = _lookup(self._catalog.get(locale, {}), key)
+            if translated is not None:
+                return translated
 
-        return _lookup(self._catalog.get(self._fallback_locale, {}), key)
+        return None

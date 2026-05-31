@@ -1,8 +1,8 @@
 # SwiftPost Labs / i18n
 
-A small JSON-backed translation library with context-local locale selection.
+A small JSON-backed translation library with context-local BCP 47 locale selection.
 
-This library is intentionally narrow. It loads locale-rooted JSON translation files from one or more directories, resolves dotted keys or `namespace:key` keys, interpolates `{{values}}`, and stores the active locale in Python `contextvars` so locale changes stay local to the current execution context.
+This library is intentionally narrow. It loads locale-rooted JSON translation files from one or more directories, resolves dotted keys or `namespace:key` keys, interpolates `{{values}}`, and stores the active locale tag in Python `contextvars` so locale changes stay local to the current execution context.
 
 It exists for CLI and agent-tooling code that needs predictable, typed, low ceremony translations without adopting a larger message-format ecosystem. It is not trying to be a full localization platform.
 
@@ -14,13 +14,18 @@ We do not use `python-i18n` because the project needs a tiny typed surface, expl
 
 ## Setup
 
-Place translation JSON files in one or more directories. Each file must contain a JSON object whose top-level keys are locale codes.
+Place translation JSON files in one or more directories. Each file must contain a JSON object whose top-level keys are BCP 47 language or locale tags such as `en`, `en-US`, `en-GB`, or `pt-BR`. Tags are normalized to conventional BCP 47 casing, so `en-us` and `en-US` are treated as the same tag.
 
 ```json
 {
   "en": {
     "app": {
       "name": "agentic-tools",
+      "greeting": "Hello {{name}}"
+    }
+  },
+  "en-GB": {
+    "app": {
       "greeting": "Hello {{name}}"
     }
   },
@@ -85,7 +90,7 @@ finally:
     i18n.reset_locale(token)
 ```
 
-If a key is missing in the active locale, the library checks the fallback locale. If it is still missing, `translate` returns the original key.
+If a key is missing in the active locale, the library falls back through broader BCP 47 tags before checking the configured fallback locale. For example, `en-GB` checks `en-GB`, then `en`, then the configured fallback if different. If the key is still missing, `translate` returns the original key.
 
 ## Details for Devs
 
@@ -93,7 +98,8 @@ The public library surface currently lives in [main.py](main.py):
 
 - `I18n` loads one or more translation directories and exposes locale-aware translation methods.
 - `I18nError` is raised when translation files or directories cannot be loaded safely.
-- `DEFAULT_LOCALE` is `"en"`.
+- `LocaleTag` is a `str` type alias for BCP 47 language and locale tags. It is intentionally not an enum because valid tags are open-ended.
+- `DEFAULT_LOCALE` is `"en"`, which is a valid BCP 47 language tag.
 
 Keep `src/i18n` generic. It should not import from `agentic_tools`, know about this repository's feature folders, or own application translation paths. Add application wiring in `src/agentic_tools/core/i18n` and test reusable behavior in [main_test.py](main_test.py).
 

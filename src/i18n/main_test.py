@@ -43,6 +43,51 @@ def test_translate_falls_back_to_default_locale(tmp_path: Path) -> None:
         assert i18n.translate("common.save") == "Save"
 
 
+def test_translate_falls_back_from_bcp47_variant_to_base_language(
+    tmp_path: Path,
+) -> None:
+    translations_path = tmp_path / "translations"
+    write_translations(
+        translations_path,
+        {
+            "en": {"common": {"color": "color", "save": "Save"}},
+            "en-GB": {"common": {"color": "colour"}},
+        },
+    )
+    i18n = I18n((translations_path,))
+
+    with i18n.use_locale("en-GB"):
+        assert i18n.translate("common.color") == "colour"
+        assert i18n.translate("common.save") == "Save"
+
+
+def test_translate_normalizes_bcp47_tag_case(tmp_path: Path) -> None:
+    translations_path = tmp_path / "translations"
+    write_translations(
+        translations_path,
+        {"EN-gb": {"common": {"color": "colour"}}},
+    )
+    i18n = I18n((translations_path,), fallback_locale="EN")
+
+    with i18n.use_locale("en-gb"):
+        assert i18n.locale == "en-GB"
+        assert i18n.translate("common.color") == "colour"
+
+
+def test_translate_falls_back_from_unknown_bcp47_variant_to_default_locale(
+    tmp_path: Path,
+) -> None:
+    translations_path = tmp_path / "translations"
+    write_translations(
+        translations_path,
+        {"en": {"common": {"save": "Save"}}},
+    )
+    i18n = I18n((translations_path,))
+
+    with i18n.use_locale("pt-BR"):
+        assert i18n.translate("common.save") == "Save"
+
+
 def test_translate_returns_missing_key(tmp_path: Path) -> None:
     translations_path = tmp_path / "translations"
     write_translations(translations_path, {"en": {"common": {}}})
