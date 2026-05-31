@@ -2,9 +2,11 @@
 
 import typer
 
+from agentic_tools.core.translations.main import translate
+
 app = typer.Typer(
     add_completion=False,
-    help="Placeholder skills commands for the new scaffold.",
+    help=translate("skills.description"),
     invoke_without_command=True,
 )
 
@@ -16,7 +18,7 @@ def skills_callback(ctx: typer.Context) -> None:
         raise typer.Exit(code=1)
 
 
-@app.command("list", help="Print the current placeholder state.")
+@app.command("list", help=translate("skills.list.help"))
 def list_skills() -> int:
-    typer.echo("skills scaffold: no actions implemented yet")
+    typer.echo(translate("skills.list.placeholder"))
     return 0

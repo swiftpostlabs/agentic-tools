@@ -1,0 +1,11 @@
+{
+  "en": {
+    "skills": {
+      "description": "Placeholder skills commands for the new scaffold.",
+      "list": {
+        "help": "Print the current placeholder state.",
+        "placeholder": "skills scaffold: no actions implemented yet"
+      }
+    }
+  }
+}

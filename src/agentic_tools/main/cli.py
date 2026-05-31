@@ -5,11 +5,12 @@ from collections.abc import Sequence
 import click
 import typer
 
-from agentic_tools.skills.main import app as skills_app
+from agentic_tools.features.skills.main import app as skills_app
+from agentic_tools.core.translations.main import translate
 
 app = typer.Typer(
     add_completion=False,
-    help="Scaffold CLI for the next agentic-tools implementation.",
+    help=translate("app.description"),
     invoke_without_command=True,
     no_args_is_help=False,
 )
@@ -36,7 +37,7 @@ def main(arguments: Sequence[str] | None = None) -> int:
     try:
         result = command.main(
             args=list(arguments) if arguments is not None else None,
-            prog_name="agentic-tools",
+            prog_name=translate("app.name"),
             standalone_mode=False,
         )
     except click.ClickException as error:
