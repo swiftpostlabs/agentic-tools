@@ -6,7 +6,7 @@ import click
 import typer
 
 from agentic_tools.features.skills.main import app as skills_app
-from agentic_tools.core.translations.main import translate
+from agentic_tools.core.i18n.main import translate
 
 app = typer.Typer(
     add_completion=False,

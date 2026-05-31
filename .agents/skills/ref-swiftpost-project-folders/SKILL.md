@@ -64,8 +64,8 @@ src/agentic_tools/
 
 - Keep root CLI translation lines under `src/agentic_tools/main/translations/en.json`.
 - Keep feature translation lines under `src/agentic_tools/features/<feature>/translations/en.json`.
-- Keep translation library setup under `src/agentic_tools/core/translations/main.py`.
-- Feature modules should import the small translation helper from `core/translations/main.py` instead of configuring `python-i18n` themselves.
+- Keep translation library setup under `src/agentic_tools/core/i18n/main.py`.
+- Feature modules should import the small translation helper from `core/i18n/main.py` instead of configuring third-party i18n libraries themselves.
 
 ## Review Checklist
 

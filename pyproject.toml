@@ -9,7 +9,6 @@ requires-python = ">=3.14,<4.0"
 dependencies = [
     "json5>=0.14.0",
     "pydantic>=2.13.4",
-    "python-i18n>=0.3.9",
     "typer>=0.26.1",
 ]
 
