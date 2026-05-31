@@ -62,6 +62,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-project-setup`** — Project layout, `pyproject.toml`, and tool wiring
 - Use when: locating code, understanding folder layout, or updating project/tool configuration
 
+**`ref-swiftpost-project-folders`** — Repo-specific folder layout for the reset Python package
+- Use when: adding, moving, or reviewing files under `src/agentic_tools`, deciding between `main`, `features`, `core`, `shared`, or `infrastructure`, or checking that scaffold files are in the right place
+
 **`ref-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
@@ -195,6 +198,7 @@ Use the Poe validation tasks above as the default way to run tests, lint, and ty
 - For code structure, typing, tests, or CLI/task choices: use `ref-code-conventions`.
 - For commit format, commit bodies, or reproducibility details in commit messages: use `ref-git-commits`.
 - For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-setup`.
+- For this repo's reset Python package folders under `src/agentic_tools`: use `ref-swiftpost-project-folders`.
 - For workflow and structural caution: use `ref-agents-persona`.
 - For portable coding defaults across languages and CLIs: use `ref-coding-patterns`.
 - For README structure, docs audience, and concrete documentation examples: use `ref-docs-authoring`.

@@ -25,8 +25,9 @@ Help the agent work within this project in a way that respects its structure, ty
 - Package name: `agentic_tools`
 - Source layout: `src/agentic_tools`
 - Feature-first structure:
-  - `src/agentic_tools/skills_management/`
-  - `src/agentic_tools/<feature>/`
+  - `src/agentic_tools/main/` for the root CLI entrypoint and app-level command composition.
+  - `src/agentic_tools/features/<feature>/` for product features and subcommands.
+  - `src/agentic_tools/core/<concern>/` for foundational app plumbing such as translation setup, configuration loading, logging, or focused third-party wrappers.
   - Each feature keeps its code and tests close together.
 - Tooling:
   - Hatch for packaging
@@ -53,12 +54,14 @@ Help the agent work within this project in a way that respects its structure, ty
 ## Structure and file placement
 
 - Use a **feature-first** approach:
-  - Group related code under `src/agentic_tools/<feature_name>/`.
+  - Group related feature code under `src/agentic_tools/features/<feature_name>/`.
+  - Keep root CLI composition under `src/agentic_tools/main/`.
+  - Keep app plumbing under `src/agentic_tools/core/<concern>/`.
   - If a feature is self-contained, put its unit tests in the same feature folder, e.g.:
-    - `src/agentic_tools/feature/feature.py`
-    - `src/agentic_tools/feature/feature_test.py`
+    - `src/agentic_tools/features/feature/feature.py`
+    - `src/agentic_tools/features/feature/feature_test.py`
 - Example of a feature structure
-  - `src/agentic_tools/feature/`
+  - `src/agentic_tools/features/feature/`
     - `main.py`
     - `main_test.py`
     - `types.py` (optional, may contain additional types used in the feature)
@@ -71,16 +74,19 @@ Help the agent work within this project in a way that respects its structure, ty
       - `entity_service.py`
       - `entity_service_test.py`
 
+- In this modern Python repo, do not create `__init__.py` files just to mark directories as packages; implicit namespace packages are sufficient unless a directory genuinely needs package-level code.
 - Do not create a separate top-level `tests` folder.
 - Keep module and test names descriptive and consistent.
 
 ## Additional utilities
 
-- Add shared utilities only after real reuse appears across features.
-- When they are justified, keep them under `src/agentic_tools/utils/` with purpose-based subfolders.
-- The same utility location applies to the JavaScript/JSDoc Node port: keep shared `.mjs` helpers under `src/agentic_tools/utils/` instead of adding a separate Node-only architecture folder.
+- Do not create generic `utils` or `helpers` folders in the new Python package.
+- Put foundational app plumbing and focused third-party wrappers under `src/agentic_tools/core/<concern>/`.
+- Add a `shared` folder only when real domain-agnostic contracts must be agreed on by multiple features.
+- Keep strict infrastructure adapters under `infrastructure` or `infra` only when that boundary is genuinely clearer than `core`.
+- The legacy JavaScript/JSDoc Node port remains under `src/agentic_tools_old` until it is intentionally redesigned.
 - Example:
-- `src/agentic_tools/utils/`
+- `src/agentic_tools/core/`
   - `web/`
     - `parser.py`
     - `parser_test.py`
@@ -109,9 +115,9 @@ Help the agent work within this project in a way that respects its structure, ty
 
 - When a file is meant to be run from the command line:
   - Prefer `[project.scripts]` for Python entrypoints whenever the command belongs to the installed project.
-  - For packaged application code under `src/agentic_tools`, expose a clear function such as `main()` inside a feature folder like `src/agentic_tools/<feature>/main.py` and register it in `[project.scripts]`.
+  - For packaged application code under `src/agentic_tools`, keep the installed root command in `src/agentic_tools/main/cli.py` and mount feature command groups from `src/agentic_tools/features/<feature>/main.py`.
   - For standalone maintenance or repository scripts that already live in `scripts/`, keep them there unless the user explicitly asks to promote them into `src/agentic_tools`.
-  - If the command is a user-facing feature of this repo rather than maintenance glue, put it under `src/agentic_tools/<feature>/` with collocated tests instead of leaving it in `scripts/`.
+  - If the command is a user-facing feature of this repo rather than maintenance glue, put it under `src/agentic_tools/features/<feature>/` with collocated tests instead of leaving it in `scripts/`.
   - For those standalone `scripts/` utilities, `if __name__ == "__main__":` is acceptable.
   - Ask explicitly before moving an existing script into `src/agentic_tools` or changing how the user runs it.
 - If the script is not simple Python or better modeled as a task:

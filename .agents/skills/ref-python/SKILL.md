@@ -66,6 +66,7 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Group related modules by feature or responsibility.
 - Keep tests close to the behavior they cover when the repo layout supports it.
 - Extract helper modules only when the behavior is truly shared or the file has become hard to navigate.
+- On modern Python baselines, do not create `__init__.py` files solely to make directories importable; use implicit namespace packages unless package-level code is actually needed.
 
 ### CLI and scripts
 
