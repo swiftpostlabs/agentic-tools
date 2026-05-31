@@ -94,14 +94,21 @@ If a key is missing in the active locale, the library falls back through broader
 
 ## Details for Devs
 
-The public library surface currently lives in [main.py](main.py):
+The public library surface lives in [main.py](main.py):
 
 - `I18n` loads one or more translation directories and exposes locale-aware translation methods.
 - `I18nError` is raised when translation files or directories cannot be loaded safely.
 - `LocaleTag` is a `str` type alias for BCP 47 language and locale tags. It is intentionally not an enum because valid tags are open-ended.
 - `DEFAULT_LOCALE` is `"en"`, which is a valid BCP 47 language tag.
 
-Keep `src/i18n` generic. It should not import from `agentic_tools`, know about this repository's feature folders, or own application translation paths. Add application wiring in `src/agentic_tools/core/i18n` and test reusable behavior in [main_test.py](main_test.py).
+Keep [main.py](main.py) as a dumb facade that re-exports the supported API. Put behavior in focused modules:
+
+- [locale_tags.py](locale_tags.py) normalizes BCP 47 tag casing and builds fallback candidates.
+- [catalog.py](catalog.py) loads, merges, and looks up translation catalog values.
+- [interpolation.py](interpolation.py) handles `{{name}}` placeholder replacement.
+- [translator.py](translator.py) owns the context-local `I18n` class.
+
+Keep `src/i18n` generic. It should not import from `agentic_tools`, know about this repository's feature folders, or own application translation paths. Add application wiring in `src/agentic_tools/core/i18n` and test reusable behavior next to the module that owns it.
 
 Focused validation:
 
