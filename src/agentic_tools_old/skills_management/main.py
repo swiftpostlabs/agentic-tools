@@ -340,6 +340,9 @@ def resolve_package_source_root(package_name: str) -> Path:
     underscored_name = package_name.replace("-", "_")
     if underscored_name != package_name:
         candidate_names.append(underscored_name)
+    legacy_underscored_name = f"{underscored_name}_old"
+    if legacy_underscored_name not in candidate_names:
+        candidate_names.append(legacy_underscored_name)
 
     for candidate_name in candidate_names:
         spec = find_spec(candidate_name)

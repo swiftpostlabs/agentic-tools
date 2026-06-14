@@ -128,6 +128,39 @@ def test_resolve_package_source_root_prefers_packaged_skills_root(
     assert resolved_path == package_root / "shareable_skills"
 
 
+def test_resolve_package_source_root_falls_back_to_legacy_module_name(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    legacy_package_root = tmp_path / "site-packages" / "agentic_tools_old"
+    write_skill_in_root(
+        legacy_package_root / "shareable_skills",
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "shareable"},
+    )
+
+    modern_spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
+    modern_spec.submodule_search_locations = [
+        str(tmp_path / "site-packages" / "agentic_tools")
+    ]
+
+    legacy_spec = ModuleSpec("agentic_tools_old", loader=None, is_package=True)
+    legacy_spec.submodule_search_locations = [str(legacy_package_root)]
+
+    def fake_find_spec(name: str) -> ModuleSpec | None:
+        if name == "agentic_tools":
+            return modern_spec
+        if name == "agentic_tools_old":
+            return legacy_spec
+        return None
+
+    monkeypatch.setattr(skills_management_main, "find_spec", fake_find_spec)
+
+    resolved_path = skills_management_main.resolve_package_source_root("agentic-tools")
+
+    assert resolved_path == legacy_package_root / "shareable_skills"
+
+
 def test_resolve_package_source_root_prefers_repo_root_over_stale_packaged_copy(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
