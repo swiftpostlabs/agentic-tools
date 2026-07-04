@@ -31,9 +31,9 @@ Read .agents/skills/ref-sp-agents-skills-authoring/SKILL.md before drafting the 
 
 1. Inspect the user's request and the existing skill set to avoid creating an overlapping duplicate.
 2. Ask only the missing intake questions needed to define the skill boundary, name, trigger, outputs, and shareability.
-3. Decide whether the new skill is `ref-...` or `tool-...`, then decide whether the name should carry a scope grouping such as `agents`, `js`, `app`, `project`, `github`, or a repo-specific namespace.
-4. Choose one `agentic-tools-category` value from the existing category taxonomy unless a new domain is clearly justified.
-5. Decide whether the skill is `shareable` or `repo-local`, and list any hard skill dependencies.
+3. Decide whether the new skill is `ref-...` or `tool-...`. Refs put the scope in the name (`ref-sp-<scope>-<topic>`); tools use `tool-sp-<verb>-<topic>` and carry the scope in metadata only.
+4. Choose one `scope` from the registry (`.agents/skills/ref-sp-agents-shareable-skills/references/registry.json`); open a registry issue rather than inventing an unregistered scope.
+5. Decide `visibility` (`public` / `organization` / `repo-local`), and list any hard skill dependencies.
 6. Draft the smallest useful skill package.
 7. Add support files only when they improve progressive disclosure.
 8. Validate the new skill against the repo's skill-authoring checklist.
@@ -42,11 +42,11 @@ Read .agents/skills/ref-sp-agents-skills-authoring/SKILL.md before drafting the 
 
 - Default to one `SKILL.md` file first. Add `references/`, `assets/`, or `scripts/` only when the workflow genuinely needs them.
 - Default to `ref-...` when the skill mainly informs the agent. Default to `tool-...` when the skill mainly drives an action-oriented workflow the user may invoke directly.
-- When the repo already groups sibling skills, include the scope in the name when it improves discovery and keeps the catalog coherent, such as `ref-sp-js-typescript`, `ref-sp-agents-security`, or `ref-sp-dev-repo-conventions`.
+- Follow the name grammar: `ref-sp-<scope>-<topic>` (optional `-template` suffix for app blueprints) and `tool-sp-<verb>-<topic>`, such as `ref-sp-js-typescript`, `ref-sp-agents-security`, or `ref-sp-dev-repo-conventions`.
 - Set `metadata.scope` to a registered domain scope. Use `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) for the current scope vocabulary; open a registry issue rather than inventing an unregistered scope.
 - Set `metadata.visibility`: `public` for portable knowledge (add a top-level `license`), `organization` for org-wide but process-specific skills, `repo-local` when it depends on this repo's concrete layout, policies, or wrappers.
 - Record hard dependencies in `metadata.requires` (comma-separated skill names); put soft/optional ones in `metadata.suggests`.
-- Keep hard dependencies few, especially for `shareable` skills.
+- Keep hard dependencies few, especially for exportable (`organization`/`public`) skills.
 - Keep the first version narrow. Do not solve adjacent workflows in the same skill unless they are operationally inseparable.
 - Prefer asking a short focused set of questions over dumping a large questionnaire at once.
 - Default generic examples, paths, and script names to clearly synthetic placeholders unless the skill is intentionally documenting a real repo surface.
@@ -59,10 +59,9 @@ Ask only the questions that are still unanswered after reading the user's reques
 | --- | --- | --- | --- | --- |
 | Skill goal | What repeated task or failure should this skill improve? | The skill boundary should come from a real job, not a topic label. | Always, unless the request already states the concrete job clearly. | The skill has one primary responsibility. |
 | Skill role | Is this mostly reference guidance or a user-invoked action workflow? | The answer determines whether the name should start with `ref-` or `tool-`. | When the role is not already obvious. | The skill gets the right prefix and interaction style. |
-| Name scope | Should the skill live under an existing grouping such as `agents`, `js`, `app`, `project`, or a repo-specific namespace? | Scoped names keep related skills easy to discover and reduce drift in the catalog. | When the repo already uses grouped naming or the new skill clearly belongs beside sibling skills. | The final name fits the catalog rather than reading like an orphan. |
-| Category metadata | Which `agentic-tools-category` best describes the skill's domain? | Category metadata lets the catalog group skills without encoding every grouping in the name. | When the category is not already obvious from the skill family. | The skill has one short lowercase category value. |
-| Shareability | Should this skill be `shareable` or `repo-local`, and why? | The answer determines whether the skill is meant to travel outside this repo and whether repo-specific assumptions should be explicit. | When the transferability is not already obvious. | The skill gets the right visibility metadata. |
-| Skill dependencies | What other skills are hard requirements for this skill to work correctly? | Shareable skills should keep hard dependencies few and explicit. | When the new skill relies on another skill's instructions rather than just neighboring domain knowledge. | `shareable-skills.requires` is minimal and accurate. |
+| Scope | Which registered `scope` does the skill belong to (`agents`, `js`, `py`, `db`, `dev`, ...)? | Scope drives the name (`ref-sp-<scope>-<topic>`) and catalog grouping, and is validated against the registry. | Always, since every skill carries a scope. | The skill has one registered `scope`, reflected in the name for refs. |
+| Visibility | Is the skill `public` (portable knowledge), `organization` (org-wide but process-specific), or `repo-local` (depends on this repo)? | Visibility sets export scope; `public` additionally requires a `license`. | When transferability is not already obvious. | The skill gets the right `visibility` (and a `license` if `public`). |
+| Skill dependencies | What other skills are hard requirements (`requires`) versus helpful-but-optional (`suggests`)? | Exportable skills should keep hard dependencies few and explicit. | When the new skill relies on another skill's instructions. | `requires` is minimal and accurate; extras go in `suggests`. |
 | Trigger surface | What kinds of user requests should activate this skill? | The description must match realistic intent, not internal implementation language. | When the triggering language is still vague. | The skill can be described with a specific activation sentence. |
 | Scope boundaries | What should this skill explicitly not cover? | This prevents mixed skills that sprawl into adjacent domains. | When the request could overlap with an existing skill or a neighboring workflow. | The skill has clear exclusions and fewer false positives. |
 | Support files | Will the skill need references, assets, or scripts? | The package should stay lean unless larger support files provide real value. | When the workflow looks long, branched, or format-sensitive. | The skill package has only the files it actually needs. |
@@ -72,7 +71,7 @@ Ask only the questions that are still unanswered after reading the user's reques
 
 - Do not ask every question in the table if the user already answered most of them.
 - Do not create a `tool-...` skill just because the skill mentions commands. A reference skill can still mention commands.
-- Do not encode shareability in the skill name. Use `metadata.shareable-skills.visibility` instead.
+- Do not encode shareability or namespace in the skill name. Use `metadata.visibility` instead.
 - Do not create support files preemptively if a concise `SKILL.md` is enough.
 - Do not copy real folder or script names from another repo into generic examples just because they came along with a borrowed template.
 - If the new skill would substantially overlap with an existing one, stop and clarify whether the user wants an update instead of a new skill.
@@ -80,9 +79,9 @@ Ask only the questions that are still unanswered after reading the user's reques
 ## Validation
 
 - Review the draft against .agents/skills/ref-sp-agents-skills-authoring/references/checklist.md.
-- Confirm the `name` matches the folder and uses the correct `ref-` or `tool-` prefix plus any intended scope grouping.
-- Confirm `metadata.agentic-tools-category` is present and uses an existing domain category unless a new category was deliberately introduced.
-- Confirm any shareability metadata uses `shareable-skills.visibility` and, when needed, `shareable-skills.requires` as string values rather than YAML lists.
+- Confirm the `name` matches the folder and follows the grammar (`ref-sp-<scope>-<topic>` or `tool-sp-<verb>-<topic>`).
+- Confirm `metadata.scope` is a registered scope, `metadata.visibility` is set (with a top-level `license` when `public`), and `metadata.requires`/`suggests` are comma-separated strings (metadata is string-to-string, not YAML lists).
+- Run the sharing-spec validator: `node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts <skill-dir>` (Node >= 22).
 - Confirm cross-skill references use repo-root-relative paths for skills in this repo.
 - Confirm generic examples use synthetic folder, feature, and script names rather than real names copied from another repo.
 - Run a targeted error check on the new files before concluding.
