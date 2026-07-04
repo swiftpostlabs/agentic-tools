@@ -1,0 +1,38 @@
+[
+  {
+    "query": "Write a hook that runs prettier on every file Claude Code edits.",
+    "should_trigger": true
+  },
+  {
+    "query": "How do I block dangerous shell commands before a tool runs in Copilot CLI?",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up a PostToolUse hook that lints edited files, and make it work in both VS Code and Claude Code.",
+    "should_trigger": true
+  },
+  {
+    "query": "My Gemini CLI BeforeTool hook is not blocking anything even though I exit 1 - why?",
+    "should_trigger": true
+  },
+  {
+    "query": "Which settings.json event should I use to inject context when a session starts across different agents?",
+    "should_trigger": true
+  },
+  {
+    "query": "Add a desktop notification when the agent finishes and needs my input.",
+    "should_trigger": true
+  },
+  {
+    "query": "Create a new shareable skill for Supabase edge functions.",
+    "should_trigger": false
+  },
+  {
+    "query": "Refactor this React component to use hooks instead of a class.",
+    "should_trigger": false
+  },
+  {
+    "query": "Configure a GitHub Actions workflow to run tests on pull requests.",
+    "should_trigger": false
+  }
+]

@@ -68,6 +68,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
+**`ref-agents-hooks`** — Author agent lifecycle hooks across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI
+- Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block
+
 **`ref-projects-architecture`** — Portable architecture guidance for feature folders and code boundaries
 - Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
 
@@ -208,6 +211,7 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 - For README structure, docs audience, and concrete documentation examples: use `ref-docs-authoring`.
 - For generic architecture and feature-boundary decisions: use `ref-projects-architecture`.
 - For security policy config and generated restriction files: use `ref-agents-security`.
+- For authoring agent lifecycle hooks (command hooks, event choice, portability across platforms): use `ref-agents-hooks`.
 - For local `.agents/tasks/` conventions and task-file structure: use `ref-agents-local-tasks`.
 - For working through the local backlog under `.agents/tasks/TODO.md`: use `tool-handle-agents-local-tasks`.
 - For this repo's `agents-policy` feature, `.agents/config.json` policy section, and generated vendor outputs: use `ref-swiftpost-agents-policy`.
