@@ -28,7 +28,7 @@ Last verified: 2026-05-21
 
 Decision:
 
-- When one skill needs to reference a different skill in this repository, use a repo-root-relative path such as `.agents/skills/ref-sp-py-code-conventions/SKILL.md`.
+- When one skill needs to reference a different skill in this repository, use a repo-root-relative path such as `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md`.
 - Use absolute filesystem paths only when the target is outside the current repository or when the client cannot resolve repo-root-relative paths reliably.
 
 Reason:

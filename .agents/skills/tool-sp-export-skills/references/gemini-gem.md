@@ -49,7 +49,7 @@ Only add these when the Gemini Gem is explicitly for this repository:
 
 - `ref-sp-agents-skills-management`
 - `ref-sp-agents-policy`
-- `ref-sp-dev-project-setup`
+- `ref-sp-dev-repo-conventions`
 - `tool-sp-export-skills`
 
 ## Custom bundle questions

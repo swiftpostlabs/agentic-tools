@@ -116,7 +116,7 @@
     "ref-agents-security": "ref-sp-agents-security",
     "ref-app-react-next": "ref-sp-js-next-template",
     "ref-app-web-standalone": "ref-sp-js-web-standalone-template",
-    "ref-code-conventions": "ref-sp-py-code-conventions",
+    "ref-code-conventions": "ref-sp-dev-repo-conventions",
     "ref-coding-patterns": "ref-sp-dev-coding-patterns",
     "ref-db-design-methodology": "ref-sp-db-design-methodology",
     "ref-db-distributed": "ref-sp-db-distributed",
@@ -138,14 +138,14 @@
     "ref-js-typescript": "ref-sp-js-typescript",
     "ref-js-userscript": "ref-sp-js-userscript",
     "ref-projects-architecture": "ref-sp-dev-projects-architecture",
-    "ref-project-setup": "ref-sp-dev-project-setup",
+    "ref-project-setup": "ref-sp-dev-repo-conventions",
     "ref-py-commitizen": "ref-sp-py-commitizen",
     "ref-python": "ref-sp-py-python",
     "ref-shareable-skills": "ref-sp-agents-shareable-skills",
     "ref-skills-authoring": "ref-sp-agents-skills-authoring",
     "ref-supabase": "ref-sp-baas-supabase",
     "ref-swiftpost-agents-policy": "ref-sp-agents-policy",
-    "ref-swiftpost-project-folders": "ref-sp-dev-project-folders",
+    "ref-swiftpost-project-folders": "ref-sp-dev-repo-conventions",
     "ref-swiftpost-skills-management": "ref-sp-agents-skills-management",
     "tool-adopt-these-skills": "tool-sp-adopt-these-skills",
     "tool-commit": "tool-sp-commit",
@@ -157,6 +157,9 @@
     "tool-make-skill-shareable": "tool-sp-make-skill-shareable",
     "ref-sp-platform-supabase": "ref-sp-baas-supabase",
     "ref-sp-js-react-next": "ref-sp-js-next-template",
-    "ref-sp-js-web-standalone": "ref-sp-js-web-standalone-template"
+    "ref-sp-js-web-standalone": "ref-sp-js-web-standalone-template",
+    "ref-sp-py-code-conventions": "ref-sp-dev-repo-conventions",
+    "ref-sp-dev-project-setup": "ref-sp-dev-repo-conventions",
+    "ref-sp-dev-project-folders": "ref-sp-dev-repo-conventions"
   }
 }

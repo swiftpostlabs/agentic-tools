@@ -15,7 +15,7 @@ Use this checklist after reorganizing instructions or skills.
 
 Typical moves from this repo:
 
-- Dependency preferences belong in `ref-sp-py-code-conventions`, not in `copilot-instructions.md`.
+- Dependency preferences belong in `ref-sp-dev-repo-conventions`, not in `copilot-instructions.md`.
 - "Ask for clarification rather than making assumptions" belongs in `copilot-instructions.md` because it applies broadly.
 - Agent guardrail behavior belongs in `ref-sp-agents-security` plus the top-level restricted-file policy summary.
 - Copied examples must use this repo's real commands and libraries instead of inherited ones from another project.

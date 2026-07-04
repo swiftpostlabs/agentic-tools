@@ -61,8 +61,8 @@ Use this matrix as the compact default recommendation after the mode is known.
 | Mode | Default recommendation |
 |------|------------------------|
 | Existing repo already set up | `ref-sp-agents-skills-authoring`, `tool-sp-maintain-skills`, selective `ref-sp-agents-security`, then only the domain skills that match the existing stack |
-| New Python script/tool repo | `ref-sp-agents-skills-authoring`, adapted `ref-sp-py-code-conventions`, `ref-sp-dev-project-setup`, optional `ref-sp-agents-security` |
-| New Python application repo | recommend this repo as starter, then adapt `ref-sp-agents-persona`, `ref-sp-py-code-conventions`, `ref-sp-dev-project-setup`, `ref-sp-agents-security`, and `ref-sp-agents-local-tasks` as needed |
+| New Python script/tool repo | `ref-sp-agents-skills-authoring`, adapted `ref-sp-dev-repo-conventions`, `ref-sp-dev-repo-conventions`, optional `ref-sp-agents-security` |
+| New Python application repo | recommend this repo as starter, then adapt `ref-sp-agents-persona`, `ref-sp-dev-repo-conventions`, `ref-sp-dev-repo-conventions`, `ref-sp-agents-security`, and `ref-sp-agents-local-tasks` as needed |
 | Security-policy-only adoption | `ref-sp-agents-security`, the sync script, policy file, generated outputs, and provider-routing docs |
 | Other or unclear | ask first; do not recommend a full transplant until the project type is explicit |
 
@@ -71,12 +71,12 @@ Use this matrix as the compact default recommendation after the mode is known.
 Adopt these first unless the target repo has a strong reason not to:
 
 - `ref-sp-agents-persona` — shared workflow expectations, validation discipline, and structural caution.
-- `ref-sp-py-code-conventions` — code quality, testing, and tool usage guidance. Rewrite the project-specific structure examples for the target repo.
+- `ref-sp-dev-repo-conventions` — code quality, testing, and tool usage guidance. Rewrite the project-specific structure examples for the target repo.
 - `ref-sp-agents-security` — policy model, protected or excluded files, sync workflow, and multi-client enforcement limits.
 
 Adopt these when they match the target repo's needs:
 
-- `ref-sp-dev-project-setup` — useful when the target repo also wants centralized `pyproject.toml` guidance and folder layout rules.
+- `ref-sp-dev-repo-conventions` — useful when the target repo also wants centralized `pyproject.toml` guidance and folder layout rules.
 - `ref-sp-agents-skills-authoring` — useful when the target repo expects to keep evolving its own skills.
 - `tool-sp-maintain-skills` — useful once the target repo has enough skills or instruction files that maintenance and consolidation become ongoing concerns.
 - `ref-sp-agents-local-tasks` — useful when the target repo wants structured local task tracking for multi-step work with `.agents/tasks/` plus `.agents/playground/` as the default local workspace pair.
@@ -108,7 +108,7 @@ If the target repo does not use Python or `uv`, adapt the sync invocation to its
    - Do not assume Python, `uv`, or `pyproject.toml` unless the target repo already uses them or explicitly wants them.
    - Identify whether the situation is an existing repo retrofit, a new Python repo, or a security-policy-only adoption case.
 2. Copy the essential skill folders.
-   - Start with `ref-sp-agents-skills-authoring`, then `ref-sp-agents-persona`, `ref-sp-py-code-conventions`, and `ref-sp-agents-security` as needed.
+   - Start with `ref-sp-agents-skills-authoring`, then `ref-sp-agents-persona`, `ref-sp-dev-repo-conventions`, and `ref-sp-agents-security` as needed.
    - Keep each skill in its own folder under `.agents/skills/` with a `SKILL.md` file.
    - If copying the top-level instructions, copy the source `## Personality` section verbatim before adapting the rest of the document.
 3. Rewrite project-specific guidance.
@@ -133,7 +133,7 @@ Start with the skills that are most transferable across projects:
 - `ref-sp-agents-skills-authoring` for how skills should be structured and maintained.
 - `tool-sp-maintain-skills` for keeping top-level instructions slim, routing clean, and skill guidance in the right owner.
 - `ref-sp-agents-persona` for workflow expectations that are still valid in the target repo.
-- `ref-sp-py-code-conventions` and `ref-sp-dev-project-setup` only when the target repo is close enough to adapt them quickly.
+- `ref-sp-dev-repo-conventions` and `ref-sp-dev-repo-conventions` only when the target repo is close enough to adapt them quickly.
 - `ref-sp-agents-local-tasks` if the target repo wants task tracking in `.agents/tasks/` with `.agents/playground/` as the matching scratch space.
 
 Do not copy repo-specific skills unchanged into another repo. Treat them as examples of how to author project-specific skills, not as generic guidance.

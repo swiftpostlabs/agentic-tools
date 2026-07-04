@@ -28,7 +28,7 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Use this skill for portable Python structure, typing, CLI, and testing guidance.
 - Use `.agents/skills/ref-sp-dev-coding-patterns/SKILL.md` for language-agnostic naming, comment, and CLI ergonomics defaults.
 - Use `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md` for shared-utility thresholds and product-versus-maintenance boundaries.
-- Use repo-local skills such as `.agents/skills/ref-sp-dev-project-setup/SKILL.md` or `.agents/skills/ref-sp-py-code-conventions/SKILL.md` when the question is about this repository's exact package names, top-level folders, or validation commands.
+- Use repo-local skills such as `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` or `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` when the question is about this repository's exact package names, top-level folders, or validation commands.
 
 ## Defaults
 

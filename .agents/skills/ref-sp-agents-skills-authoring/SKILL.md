@@ -122,7 +122,7 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Open format:** Skills should remain compatible with the Agent Skills format rather than depending on one client's private conventions.
 - **Supporting files are allowed:** Put long checklists, detailed examples, templates, or helper scripts in subfolders instead of cramming everything into `SKILL.md`.
 - **Use relative paths only within the same skill:** Link this skill's own resources from `SKILL.md` with `./references/...`, `./scripts/...`, `./assets/...`, or `./evals/...` paths.
-- **Use repo-root-relative paths for other skills in the same repo:** If one skill must point to another skill's `SKILL.md` or files in this repository, use an explicit repo-root-relative path such as `.agents/skills/ref-sp-py-code-conventions/SKILL.md` so clones, exports, and local folder renames do not break the reference.
+- **Use repo-root-relative paths for other skills in the same repo:** If one skill must point to another skill's `SKILL.md` or files in this repository, use an explicit repo-root-relative path such as `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` so clones, exports, and local folder renames do not break the reference.
 - **Reserve absolute paths for outside-the-repo targets:** Use absolute filesystem paths only when the target is genuinely outside the current repository or when the client cannot resolve repo-root-relative paths reliably.
 - **Keep loading progressive:** Keep `SKILL.md` concise and move large supporting material into subfiles. Prefer one-level-deep references from `SKILL.md` and tell the agent when to load each file.
 - **One responsibility per skill.** A skill about code conventions should not also cover deployment.

@@ -53,17 +53,11 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-sp-agents-persona`** — Agent persona and workflow expectations
 - Use when: starting tasks, planning commits, preserving structure, or understanding communication expectations
 
-**`ref-sp-py-code-conventions`** — Python code structure and quality standards
-- Use when: creating features, writing tests, adjusting project config, or working with source code
+**`ref-sp-dev-repo-conventions`** — This repo's Python layout, `pyproject.toml` wiring, tooling, typing, and folder placement
+- Use when: creating or moving features, tests, or CLI entrypoints, deciding which folder a file belongs in, or adjusting `pyproject.toml`, Poe tasks, or tool config
 
 **`ref-sp-dev-git-commits`** — Commit grouping and commit message guidance
 - Use when: deciding how changes should be committed, writing commit titles or bodies, or documenting automated commands in commit messages
-
-**`ref-sp-dev-project-setup`** — Project layout, `pyproject.toml`, and tool wiring
-- Use when: locating code, understanding folder layout, or updating project/tool configuration
-
-**`ref-sp-dev-project-folders`** — Repo-specific folder layout for the reset Python package
-- Use when: adding, moving, or reviewing files under `src/agentic_tools`, deciding between `main`, `features`, `core`, `shared`, or `infrastructure`, or checking that scaffold files are in the right place
 
 **`ref-sp-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
@@ -198,10 +192,8 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 
 ## Asking for Help
 
-- For code structure, typing, tests, or CLI/task choices: use `ref-sp-py-code-conventions`.
+- For this repo's Python layout, `pyproject.toml` wiring, tooling, typing, tests, or folder placement: use `ref-sp-dev-repo-conventions`.
 - For commit format, commit bodies, or reproducibility details in commit messages: use `ref-sp-dev-git-commits`.
-- For repo layout, tool wiring, or `pyproject.toml`: use `ref-sp-dev-project-setup`.
-- For this repo's reset Python package folders under `src/agentic_tools`: use `ref-sp-dev-project-folders`.
 - For workflow and structural caution: use `ref-sp-agents-persona`.
 - For portable coding defaults across languages and CLIs: use `ref-sp-dev-coding-patterns`.
 - For README structure, docs audience, and concrete documentation examples: use `ref-sp-dev-docs-authoring`.

@@ -43,7 +43,7 @@ Good boundaries:
 
 - `code-review` for security and correctness review patterns.
 - `pdf-processing` for extracting text, filling forms, and validating output.
-- `ref-sp-dev-project-setup` for repo layout and tool wiring.
+- `ref-sp-dev-repo-conventions` for repo layout and tool wiring.
 
 Bad boundaries:
 
