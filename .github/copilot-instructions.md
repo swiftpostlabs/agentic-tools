@@ -116,24 +116,20 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-sp-py-python`** — Portable Python guidance for typed code, scripts, and tests
 - Use when: writing or refactoring Python modules, designing Python CLIs, or deciding typing and testing patterns
 
-**`ref-sp-js-web-standalone`** — App-level guidance for standalone HTML, CSS, and JavaScript tools
+**`ref-sp-js-web-standalone-template`** — App-level guidance for standalone HTML, CSS, and JavaScript tools
 - Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries
 
-**`ref-sp-js-react-next`** — App-level guidance for full React and Next.js apps
+**`ref-sp-js-next-template`** — App-level guidance for full React and Next.js apps
 - Use when: scaffolding or reviewing a whole React/Next app, choosing the baseline stack and package manager, or deciding app-level structure
 
 **`ref-sp-agents-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
 
-**`ref-sp-platform-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
+**`ref-sp-baas-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
 - Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
 **`ref-sp-agents-policy`** — Repo-specific agents-policy guidance
 - Use when: working on `src/agentic_tools/agents_policy`, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
-
-**`ref-sp-agents-categories`** — Repo-specific skill category metadata guidance
-- Use when: assigning `agentic-tools-category` metadata, reviewing category drift, or deciding whether a new skill category is justified in this repo
-
 **`ref-sp-agents-skills-management`** — Repo-specific skills-management CLI guidance
 - Use when: working on `src/agentic_tools/skills_management`, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
 
@@ -215,7 +211,7 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 - For local `.agents/tasks/` conventions and task-file structure: use `ref-sp-agents-local-tasks`.
 - For working through the local backlog under `.agents/tasks/TODO.md`: use `tool-sp-handle-agents-local-tasks`.
 - For this repo's `agents-policy` feature, `.agents/config.json` policy section, and generated vendor outputs: use `ref-sp-agents-policy`.
-- For this repo's skill category metadata and `agentic-tools-category` taxonomy: use `ref-sp-agents-categories`.
+- For skill scope metadata and the scopes registry: use `ref-sp-agents-shareable-skills`.
 - For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-sp-agents-instructions-authoring`.
 - For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-sp-dev-github-actions-ci`.
 - For Dependabot config, schedules, grouping, and GitHub Actions dependency updates: use `ref-sp-dev-github-dependabot`.
@@ -227,11 +223,11 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 - For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-sp-js-react`.
 - For Next.js App Router structure, rendering boundaries, and Next-specific integrations: use `ref-sp-js-next`.
 - For TypeScript typing and boundary decisions: use `ref-sp-js-typescript`.
-- For standalone browser apps and no-build web tools: use `ref-sp-js-web-standalone`.
-- For whole React and Next.js app planning and app-level stack choices: use `ref-sp-js-react-next`.
+- For standalone browser apps and no-build web tools: use `ref-sp-js-web-standalone-template`.
+- For whole React and Next.js app planning and app-level stack choices: use `ref-sp-js-next-template`.
 - For browser userscripts: use `ref-sp-js-userscript`.
 - For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-sp-js-deno`.
-- For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-platform-supabase`.
+- For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-baas-supabase`.
 - For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
 - For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-sp-export-skills`.

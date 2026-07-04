@@ -33,10 +33,11 @@ string-encoded; conceptual lists are comma-delimited strings.
 
 ## 2. Name grammar
 
-- **Reference skills:** `ref-<owner-prefix>-<scope>-[template-]<topic>`
+- **Reference skills:** `ref-<owner-prefix>-<scope>-<topic>[-template]`
 - **Tool skills:** `tool-<owner-prefix>-<verb>[-<topic>]` — the first topic segment is an **action verb**.
-- **Reserved token** `template` is an optional kind-segment placed **immediately after scope**
-  (e.g. `ref-sp-dev-template-react-next`).
+- **Reserved token** `template` is an optional kind-**suffix** on the topic, marking an app-level
+  scaffold/blueprint skill — guidance that scaffolds or prescribes a whole app or module, whether
+  by describing the structure or carrying scaffold files (e.g. `ref-sp-js-next-template`).
 
 The first segment is a **type axis** describing what the agent *does* with the skill:
 `ref-` = read for knowledge, `tool-` = run to perform an action.
@@ -53,9 +54,9 @@ The first segment is a **type axis** describing what the agent *does* with the s
 - Do **not** encode shareability, repo-namespace, or vendoring status in the name; those live in
   metadata. *Why:* the name is the discovery/trigger surface and must stay focused on what the
   skill does.
-- `template` is a **name segment, not a `template-` type prefix**. Choose one mechanism, never
-  both. *Why:* it still `ref` (you read it to then scaffold); a segment gives visible grouping
-  (`ref-sp-dev-template-*` sort together) without proliferating type prefixes.
+- `template` is a **topic suffix, not a `template-` type prefix**. Choose one mechanism, never
+  both. *Why:* it stays `ref` (you read it to then scaffold); a suffix groups the app-level variant
+  next to its topic (`ref-sp-js-next` vs `ref-sp-js-next-template`) without proliferating type prefixes.
 
 **Why the owner prefix is on every skill:** collision avoidance. Because the prefix is baked in
 *at creation*, a skill vendored into a foreign repo cannot collide with that repo's

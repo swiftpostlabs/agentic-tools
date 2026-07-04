@@ -30,7 +30,7 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 - Use `.agents/skills/ref-sp-js-typescript/SKILL.md` when the main question is about strict type-system design rather than JSDoc-backed JavaScript.
 - Use `.agents/skills/ref-sp-dev-coding-patterns/SKILL.md` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
 - Use `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md` for portable feature-boundary or shared-utility decisions.
-- Use `.agents/skills/ref-sp-js-userscript/SKILL.md` or `.agents/skills/ref-sp-js-web-standalone/SKILL.md` when the JavaScript lives inside a userscript or standalone browser app and those constraints dominate the design.
+- Use `.agents/skills/ref-sp-js-userscript/SKILL.md` or `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the JavaScript lives inside a userscript or standalone browser app and those constraints dominate the design.
 
 ## Defaults
 

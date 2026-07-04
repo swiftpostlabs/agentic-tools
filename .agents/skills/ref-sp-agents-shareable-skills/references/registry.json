@@ -14,10 +14,6 @@
       "description": "Database concepts: modeling, normalization, transactions, query design. Language- and product-agnostic.",
       "belongsWhen": "Is this a general database concept, rather than a specific product or a language?"
     },
-    "platform": {
-      "description": "Managed third-party products you build on: Supabase, Firebase, AWS, GCP, Azure, Vercel, Netlify.",
-      "belongsWhen": "Is this about a specific managed platform/service, rather than a general concept, an activity, or a language?"
-    },
     "ops": {
       "description": "Operational activities: CI, GitHub Actions, deploy, release automation, monitoring.",
       "belongsWhen": "Is this an operational activity you perform, rather than a product or a concept?"
@@ -69,6 +65,10 @@
     "java": {
       "description": "The Java language and toolchain.",
       "belongsWhen": "Is this mainly about Java itself?"
+    },
+    "baas": {
+      "description": "Backend-as-a-Service platforms you build on: Supabase, Firebase, Appwrite.",
+      "belongsWhen": "Is this about a specific managed backend platform, rather than a database concept, an operational activity, or a language?"
     }
   },
   "reservedTokens": [
@@ -105,7 +105,8 @@
     "code": "dev",
     "project": "dev",
     "projects": "dev",
-    "supabase": "platform"
+    "supabase": "baas",
+    "platform": "baas"
   },
   "aliases": {
     "ref-agents-hooks": "ref-sp-agents-hooks",
@@ -113,8 +114,8 @@
     "ref-agents-local-tasks": "ref-sp-agents-local-tasks",
     "ref-agents-persona": "ref-sp-agents-persona",
     "ref-agents-security": "ref-sp-agents-security",
-    "ref-app-react-next": "ref-sp-js-react-next",
-    "ref-app-web-standalone": "ref-sp-js-web-standalone",
+    "ref-app-react-next": "ref-sp-js-next-template",
+    "ref-app-web-standalone": "ref-sp-js-web-standalone-template",
     "ref-code-conventions": "ref-sp-py-code-conventions",
     "ref-coding-patterns": "ref-sp-dev-coding-patterns",
     "ref-db-design-methodology": "ref-sp-db-design-methodology",
@@ -142,8 +143,7 @@
     "ref-python": "ref-sp-py-python",
     "ref-shareable-skills": "ref-sp-agents-shareable-skills",
     "ref-skills-authoring": "ref-sp-agents-skills-authoring",
-    "ref-supabase": "ref-sp-platform-supabase",
-    "ref-swiftpost-agents-categories": "ref-sp-agents-categories",
+    "ref-supabase": "ref-sp-baas-supabase",
     "ref-swiftpost-agents-policy": "ref-sp-agents-policy",
     "ref-swiftpost-project-folders": "ref-sp-dev-project-folders",
     "ref-swiftpost-skills-management": "ref-sp-agents-skills-management",
@@ -154,6 +154,9 @@
     "tool-handle-agents-local-tasks": "tool-sp-handle-agents-local-tasks",
     "tool-maintain-agents-instructions": "tool-sp-maintain-agents-instructions",
     "tool-maintain-skills": "tool-sp-maintain-skills",
-    "tool-make-skill-shareable": "tool-sp-make-skill-shareable"
+    "tool-make-skill-shareable": "tool-sp-make-skill-shareable",
+    "ref-sp-platform-supabase": "ref-sp-baas-supabase",
+    "ref-sp-js-react-next": "ref-sp-js-next-template",
+    "ref-sp-js-web-standalone": "ref-sp-js-web-standalone-template"
   }
 }

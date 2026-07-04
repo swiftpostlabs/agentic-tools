@@ -16,5 +16,5 @@
 
 ## Escalation rule
 
-- If the requirement is a browser-only tool that can stay no-build, use `.agents/skills/ref-sp-js-web-standalone/SKILL.md` instead of creating a full app.
+- If the requirement is a browser-only tool that can stay no-build, use `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` instead of creating a full app.
 - If the requirement already needs routing, app-wide navigation, SSR or RSC boundaries, or full app deployment concerns, the full React and Next baseline is justified.

@@ -43,9 +43,9 @@ Read .agents/skills/ref-sp-agents-skills-authoring/SKILL.md before drafting the 
 - Default to one `SKILL.md` file first. Add `references/`, `assets/`, or `scripts/` only when the workflow genuinely needs them.
 - Default to `ref-...` when the skill mainly informs the agent. Default to `tool-...` when the skill mainly drives an action-oriented workflow the user may invoke directly.
 - When the repo already groups sibling skills, include the scope in the name when it improves discovery and keeps the catalog coherent, such as `ref-sp-js-typescript`, `ref-sp-agents-security`, or `ref-sp-dev-project-setup`.
-- Set `metadata.agentic-tools-category` to the skill's domain category. Use `.agents/skills/ref-sp-agents-categories/SKILL.md` for this repo's current taxonomy and do not create organization categories merely because a skill name is repo-specific.
-- Default to `shareable` when the skill can move to another repo with only light adaptation. Default to `repo-local` when it depends on this repo's concrete layout, policies, or wrappers.
-- If the skill has hard dependencies on other skills, record them in `metadata.shareable-skills.requires` as a space-separated list of skill names.
+- Set `metadata.scope` to a registered domain scope. Use `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) for the current scope vocabulary; open a registry issue rather than inventing an unregistered scope.
+- Set `metadata.visibility`: `public` for portable knowledge (add a top-level `license`), `organization` for org-wide but process-specific skills, `repo-local` when it depends on this repo's concrete layout, policies, or wrappers.
+- Record hard dependencies in `metadata.requires` (comma-separated skill names); put soft/optional ones in `metadata.suggests`.
 - Keep hard dependencies few, especially for `shareable` skills.
 - Keep the first version narrow. Do not solve adjacent workflows in the same skill unless they are operationally inseparable.
 - Prefer asking a short focused set of questions over dumping a large questionnaire at once.

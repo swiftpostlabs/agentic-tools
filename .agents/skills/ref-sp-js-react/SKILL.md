@@ -29,8 +29,8 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Use `.agents/skills/ref-sp-js-next/SKILL.md` when the main question is about App Router, routing, client or server component boundaries, metadata, or other Next.js-specific integrations.
 - Use `.agents/skills/ref-sp-js-typescript/SKILL.md` when the main question is about strict type modeling, runtime trust boundaries, or `tsconfig` design rather than React behavior.
 - Use `.agents/skills/ref-sp-js-javascript/SKILL.md` when the code intentionally stays plain JavaScript with JSDoc and the main question is not React-specific.
-- Use `.agents/skills/ref-sp-js-react-next/SKILL.md` when the user is planning or reviewing a whole React and Next app rather than one React feature.
-- Use `.agents/skills/ref-sp-js-web-standalone/SKILL.md` for no-build browser apps that should stay framework-free by default.
+- Use `.agents/skills/ref-sp-js-next-template/SKILL.md` when the user is planning or reviewing a whole React and Next app rather than one React feature.
+- Use `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` for no-build browser apps that should stay framework-free by default.
 
 ## Defaults
 

@@ -23,8 +23,8 @@ Use these as starting points, not as mandatory all-or-nothing bundles.
 - `ref-sp-js-typescript`
 - `ref-sp-js-react`
 - `ref-sp-js-next`
-- `ref-sp-js-web-standalone`
-- `ref-sp-js-react-next`
+- `ref-sp-js-web-standalone-template`
+- `ref-sp-js-next-template`
 - `ref-sp-js-userscript`
 
 ### Python and backend
@@ -32,7 +32,7 @@ Use these as starting points, not as mandatory all-or-nothing bundles.
 - `ref-sp-py-python`
 - `ref-sp-dev-coding-patterns`
 - `ref-sp-dev-projects-architecture`
-- `ref-sp-platform-supabase` when relevant
+- `ref-sp-baas-supabase` when relevant
 
 ### Repo maintenance and AI tooling
 

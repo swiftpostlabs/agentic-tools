@@ -62,9 +62,9 @@ metadata:
 
 ## Naming grammar (summary)
 
-- refs: `ref-<owner-prefix>-<scope>-[template-]<topic>`
+- refs: `ref-<owner-prefix>-<scope>-<topic>[-template]`
 - tools: `tool-<owner-prefix>-<verb>[-<topic>]` (first topic segment is an action verb)
-- `template` is a reserved kind-segment right after scope, never a `template-` type prefix.
+- `template` is a reserved topic suffix marking an app-level scaffold/blueprint, never a `template-` type prefix.
 - The name is derived from and validated against `owner-prefix` + `scope`; mismatch is a failure.
 - The owner prefix is on every skill for collision avoidance, which is what lets vendoring be a
   pure copy with no rename. Read `./references/spec.md` §2.

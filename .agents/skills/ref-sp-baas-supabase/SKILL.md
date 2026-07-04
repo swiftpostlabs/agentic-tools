@@ -1,11 +1,11 @@
 ---
-name: ref-sp-platform-supabase
+name: ref-sp-baas-supabase
 description: "Portable Supabase guidance for CLI workflows, migrations, supabase-js CRUD usage, Edge Functions, and ORM boundaries. Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase."
 license: MIT
 metadata:
   owner-prefix: "sp"
   owner: "swiftpostlab/agentic-tools"
-  scope: "platform"
+  scope: "baas"
   visibility: "public"
   tags: "supabase, backend"
 ---

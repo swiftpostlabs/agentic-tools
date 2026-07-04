@@ -1,5 +1,5 @@
 ---
-name: ref-sp-js-web-standalone
+name: ref-sp-js-web-standalone-template
 description: "App-level guidance for standalone HTML, CSS, and JavaScript tools that should run without framework or build-system overhead. Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries."
 license: MIT
 metadata:
@@ -25,7 +25,7 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 ## Scope Boundaries
 
 - Use this skill for whole browser-only apps and local web tools you control directly.
-- Use `.agents/skills/ref-sp-js-react-next/SKILL.md` when the user explicitly wants a full React and Next app rather than a no-build browser app.
+- Use `.agents/skills/ref-sp-js-next-template/SKILL.md` when the user explicitly wants a full React and Next app rather than a no-build browser app.
 - Use `.agents/skills/ref-sp-js-react/SKILL.md` or `.agents/skills/ref-sp-js-next/SKILL.md` only after the app has deliberately crossed into those frameworks.
 - Use `.agents/skills/ref-sp-js-userscript/SKILL.md` when the code runs inside a userscript manager on someone else's page.
 - Use `.agents/skills/ref-sp-js-javascript/SKILL.md` for detailed JavaScript module, JSDoc, and runtime-surface questions once the standalone app model itself is chosen.

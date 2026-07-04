@@ -12,7 +12,7 @@
 
 - Prefer `zod` only when runtime schema validation adds clear value for imported, pasted, or persisted data.
 - Prefer native `Date` and `Intl` first, and reach for `date-fns` only when date logic becomes genuinely complex.
-- Do not pull in React or a full framework just to make a browser app feel more app-like; if the problem truly crossed that boundary, move to `.agents/skills/ref-sp-js-react-next/SKILL.md`.
+- Do not pull in React or a full framework just to make a browser app feel more app-like; if the problem truly crossed that boundary, move to `.agents/skills/ref-sp-js-next-template/SKILL.md`.
 
 ## Delivery rule
 

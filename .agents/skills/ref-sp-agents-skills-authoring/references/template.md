@@ -68,9 +68,9 @@ Use this table when the skill includes important commands or operational steps:
 Adapt the template to the real repo before keeping it:
 
 - Choose `ref-...` when the skill mainly informs the agent and `tool-...` when the skill mainly drives an action-oriented workflow.
-- Add `agentic-tools-category` as one short lowercase domain category. In this repo, read `.agents/skills/ref-sp-agents-categories/SKILL.md` before inventing a new category.
+- Add `metadata.scope` as one registered domain scope. Read `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) before inventing a new scope.
 - If you use `tool-...`, make the name read like an action rather than a passive topic.
-- If the skill should be exportable, set `shareable-skills.visibility: "shareable"`. If it depends on this repo's concrete layout, policies, or wrappers, set it to `"repo-local"` instead.
+- Set `metadata.visibility` to `public` (portable, add a top-level `license`), `organization` (org-wide), or `repo-local` (depends on this repo's concrete layout, policies, or wrappers).
 - If the skill has hard dependencies on other skills, add `shareable-skills.requires` as a space-separated list of skill names.
 - If the skill is `repo-local` for a non-obvious reason, add `shareable-skills.reason` with a short explanation.
 - Replace placeholder names, commands, and file paths.
