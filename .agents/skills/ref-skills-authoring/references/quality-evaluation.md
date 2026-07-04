@@ -12,7 +12,7 @@ Use this table when reviewing why only part of the local Claude skill-creator bu
 
 | Source artifact | Decision | Reason |
 | --- | --- | --- |
-| `scripts/quick_validate.py` | Adapted as `./scripts/validate_skill.py`. | The validation idea is portable, but the implementation was rewritten to avoid a PyYAML dependency, support catalog-wide checks, respect this repo's metadata conventions, and report warnings/errors predictably. |
+| `scripts/quick_validate.py` | Adapted as `./scripts/validate-skill.mts` (TypeScript, Node >= 22). | The validation idea is portable, but the implementation was rewritten to avoid a YAML dependency, support catalog-wide checks, respect this repo's metadata conventions, and report warnings/errors predictably. Sharing-spec checks were split out to `ref-shareable-skills/scripts/validate-sharing.mts`. |
 | `scripts/aggregate_benchmark.py` | Adapted as `./scripts/aggregate_eval_results.py`. | Aggregating `grading.json` results is provider-agnostic, but the local version is simplified around generic eval workspaces and stable JSON/Markdown output. |
 | `scripts/run_eval.py`, `scripts/run_loop.py`, and `scripts/improve_description.py` | Not copied; only the trigger-eval concepts were retained. | These scripts depend on `claude -p`, `.claude/commands`, Claude stream events, Claude auth/session behavior, and description optimization against Claude's available-skills mechanism. That would violate this skill's provider-agnostic Agent Skills compatibility. |
 | `scripts/generate_report.py`, `eval-viewer/generate_review.py`, and `eval-viewer/viewer.html` | Not copied. | The report and viewer are useful for a specific generated-run workflow, but they introduce a browser/server review surface and UI assumptions that are not required for the portable skill-authoring workflow. |
@@ -117,8 +117,9 @@ Avoid piling on rigid all-caps rules when a clearer explanation of why the behav
 
 ## Helper Scripts
 
-- Run `./scripts/validate_skill.py <skill-dir>` before packaging or sharing a skill.
-- Run `./scripts/validate_skill.py .agents/skills --all` during catalog maintenance.
+- Run `node ./scripts/validate-skill.mts <skill-dir>` before packaging or sharing a skill (needs Node >= 22).
+- Run `node ./scripts/validate-skill.mts .agents/skills --all` during catalog maintenance.
+- For sharing-spec conformance, also run `node ../ref-shareable-skills/scripts/validate-sharing.mts .agents/skills --all`.
 - Run `./scripts/aggregate_eval_results.py <workspace>` after output evals produce `grading.json` files.
 
 Generated run outputs should live in a temporary workspace near the skill or under `.agents/tasks/`, not inside the skill package unless curated as fixtures.

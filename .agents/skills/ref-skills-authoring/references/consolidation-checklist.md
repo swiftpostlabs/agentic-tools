@@ -25,7 +25,7 @@ Use this checklist when a maintenance pass reveals duplicated, misplaced, copied
 
 ## Validation
 
-- Run `./scripts/validate_skill.py <skill-dir>` for touched skills or `./scripts/validate_skill.py .agents/skills --all` for catalog-wide consolidation.
+- Run `node ./scripts/validate-skill.mts <skill-dir>` for touched skills or `node ./scripts/validate-skill.mts .agents/skills --all` for catalog-wide consolidation (needs Node >= 22).
 - Re-run the repo's skill discovery command when names, metadata, dependencies, or descriptions change.
 - Check related eval prompts when consolidation changes trigger wording or expected outputs.
 - Record the reason for non-obvious consolidation decisions in the task note, commit body, or relevant reference file.

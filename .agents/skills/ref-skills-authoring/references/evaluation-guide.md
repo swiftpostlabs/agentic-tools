@@ -111,8 +111,8 @@ If several runs rebuild the same helper logic, move that logic into `scripts/` a
 
 Use these scripts from the `ref-skills-authoring` skill when they fit the local environment:
 
-- `../scripts/validate_skill.py <skill-dir>` checks frontmatter, naming, metadata shape, support-file references, and basic authoring expectations.
-- `../scripts/validate_skill.py .agents/skills --all` checks a whole skill catalog.
+- `node ../scripts/validate-skill.mts <skill-dir>` checks frontmatter, naming, metadata shape, support-file references, and basic authoring expectations (needs Node >= 22).
+- `node ../scripts/validate-skill.mts .agents/skills --all` checks a whole skill catalog.
 - `../scripts/aggregate_eval_results.py <eval-workspace>` summarizes `grading.json` files into aggregate pass-rate and timing data.
 
 These scripts are intentionally provider-agnostic. Do not replace them with a client-specific trigger harness unless the user is deliberately testing one client.

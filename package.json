@@ -26,6 +26,9 @@
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
     "typecheck": "tsc --project tsconfig.node.json --noEmit",
+    "validate:skills": "node .agents/skills/ref-skills-authoring/scripts/validate-skill.mts .agents/skills --all",
+    "validate:sharing": "node .agents/skills/ref-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
+    "validate": "node .agents/skills/ref-skills-authoring/scripts/validate-skill.mts .agents/skills --all && node .agents/skills/ref-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
     "lint": "node --check scripts/agentic-tools.mjs && node --check src/agentic_tools_old/main.mjs && node --check src/agentic_tools_old/utils/common.mjs && node --check src/agentic_tools_old/agents_policy/main.mjs && node --check src/agentic_tools_old/agents_policy/main.test.mjs && node --check src/agentic_tools_old/skills_management/main.mjs && node --check src/agentic_tools_old/skills_management/main.test.mjs && node --check src/agentic_tools_old/main.test.mjs",
     "pack": "npm pack --dry-run"
   },

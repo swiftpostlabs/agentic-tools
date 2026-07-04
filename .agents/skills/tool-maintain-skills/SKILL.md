@@ -77,7 +77,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 
 - Check the result against `./references/checklist.md`.
 - If guidance moved between skills or out of top-level instructions, check `./references/consolidation-checklist.md` too.
-- Run `.agents/skills/ref-skills-authoring/scripts/validate_skill.py <skill-dir>` for touched skills, or `.agents/skills/ref-skills-authoring/scripts/validate_skill.py .agents/skills --all` when the pass covers the catalog.
+- Run `node .agents/skills/ref-skills-authoring/scripts/validate-skill.mts <skill-dir>` for touched skills, or add `--all` on `.agents/skills` for the whole catalog (needs Node >= 22). For sharing-spec conformance, also run `node .agents/skills/ref-shareable-skills/scripts/validate-sharing.mts .agents/skills --all`.
 - If output-quality evals produced `grading.json` files, summarize them with `.agents/skills/ref-skills-authoring/scripts/aggregate_eval_results.py <eval-workspace>`.
 - Run a targeted error check on the touched skill files.
 - Run the repo's skill-discovery or catalog-validation command when one exists.
