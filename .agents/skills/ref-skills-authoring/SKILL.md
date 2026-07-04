@@ -19,6 +19,25 @@ Ensure project skills are discoverable, activation-worthy, operationally useful,
 - Evaluating whether a skill is well-structured.
 - Adapting a copied skill so it matches this repository instead of preserving stale source-project details.
 
+## Scope And Relationship To The Sharing Spec
+
+This skill owns **how to make a good skill in general, from the agent's perspective**: boundary,
+description/trigger quality, instruction design, progressive disclosure, structure, and evaluation.
+
+It does **not** own the sharing spec. How a skill is **named** (owner-prefix / scope / template /
+topic grammar), **scoped** (the scope registry and tags), given **visibility**
+(repo-local / organization / public), declares **hard vs soft dependencies**, and is **vendored or
+forked** is governed by .agents/skills/ref-shareable-skills/SKILL.md.
+
+The two skills are **complementary but independent**, and neither hard-depends on the other. You
+can author an excellent skill that is deliberately `repo-local` and never touches the sharing spec,
+and you can share a skill whose general quality is reviewed here. Consult the sharing spec (a soft
+dependency) when a skill should also be shared; use this skill for quality regardless.
+
+Their validators are also separate and non-overlapping: this skill's `./scripts/validate-skill.mts`
+checks general well-formedness and quality; the sharing-spec rules are validated by
+ref-shareable-skills. Both are TypeScript and need Node >= 22 (`node ./scripts/validate-skill.mts <skill-dir>`).
+
 ## References
 
 Use these as the source of truth when authoring or revising a skill:
@@ -112,7 +131,7 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Do not use `tool-...` for passive guidance:** If the skill mostly teaches the agent how to understand or review something rather than execute a user-invoked workflow, it should stay under `ref-...`.
 - **Keep `description` under 1024 chars:** It must describe both what the skill does and when to use it.
 - **Use optional fields only when they add execution value:** `compatibility` is for environment requirements, `license` for licensing, `metadata` for extra client metadata, and `allowed-tools` only when the client supports it.
-- **Add category metadata:** In this repo, every skill should include `metadata.agentic-tools-category` as a short lowercase domain label such as `agents`, `app`, `dev`, `docs`, `github`, `js`, `project`, `py`, or `supabase`.
+- **Scope / category metadata is governed by the sharing spec:** every skill carries a domain scope in metadata. This is owned by .agents/skills/ref-shareable-skills/SKILL.md (the `scope` field and scopes registry). During migration the legacy key is `metadata.agentic-tools-category`; the target key is `metadata.scope`. Do not redefine the vocabulary here.
 - **Name must match folder:** The `name` field must match the skill folder name.
 - **"When to use" section:** Include a clear section so the AI can determine relevance.
 - **Concrete examples:** Provide small examples, templates, or commands where they reduce ambiguity.
@@ -121,44 +140,27 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Adapt to the real repo:** When a skill is copied or derived from another project, update its commands, libraries, file names, folder layout, and examples to match this repository before keeping it.
 - **Do not preserve stale stack details:** Remove or replace inherited references to the wrong package manager, framework, language conventions, file extensions, or UI library when they do not match the current repo.
 - **Do not leak foreign repo artifacts into generic examples:** If you copied a template or skill from another repo, replace example paths like feature folders, excluded files, and sample script names with synthetic placeholders unless the skill explicitly says it is documenting the source repo itself.
-- **Name repo-specific skills explicitly:** If a skill depends on repo-only packages, conventions, or wrappers that would not transfer cleanly to another project, prefix or name it in a repo-specific way. Keep transferable guidance under names that clearly advertise their role, such as `ref-code-conventions`, `ref-project-setup`, or `ref-skills-authoring`.
-- **Separate repo namespace from category:** Repo-specific names such as `ref-swiftpost-agents-policy` should still use the domain category, such as `agentic-tools-category: "agents"`, instead of creating organization categories by default.
+- **Naming grammar, namespace, and portability live in the sharing spec:** the owner-prefix/scope/topic grammar, and whether a skill is `repo-local`, `organization`, or `public`, are governed by .agents/skills/ref-shareable-skills/SKILL.md. Portability is recorded in `visibility` metadata, not encoded in the name. Keep a skill's `name` focused on what it does so discovery and trigger quality stay intact.
 - **Make values explicit:** When a skill depends on values like simplicity, clarity, or maintainability, state them directly in the purpose or rules instead of leaving them implicit.
 - **Prefer modern defaults:** When a skill gives coding guidance, prefer modern, intention-revealing language and platform APIs over older sentinel-style patterns when both are supported by the project's runtime targets.
 - **Prefer operational labels:** When naming workflow steps or guidance sections, prefer labels that describe the actual review/update action. Favor concrete labels like `Reflect` or `Capture Lessons` over vaguer labels like `Learn` when the step includes reviewing outcomes, correcting guidance, and updating the source of truth.
 
-## Shareability And Dependency Metadata
+## Sharing, Scope, And Dependency Metadata
 
-When a skill should be exported, shared across repos, or composed with other skills, track that through `metadata` rather than through the skill name.
+Naming grammar, scope/category, visibility, dependency declarations, and vendoring are the
+**sharing spec**, owned by .agents/skills/ref-shareable-skills/SKILL.md. Do not restate or
+redefine those rules here — consult that skill (and its `references/spec.md`) when a skill needs to
+be scoped, shared, or exported.
 
-- Use `metadata.shareable-skills.visibility` with one of two string values: `shareable` or `repo-local`.
-- Use `metadata.shareable-skills.requires` as a space-separated string of hard dependency skill names. Omit the key when there are no hard skill dependencies.
-- Use `metadata.shareable-skills.reason` for a short explanation when a skill is `repo-local` or when the dependency would otherwise be surprising.
-- Keep `shareable` skills dependency-light. If one shareable skill depends on another, that dependency should usually also be `shareable` and the chain should stay shallow.
-- If a skill depends on repo-specific commands, file layout, policy, or other `repo-local` skills, mark it `repo-local` too.
-- Do not encode shareability in the `name`. Keep the `name` focused on what the skill does so discovery and trigger quality stay intact.
-- The Agent Skills spec treats `metadata` as a string-to-string mapping, so do not use YAML lists or nested objects for these fields.
+What this skill still asserts, because it is general skill quality rather than sharing policy:
 
-Example:
-
-```yaml
-metadata:
-  agentic-tools-category: "agents"
-  shareable-skills.visibility: "shareable"
-  shareable-skills.requires: "ref-skills-authoring"
-```
-
-## Category Metadata
-
-Use `metadata.agentic-tools-category` to group skills by the domain they help with. This is independent from `ref-...` versus `tool-...`, shareability, and organization-specific naming.
-
-- Use one category per skill.
-- Prefer existing categories before inventing a new one.
-- Pick the domain, not the repository namespace. A Swiftpost-specific agents-policy skill still belongs in `agents`.
-- Pick the action domain for tool skills. For example, commit tooling belongs in `dev`, while local agent task tooling belongs in `agents`.
-- Use `.agents/skills/ref-swiftpost-agents-categories/SKILL.md` for this repo's current category taxonomy and examples.
-
-Common categories in this repo are `agents`, `app`, `db`, `dev`, `docs`, `github`, `js`, `project`, `py`, and `supabase`.
+- Every skill carries a single domain scope in metadata (legacy `metadata.agentic-tools-category`,
+  target `metadata.scope`); pick the domain, not the repository namespace, and prefer an existing
+  scope over inventing one. The vocabulary itself is owned by the sharing spec's scopes registry.
+- Track portability, dependencies, and namespace through `metadata`, never through the `name`; keep
+  the `name` focused on what the skill does so discovery and trigger quality stay intact.
+- The Agent Skills spec treats `metadata` as a string-to-string mapping, so do not use YAML lists
+  or nested objects in any metadata field.
 
 ## Description Rules
 
@@ -240,6 +242,10 @@ Read `./references/scripts-and-resources.md` when deciding whether content belon
 
 ## Validation And Evaluation
 
+This covers **general skill-quality** validation only. Conformance to the sharing spec (naming
+grammar, scope registry, visibility, deps, vendoring) is validated separately by
+.agents/skills/ref-shareable-skills/SKILL.md. Run both when a skill should be good *and* shareable.
+
 Every meaningful skill should be tested in two dimensions:
 
 1. **Trigger quality:** Does the description activate the skill on the right prompts?
@@ -266,7 +272,7 @@ Use `./references/evaluation-guide.md` for the detailed evaluation loop. Example
 
 Portable helper scripts live at:
 
-- `./scripts/validate_skill.py` to validate one skill or a whole skills directory against Agent Skills structure and this repo's local quality rules.
+- `./scripts/validate-skill.mts` (TypeScript, Node >= 22) to validate one skill or a whole skills directory against Agent Skills structure and this repo's local quality rules. Run it as `node ./scripts/validate-skill.mts <skill-dir>` or `node ./scripts/validate-skill.mts .agents/skills --all`; from the repo root, `yarn validate:skills` runs the whole catalog (`yarn validate` runs both validators).
 - `./scripts/aggregate_eval_results.py` to summarize `grading.json` files from output-quality eval runs.
 
 Use `./evals/evals.json` as the maintained evaluation set for this skill itself.
