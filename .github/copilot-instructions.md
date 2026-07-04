@@ -50,124 +50,124 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 ### Available Skills
 
-**`ref-agents-persona`** — Agent persona and workflow expectations
+**`ref-sp-agents-persona`** — Agent persona and workflow expectations
 - Use when: starting tasks, planning commits, preserving structure, or understanding communication expectations
 
-**`ref-code-conventions`** — Python code structure and quality standards
+**`ref-sp-py-code-conventions`** — Python code structure and quality standards
 - Use when: creating features, writing tests, adjusting project config, or working with source code
 
-**`ref-git-commits`** — Commit grouping and commit message guidance
+**`ref-sp-dev-git-commits`** — Commit grouping and commit message guidance
 - Use when: deciding how changes should be committed, writing commit titles or bodies, or documenting automated commands in commit messages
 
-**`ref-project-setup`** — Project layout, `pyproject.toml`, and tool wiring
+**`ref-sp-dev-project-setup`** — Project layout, `pyproject.toml`, and tool wiring
 - Use when: locating code, understanding folder layout, or updating project/tool configuration
 
-**`ref-swiftpost-project-folders`** — Repo-specific folder layout for the reset Python package
+**`ref-sp-dev-project-folders`** — Repo-specific folder layout for the reset Python package
 - Use when: adding, moving, or reviewing files under `src/agentic_tools`, deciding between `main`, `features`, `core`, `shared`, or `infrastructure`, or checking that scaffold files are in the right place
 
-**`ref-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
+**`ref-sp-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
-**`ref-agents-hooks`** — Author agent lifecycle hooks across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI
+**`ref-sp-agents-hooks`** — Author agent lifecycle hooks across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI
 - Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block
 
-**`ref-projects-architecture`** — Portable architecture guidance for feature folders and code boundaries
+**`ref-sp-dev-projects-architecture`** — Portable architecture guidance for feature folders and code boundaries
 - Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
 
-**`ref-coding-patterns`** — Portable coding defaults across languages and CLIs
+**`ref-sp-dev-coding-patterns`** — Portable coding defaults across languages and CLIs
 - Use when: choosing naming, typing, comments, branching structure, CLI ergonomics, or testing defaults
 
-**`ref-docs-authoring`** — Portable README and documentation authoring guidance
+**`ref-sp-dev-docs-authoring`** — Portable README and documentation authoring guidance
 - Use when: writing or restructuring a README, deciding whether usage or developer setup should come first, or adding concrete documentation examples
 
-**`ref-skills-authoring`** — Guidelines for creating and maintaining project skills
+**`ref-sp-agents-skills-authoring`** — Guidelines for creating and maintaining project skills
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
-**`ref-agents-instructions-authoring`** — Guidance for structuring and maintaining multi-provider instruction files
+**`ref-sp-agents-instructions-authoring`** — Guidance for structuring and maintaining multi-provider instruction files
 - Use when: designing the repo's instruction-file system, choosing the source of truth, or updating `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` together, including provider-specific guidance through the skill's references
 
-**`ref-github-actions-ci`** — Portable GitHub Actions CI guidance
+**`ref-sp-dev-github-actions-ci`** — Portable GitHub Actions CI guidance
 - Use when: creating or reviewing `.github/workflows/*.yml`, setting up CI or reusable workflows, or securing workflow tokens, actions, and runner choices
 
-**`ref-github-dependabot`** — Portable Dependabot configuration guidance
+**`ref-sp-dev-github-dependabot`** — Portable Dependabot configuration guidance
 - Use when: creating or reviewing `.github/dependabot.yml`, tuning update volume, or deciding how version and security updates should be grouped and scoped
 
-**`ref-dev-semantic-versioning`** — Portable semantic-versioning and dependency-range guidance
+**`ref-sp-dev-semantic-versioning`** — Portable semantic-versioning and dependency-range guidance
 - Use when: choosing a release bump, reviewing semver compliance, setting npm version ranges, or deciding how package.json dependency fields should be used
 
-**`ref-dev-package-management`** — Portable package-management and changelog workflow guidance
+**`ref-sp-dev-package-management`** — Portable package-management and changelog workflow guidance
 - Use when: syncing versions across multiple manifests, defining a changelog workflow, or designing a repo command for release metadata management
 
-**`ref-py-commitizen`** — Python Commitizen release workflow guidance
+**`ref-sp-py-commitizen`** — Python Commitizen release workflow guidance
 - Use when: configuring Commitizen in `pyproject.toml`, choosing version providers, generating changelogs, validating conventional commits, or designing Commitizen-led release commands
 
-**`ref-js-deno`** — Portable Deno guidance for modern runtime usage, tsconfig or ESLint adoption, and hybrid repos
+**`ref-sp-js-deno`** — Portable Deno guidance for modern runtime usage, tsconfig or ESLint adoption, and hybrid repos
 - Use when: writing Deno code, configuring `deno.json`, or adopting Deno into an existing TypeScript or Node repo
 
-**`ref-js-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
+**`ref-sp-js-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
 - Use when: writing plain JavaScript, adding JSDoc, or keeping JavaScript maintainable without TypeScript
 
-**`ref-js-react`** — Portable React guidance for components, hooks, and library choices
+**`ref-sp-js-react`** — Portable React guidance for components, hooks, and library choices
 - Use when: creating or reviewing React components, choosing React-friendly libraries, deciding where UI or async state should live, or refactoring a React feature that is getting hard to read
 
-**`ref-js-next`** — Portable Next.js guidance for App Router structure and framework integrations
+**`ref-sp-js-next`** — Portable Next.js guidance for App Router structure and framework integrations
 - Use when: creating or reviewing Next routes and layouts, deciding where `'use client'` belongs, configuring Next.js, or choosing framework-specific integrations like `next-intl`
 
-**`ref-python`** — Portable Python guidance for typed code, scripts, and tests
+**`ref-sp-py-python`** — Portable Python guidance for typed code, scripts, and tests
 - Use when: writing or refactoring Python modules, designing Python CLIs, or deciding typing and testing patterns
 
-**`ref-app-web-standalone`** — App-level guidance for standalone HTML, CSS, and JavaScript tools
+**`ref-sp-js-web-standalone`** — App-level guidance for standalone HTML, CSS, and JavaScript tools
 - Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries
 
-**`ref-app-react-next`** — App-level guidance for full React and Next.js apps
+**`ref-sp-js-react-next`** — App-level guidance for full React and Next.js apps
 - Use when: scaffolding or reviewing a whole React/Next app, choosing the baseline stack and package manager, or deciding app-level structure
 
-**`ref-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
+**`ref-sp-agents-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
 
-**`ref-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
+**`ref-sp-platform-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
 - Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
-**`ref-swiftpost-agents-policy`** — Repo-specific agents-policy guidance
+**`ref-sp-agents-policy`** — Repo-specific agents-policy guidance
 - Use when: working on `src/agentic_tools/agents_policy`, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
 
-**`ref-swiftpost-agents-categories`** — Repo-specific skill category metadata guidance
+**`ref-sp-agents-categories`** — Repo-specific skill category metadata guidance
 - Use when: assigning `agentic-tools-category` metadata, reviewing category drift, or deciding whether a new skill category is justified in this repo
 
-**`ref-swiftpost-skills-management`** — Repo-specific skills-management CLI guidance
+**`ref-sp-agents-skills-management`** — Repo-specific skills-management CLI guidance
 - Use when: working on `src/agentic_tools/skills_management`, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
 
-**`ref-js-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
+**`ref-sp-js-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
 - Use when: writing or reviewing TypeScript code, types, or configuration decisions
 
-**`ref-js-userscript`** — Portable guidance for browser userscripts and DOM automation
+**`ref-sp-js-userscript`** — Portable guidance for browser userscripts and DOM automation
 - Use when: writing or reviewing `.user.js` or `.user.ts` scripts, metadata blocks, permissions, or page automation
 
-**`tool-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
+**`tool-sp-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
 - Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
 
-**`tool-export-skills`** — Export selected skills from this repo for repos, AI handoffs, and Gems
+**`tool-sp-export-skills`** — Export selected skills from this repo for repos, AI handoffs, and Gems
 - Use when: choosing which skills can leave this repo, preparing a handoff, or packaging a skill set for another environment, AI conversation, or Gemini Gem
 
-**`tool-create-skill`** — Guided wizard for creating a new skill
+**`tool-sp-create-skill`** — Guided wizard for creating a new skill
 - Use when: the user wants to add a new skill or scaffold one through a guided intake flow
 
-**`tool-maintain-agents-instructions`** — Guided workflow for updating repo instruction files
+**`tool-sp-maintain-agents-instructions`** — Guided workflow for updating repo instruction files
 - Use when: instruction files may be outdated after code, workflow, or skill changes, or a multi-provider repo needs its instruction bridge refreshed
 
-**`tool-maintain-skills`** — Guided workflow for refreshing and consolidating project skills after repo changes
+**`tool-sp-maintain-skills`** — Guided workflow for refreshing and consolidating project skills after repo changes
 - Use when: skills may be outdated after code, workflow, or branch changes, guidance is duplicated or misplaced, or a skill catalog needs a maintenance pass
 
-**`tool-make-skill-shareable`** — Guided workflow for making an existing skill shareable
+**`tool-sp-make-skill-shareable`** — Guided workflow for making an existing skill shareable
 - Use when: a skill lacks shareability metadata, portability is unclear, or a repo-local skill may need to be split before export
 
-**`tool-commit`** — Group edited files into logical commits and create focused commits
+**`tool-sp-commit`** — Group edited files into logical commits and create focused commits
 - Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing
 
-**`tool-handle-agents-local-tasks`** — Guided workflow for reading and handling the local `.agents/tasks/` backlog
+**`tool-sp-handle-agents-local-tasks`** — Guided workflow for reading and handling the local `.agents/tasks/` backlog
 - Use when: the user asks to check `.agents/tasks/TODO.md`, continue remaining local tasks, or work through the repo's local task backlog
 
-**`ref-agents-local-tasks`** — Maintain local agent task tracking under `.agents/tasks/`
+**`ref-sp-agents-local-tasks`** — Maintain local agent task tracking under `.agents/tasks/`
 - Use when: a task needs local planning, temporary task notes, or structured tracking under `.agents/tasks/`
 
 ## Workflow
@@ -179,7 +179,7 @@ When working on this project:
 3. **Implement**: Follow the owning skill for the area you are touching.
 4. **Validate**: Run lint, type-checking, and tests before committing.
 5. **Commit**: Keep commits small and focused.
-6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. Summarize the result to the user and ask if they want the guidance updated. If yes, update the relevant skill using `ref-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-maintain-skills`.
+6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. Summarize the result to the user and ask if they want the guidance updated. If yes, update the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
 
 ## Quick Commands
 
@@ -202,42 +202,42 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 
 ## Asking for Help
 
-- For code structure, typing, tests, or CLI/task choices: use `ref-code-conventions`.
-- For commit format, commit bodies, or reproducibility details in commit messages: use `ref-git-commits`.
-- For repo layout, tool wiring, or `pyproject.toml`: use `ref-project-setup`.
-- For this repo's reset Python package folders under `src/agentic_tools`: use `ref-swiftpost-project-folders`.
-- For workflow and structural caution: use `ref-agents-persona`.
-- For portable coding defaults across languages and CLIs: use `ref-coding-patterns`.
-- For README structure, docs audience, and concrete documentation examples: use `ref-docs-authoring`.
-- For generic architecture and feature-boundary decisions: use `ref-projects-architecture`.
-- For security policy config and generated restriction files: use `ref-agents-security`.
-- For authoring agent lifecycle hooks (command hooks, event choice, portability across platforms): use `ref-agents-hooks`.
-- For local `.agents/tasks/` conventions and task-file structure: use `ref-agents-local-tasks`.
-- For working through the local backlog under `.agents/tasks/TODO.md`: use `tool-handle-agents-local-tasks`.
-- For this repo's `agents-policy` feature, `.agents/config.json` policy section, and generated vendor outputs: use `ref-swiftpost-agents-policy`.
-- For this repo's skill category metadata and `agentic-tools-category` taxonomy: use `ref-swiftpost-agents-categories`.
-- For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-agents-instructions-authoring`.
-- For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-github-actions-ci`.
-- For Dependabot config, schedules, grouping, and GitHub Actions dependency updates: use `ref-github-dependabot`.
-- For version-bump decisions, semver rules, npm dependency ranges, and package.json dependency-field choices: use `ref-dev-semantic-versioning`.
-- For syncing versions across multiple manifests, changelog policy, and release-metadata workflow design: use `ref-dev-package-management`.
-- For Commitizen configuration, version providers, generated changelogs, and Commitizen-led release commands: use `ref-py-commitizen`.
-- For Python code and CLI patterns: use `ref-python`.
-- For JavaScript scripts or browser code with JSDoc: use `ref-js-javascript`.
-- For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-js-react`.
-- For Next.js App Router structure, rendering boundaries, and Next-specific integrations: use `ref-js-next`.
-- For TypeScript typing and boundary decisions: use `ref-js-typescript`.
-- For standalone browser apps and no-build web tools: use `ref-app-web-standalone`.
-- For whole React and Next.js app planning and app-level stack choices: use `ref-app-react-next`.
-- For browser userscripts: use `ref-js-userscript`.
-- For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-js-deno`.
-- For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-supabase`.
-- For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-swiftpost-skills-management`.
-- For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-shareable-skills`.
-- For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-export-skills`.
-- For creating a new skill through a guided intake flow: use `tool-create-skill`.
-- For refreshing `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-maintain-agents-instructions`.
-- For refreshing project skills after repo or branch changes: use `tool-maintain-skills`.
-- For turning an existing skill into a shareable one through a guided review: use `tool-make-skill-shareable`.
-- For grouping the current diff into focused commits and making them: use `tool-commit`.
-- For skills themselves: use `ref-skills-authoring` and `tool-maintain-skills`.
+- For code structure, typing, tests, or CLI/task choices: use `ref-sp-py-code-conventions`.
+- For commit format, commit bodies, or reproducibility details in commit messages: use `ref-sp-dev-git-commits`.
+- For repo layout, tool wiring, or `pyproject.toml`: use `ref-sp-dev-project-setup`.
+- For this repo's reset Python package folders under `src/agentic_tools`: use `ref-sp-dev-project-folders`.
+- For workflow and structural caution: use `ref-sp-agents-persona`.
+- For portable coding defaults across languages and CLIs: use `ref-sp-dev-coding-patterns`.
+- For README structure, docs audience, and concrete documentation examples: use `ref-sp-dev-docs-authoring`.
+- For generic architecture and feature-boundary decisions: use `ref-sp-dev-projects-architecture`.
+- For security policy config and generated restriction files: use `ref-sp-agents-security`.
+- For authoring agent lifecycle hooks (command hooks, event choice, portability across platforms): use `ref-sp-agents-hooks`.
+- For local `.agents/tasks/` conventions and task-file structure: use `ref-sp-agents-local-tasks`.
+- For working through the local backlog under `.agents/tasks/TODO.md`: use `tool-sp-handle-agents-local-tasks`.
+- For this repo's `agents-policy` feature, `.agents/config.json` policy section, and generated vendor outputs: use `ref-sp-agents-policy`.
+- For this repo's skill category metadata and `agentic-tools-category` taxonomy: use `ref-sp-agents-categories`.
+- For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-sp-agents-instructions-authoring`.
+- For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-sp-dev-github-actions-ci`.
+- For Dependabot config, schedules, grouping, and GitHub Actions dependency updates: use `ref-sp-dev-github-dependabot`.
+- For version-bump decisions, semver rules, npm dependency ranges, and package.json dependency-field choices: use `ref-sp-dev-semantic-versioning`.
+- For syncing versions across multiple manifests, changelog policy, and release-metadata workflow design: use `ref-sp-dev-package-management`.
+- For Commitizen configuration, version providers, generated changelogs, and Commitizen-led release commands: use `ref-sp-py-commitizen`.
+- For Python code and CLI patterns: use `ref-sp-py-python`.
+- For JavaScript scripts or browser code with JSDoc: use `ref-sp-js-javascript`.
+- For React component structure, hooks, client-side state, and React-friendly library choices: use `ref-sp-js-react`.
+- For Next.js App Router structure, rendering boundaries, and Next-specific integrations: use `ref-sp-js-next`.
+- For TypeScript typing and boundary decisions: use `ref-sp-js-typescript`.
+- For standalone browser apps and no-build web tools: use `ref-sp-js-web-standalone`.
+- For whole React and Next.js app planning and app-level stack choices: use `ref-sp-js-react-next`.
+- For browser userscripts: use `ref-sp-js-userscript`.
+- For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-sp-js-deno`.
+- For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-platform-supabase`.
+- For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
+- For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
+- For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-sp-export-skills`.
+- For creating a new skill through a guided intake flow: use `tool-sp-create-skill`.
+- For refreshing `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-sp-maintain-agents-instructions`.
+- For refreshing project skills after repo or branch changes: use `tool-sp-maintain-skills`.
+- For turning an existing skill into a shareable one through a guided review: use `tool-sp-make-skill-shareable`.
+- For grouping the current diff into focused commits and making them: use `tool-sp-commit`.
+- For skills themselves: use `ref-sp-agents-skills-authoring` and `tool-sp-maintain-skills`.

@@ -14,7 +14,7 @@
   "include": [
     "scripts/**/*.mjs",
     "src/agentic_tools_old/**/*.mjs",
-    ".agents/skills/ref-skills-authoring/scripts/validate-skill.mts",
-    ".agents/skills/ref-shareable-skills/scripts/validate-sharing.mts"
+    ".agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts",
+    ".agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts"
   ]
 }

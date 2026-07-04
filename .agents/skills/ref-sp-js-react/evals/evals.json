@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-sp-js-react",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Recommend a dependency stack for a small React app that needs a component library, runtime validation, and cached async queries without turning into a grab bag of packages.",
+      "expected_output": "Guidance that keeps the stack small, prefers one coherent UI system, recommends Zod and TanStack Query conditionally, and keeps native Date and Intl as the default for ordinary date work.",
+      "assertions": [
+        "The response recommends one coherent UI system instead of mixing multiple styling stacks",
+        "The response recommends zod and @tanstack/react-query only when their specific concerns are present",
+        "The response keeps native Date or Intl as the default before suggesting date-fns"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review this hook-heavy React feature and explain whether local state, derived state, or query-managed state belongs in each part.",
+      "expected_output": "A review that keeps state ownership narrow, treats effects as synchronization with external systems, and suggests extracting hooks or child components only when that improves readability.",
+      "assertions": [
+        "The response distinguishes local state, derived values, and async server state",
+        "The response avoids using effects for ordinary derivations",
+        "The response treats extracted hooks or child components as readability tools rather than automatic abstractions"
+      ]
+    }
+  ]
+}

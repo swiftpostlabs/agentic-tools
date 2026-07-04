@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-sp-js-react-next",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Choose the baseline stack and top-level structure for a small React and Next app that should stay maintainable without a lot of boilerplate.",
+      "expected_output": "Guidance that establishes Next.js, strict TypeScript, and Yarn as the baseline, keeps the top-level structure small and feature-first, and avoids duplicating lower-level React or Next rules inside the app-level answer.",
+      "assertions": [
+        "The response makes Yarn the preferred package manager for the Node-based app",
+        "The response uses Next.js and strict TypeScript as the app baseline",
+        "The response distinguishes app-level structure from lower-level React or Next details"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review whether this requirement needs a full React and Next application or could stay a smaller standalone browser app.",
+      "expected_output": "A review that compares whole-app infrastructure against a standalone alternative and routes smaller browser-only requirements toward the standalone app skill when appropriate.",
+      "assertions": [
+        "The response explicitly compares a full app against a standalone browser app option",
+        "The response routes framework-free cases toward the standalone app skill",
+        "The response does not collapse into component-level React advice as the main answer"
+      ]
+    }
+  ]
+}

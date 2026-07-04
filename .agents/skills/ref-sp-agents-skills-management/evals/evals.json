@@ -1,0 +1,25 @@
+{
+  "skill_name": "ref-sp-agents-skills-management",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Explain how this repo's agentic-tools skills sync feature resolves sources and why a target repo would use .agents/config.json.",
+      "expected_output": "An explanation that covers the JSON shape, relative versus package sources, explicit skill lists, and the destination repo workflow.",
+      "assertions": [
+        "The response explains .agents/config.json as the declarative sync input",
+        "The response distinguishes relative filesystem sources from package sources",
+        "The response keeps the explanation scoped to this repo's implementation"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "A Windows user cannot create skill symlinks without elevation. Explain what this repo's skills-management tool does about that.",
+      "expected_output": "A response that explains the normal symlink behavior and the Windows junction fallback when symlink privilege is unavailable.",
+      "assertions": [
+        "The response mentions the junction fallback on Windows",
+        "The response does not claim elevation is always required",
+        "The response ties the behavior to this repo's CLI rather than generic OS advice"
+      ]
+    }
+  ]
+}

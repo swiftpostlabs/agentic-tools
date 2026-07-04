@@ -1,0 +1,25 @@
+{
+  "skill_name": "tool-sp-make-skill-shareable",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "This skill has no shareable-skills metadata and I want to symlink it globally. Walk me through whether it should be shareable or repo-local.",
+      "expected_output": "A guided shareability decision that asks the missing questions, chooses a visibility, and recommends the minimal metadata update.",
+      "assertions": [
+        "The response asks at least one portability question before deciding",
+        "The response chooses either shareable or repo-local",
+        "The response mentions shareable-skills.visibility"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "This skill is useful, but one section depends on a repo-only script. Decide whether to split it or keep it repo-local.",
+      "expected_output": "A recommendation that weighs splitting against keeping the skill repo-local and records the resulting metadata path.",
+      "assertions": [
+        "The response considers splitting the skill",
+        "The response does not recommend a shareable skill with hidden repo-only dependencies",
+        "The response keeps hard dependency tracking explicit"
+      ]
+    }
+  ]
+}
