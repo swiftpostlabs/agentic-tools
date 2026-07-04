@@ -24,6 +24,12 @@ Provide portable defaults for assigning semantic versions and choosing dependenc
 - Choosing between `dependencies`, `devDependencies`, `peerDependencies`, `optionalDependencies`, and `overrides`.
 - Explaining why a `^`, `~`, `x`, or exact range behaves differently than expected.
 
+## Scope Boundaries
+
+- This skill owns version *numbering* meaning and dependency-range and dependency-field selection.
+- Use `.agents/skills/ref-sp-dev-package-management/SKILL.md` for the release workflow: version source of truth, multi-manifest sync, changelog policy, and registry publishing.
+- Use `.agents/skills/ref-sp-py-commitizen/SKILL.md` when the release is driven by the Python `commitizen` tool (`cz bump`, version providers, generated changelogs).
+
 ## Defaults
 
 - Use strict `MAJOR.MINOR.PATCH` versions with no leading zeroes.
