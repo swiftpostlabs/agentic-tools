@@ -16,7 +16,7 @@ Node install example:
 
 ```sh
 corepack enable
-yarn add --dev github:swiftpostlab/agentic-tools
+yarn add --dev github:swiftpostlabs/agentic-tools
 yarn agentic-tools policy sync
 ```
 

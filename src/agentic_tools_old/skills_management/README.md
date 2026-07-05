@@ -15,7 +15,7 @@ Use `agentic-tools skills` when you want a repo to consume shared skills from an
 Python install example:
 
 ```sh
-uv add --dev "agentic-tools @ git+https://github.com/swiftpostlab/agentic-tools.git"
+uv add --dev "agentic-tools @ git+https://github.com/swiftpostlabs/agentic-tools.git"
 uv run agentic-tools skills sync
 ```
 
@@ -23,7 +23,7 @@ Node install example:
 
 ```sh
 corepack enable
-yarn add --dev github:swiftpostlab/agentic-tools
+yarn add --dev github:swiftpostlabs/agentic-tools
 yarn agentic-tools skills sync
 ```
 
@@ -35,10 +35,11 @@ Example config:
   "sources": [
    {
     "from": "package:agentic-tools",
+    "url": "https://github.com/swiftpostlabs/agentic-tools",
     "skills": [
-     "ref-agents-persona",
-     "ref-coding-patterns",
-     "ref-python"
+     "ref-sp-agents-persona",
+     "ref-sp-dev-coding-patterns",
+     "ref-sp-py-python"
     ]
    }
   ]

@@ -16,14 +16,14 @@ It provides:
 Python repos can install the package with uv:
 
 ```sh
-uv add --dev "agentic-tools @ git+https://github.com/swiftpostlab/agentic-tools.git"
+uv add --dev "agentic-tools @ git+https://github.com/swiftpostlabs/agentic-tools.git"
 ```
 
 Node repos should prefer Yarn for Node-managed installs and commands:
 
 ```sh
 corepack enable
-yarn add --dev github:swiftpostlab/agentic-tools
+yarn add --dev github:swiftpostlabs/agentic-tools
 ```
 
 Then declare which shared skills you want in `.agents/config.json`:
@@ -34,11 +34,12 @@ Then declare which shared skills you want in `.agents/config.json`:
     "sources": [
       {
         "from": "package:agentic-tools",
+        "url": "https://github.com/swiftpostlabs/agentic-tools",
         "skills": [
-          "ref-agents-persona",
-          "ref-agents-security",
-          "ref-coding-patterns",
-          "ref-python"
+          "ref-sp-agents-persona",
+          "ref-sp-agents-security",
+          "ref-sp-dev-coding-patterns",
+          "ref-sp-py-python"
         ]
       }
     ]
@@ -86,8 +87,8 @@ yarn agentic-tools policy sync
 
 ### Focused Docs
 
-- Skills management: [src/agentic_tools/skills_management/README.md](src/agentic_tools/skills_management/README.md)
-- Agents policy: [src/agentic_tools/agents_policy/README.md](src/agentic_tools/agents_policy/README.md)
+- Skills management: [src/agentic_tools_old/skills_management/README.md](src/agentic_tools_old/skills_management/README.md)
+- Agents policy: [src/agentic_tools_old/agents_policy/README.md](src/agentic_tools_old/agents_policy/README.md)
 
 ## Requirements
 
@@ -128,7 +129,9 @@ uv run agentic-tools skills sync
 
 `sync` also removes dead skill links and linked skills that are no longer declared in the destination `.agents/config.json`, then reports configured skill names that are missing from a source before changing anything. Legacy `.agents/skills.json` files still work as a fallback.
 
-To declare shared skill sources for `sync`, add a `skills` section to `.agents/config.json` in the target repo:
+If a configured skill name was renamed upstream, `sync` resolves it through the source's rename registry, rewrites the stored name in your config to the current one, and prints a note — so a renamed skill keeps working without manual edits. After linking, `sync` (re)generates `.agents/skills/.gitignore` so the synced skill symlinks stay out of version control.
+
+To declare shared skill sources for `sync`, add a `skills` section to `.agents/config.json` in the target repo. Each source may carry an optional `url` recording the repository the skills come from; sync lists those URLs in the generated `.gitignore`:
 
 ```json
 {
@@ -136,16 +139,17 @@ To declare shared skill sources for `sync`, add a `skills` section to `.agents/c
     "sources": [
       {
         "from": "package:agentic-tools",
+        "url": "https://github.com/swiftpostlabs/agentic-tools",
         "skills": [
-          "ref-skills-authoring",
-          "ref-projects-architecture",
-          "ref-coding-patterns"
+          "ref-sp-agents-skills-authoring",
+          "ref-sp-dev-projects-architecture",
+          "ref-sp-dev-coding-patterns"
         ]
       },
       {
         "from": "../another-skill-repo",
         "skills": [
-          "ref-js-react"
+          "ref-sp-js-react"
         ]
       }
     ]
