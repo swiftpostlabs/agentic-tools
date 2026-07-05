@@ -4,7 +4,7 @@
   "description": "Shared agent skills and CLI tools for Node-based repositories.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/swiftpostlab/agentic-tools.git"
+    "url": "git+https://github.com/swiftpostlabs/agentic-tools.git"
   },
   "license": "MIT",
   "type": "module",
