@@ -497,22 +497,86 @@ def lookup_manifest(
     return manifests.get(canonical)
 
 
-def describe_alias_redirects(
+def collect_alias_renames(
     requested_names: Sequence[str],
     manifests: dict[str, SkillManifest],
     aliases: dict[str, str],
-) -> list[str]:
-    messages: list[str] = []
+) -> dict[str, str]:
+    """Map each requested pre-rename name to the canonical skill it resolves to."""
+    renames: dict[str, str] = {}
     for name in deduplicate_preserving_order(requested_names):
         if name in manifests:
             continue
 
         canonical = aliases.get(name)
         if canonical is not None and canonical in manifests:
-            messages.append(
-                f"Note: skill '{name}' was renamed to '{canonical}'; "
-                "update your configuration to use the new name."
-            )
+            renames[name] = canonical
+
+    return renames
+
+
+def describe_alias_redirects(
+    requested_names: Sequence[str],
+    manifests: dict[str, SkillManifest],
+    aliases: dict[str, str],
+) -> list[str]:
+    return [
+        f"Note: skill '{old_name}' was renamed to '{new_name}'; "
+        "update your configuration to use the new name."
+        for old_name, new_name in collect_alias_renames(
+            requested_names, manifests, aliases
+        ).items()
+    ]
+
+
+def select_config_skills_section(raw_config: Any) -> dict[str, Any]:
+    if isinstance(raw_config, dict) and isinstance(
+        raw_config.get(SKILLS_CONFIG_SECTION), dict
+    ):
+        return raw_config[SKILLS_CONFIG_SECTION]
+    return raw_config
+
+
+def apply_config_alias_renames(
+    config_path: Path,
+    renames_by_index: dict[int, dict[str, str]],
+    *,
+    dry_run: bool,
+) -> list[str]:
+    """Rewrite pre-rename skill names in the sync config to their aliases.
+
+    Keeps the config self-healing: once a renamed skill is synced, the stored
+    name converges to the canonical one instead of relying on the alias forever.
+    """
+    if not renames_by_index:
+        return []
+
+    raw_config = json.loads(config_path.read_text(encoding="utf-8"))
+    sources = select_config_skills_section(raw_config)["sources"]
+
+    messages: list[str] = []
+    changed = False
+    for index, renames in renames_by_index.items():
+        source = sources[index]
+        original_skills: list[str] = source["skills"]
+        updated_skills = deduplicate_preserving_order(
+            [renames.get(name, name) for name in original_skills]
+        )
+        if updated_skills == original_skills:
+            continue
+
+        for old_name, new_name in renames.items():
+            verb = "Would update" if dry_run else "Updated"
+            messages.append(f"{verb} config: '{old_name}' -> '{new_name}'")
+
+        if not dry_run:
+            source["skills"] = updated_skills
+            changed = True
+
+    if changed:
+        config_path.write_text(
+            json.dumps(raw_config, indent=2) + "\n", encoding="utf-8"
+        )
 
     return messages
 
@@ -929,9 +993,11 @@ def handle_sync_command(
 
     missing_by_source: list[tuple[str, Sequence[str]]] = []
     manifests_to_link: list[SkillManifest] = []
-    alias_notices: list[str] = []
+    renames_by_index: dict[int, dict[str, str]] = {}
     linked_skill_names: set[str] = set()
-    for configured_source in load_configured_skill_sources(config_path):
+    for index, configured_source in enumerate(
+        load_configured_skill_sources(config_path)
+    ):
         source_root = resolve_configured_source_root(
             configured_source.source,
             config_path=config_path,
@@ -951,9 +1017,9 @@ def handle_sync_command(
             )
             continue
 
-        alias_notices.extend(
-            describe_alias_redirects(requested_skill_names, manifests, aliases)
-        )
+        renames = collect_alias_renames(requested_skill_names, manifests, aliases)
+        if renames:
+            renames_by_index[index] = renames
 
         for manifest in resolve_selected_skills(
             manifests, requested_skill_names, aliases
@@ -971,7 +1037,11 @@ def handle_sync_command(
             describe_missing_configured_skills(missing_by_source)
         )
 
-    for message in alias_notices:
+    for message in apply_config_alias_renames(
+        config_path,
+        renames_by_index,
+        dry_run=dry_run,
+    ):
         print(message)
 
     for message in cleanup_dead_skill_links(

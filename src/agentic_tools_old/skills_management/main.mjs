@@ -196,23 +196,88 @@ const lookupManifest = (name, manifests, aliases) => {
     return manifests[canonical];
 };
 /**
+ * Map each requested pre-rename name to the canonical skill it resolves to.
  * @param {string[]} requestedNames
  * @param {SkillManifestMap} manifests
  * @param {Record<string, string>} aliases
- * @returns {string[]}
+ * @returns {Record<string, string>}
  */
-const describeAliasRedirects = (requestedNames, manifests, aliases) => {
-    /** @type {string[]} */
-    const messages = [];
+const collectAliasRenames = (requestedNames, manifests, aliases) => {
+    /** @type {Record<string, string>} */
+    const renames = {};
     for (const name of deduplicatePreservingOrder(requestedNames)) {
         if (manifests[name] !== undefined) {
             continue;
         }
         const canonical = aliases[name];
         if (canonical !== undefined && manifests[canonical] !== undefined) {
-            messages.push(`Note: skill '${name}' was renamed to '${canonical}'; ` +
-                "update your configuration to use the new name.");
+            renames[name] = canonical;
         }
+    }
+    return renames;
+};
+/**
+ * @param {string[]} requestedNames
+ * @param {SkillManifestMap} manifests
+ * @param {Record<string, string>} aliases
+ * @returns {string[]}
+ */
+const describeAliasRedirects = (requestedNames, manifests, aliases) => {
+    return Object.entries(collectAliasRenames(requestedNames, manifests, aliases)).map(([oldName, newName]) => `Note: skill '${oldName}' was renamed to '${newName}'; ` +
+        "update your configuration to use the new name.");
+};
+/**
+ * @param {unknown} rawConfig
+ * @returns {Record<string, any>}
+ */
+const selectConfigSkillsSection = (rawConfig) => {
+    if (rawConfig !== null && typeof rawConfig === "object" && !Array.isArray(rawConfig)) {
+        const section = /** @type {Record<string, any>} */ (rawConfig)[SKILLS_CONFIG_SECTION];
+        if (section !== null && typeof section === "object" && !Array.isArray(section)) {
+            return section;
+        }
+    }
+    return /** @type {Record<string, any>} */ (rawConfig);
+};
+/**
+ * Rewrite pre-rename skill names in the sync config to their aliases so the
+ * stored config converges to canonical names instead of relying on the alias
+ * forever.
+ * @param {string} configPath
+ * @param {Record<number, Record<string, string>>} renamesByIndex
+ * @param {boolean} dryRun
+ * @returns {string[]}
+ */
+const applyConfigAliasRenames = (configPath, renamesByIndex, dryRun) => {
+    const entries = Object.entries(renamesByIndex);
+    if (entries.length === 0) {
+        return [];
+    }
+    const rawConfig = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    const sources = selectConfigSkillsSection(rawConfig).sources;
+    /** @type {string[]} */
+    const messages = [];
+    let changed = false;
+    for (const [index, renames] of entries) {
+        const source = sources[Number(index)];
+        /** @type {string[]} */
+        const originalSkills = source.skills;
+        const updatedSkills = deduplicatePreservingOrder(originalSkills.map((name) => renames[name] ?? name));
+        const unchanged = updatedSkills.length === originalSkills.length &&
+            updatedSkills.every((name, position) => name === originalSkills[position]);
+        if (unchanged) {
+            continue;
+        }
+        for (const [oldName, newName] of Object.entries(renames)) {
+            messages.push(`${dryRun ? "Would update" : "Updated"} config: '${oldName}' -> '${newName}'`);
+        }
+        if (!dryRun) {
+            source.skills = updatedSkills;
+            changed = true;
+        }
+    }
+    if (changed) {
+        fs.writeFileSync(configPath, `${JSON.stringify(rawConfig, null, 2)}\n`, "utf8");
     }
     return messages;
 };
@@ -597,10 +662,13 @@ const handleSyncCommand = (parsed, options) => {
     const missingBySource = [];
     /** @type {SkillManifest[]} */
     const manifestsToLink = [];
-    /** @type {string[]} */
-    const aliasNotices = [];
+    /** @type {Record<number, Record<string, string>>} */
+    const renamesByIndex = {};
     const linkedSkillNames = new Set();
+    let sourceIndex = 0;
     for (const configuredSource of loadConfiguredSkillSources(configPath)) {
+        const index = sourceIndex;
+        sourceIndex += 1;
         const sourceRoot = resolveConfiguredSourceRoot(configuredSource.source, configPath, options.cwd);
         const manifests = discoverSkillManifests(sourceRoot);
         const aliases = loadSkillAliases(sourceRoot);
@@ -610,7 +678,10 @@ const handleSyncCommand = (parsed, options) => {
             missingBySource.push([configuredSource.source, missingRequestedSkills]);
             continue;
         }
-        aliasNotices.push(...describeAliasRedirects(requestedSkillNames, manifests, aliases));
+        const renames = collectAliasRenames(requestedSkillNames, manifests, aliases);
+        if (Object.keys(renames).length > 0) {
+            renamesByIndex[index] = renames;
+        }
         for (const manifest of resolveSelectedSkills(manifests, requestedSkillNames, aliases)) {
             if (linkedSkillNames.has(manifest.name)) {
                 throw new ToolError(`Skill '${manifest.name}' is configured more than once across sync sources.`);
@@ -622,7 +693,7 @@ const handleSyncCommand = (parsed, options) => {
     if (missingBySource.length > 0) {
         throw new ToolError(describeMissingConfiguredSkills(missingBySource));
     }
-    for (const message of aliasNotices) {
+    for (const message of applyConfigAliasRenames(configPath, renamesByIndex, parsed.dryRun)) {
         options.output(message);
     }
     for (const message of cleanupDeadSkillLinks(destinationSkillsDir, parsed.dryRun)) {

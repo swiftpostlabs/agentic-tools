@@ -296,8 +296,9 @@ describe("skills-management Node CLI", () => {
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
       fs.mkdirSync(destinationAgentsDir, { recursive: true });
+      const configPath = path.join(destinationAgentsDir, "skills.json");
       fs.writeFileSync(
-        path.join(destinationAgentsDir, "skills.json"),
+        configPath,
         JSON.stringify(
           {
             sources: [
@@ -330,10 +331,13 @@ describe("skills-management Node CLI", () => {
       );
       expect(exitCode).toBe(0);
       expect(messages.join("\n")).toMatch(
-        /Note: skill 'ref-old-name' was renamed to 'ref-new-name'/u,
+        /Updated config: 'ref-old-name' -> 'ref-new-name'/u,
       );
       expect(fs.lstatSync(linkedSkillDir).isSymbolicLink()).toBe(true);
       expect(messages.join("\n")).toMatch(/Linked .*ref-new-name/u);
+      // The config self-heals to the canonical name.
+      const rewritten = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      expect(rewritten.sources[0].skills).toEqual(["ref-new-name"]);
     } finally {
       cleanupTempDir(tempDir);
     }

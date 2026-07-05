@@ -8,6 +8,7 @@ import pytest
 from agentic_tools_old.main import main as agentic_tools_main
 import agentic_tools_old.skills_management.main as skills_management_main
 from agentic_tools_old.skills_management.main import SkillsManagementError
+from agentic_tools_old.skills_management.main import apply_config_alias_renames
 from agentic_tools_old.skills_management.main import describe_alias_redirects
 from agentic_tools_old.skills_management.main import discover_skill_manifests
 from agentic_tools_old.skills_management.main import find_missing_requested_skills
@@ -381,6 +382,58 @@ def test_describe_alias_redirects_notes_renamed_skill(tmp_path: Path) -> None:
         "Note: skill 'ref-old' was renamed to 'ref-new'; "
         "update your configuration to use the new name."
     ]
+
+
+def test_apply_config_alias_renames_updates_unified_config_and_dedupes(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "policy": {"services": ["copilot"]},
+                "skills": {
+                    "sources": [
+                        {
+                            "from": "../source",
+                            "skills": ["ref-old", "ref-new", "ref-keep"],
+                        }
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    messages = apply_config_alias_renames(
+        config_path,
+        {0: {"ref-old": "ref-new"}},
+        dry_run=False,
+    )
+
+    assert messages == ["Updated config: 'ref-old' -> 'ref-new'"]
+    written = json.loads(config_path.read_text(encoding="utf-8"))
+    # Renamed, deduped against the already-present new name, order preserved.
+    assert written["skills"]["sources"][0]["skills"] == ["ref-new", "ref-keep"]
+    # Unrelated sections are left intact.
+    assert written["policy"] == {"services": ["copilot"]}
+
+
+def test_apply_config_alias_renames_dry_run_leaves_file_untouched(
+    tmp_path: Path,
+) -> None:
+    config_path = tmp_path / "skills.json"
+    original = json.dumps({"sources": [{"from": "../source", "skills": ["ref-old"]}]})
+    config_path.write_text(original, encoding="utf-8")
+
+    messages = apply_config_alias_renames(
+        config_path,
+        {0: {"ref-old": "ref-new"}},
+        dry_run=True,
+    )
+
+    assert messages == ["Would update config: 'ref-old' -> 'ref-new'"]
+    assert config_path.read_text(encoding="utf-8") == original
 
 
 def test_link_skill_directory_dry_run_does_not_create_target_directory(
@@ -759,15 +812,71 @@ def test_main_sync_dry_run_resolves_renamed_skill_through_registry(
         encoding="utf-8",
     )
 
+    config_path = destination_agents_dir / "skills.json"
+
     exit_code = agentic_tools_main(
         ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
     )
     output = capsys.readouterr().out
 
     assert exit_code == 0
-    assert "Note: skill 'ref-old-name' was renamed to 'ref-new-name'" in output
+    assert "Would update config: 'ref-old-name' -> 'ref-new-name'" in output
     assert str(destination_repo / ".agents" / "skills" / "ref-new-name") in output
     assert str(source_repo / ".agents" / "skills" / "ref-new-name") in output
+    # Dry-run must not mutate the config on disk.
+    assert json.loads(config_path.read_text(encoding="utf-8"))["sources"][0][
+        "skills"
+    ] == ["ref-old-name"]
+
+
+def test_main_sync_rewrites_renamed_skill_in_config(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-new-name",
+        metadata={"visibility": "public"},
+    )
+    write_alias_registry(
+        source_repo / ".agents" / "skills",
+        {"ref-old-name": "ref-new-name"},
+    )
+    config_path = destination_agents_dir / "skills.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "../source",
+                        "skills": ["ref-old-name"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = agentic_tools_main(["skills", "sync", "--to", str(destination_repo)])
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "Updated config: 'ref-old-name' -> 'ref-new-name'" in output
+    assert json.loads(config_path.read_text(encoding="utf-8"))["sources"][0][
+        "skills"
+    ] == ["ref-new-name"]
+
+    # A second sync is stable: names already canonical, nothing left to rewrite.
+    second_exit = agentic_tools_main(["skills", "sync", "--to", str(destination_repo)])
+    second_output = capsys.readouterr().out
+
+    assert second_exit == 0
+    assert "Updated config" not in second_output
 
 
 def test_main_unlink_dry_run_uses_expected_source_and_destination(
