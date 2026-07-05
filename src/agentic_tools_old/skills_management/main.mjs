@@ -6,13 +6,13 @@ import path from "node:path";
 import { ToolError, createDirectoryLink, createExecutionOptions, deduplicatePreservingOrder, ensureJsonObject, isDirectory, isDirectoryLink, isFile, parseFrontmatter, pathExists, removeDirectoryLink, resolveExistingLinkTarget, resolvePackageRoot, resolvePath, } from "../utils/common.mjs";
 
 /** @import { ExecutionOptions, RunOptions } from "../utils/common.mjs" */
-/** @typedef {{ name: string, directory: string, category: string | null, visibility: string | null, requires: string[], reason: string | null }} SkillManifest */
+/** @typedef {{ name: string, directory: string, scope: string | null, visibility: string | null, requires: string[], reason: string | null }} SkillManifest */
 /** @typedef {Record<string, SkillManifest>} SkillManifestMap */
 /** @typedef {{ skills: string[], source: string | null, destination: string | null, useGlobal: boolean, dryRun: boolean, force: boolean, config: string | null }} TargetCommandState */
 /** @typedef {{ _: string[], [key: string]: unknown }} CommandArgs */
 /** @typedef {{ source: string, skills: string[] }} ConfiguredSkillSource */
 
-const SHAREABLE_VISIBILITY = "shareable";
+const EXPORTABLE_VISIBILITY = new Set(["public", "organization"]);
 const SHAREABILITY_WIZARD = "tool-make-skill-shareable";
 const DEFAULT_GLOBAL_SKILLS_DIR = path.join(os.homedir(), ".agents", "skills");
 const PACKAGE_SOURCE_PREFIX = "package:";
@@ -112,16 +112,10 @@ const readSkillManifest = (skillDirectory) => {
     return {
         name: rawName,
         directory: skillDirectory,
-        category: typeof metadata["agentic-tools-category"] === "string"
-            ? metadata["agentic-tools-category"]
-            : null,
-        visibility: typeof metadata["shareable-skills.visibility"] === "string"
-            ? metadata["shareable-skills.visibility"]
-            : null,
-        requires: splitRequires(metadata["shareable-skills.requires"]),
-        reason: typeof metadata["shareable-skills.reason"] === "string"
-            ? metadata["shareable-skills.reason"]
-            : null,
+        scope: typeof metadata.scope === "string" ? metadata.scope : null,
+        visibility: typeof metadata.visibility === "string" ? metadata.visibility : null,
+        requires: splitRequires(metadata.requires),
+        reason: typeof metadata.reason === "string" ? metadata.reason : null,
     };
 };
 /**
@@ -156,7 +150,7 @@ const buildMakeShareableRecommendation = (skillName) => {
  * @param {SkillManifestMap} manifests
  */
 const ensureShareableManifest = (manifest, manifests) => {
-    if (manifest.visibility !== SHAREABLE_VISIBILITY) {
+    if (!manifest.visibility || !EXPORTABLE_VISIBILITY.has(manifest.visibility)) {
         const reasonSuffix = manifest.reason ? ` Reason: ${manifest.reason}` : "";
         throw new ToolError(`Skill '${manifest.name}' is not shareable.${reasonSuffix} ${buildMakeShareableRecommendation(manifest.name)}`);
     }
@@ -165,7 +159,7 @@ const ensureShareableManifest = (manifest, manifests) => {
         if (dependency === undefined) {
             throw new ToolError(`Skill '${manifest.name}' depends on missing skill '${dependencyName}'.`);
         }
-        if (dependency.visibility !== SHAREABLE_VISIBILITY) {
+        if (!dependency.visibility || !EXPORTABLE_VISIBILITY.has(dependency.visibility)) {
             throw new ToolError(`Skill '${manifest.name}' depends on '${dependencyName}', which is not shareable.`);
         }
     }
@@ -217,11 +211,11 @@ const describeSkills = (manifests) => {
     return skillNames
         .map((skillName) => {
         const manifest = manifests[skillName];
-        const category = manifest.category ?? "missing";
+        const scope = manifest.scope ?? "missing";
         const visibility = manifest.visibility ?? "missing";
         const requires = manifest.requires.length > 0 ? manifest.requires.join(" ") : "-";
         const reason = manifest.reason ? `; reason ${manifest.reason}` : "";
-        return `${manifest.name}: category ${category}; visibility ${visibility}; requires ${requires}${reason}`;
+        return `${manifest.name}: scope ${scope}; visibility ${visibility}; requires ${requires}${reason}`;
     })
         .join("\n");
 };

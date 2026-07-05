@@ -70,14 +70,14 @@ describe("skills-management Node CLI", () => {
         "skills",
       );
       writeSkillInRoot(packagedSkillsRoot, "ref-alpha", {
-        "agentic-tools-category": "agents",
-        "shareable-skills.visibility": "shareable",
+        scope: "ref-sp-agents",
+        visibility: "public",
       });
 
       const manifests = discoverSkillManifests(packagedSkillsRoot);
 
       expect(Object.keys(manifests)).toEqual(["ref-alpha"]);
-      expect(manifests["ref-alpha"].category).toBe("agents");
+      expect(manifests["ref-alpha"].scope).toBe("ref-sp-agents");
     } finally {
       cleanupTempDir(tempDir);
     }
@@ -111,7 +111,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        "shareable-skills.visibility": "shareable",
+        visibility: "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
@@ -165,7 +165,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        "shareable-skills.visibility": "shareable",
+        visibility: "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
@@ -216,7 +216,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        "shareable-skills.visibility": "shareable",
+        visibility: "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
@@ -270,7 +270,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        "shareable-skills.visibility": "shareable",
+        visibility: "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");

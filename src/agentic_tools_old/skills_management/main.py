@@ -22,8 +22,7 @@ from typing import Sequence
 from agentic_tools_old.utils.paths import AgenticToolsPaths
 
 DEFAULT_GLOBAL_SKILLS_DIR = Path.home() / AgenticToolsPaths.skills_path()
-SHAREABLE_VISIBILITY = "shareable"
-REPO_LOCAL_VISIBILITY = "repo-local"
+EXPORTABLE_VISIBILITY = frozenset({"public", "organization"})
 SHAREABILITY_WIZARD = "tool-make-skill-shareable"
 PACKAGE_SOURCE_PREFIX = "package:"
 PACKAGED_SKILLS_DIRNAME = "shareable_skills"
@@ -39,7 +38,7 @@ class SkillsManagementError(Exception):
 class SkillManifest:
     name: str
     directory: Path
-    category: str | None
+    scope: str | None
     visibility: str | None
     requires: tuple[str, ...]
     reason: str | None
@@ -414,15 +413,15 @@ def read_skill_manifest(skill_directory: Path) -> SkillManifest:
 
     metadata = frontmatter.get("metadata", {})
     metadata_mapping = metadata if isinstance(metadata, dict) else {}
-    category = metadata_mapping.get("agentic-tools-category")
-    visibility = metadata_mapping.get("shareable-skills.visibility")
-    requires = split_requires(metadata_mapping.get("shareable-skills.requires"))
-    reason = metadata_mapping.get("shareable-skills.reason")
+    scope = metadata_mapping.get("scope")
+    visibility = metadata_mapping.get("visibility")
+    requires = split_requires(metadata_mapping.get("requires"))
+    reason = metadata_mapping.get("reason")
 
     return SkillManifest(
         name=raw_name,
         directory=skill_directory,
-        category=category,
+        scope=scope,
         visibility=visibility,
         requires=requires,
         reason=reason,
@@ -447,8 +446,7 @@ def build_make_shareable_recommendation(skill_name: str) -> str:
     return (
         f"Recommended next step: use /{SHAREABILITY_WIZARD} on '{skill_name}' to decide "
         "whether it should be shareable or repo-local and to add "
-        "shareable-skills.visibility, shareable-skills.requires, and "
-        "shareable-skills.reason if needed."
+        "scope, visibility, requires, and reason if needed."
     )
 
 
@@ -462,16 +460,11 @@ def ensure_shareable_manifest(
             f"{build_make_shareable_recommendation(manifest.name)}"
         )
 
-    if manifest.visibility not in {SHAREABLE_VISIBILITY, REPO_LOCAL_VISIBILITY}:
+    if manifest.visibility not in EXPORTABLE_VISIBILITY:
+        reason = manifest.reason or "No reason was provided."
         raise SkillsManagementError(
-            f"Skill '{manifest.name}' has an unsupported visibility value "
-            f"'{manifest.visibility}'."
-        )
-
-    if manifest.visibility == REPO_LOCAL_VISIBILITY:
-        reason = manifest.reason or "No shareable-skills.reason was provided."
-        raise SkillsManagementError(
-            f"Skill '{manifest.name}' is marked repo-local and cannot be linked. {reason}"
+            f"Skill '{manifest.name}' is not shareable. {reason} "
+            f"{build_make_shareable_recommendation(manifest.name)}"
         )
 
     for dependency_name in manifest.requires:
@@ -488,7 +481,7 @@ def ensure_shareable_manifest(
                 f"{build_make_shareable_recommendation(dependency_name)}"
             )
 
-        if dependency.visibility != SHAREABLE_VISIBILITY:
+        if dependency.visibility not in EXPORTABLE_VISIBILITY:
             raise SkillsManagementError(
                 f"Skill '{manifest.name}' depends on '{dependency_name}', which is not shareable."
             )
@@ -537,11 +530,11 @@ def describe_skills(manifests: dict[str, SkillManifest]) -> str:
     lines: list[str] = []
     for skill_name in sorted(manifests):
         manifest = manifests[skill_name]
-        category = manifest.category or "missing"
+        scope = manifest.scope or "missing"
         visibility = manifest.visibility or "missing"
         requires = " ".join(manifest.requires) if manifest.requires else "-"
         line = (
-            f"{manifest.name}: category {category}; "
+            f"{manifest.name}: scope {scope}; "
             f"visibility {visibility}; requires {requires}"
         )
         if manifest.reason:
