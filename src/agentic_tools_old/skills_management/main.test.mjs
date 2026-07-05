@@ -58,6 +58,24 @@ const writeRepoSkill = (
   writeSkillInRoot(path.join(repoRoot, ".agents", "skills"), name, metadata);
 };
 
+/**
+ * @param {string} skillsRoot
+ * @param {Record<string, string>} aliases
+ */
+const writeAliasRegistry = (skillsRoot, aliases) => {
+  const registryDir = path.join(
+    skillsRoot,
+    "ref-sp-agents-shareable-skills",
+    "references",
+  );
+  fs.mkdirSync(registryDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(registryDir, "registry.json"),
+    JSON.stringify({ aliases }),
+    "utf8",
+  );
+};
+
 describe("skills-management Node CLI", () => {
   test("discoverSkillManifests accepts a packaged skills root path", () => {
     const tempDir = createTempDir();
@@ -254,6 +272,68 @@ describe("skills-management Node CLI", () => {
 
       expect(exitCode).toBe(0);
       expect(messages.join("\n")).toMatch(/Linked .*ref-alpha/u);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("runSkillsManagement sync resolves a renamed skill through the registry", async () => {
+    const tempDir = createTempDir();
+    try {
+      const packageRoot = path.join(tempDir, "node_modules", "agentic-tools");
+      fs.mkdirSync(packageRoot, { recursive: true });
+      fs.writeFileSync(
+        path.join(packageRoot, "package.json"),
+        '{"name":"agentic-tools","version":"0.1.0"}\n',
+        "utf8",
+      );
+      writeRepoSkill(packageRoot, "ref-new-name", {
+        visibility: "public",
+      });
+      writeAliasRegistry(path.join(packageRoot, ".agents", "skills"), {
+        "ref-old-name": "ref-new-name",
+      });
+
+      const destinationAgentsDir = path.join(tempDir, ".agents");
+      fs.mkdirSync(destinationAgentsDir, { recursive: true });
+      fs.writeFileSync(
+        path.join(destinationAgentsDir, "skills.json"),
+        JSON.stringify(
+          {
+            sources: [
+              {
+                from: "package:agentic-tools",
+                skills: ["ref-old-name"],
+              },
+            ],
+          },
+          null,
+          2,
+        ),
+        "utf8",
+      );
+
+      /** @type {string[]} */
+      const messages = [];
+      const exitCode = await runSkillsManagement(["sync", "--to", tempDir], {
+        cwd: tempDir,
+        output: (message) => {
+          messages.push(message);
+        },
+      });
+
+      const linkedSkillDir = path.join(
+        tempDir,
+        ".agents",
+        "skills",
+        "ref-new-name",
+      );
+      expect(exitCode).toBe(0);
+      expect(messages.join("\n")).toMatch(
+        /Note: skill 'ref-old-name' was renamed to 'ref-new-name'/u,
+      );
+      expect(fs.lstatSync(linkedSkillDir).isSymbolicLink()).toBe(true);
+      expect(messages.join("\n")).toMatch(/Linked .*ref-new-name/u);
     } finally {
       cleanupTempDir(tempDir);
     }

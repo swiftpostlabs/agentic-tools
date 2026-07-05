@@ -13,12 +13,17 @@ import { ToolError, createDirectoryLink, createExecutionOptions, deduplicatePres
 /** @typedef {{ source: string, skills: string[] }} ConfiguredSkillSource */
 
 const EXPORTABLE_VISIBILITY = new Set(["public", "organization"]);
-const SHAREABILITY_WIZARD = "tool-make-skill-shareable";
+const SHAREABILITY_WIZARD = "tool-sp-make-skill-shareable";
 const DEFAULT_GLOBAL_SKILLS_DIR = path.join(os.homedir(), ".agents", "skills");
 const PACKAGE_SOURCE_PREFIX = "package:";
 const SYNC_CONFIG_FILENAME = "skills.json";
 const AGENTS_CONFIG_FILENAME = "config.json";
 const SKILLS_CONFIG_SECTION = "skills";
+const SKILL_ALIAS_REGISTRY_PATH = [
+    "ref-sp-agents-shareable-skills",
+    "references",
+    "registry.json",
+];
 /**
  * @param {unknown} value
  */
@@ -26,7 +31,9 @@ const splitRequires = (value) => {
     if (typeof value !== "string") {
         return [];
     }
-    return value.split(/\s+/u).filter(Boolean);
+    // Match the sharing spec and validator: requires is whitespace- or
+    // comma-delimited, so both "a b" and "a, b" yield the same dependencies.
+    return value.split(/[\s,]+/u).filter(Boolean);
 };
 /**
  * @param {CommandArgs} args
@@ -137,6 +144,79 @@ export const discoverSkillManifests = (sourcePath) => {
     return manifests;
 };
 /**
+ * Read the source's rename registry so old skill names still resolve. Aliases
+ * map a pre-rename skill name to its current name. Missing or malformed
+ * registries degrade gracefully to an empty map.
+ * @param {string} sourcePath
+ * @returns {Record<string, string>}
+ */
+export const loadSkillAliases = (sourcePath) => {
+    const registryPath = path.join(resolveSourceSkillsRoot(sourcePath), ...SKILL_ALIAS_REGISTRY_PATH);
+    if (!isFile(registryPath)) {
+        return {};
+    }
+    let parsed;
+    try {
+        parsed = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+    }
+    catch {
+        return {};
+    }
+    if (parsed === null || Array.isArray(parsed) || typeof parsed !== "object") {
+        return {};
+    }
+    const rawAliases = parsed.aliases;
+    if (rawAliases === null || Array.isArray(rawAliases) || typeof rawAliases !== "object") {
+        return {};
+    }
+    /** @type {Record<string, string>} */
+    const aliases = {};
+    for (const [oldName, newName] of Object.entries(rawAliases)) {
+        if (typeof newName === "string") {
+            aliases[oldName] = newName;
+        }
+    }
+    return aliases;
+};
+/**
+ * @param {string} name
+ * @param {SkillManifestMap} manifests
+ * @param {Record<string, string>} aliases
+ * @returns {SkillManifest | undefined}
+ */
+const lookupManifest = (name, manifests, aliases) => {
+    const direct = manifests[name];
+    if (direct !== undefined) {
+        return direct;
+    }
+    const canonical = aliases[name];
+    if (canonical === undefined) {
+        return undefined;
+    }
+    return manifests[canonical];
+};
+/**
+ * @param {string[]} requestedNames
+ * @param {SkillManifestMap} manifests
+ * @param {Record<string, string>} aliases
+ * @returns {string[]}
+ */
+const describeAliasRedirects = (requestedNames, manifests, aliases) => {
+    /** @type {string[]} */
+    const messages = [];
+    for (const name of deduplicatePreservingOrder(requestedNames)) {
+        if (manifests[name] !== undefined) {
+            continue;
+        }
+        const canonical = aliases[name];
+        if (canonical !== undefined && manifests[canonical] !== undefined) {
+            messages.push(`Note: skill '${name}' was renamed to '${canonical}'; ` +
+                "update your configuration to use the new name.");
+        }
+    }
+    return messages;
+};
+/**
  * @param {string} skillName
  */
 const buildMakeShareableRecommendation = (skillName) => {
@@ -148,14 +228,15 @@ const buildMakeShareableRecommendation = (skillName) => {
 /**
  * @param {SkillManifest} manifest
  * @param {SkillManifestMap} manifests
+ * @param {Record<string, string>} [aliases]
  */
-const ensureShareableManifest = (manifest, manifests) => {
+const ensureShareableManifest = (manifest, manifests, aliases = {}) => {
     if (!manifest.visibility || !EXPORTABLE_VISIBILITY.has(manifest.visibility)) {
         const reasonSuffix = manifest.reason ? ` Reason: ${manifest.reason}` : "";
         throw new ToolError(`Skill '${manifest.name}' is not shareable.${reasonSuffix} ${buildMakeShareableRecommendation(manifest.name)}`);
     }
     for (const dependencyName of manifest.requires) {
-        const dependency = manifests[dependencyName];
+        const dependency = lookupManifest(dependencyName, manifests, aliases);
         if (dependency === undefined) {
             throw new ToolError(`Skill '${manifest.name}' depends on missing skill '${dependencyName}'.`);
         }
@@ -167,32 +248,34 @@ const ensureShareableManifest = (manifest, manifests) => {
 /**
  * @param {SkillManifestMap} manifests
  * @param {string[]} requestedNames
+ * @param {Record<string, string>} [aliases]
  * @returns {SkillManifest[]}
  */
-export const resolveSelectedSkills = (manifests, requestedNames) => {
+export const resolveSelectedSkills = (manifests, requestedNames, aliases = {}) => {
     /** @type {SkillManifest[]} */
     const resolved = [];
     const visiting = new Set();
     const visited = new Set();
     /** @param {string} skillName */
     const visit = (skillName) => {
-        if (visited.has(skillName)) {
-            return;
-        }
-        if (visiting.has(skillName)) {
-            throw new ToolError(`Circular skill dependency detected at '${skillName}'.`);
-        }
-        const manifest = manifests[skillName];
+        const manifest = lookupManifest(skillName, manifests, aliases);
         if (manifest === undefined) {
             throw new ToolError(`Unknown skill '${skillName}'.`);
         }
-        ensureShareableManifest(manifest, manifests);
-        visiting.add(skillName);
+        const canonicalName = manifest.name;
+        if (visited.has(canonicalName)) {
+            return;
+        }
+        if (visiting.has(canonicalName)) {
+            throw new ToolError(`Circular skill dependency detected at '${canonicalName}'.`);
+        }
+        ensureShareableManifest(manifest, manifests, aliases);
+        visiting.add(canonicalName);
         for (const dependencyName of manifest.requires) {
             visit(dependencyName);
         }
-        visiting.delete(skillName);
-        visited.add(skillName);
+        visiting.delete(canonicalName);
+        visited.add(canonicalName);
         resolved.push(manifest);
     };
     for (const requestedName of requestedNames) {
@@ -419,9 +502,10 @@ const loadConfiguredSkillSources = (configPath) => {
 /**
  * @param {SkillManifestMap} manifests
  * @param {string[]} requestedNames
+ * @param {Record<string, string>} [aliases]
  */
-const findMissingRequestedSkills = (manifests, requestedNames) => {
-    return deduplicatePreservingOrder(requestedNames).filter((skillName) => manifests[skillName] === undefined);
+const findMissingRequestedSkills = (manifests, requestedNames, aliases = {}) => {
+    return deduplicatePreservingOrder(requestedNames).filter((skillName) => lookupManifest(skillName, manifests, aliases) === undefined);
 };
 /**
  * @param {Array<[string, string[]]>} missingBySource
@@ -487,9 +571,15 @@ const handleListCommand = ({ source }, options) => {
  */
 const handleLinkCommand = (parsed, options) => {
     validateDestinationFlags(parsed.useGlobal, parsed.destination);
-    const manifests = discoverSkillManifests(resolvePath(parsed.source, options.cwd));
+    const sourcePath = resolvePath(parsed.source, options.cwd);
+    const manifests = discoverSkillManifests(sourcePath);
+    const aliases = loadSkillAliases(sourcePath);
     const destinationSkillsDir = resolveDestinationSkillsRoot(resolvePath(parsed.destination, options.cwd), parsed.useGlobal);
-    for (const manifest of resolveSelectedSkills(manifests, deduplicatePreservingOrder(parsed.skills))) {
+    const requestedSkills = deduplicatePreservingOrder(parsed.skills);
+    for (const message of describeAliasRedirects(requestedSkills, manifests, aliases)) {
+        options.output(message);
+    }
+    for (const manifest of resolveSelectedSkills(manifests, requestedSkills, aliases)) {
         options.output(linkSkillDirectory(manifest, destinationSkillsDir, parsed.dryRun, parsed.force));
     }
     return 0;
@@ -507,16 +597,21 @@ const handleSyncCommand = (parsed, options) => {
     const missingBySource = [];
     /** @type {SkillManifest[]} */
     const manifestsToLink = [];
+    /** @type {string[]} */
+    const aliasNotices = [];
     const linkedSkillNames = new Set();
     for (const configuredSource of loadConfiguredSkillSources(configPath)) {
-        const manifests = discoverSkillManifests(resolveConfiguredSourceRoot(configuredSource.source, configPath, options.cwd));
+        const sourceRoot = resolveConfiguredSourceRoot(configuredSource.source, configPath, options.cwd);
+        const manifests = discoverSkillManifests(sourceRoot);
+        const aliases = loadSkillAliases(sourceRoot);
         const requestedSkillNames = deduplicatePreservingOrder(configuredSource.skills);
-        const missingRequestedSkills = findMissingRequestedSkills(manifests, requestedSkillNames);
+        const missingRequestedSkills = findMissingRequestedSkills(manifests, requestedSkillNames, aliases);
         if (missingRequestedSkills.length > 0) {
             missingBySource.push([configuredSource.source, missingRequestedSkills]);
             continue;
         }
-        for (const manifest of resolveSelectedSkills(manifests, requestedSkillNames)) {
+        aliasNotices.push(...describeAliasRedirects(requestedSkillNames, manifests, aliases));
+        for (const manifest of resolveSelectedSkills(manifests, requestedSkillNames, aliases)) {
             if (linkedSkillNames.has(manifest.name)) {
                 throw new ToolError(`Skill '${manifest.name}' is configured more than once across sync sources.`);
             }
@@ -526,6 +621,9 @@ const handleSyncCommand = (parsed, options) => {
     }
     if (missingBySource.length > 0) {
         throw new ToolError(describeMissingConfiguredSkills(missingBySource));
+    }
+    for (const message of aliasNotices) {
+        options.output(message);
     }
     for (const message of cleanupDeadSkillLinks(destinationSkillsDir, parsed.dryRun)) {
         options.output(message);

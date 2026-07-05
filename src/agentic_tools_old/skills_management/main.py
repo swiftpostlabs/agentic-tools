@@ -23,11 +23,16 @@ from agentic_tools_old.utils.paths import AgenticToolsPaths
 
 DEFAULT_GLOBAL_SKILLS_DIR = Path.home() / AgenticToolsPaths.skills_path()
 EXPORTABLE_VISIBILITY = frozenset({"public", "organization"})
-SHAREABILITY_WIZARD = "tool-make-skill-shareable"
+SHAREABILITY_WIZARD = "tool-sp-make-skill-shareable"
 PACKAGE_SOURCE_PREFIX = "package:"
 PACKAGED_SKILLS_DIRNAME = "shareable_skills"
 PACKAGE_INSTALL_BOUNDARY_DIRS = frozenset({"site-packages", "dist-packages"})
 SKILLS_CONFIG_SECTION = "skills"
+SKILL_ALIAS_REGISTRY_PATH = (
+    "ref-sp-agents-shareable-skills",
+    "references",
+    "registry.json",
+)
 
 
 class SkillsManagementError(Exception):
@@ -107,7 +112,9 @@ def split_requires(value: str | None) -> tuple[str, ...]:
     if value is None:
         return ()
 
-    return tuple(entry for entry in value.split() if entry)
+    # Match the sharing spec and validator: requires is whitespace- or
+    # comma-delimited, so both "a b" and "a, b" yield the same dependencies.
+    return tuple(entry for entry in value.replace(",", " ").split() if entry)
 
 
 def is_skills_root(path: Path) -> bool:
@@ -442,6 +449,74 @@ def discover_skill_manifests(source_path: Path) -> dict[str, SkillManifest]:
     return manifests
 
 
+def load_skill_aliases(source_path: Path) -> dict[str, str]:
+    """Read the source's rename registry so old skill names still resolve.
+
+    Aliases map a pre-rename skill name to its current name. Missing or malformed
+    registries degrade gracefully to an empty map, so aliasing never turns into a
+    hard failure of its own.
+    """
+    registry_path = resolve_source_skills_root(source_path).joinpath(
+        *SKILL_ALIAS_REGISTRY_PATH
+    )
+    if not registry_path.is_file():
+        return {}
+
+    try:
+        parsed = json.loads(registry_path.read_text(encoding="utf-8"))
+    except OSError, JSONDecodeError:
+        return {}
+
+    if not isinstance(parsed, dict):
+        return {}
+
+    raw_aliases = parsed.get("aliases")
+    if not isinstance(raw_aliases, dict):
+        return {}
+
+    return {
+        old_name: new_name
+        for old_name, new_name in raw_aliases.items()
+        if isinstance(old_name, str) and isinstance(new_name, str)
+    }
+
+
+def lookup_manifest(
+    name: str,
+    manifests: dict[str, SkillManifest],
+    aliases: dict[str, str],
+) -> SkillManifest | None:
+    direct = manifests.get(name)
+    if direct is not None:
+        return direct
+
+    canonical = aliases.get(name)
+    if canonical is None:
+        return None
+
+    return manifests.get(canonical)
+
+
+def describe_alias_redirects(
+    requested_names: Sequence[str],
+    manifests: dict[str, SkillManifest],
+    aliases: dict[str, str],
+) -> list[str]:
+    messages: list[str] = []
+    for name in deduplicate_preserving_order(requested_names):
+        if name in manifests:
+            continue
+
+        canonical = aliases.get(name)
+        if canonical is not None and canonical in manifests:
+            messages.append(
+                f"Note: skill '{name}' was renamed to '{canonical}'; "
+                "update your configuration to use the new name."
+            )
+
+    return messages
+
+
 def build_make_shareable_recommendation(skill_name: str) -> str:
     return (
         f"Recommended next step: use /{SHAREABILITY_WIZARD} on '{skill_name}' to decide "
@@ -453,7 +528,9 @@ def build_make_shareable_recommendation(skill_name: str) -> str:
 def ensure_shareable_manifest(
     manifest: SkillManifest,
     manifests: dict[str, SkillManifest],
+    aliases: dict[str, str] | None = None,
 ) -> None:
+    aliases = aliases or {}
     if manifest.visibility is None:
         raise SkillsManagementError(
             f"Skill '{manifest.name}' is missing shareability metadata. "
@@ -468,7 +545,7 @@ def ensure_shareable_manifest(
         )
 
     for dependency_name in manifest.requires:
-        dependency = manifests.get(dependency_name)
+        dependency = lookup_manifest(dependency_name, manifests, aliases)
         if dependency is None:
             raise SkillsManagementError(
                 f"Skill '{manifest.name}' depends on unknown skill '{dependency_name}'."
@@ -490,31 +567,34 @@ def ensure_shareable_manifest(
 def resolve_selected_skills(
     manifests: dict[str, SkillManifest],
     requested_names: Sequence[str],
+    aliases: dict[str, str] | None = None,
 ) -> list[SkillManifest]:
+    aliases = aliases or {}
     resolved: list[SkillManifest] = []
     visiting: set[str] = set()
     visited: set[str] = set()
 
     def visit(skill_name: str) -> None:
-        if skill_name in visited:
-            return
-        if skill_name in visiting:
-            raise SkillsManagementError(
-                f"Circular skill dependency detected at '{skill_name}'."
-            )
-
-        manifest = manifests.get(skill_name)
+        manifest = lookup_manifest(skill_name, manifests, aliases)
         if manifest is None:
             raise SkillsManagementError(f"Unknown skill '{skill_name}'.")
 
-        ensure_shareable_manifest(manifest, manifests)
+        canonical_name = manifest.name
+        if canonical_name in visited:
+            return
+        if canonical_name in visiting:
+            raise SkillsManagementError(
+                f"Circular skill dependency detected at '{canonical_name}'."
+            )
 
-        visiting.add(skill_name)
+        ensure_shareable_manifest(manifest, manifests, aliases)
+
+        visiting.add(canonical_name)
         for dependency_name in manifest.requires:
             visit(dependency_name)
-        visiting.remove(skill_name)
+        visiting.remove(canonical_name)
 
-        visited.add(skill_name)
+        visited.add(canonical_name)
         resolved.append(manifest)
 
     for requested_name in requested_names:
@@ -699,11 +779,13 @@ def deduplicate_preserving_order(items: Sequence[str]) -> list[str]:
 def find_missing_requested_skills(
     manifests: dict[str, SkillManifest],
     requested_names: Sequence[str],
+    aliases: dict[str, str] | None = None,
 ) -> tuple[str, ...]:
+    aliases = aliases or {}
     return tuple(
         skill_name
         for skill_name in deduplicate_preserving_order(requested_names)
-        if skill_name not in manifests
+        if lookup_manifest(skill_name, manifests, aliases) is None
     )
 
 
@@ -799,16 +881,19 @@ def handle_link_command(
 ) -> int:
     validate_destination_flags(use_global=use_global, destination=destination)
 
-    manifests = discover_skill_manifests(resolve_path(source))
+    source_path = resolve_path(source)
+    manifests = discover_skill_manifests(source_path)
+    aliases = load_skill_aliases(source_path)
     destination_skills_dir = resolve_destination_skills_root(
         resolve_path(destination),
         use_global=use_global,
     )
 
-    for manifest in resolve_selected_skills(
-        manifests,
-        deduplicate_preserving_order(skills),
-    ):
+    requested_skills = deduplicate_preserving_order(skills)
+    for message in describe_alias_redirects(requested_skills, manifests, aliases):
+        print(message)
+
+    for manifest in resolve_selected_skills(manifests, requested_skills, aliases):
         print(
             link_skill_directory(
                 manifest,
@@ -844,19 +929,21 @@ def handle_sync_command(
 
     missing_by_source: list[tuple[str, Sequence[str]]] = []
     manifests_to_link: list[SkillManifest] = []
+    alias_notices: list[str] = []
     linked_skill_names: set[str] = set()
     for configured_source in load_configured_skill_sources(config_path):
-        manifests = discover_skill_manifests(
-            resolve_configured_source_root(
-                configured_source.source,
-                config_path=config_path,
-            )
+        source_root = resolve_configured_source_root(
+            configured_source.source,
+            config_path=config_path,
         )
+        manifests = discover_skill_manifests(source_root)
+        aliases = load_skill_aliases(source_root)
 
         requested_skill_names = deduplicate_preserving_order(configured_source.skills)
         missing_requested_skills = find_missing_requested_skills(
             manifests,
             requested_skill_names,
+            aliases,
         )
         if missing_requested_skills:
             missing_by_source.append(
@@ -864,7 +951,13 @@ def handle_sync_command(
             )
             continue
 
-        for manifest in resolve_selected_skills(manifests, requested_skill_names):
+        alias_notices.extend(
+            describe_alias_redirects(requested_skill_names, manifests, aliases)
+        )
+
+        for manifest in resolve_selected_skills(
+            manifests, requested_skill_names, aliases
+        ):
             if manifest.name in linked_skill_names:
                 raise SkillsManagementError(
                     f"Skill '{manifest.name}' is configured more than once across sync sources."
@@ -877,6 +970,9 @@ def handle_sync_command(
         raise SkillsManagementError(
             describe_missing_configured_skills(missing_by_source)
         )
+
+    for message in alias_notices:
+        print(message)
 
     for message in cleanup_dead_skill_links(
         destination_skills_dir,

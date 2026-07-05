@@ -8,8 +8,11 @@ import pytest
 from agentic_tools_old.main import main as agentic_tools_main
 import agentic_tools_old.skills_management.main as skills_management_main
 from agentic_tools_old.skills_management.main import SkillsManagementError
+from agentic_tools_old.skills_management.main import describe_alias_redirects
 from agentic_tools_old.skills_management.main import discover_skill_manifests
+from agentic_tools_old.skills_management.main import find_missing_requested_skills
 from agentic_tools_old.skills_management.main import link_skill_directory
+from agentic_tools_old.skills_management.main import load_skill_aliases
 from agentic_tools_old.skills_management.main import resolve_selected_skills
 
 
@@ -48,6 +51,14 @@ def write_skill_in_root(
 
     lines.extend(["---", "", "# Test Skill", ""])
     (skill_dir / "SKILL.md").write_text("\n".join(lines), encoding="utf-8")
+
+
+def write_alias_registry(skills_root: Path, aliases: dict[str, str]) -> None:
+    registry_path = (
+        skills_root / "ref-sp-agents-shareable-skills" / "references" / "registry.json"
+    )
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_path.write_text(json.dumps({"aliases": aliases}), encoding="utf-8")
 
 
 def assert_skills_management_error_contains(
@@ -246,7 +257,7 @@ def test_resolve_selected_skills_rejects_missing_metadata_with_wizard_recommenda
 
     assert_skills_management_error_contains(
         lambda: resolve_selected_skills(manifests, ["ref-alpha"]),
-        "tool-make-skill-shareable",
+        "tool-sp-make-skill-shareable",
     )
 
 
@@ -274,6 +285,102 @@ def test_resolve_selected_skills_rejects_repo_local_dependency(tmp_path: Path) -
         lambda: resolve_selected_skills(manifests, ["ref-alpha"]),
         "which is not shareable",
     )
+
+
+def test_discover_skill_manifests_parses_comma_delimited_requires(
+    tmp_path: Path,
+) -> None:
+    write_skill(
+        tmp_path,
+        "ref-alpha",
+        metadata={
+            "visibility": "public",
+            "requires": "ref-beta, ref-gamma",
+        },
+    )
+
+    manifests = discover_skill_manifests(tmp_path)
+
+    assert manifests["ref-alpha"].requires == ("ref-beta", "ref-gamma")
+
+
+def test_load_skill_aliases_reads_registry(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_alias_registry(
+        tmp_path / ".agents" / "skills",
+        {"ref-old": "ref-new"},
+    )
+
+    assert load_skill_aliases(tmp_path) == {"ref-old": "ref-new"}
+
+
+def test_load_skill_aliases_missing_registry_returns_empty(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+
+    assert load_skill_aliases(tmp_path) == {}
+
+
+def test_resolve_selected_skills_resolves_renamed_skill_through_alias(
+    tmp_path: Path,
+) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    manifests = discover_skill_manifests(tmp_path)
+    aliases = {"ref-old": "ref-new"}
+
+    resolved = resolve_selected_skills(manifests, ["ref-old"], aliases)
+
+    assert [manifest.name for manifest in resolved] == ["ref-new"]
+
+
+def test_resolve_selected_skills_dedupes_old_and_new_name(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    manifests = discover_skill_manifests(tmp_path)
+    aliases = {"ref-old": "ref-new"}
+
+    resolved = resolve_selected_skills(manifests, ["ref-old", "ref-new"], aliases)
+
+    assert [manifest.name for manifest in resolved] == ["ref-new"]
+
+
+def test_resolve_selected_skills_reports_unknown_non_alias(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    manifests = discover_skill_manifests(tmp_path)
+
+    assert_skills_management_error_contains(
+        lambda: resolve_selected_skills(
+            manifests, ["ref-unknown"], {"ref-old": "ref-new"}
+        ),
+        "Unknown skill 'ref-unknown'",
+    )
+
+
+def test_find_missing_requested_skills_treats_alias_as_present(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    manifests = discover_skill_manifests(tmp_path)
+
+    missing = find_missing_requested_skills(
+        manifests,
+        ["ref-old", "ref-absent"],
+        {"ref-old": "ref-new"},
+    )
+
+    assert missing == ("ref-absent",)
+
+
+def test_describe_alias_redirects_notes_renamed_skill(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    manifests = discover_skill_manifests(tmp_path)
+
+    messages = describe_alias_redirects(
+        ["ref-old", "ref-new"],
+        manifests,
+        {"ref-old": "ref-new"},
+    )
+
+    assert messages == [
+        "Note: skill 'ref-old' was renamed to 'ref-new'; "
+        "update your configuration to use the new name."
+    ]
 
 
 def test_link_skill_directory_dry_run_does_not_create_target_directory(
@@ -618,6 +725,49 @@ def test_main_sync_dry_run_supports_package_sources(
     assert exit_code == 0
     assert str(destination_repo / ".agents" / "skills" / "ref-alpha") in output
     assert str(source_repo / ".agents" / "skills" / "ref-alpha") in output
+
+
+def test_main_sync_dry_run_resolves_renamed_skill_through_registry(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-new-name",
+        metadata={"visibility": "public"},
+    )
+    write_alias_registry(
+        source_repo / ".agents" / "skills",
+        {"ref-old-name": "ref-new-name"},
+    )
+    (destination_agents_dir / "skills.json").write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "../source",
+                        "skills": ["ref-old-name"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
+    )
+    output = capsys.readouterr().out
+
+    assert exit_code == 0
+    assert "Note: skill 'ref-old-name' was renamed to 'ref-new-name'" in output
+    assert str(destination_repo / ".agents" / "skills" / "ref-new-name") in output
+    assert str(source_repo / ".agents" / "skills" / "ref-new-name") in output
 
 
 def test_main_unlink_dry_run_uses_expected_source_and_destination(
