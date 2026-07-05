@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-skills-management
-description: "Repository-specific guidance for the skills-management CLI and .agents/config.json skills workflow in this repo. Use when: working on src/agentic_tools/skills_management, updating skills-management docs, or debugging skill linking and sync behavior in a consuming repo."
+description: "Repository-specific guidance for the skills-management CLI and .agents/config.json skills workflow in this repo. Use when: working on the skills-management CLI, updating skills-management docs, or debugging skill linking and sync behavior in a consuming repo."
 metadata:
   owner-prefix: "sp"
   owner: "swiftpostlab/agentic-tools"
@@ -17,7 +17,7 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 
 ## When to use this skill
 
-- Editing `src/agentic_tools_old/skills_management/`.
+- Working on the skills-management CLI or its sync logic.
 - Updating README or repo guidance for skill linking and syncing.
 - Debugging why a skill cannot be linked, synced, or unlinked.
 - Explaining how a consuming repo should configure the `skills` section in `.agents/config.json`.
@@ -32,8 +32,7 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 
 - Distribution name: `agentic-tools`
 - Canonical entry points: `uv run agentic-tools skills ...` and the Node package command `agentic-tools skills ...`
-- Python implementation path: `src/agentic_tools_old/skills_management/main.py`
-- Node implementation path: `src/agentic_tools_old/skills_management/main.mjs`
+- Implemented as the `skills-management` feature of the `agentic-tools` package (Python primary, with a legacy Node port); locate it by feature name rather than a fixed path while the package is being restructured.
 - Packaged CLI entrypoint: `agentic-tools`; standalone skills-management bins are not exported.
 - Default global destination: `~/.agents/skills`
 
@@ -123,7 +122,7 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 
 - Use `uv run agentic-tools skills list` to validate discovery and metadata parsing.
 - Use `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging a target repo.
-- Check `src/agentic_tools_old/skills_management/main_test.py` when changing source resolution, dependency handling, or Windows link behavior.
+- Exercise the skills-management unit tests when changing source resolution, dependency handling, or Windows link behavior.
 - Keep README examples aligned with the CLI behavior and config contract.
 
 ## References
@@ -131,6 +130,6 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 - Read `./references/checklist.md` for a quick maintenance or debugging pass.
 - Read `./references/config-shape.md` for the `.agents/config.json` skills contract and source-resolution rules.
 - Read `README.md` for the repo's user-facing examples.
-- Read `src/agentic_tools_old/skills_management/main.py` for the implementation surface and `src/agentic_tools_old/skills_management/main_test.py` for the guarded behavior.
+- Inspect the `skills-management` feature's implementation and its collocated tests for the exact source-resolution and Windows-link behavior.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for CLI and sync prompts.
 - Review `./evals/evals.json` when validating output quality for CLI behavior explanations.

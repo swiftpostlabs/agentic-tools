@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-policy
-description: "Repository-specific guidance for the agents-policy feature, .agents/config.json policy section, and generated AI restriction outputs in this repo. Use when: editing src/agentic_tools/agents_policy, updating policy docs, or debugging Copilot, Claude Code, or Gemini policy generation here."
+description: "Repository-specific guidance for the agents-policy feature, .agents/config.json policy section, and generated AI restriction outputs in this repo. Use when: working on the agents-policy feature, updating policy docs, or debugging Copilot, Claude Code, or Gemini policy generation here."
 metadata:
   owner-prefix: "sp"
   owner: "swiftpostlab/agentic-tools"
@@ -17,7 +17,7 @@ Document this repository's concrete AI policy implementation: the canonical poli
 
 ## When to use this skill
 
-- Editing `src/agentic_tools/agents_policy/`.
+- Working on the agents-policy feature or its generator logic.
 - Updating policy docs, CI enforcement, or command references in this repo.
 - Debugging why `.aiexclude`, `.claude/settings.json`, or `.vscode/settings.json` did or did not change.
 - Explaining how the `policy` section in `.agents/config.json` should be authored in this repo.
@@ -29,8 +29,7 @@ Document this repository's concrete AI policy implementation: the canonical poli
   - `uv run agentic-tools policy sync`
   - `uv run agentic-tools policy check`
   - `uv run agentic-tools policy import-vscode`
-- Python implementation path: `src/agentic_tools/agents_policy/main.py`
-- Node implementation path: `src/agentic_tools/agents_policy/main.mjs`
+- Implemented as the `agents-policy` feature of the `agentic-tools` package (Python primary, with a legacy Node port); locate it by feature name rather than a fixed path while the package is being restructured.
 - Packaged CLI entrypoint: `agentic-tools`; standalone policy bins are not exported.
 
 ## Policy Model
@@ -85,7 +84,7 @@ If `services` is omitted, the implementation defaults to all supported services.
 
 - Run `uv run agentic-tools policy sync` after changing `.agents/config.json` or the sync implementation.
 - Run `uv run agentic-tools policy check` in CI or before commit flows that should reject policy drift without mutating files.
-- Run `uv run python -m pytest src/agentic_tools/agents_policy/main_test.py -q` when changing policy logic.
+- Run the agents-policy unit tests with `uv run poe test` (or target the feature's collocated `*_test.py`) when changing policy logic.
 - Check CI drift enforcement in `.github/workflows/ci.yaml` if output file names or command names change.
 - Keep `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` aligned with the current policy file.
 

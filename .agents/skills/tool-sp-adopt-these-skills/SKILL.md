@@ -87,7 +87,7 @@ Adopt these when they match the target repo's needs:
 If the target repo wants the same protected-file and exclusion workflow, copy and adapt these together as one unit:
 
 - `.agents/config.json` — source of truth for protected files, excluded files, approval maps, enabled services, and future agent config sections.
-- `src/agentic_tools/agents_policy/main.py` or an adapted equivalent — deterministic generator for editor- and agent-specific config.
+- The agents-policy generator (the deterministic policy-sync implementation in the `agentic-tools` package) or an adapted equivalent — generates editor- and agent-specific config.
 - `.aiexclude` — generated exclusion file.
 - `.claude/settings.json` — generated protected read rules for Claude.
 - `.vscode/settings.json` — generated protected file associations and approval maps for Copilot.

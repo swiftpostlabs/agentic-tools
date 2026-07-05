@@ -123,9 +123,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 - Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
 **`ref-sp-agents-policy`** — Repo-specific agents-policy guidance
-- Use when: working on `src/agentic_tools/agents_policy`, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
+- Use when: working on the agents-policy feature, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
 **`ref-sp-agents-skills-management`** — Repo-specific skills-management CLI guidance
-- Use when: working on `src/agentic_tools/skills_management`, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
+- Use when: working on the skills-management CLI, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
 
 **`ref-sp-js-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
 - Use when: writing or reviewing TypeScript code, types, or configuration decisions
