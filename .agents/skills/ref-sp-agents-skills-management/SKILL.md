@@ -17,7 +17,7 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 
 ## When to use this skill
 
-- Editing `src/agentic_tools/skills_management/`.
+- Editing `src/agentic_tools_old/skills_management/`.
 - Updating README or repo guidance for skill linking and syncing.
 - Debugging why a skill cannot be linked, synced, or unlinked.
 - Explaining how a consuming repo should configure the `skills` section in `.agents/config.json`.
@@ -32,8 +32,8 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 
 - Distribution name: `agentic-tools`
 - Canonical entry points: `uv run agentic-tools skills ...` and the Node package command `agentic-tools skills ...`
-- Python implementation path: `src/agentic_tools/skills_management/main.py`
-- Node implementation path: `src/agentic_tools/skills_management/main.mjs`
+- Python implementation path: `src/agentic_tools_old/skills_management/main.py`
+- Node implementation path: `src/agentic_tools_old/skills_management/main.mjs`
 - Packaged CLI entrypoint: `agentic-tools`; standalone skills-management bins are not exported.
 - Default global destination: `~/.agents/skills`
 
@@ -44,12 +44,12 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 - Lists the discovered skills from a source repo.
 - Default source is the current working directory.
 - Accepts either a repo root or a direct `.agents/skills` path via `--from`.
-- Reports each skill's `agentic-tools-category`, `shareable-skills.visibility`, dependencies, and optional reason.
+- Reports each skill's `scope`, `visibility`, dependencies, and optional reason.
 
 ### `link`
 
 - Links one or more selected shareable skills from a source repo into a destination repo or the global skills directory.
-- Resolves hard dependencies declared in `shareable-skills.requires` automatically.
+- Resolves hard dependencies declared in `requires` automatically.
 - Refuses to link skills that are missing shareability metadata, marked `repo-local`, or depend on non-shareable or unknown skills.
 - Supports `--dry-run` for planning and `--force` for replacing an existing link that points somewhere else.
 - Supports `--global` to target `~/.agents/skills` instead of a repo-local `.agents/skills` directory.
@@ -74,9 +74,9 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 ## Shareability Enforcement
 
 - The CLI only links skills that have explicit shareability metadata.
-- `shareable-skills.visibility` must be either `shareable` or `repo-local`.
-- `repo-local` skills are rejected during linking and syncing.
-- Dependencies listed in `shareable-skills.requires` are resolved recursively and must themselves be shareable.
+- `visibility` must be one of `public`, `organization`, or `repo-local`.
+- Only `public` and `organization` visibility skills can be linked; `repo-local` skills are rejected.
+- Dependencies listed in `requires` are resolved recursively and must themselves be shareable (public or organization).
 - Missing metadata triggers a recommendation to use `tool-sp-make-skill-shareable`.
 
 ## Sync Config Model
@@ -123,7 +123,7 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 
 - Use `uv run agentic-tools skills list` to validate discovery and metadata parsing.
 - Use `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging a target repo.
-- Check `src/agentic_tools/skills_management/main_test.py` when changing source resolution, dependency handling, or Windows link behavior.
+- Check `src/agentic_tools_old/skills_management/main_test.py` when changing source resolution, dependency handling, or Windows link behavior.
 - Keep README examples aligned with the CLI behavior and config contract.
 
 ## References
@@ -131,6 +131,6 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 - Read `./references/checklist.md` for a quick maintenance or debugging pass.
 - Read `./references/config-shape.md` for the `.agents/config.json` skills contract and source-resolution rules.
 - Read `README.md` for the repo's user-facing examples.
-- Read `src/agentic_tools/skills_management/main.py` for the implementation surface and `src/agentic_tools/skills_management/main_test.py` for the guarded behavior.
+- Read `src/agentic_tools_old/skills_management/main.py` for the implementation surface and `src/agentic_tools_old/skills_management/main_test.py` for the guarded behavior.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for CLI and sync prompts.
 - Review `./evals/evals.json` when validating output quality for CLI behavior explanations.
