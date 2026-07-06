@@ -6,7 +6,7 @@ import path from "node:path";
 import { ToolError, createDirectoryLink, createExecutionOptions, deduplicatePreservingOrder, ensureJsonObject, isDirectory, isDirectoryLink, isFile, parseFrontmatter, pathExists, removeDirectoryLink, resolveExistingLinkTarget, resolvePackageRoot, resolvePath, } from "../utils/common.mjs";
 
 /** @import { ExecutionOptions, RunOptions } from "../utils/common.mjs" */
-/** @typedef {{ name: string, directory: string, scope: string | null, visibility: string | null, requires: string[], reason: string | null }} SkillManifest */
+/** @typedef {{ name: string, directory: string, domain: string | null, visibility: string | null, requires: string[], reason: string | null }} SkillManifest */
 /** @typedef {Record<string, SkillManifest>} SkillManifestMap */
 /** @typedef {{ skills: string[], source: string | null, destination: string | null, useGlobal: boolean, dryRun: boolean, force: boolean, config: string | null }} TargetCommandState */
 /** @typedef {{ _: string[], [key: string]: unknown }} CommandArgs */
@@ -118,13 +118,15 @@ const readSkillManifest = (skillDirectory) => {
         typeof frontmatter.metadata === "object"
         ? ensureJsonObject(frontmatter.metadata, `Skill metadata for '${rawName}'`)
         : {};
+    // Portability fields live under the metadata.shareable-skills.* namespace
+    // (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md).
     return {
         name: rawName,
         directory: skillDirectory,
-        scope: typeof metadata.scope === "string" ? metadata.scope : null,
-        visibility: typeof metadata.visibility === "string" ? metadata.visibility : null,
-        requires: splitRequires(metadata.requires),
-        reason: typeof metadata.reason === "string" ? metadata.reason : null,
+        domain: typeof metadata["shareable-skills.domain"] === "string" ? metadata["shareable-skills.domain"] : null,
+        visibility: typeof metadata["shareable-skills.visibility"] === "string" ? metadata["shareable-skills.visibility"] : null,
+        requires: splitRequires(metadata["shareable-skills.requires"]),
+        reason: typeof metadata["shareable-skills.reason"] === "string" ? metadata["shareable-skills.reason"] : null,
     };
 };
 /**
@@ -361,11 +363,11 @@ const describeSkills = (manifests) => {
     return skillNames
         .map((skillName) => {
         const manifest = manifests[skillName];
-        const scope = manifest.scope ?? "missing";
+        const domain = manifest.domain ?? "missing";
         const visibility = manifest.visibility ?? "missing";
         const requires = manifest.requires.length > 0 ? manifest.requires.join(" ") : "-";
         const reason = manifest.reason ? `; reason ${manifest.reason}` : "";
-        return `${manifest.name}: scope ${scope}; visibility ${visibility}; requires ${requires}${reason}`;
+        return `${manifest.name}: domain ${domain}; visibility ${visibility}; requires ${requires}${reason}`;
     })
         .join("\n");
 };

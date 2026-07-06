@@ -88,14 +88,14 @@ describe("skills-management Node CLI", () => {
         "skills",
       );
       writeSkillInRoot(packagedSkillsRoot, "ref-alpha", {
-        scope: "ref-sp-agents",
-        visibility: "public",
+        "shareable-skills.domain": "agents",
+        "shareable-skills.visibility": "public",
       });
 
       const manifests = discoverSkillManifests(packagedSkillsRoot);
 
       expect(Object.keys(manifests)).toEqual(["ref-alpha"]);
-      expect(manifests["ref-alpha"].scope).toBe("ref-sp-agents");
+      expect(manifests["ref-alpha"].domain).toBe("agents");
     } finally {
       cleanupTempDir(tempDir);
     }
@@ -129,7 +129,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        visibility: "public",
+        "shareable-skills.visibility": "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
@@ -183,7 +183,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        visibility: "public",
+        "shareable-skills.visibility": "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
@@ -234,7 +234,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        visibility: "public",
+        "shareable-skills.visibility": "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");
@@ -288,7 +288,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-new-name", {
-        visibility: "public",
+        "shareable-skills.visibility": "public",
       });
       writeAliasRegistry(path.join(packageRoot, ".agents", "skills"), {
         "ref-old-name": "ref-new-name",
@@ -368,7 +368,7 @@ describe("skills-management Node CLI", () => {
         "utf8",
       );
       writeRepoSkill(packageRoot, "ref-alpha", {
-        visibility: "public",
+        "shareable-skills.visibility": "public",
       });
 
       const destinationAgentsDir = path.join(tempDir, ".agents");

@@ -45,7 +45,7 @@ class SkillsManagementError(Exception):
 class SkillManifest:
     name: str
     directory: Path
-    scope: str | None
+    domain: str | None
     visibility: str | None
     requires: tuple[str, ...]
     reason: str | None
@@ -431,15 +431,17 @@ def read_skill_manifest(skill_directory: Path) -> SkillManifest:
 
     metadata = frontmatter.get("metadata", {})
     metadata_mapping = metadata if isinstance(metadata, dict) else {}
-    scope = metadata_mapping.get("scope")
-    visibility = metadata_mapping.get("visibility")
-    requires = split_requires(metadata_mapping.get("requires"))
-    reason = metadata_mapping.get("reason")
+    # Portability fields live under the metadata.shareable-skills.* namespace
+    # (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md).
+    domain = metadata_mapping.get("shareable-skills.domain")
+    visibility = metadata_mapping.get("shareable-skills.visibility")
+    requires = split_requires(metadata_mapping.get("shareable-skills.requires"))
+    reason = metadata_mapping.get("shareable-skills.reason")
 
     return SkillManifest(
         name=raw_name,
         directory=skill_directory,
-        scope=scope,
+        domain=domain,
         visibility=visibility,
         requires=requires,
         reason=reason,
@@ -596,7 +598,7 @@ def build_make_shareable_recommendation(skill_name: str) -> str:
     return (
         f"Recommended next step: use /{SHAREABILITY_WIZARD} on '{skill_name}' to decide "
         "whether it should be shareable or repo-local and to add "
-        "scope, visibility, requires, and reason if needed."
+        "domain, visibility, requires, and reason if needed."
     )
 
 
@@ -685,11 +687,11 @@ def describe_skills(manifests: dict[str, SkillManifest]) -> str:
     lines: list[str] = []
     for skill_name in sorted(manifests):
         manifest = manifests[skill_name]
-        scope = manifest.scope or "missing"
+        domain = manifest.domain or "missing"
         visibility = manifest.visibility or "missing"
         requires = " ".join(manifest.requires) if manifest.requires else "-"
         line = (
-            f"{manifest.name}: scope {scope}; "
+            f"{manifest.name}: domain {domain}; "
             f"visibility {visibility}; requires {requires}"
         )
         if manifest.reason:

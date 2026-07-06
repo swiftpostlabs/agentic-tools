@@ -79,16 +79,16 @@ def test_discover_skill_manifests_reads_shareability_metadata(tmp_path: Path) ->
         tmp_path,
         "ref-alpha",
         metadata={
-            "scope": "agents",
-            "visibility": "public",
-            "requires": "ref-beta ref-gamma",
+            "shareable-skills.domain": "agents",
+            "shareable-skills.visibility": "public",
+            "shareable-skills.requires": "ref-beta ref-gamma",
         },
     )
 
     manifests = discover_skill_manifests(tmp_path)
 
     alpha = manifests["ref-alpha"]
-    assert alpha.scope == "agents"
+    assert alpha.domain == "agents"
     assert alpha.visibility == "public"
     assert alpha.requires == ("ref-beta", "ref-gamma")
 
@@ -97,7 +97,7 @@ def test_discover_skill_manifests_accepts_skills_root_path(tmp_path: Path) -> No
     write_skill(
         tmp_path,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     manifests = discover_skill_manifests(tmp_path / ".agents" / "skills")
@@ -112,7 +112,7 @@ def test_discover_skill_manifests_accepts_packaged_skills_root_path(
     write_skill_in_root(
         packaged_skills_root,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     manifests = discover_skill_manifests(packaged_skills_root)
@@ -128,7 +128,7 @@ def test_resolve_package_source_root_prefers_packaged_skills_root(
     write_skill_in_root(
         package_root / "shareable_skills",
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     spec = ModuleSpec("agentic_tools_old", loader=None, is_package=True)
     spec.submodule_search_locations = [str(package_root)]
@@ -148,7 +148,7 @@ def test_resolve_package_source_root_falls_back_to_legacy_module_name(
     write_skill_in_root(
         legacy_package_root / "shareable_skills",
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     modern_spec = ModuleSpec("agentic_tools", loader=None, is_package=True)
@@ -181,14 +181,14 @@ def test_resolve_package_source_root_prefers_repo_root_over_stale_packaged_copy(
     write_skill_in_root(
         package_root / "shareable_skills",
         "ref-stale",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     repo_root = tmp_path / "repo"
     write_skill(
         repo_root,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     source_root = repo_root / "src" / "agentic_tools_old"
     source_root.mkdir(parents=True)
@@ -216,7 +216,7 @@ def test_resolve_package_source_root_ignores_consumer_repo_above_site_packages(
     write_skill_in_root(
         package_root / "shareable_skills",
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     spec = ModuleSpec("agentic_tools_old", loader=None, is_package=True)
@@ -233,14 +233,14 @@ def test_resolve_selected_skills_includes_dependencies_first(tmp_path: Path) -> 
     write_skill(
         tmp_path,
         "ref-beta",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     write_skill(
         tmp_path,
         "ref-alpha",
         metadata={
-            "visibility": "public",
-            "requires": "ref-beta",
+            "shareable-skills.visibility": "public",
+            "shareable-skills.requires": "ref-beta",
         },
     )
 
@@ -267,16 +267,16 @@ def test_resolve_selected_skills_rejects_repo_local_dependency(tmp_path: Path) -
         tmp_path,
         "ref-beta",
         metadata={
-            "visibility": "repo-local",
-            "reason": "Relies on a repo-only helper.",
+            "shareable-skills.visibility": "repo-local",
+            "shareable-skills.reason": "Relies on a repo-only helper.",
         },
     )
     write_skill(
         tmp_path,
         "ref-alpha",
         metadata={
-            "visibility": "public",
-            "requires": "ref-beta",
+            "shareable-skills.visibility": "public",
+            "shareable-skills.requires": "ref-beta",
         },
     )
 
@@ -295,8 +295,8 @@ def test_discover_skill_manifests_parses_comma_delimited_requires(
         tmp_path,
         "ref-alpha",
         metadata={
-            "visibility": "public",
-            "requires": "ref-beta, ref-gamma",
+            "shareable-skills.visibility": "public",
+            "shareable-skills.requires": "ref-beta, ref-gamma",
         },
     )
 
@@ -306,7 +306,7 @@ def test_discover_skill_manifests_parses_comma_delimited_requires(
 
 
 def test_load_skill_aliases_reads_registry(tmp_path: Path) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
     write_alias_registry(
         tmp_path / ".agents" / "skills",
         {"ref-old": "ref-new"},
@@ -316,7 +316,7 @@ def test_load_skill_aliases_reads_registry(tmp_path: Path) -> None:
 
 
 def test_load_skill_aliases_missing_registry_returns_empty(tmp_path: Path) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
 
     assert load_skill_aliases(tmp_path) == {}
 
@@ -324,7 +324,7 @@ def test_load_skill_aliases_missing_registry_returns_empty(tmp_path: Path) -> No
 def test_resolve_selected_skills_resolves_renamed_skill_through_alias(
     tmp_path: Path,
 ) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
     manifests = discover_skill_manifests(tmp_path)
     aliases = {"ref-old": "ref-new"}
 
@@ -334,7 +334,7 @@ def test_resolve_selected_skills_resolves_renamed_skill_through_alias(
 
 
 def test_resolve_selected_skills_dedupes_old_and_new_name(tmp_path: Path) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
     manifests = discover_skill_manifests(tmp_path)
     aliases = {"ref-old": "ref-new"}
 
@@ -344,7 +344,7 @@ def test_resolve_selected_skills_dedupes_old_and_new_name(tmp_path: Path) -> Non
 
 
 def test_resolve_selected_skills_reports_unknown_non_alias(tmp_path: Path) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
     manifests = discover_skill_manifests(tmp_path)
 
     assert_skills_management_error_contains(
@@ -356,7 +356,7 @@ def test_resolve_selected_skills_reports_unknown_non_alias(tmp_path: Path) -> No
 
 
 def test_find_missing_requested_skills_treats_alias_as_present(tmp_path: Path) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
     manifests = discover_skill_manifests(tmp_path)
 
     missing = find_missing_requested_skills(
@@ -369,7 +369,7 @@ def test_find_missing_requested_skills_treats_alias_as_present(tmp_path: Path) -
 
 
 def test_describe_alias_redirects_notes_renamed_skill(tmp_path: Path) -> None:
-    write_skill(tmp_path, "ref-new", metadata={"visibility": "public"})
+    write_skill(tmp_path, "ref-new", metadata={"shareable-skills.visibility": "public"})
     manifests = discover_skill_manifests(tmp_path)
 
     messages = describe_alias_redirects(
@@ -442,7 +442,7 @@ def test_link_skill_directory_dry_run_does_not_create_target_directory(
     write_skill(
         tmp_path,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     manifests = discover_skill_manifests(tmp_path)
 
@@ -465,7 +465,7 @@ def test_link_skill_directory_falls_back_to_windows_junction_when_needed(
     write_skill(
         tmp_path,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     manifests = discover_skill_manifests(tmp_path)
 
@@ -513,7 +513,7 @@ def test_main_list_prints_all_skills_from_source(
     write_skill(
         tmp_path,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     write_skill(tmp_path, "tool-beta")
 
@@ -521,8 +521,8 @@ def test_main_list_prints_all_skills_from_source(
     output = capsys.readouterr().out
 
     assert exit_code == 0
-    assert "ref-alpha: scope missing; visibility public; requires -" in output
-    assert "tool-beta: scope missing; visibility missing; requires -" in output
+    assert "ref-alpha: domain missing; visibility public; requires -" in output
+    assert "tool-beta: domain missing; visibility missing; requires -" in output
 
 
 def test_main_link_dry_run_defaults_destination_to_current_repo(
@@ -537,7 +537,7 @@ def test_main_link_dry_run_defaults_destination_to_current_repo(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     monkeypatch.chdir(destination_repo)
 
@@ -562,7 +562,7 @@ def test_main_link_dry_run_accepts_skills_root_source_path(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     exit_code = agentic_tools_main(
@@ -594,7 +594,7 @@ def test_main_link_global_dry_run_uses_global_destination(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     monkeypatch.setattr(
         skills_management_main, "DEFAULT_GLOBAL_SKILLS_DIR", global_skills_dir
@@ -629,7 +629,7 @@ def test_main_sync_dry_run_reads_relative_sources_from_repo_root(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     (destination_agents_dir / "skills.json").write_text(
         json.dumps(
@@ -667,7 +667,7 @@ def test_main_sync_dry_run_reads_unified_agents_config(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     (destination_agents_dir / "config.json").write_text(
         json.dumps(
@@ -707,7 +707,7 @@ def test_main_sync_dry_run_falls_back_to_legacy_skills_config(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     (destination_agents_dir / "config.json").write_text(
         json.dumps({"policy": {"services": ["copilot"]}}),
@@ -749,7 +749,7 @@ def test_main_sync_dry_run_supports_package_sources(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     (destination_agents_dir / "skills.json").write_text(
         json.dumps(
@@ -792,7 +792,7 @@ def test_main_sync_dry_run_resolves_renamed_skill_through_registry(
     write_skill(
         source_repo,
         "ref-new-name",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     write_alias_registry(
         source_repo / ".agents" / "skills",
@@ -841,7 +841,7 @@ def test_main_sync_rewrites_renamed_skill_in_config(
     write_skill(
         source_repo,
         "ref-new-name",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     write_alias_registry(
         source_repo / ".agents" / "skills",
@@ -918,7 +918,7 @@ def test_main_sync_regenerates_stale_skills_gitignore(
     destination_agents_dir = destination_repo / ".agents"
     destination_agents_dir.mkdir(parents=True)
 
-    write_skill(source_repo, "ref-alpha", metadata={"visibility": "public"})
+    write_skill(source_repo, "ref-alpha", metadata={"shareable-skills.visibility": "public"})
     (destination_agents_dir / "skills.json").write_text(
         json.dumps({"sources": [{"from": "../source", "skills": ["ref-alpha"]}]}),
         encoding="utf-8",
@@ -956,7 +956,7 @@ def test_main_sync_gitignore_lists_configured_source_url(
     destination_agents_dir = destination_repo / ".agents"
     destination_agents_dir.mkdir(parents=True)
 
-    write_skill(source_repo, "ref-alpha", metadata={"visibility": "public"})
+    write_skill(source_repo, "ref-alpha", metadata={"shareable-skills.visibility": "public"})
     (destination_agents_dir / "skills.json").write_text(
         json.dumps(
             {
@@ -993,7 +993,7 @@ def test_main_unlink_dry_run_uses_expected_source_and_destination(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
 
     exit_code = agentic_tools_main(
@@ -1027,7 +1027,7 @@ def test_main_sync_reports_missing_configured_skills_by_source(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     (destination_agents_dir / "skills.json").write_text(
         json.dumps(
@@ -1067,7 +1067,7 @@ def test_main_sync_dry_run_reports_dead_links_before_linking(
     write_skill(
         source_repo,
         "ref-alpha",
-        metadata={"visibility": "public"},
+        metadata={"shareable-skills.visibility": "public"},
     )
     (destination_agents_dir / "skills.json").write_text(
         json.dumps(
