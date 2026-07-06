@@ -3,12 +3,12 @@ name: ref-sp-dev-package-management
 description: "Portable package-management guidance for coordinating versions across multiple manifests, keeping changelogs current, and choosing one source of truth for release metadata. Use when: syncing package versions across pyproject.toml and package.json, defining a changelog workflow, or designing a release-management command for a multi-ecosystem repo."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
-  tags: "release"
-  requires: "ref-sp-dev-semantic-versioning"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "release"
+  shareable-skills.requires: "ref-sp-dev-semantic-versioning"
 ---
 
 # Package Management

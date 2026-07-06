@@ -3,11 +3,11 @@ name: tool-sp-commit
 description: "Inspect edited files, group them into logical commits, and create focused commits for this repo. Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing."
 argument-hint: "Optional commit goal, grouping constraint, or whether to only propose groups instead of committing"
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "organization"
-  requires: "ref-sp-dev-git-commits"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "organization"
+  shareable-skills.requires: "ref-sp-dev-git-commits"
 ---
 
 # Commit Changes

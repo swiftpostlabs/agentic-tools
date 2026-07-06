@@ -3,11 +3,11 @@ name: tool-sp-maintain-skills
 description: "Review, consolidate, and update project skills after repo, workflow, or branch changes. Use when: skills may be outdated after code or tooling changes, guidance is duplicated or misplaced, or the repo's skill catalog needs a maintenance pass."
 argument-hint: "What changed in the repo or branch, and which skills may now be stale"
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "organization"
-  requires: "ref-sp-agents-skills-authoring"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "organization"
+  shareable-skills.requires: "ref-sp-agents-skills-authoring"
 ---
 
 # Maintain Skills

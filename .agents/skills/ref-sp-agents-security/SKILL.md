@@ -2,11 +2,11 @@
 name: ref-sp-agents-security
 description: "Reference guidance for agent security policy, protected file access, exclusion sync, and multi-client enforcement. Use when: modifying a policy source file, updating the sync workflow, reviewing generated restriction files, or changing how agents are prevented from reading sensitive files."
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "organization"
-  tags: "security"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "organization"
+  shareable-skills.tags: "security"
 ---
 
 # Agents Security

@@ -3,11 +3,11 @@ name: ref-sp-dev-git-commits
 description: "Reference guidance for grouping changes into focused commits and writing commit messages in this repo. Use when: deciding how to split changes into commits, writing a commit title or body, deciding whether a commit needs a long description, or documenting an automated command for reproducibility."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
-  tags: "git"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "git"
 ---
 
 # Git Commits

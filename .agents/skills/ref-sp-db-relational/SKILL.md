@@ -3,10 +3,10 @@ name: ref-sp-db-relational
 description: "Portable relational-database guidance for ER and EER modeling, schema layers, keys, joins, relational algebra and calculus, and SQL-oriented schema design. Use when: designing tables, translating business rules into schema, reviewing joins and constraints, or deciding whether a relational model fits the problem."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
 ---
 
 # Relational Databases

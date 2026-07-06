@@ -2,11 +2,11 @@
 name: ref-sp-agents-policy
 description: "Repository-specific guidance for the agents-policy feature, .agents/config.json policy section, and generated AI restriction outputs in this repo. Use when: working on the agents-policy feature, updating policy docs, or debugging Copilot, Claude Code, or Gemini policy generation here."
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "repo-local"
-  reason: "This reference documents the repository-specific agents-policy implementation, file layout, and generated output contract used in this repo."
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "repo-local"
+  shareable-skills.reason: "This reference documents the repository-specific agents-policy implementation, file layout, and generated output contract used in this repo."
 ---
 
 # Swiftpost Agents Policy

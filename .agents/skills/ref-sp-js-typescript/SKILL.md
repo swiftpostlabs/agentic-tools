@@ -3,10 +3,10 @@ name: ref-sp-js-typescript
 description: "Portable TypeScript guidance for strict typing, runtime boundaries, and maintainable scripts or apps. Use when: writing or reviewing TypeScript code, types, or configuration decisions."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
 ---
 
 # TypeScript

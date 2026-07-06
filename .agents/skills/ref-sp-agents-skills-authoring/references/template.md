@@ -2,11 +2,13 @@
 
 ~~~markdown
 ---
-name: ref-my-skill
+name: ref-sp-agents-my-skill
 description: "Brief description. Use when: trigger condition 1, trigger condition 2."
 metadata:
-  agentic-tools-category: "agents"
-  shareable-skills.visibility: "shareable"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "organization"
 argument-hint: "Optional slash-command hint"
 ---
 
@@ -68,11 +70,11 @@ Use this table when the skill includes important commands or operational steps:
 Adapt the template to the real repo before keeping it:
 
 - Choose `ref-...` when the skill mainly informs the agent and `tool-...` when the skill mainly drives an action-oriented workflow.
-- Add `metadata.scope` as one registered domain scope. Read `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) before inventing a new scope.
-- If you use `tool-...`, make the name read like an action rather than a passive topic.
-- Set `metadata.visibility` to `public` (portable, add a top-level `license`), `organization` (org-wide), or `repo-local` (depends on this repo's concrete layout, policies, or wrappers).
-- If the skill has hard dependencies on other skills, add `shareable-skills.requires` as a space-separated list of skill names.
-- If the skill is `repo-local` for a non-obvious reason, add `shareable-skills.reason` with a short explanation.
+- Add `metadata.shareable-skills.domain` as one registered domain. Read `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) before inventing a new domain.
+- If you use `tool-...`, make the name read like an action rather than a passive topic (and drop `domain` — tools carry only `owner-prefix`).
+- Set `metadata.shareable-skills.visibility` to `public` (portable, add a top-level `license`), `organization` (org-wide), or `repo-local` (depends on this repo's concrete layout, policies, or wrappers).
+- If the skill has hard dependencies on other skills, add `metadata.shareable-skills.requires` as a comma-separated list of skill names.
+- If the skill is `repo-local` for a non-obvious reason, add `metadata.shareable-skills.reason` with a short explanation.
 - Replace placeholder names, commands, and file paths.
 - Keep placeholders synthetic. Do not turn generic examples into copies of real folder or script names from another repo unless the skill is intentionally documenting that concrete repo.
 - Rewrite the `description` so it triggers on realistic user intent.

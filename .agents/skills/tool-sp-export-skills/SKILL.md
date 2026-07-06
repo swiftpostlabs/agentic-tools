@@ -3,12 +3,12 @@ name: tool-sp-export-skills
 description: "Help export selected skills from this repository in the right format for another repo, a manual bundle, AI conversations, a Gemini Gem, or a Copilot project. Use when: choosing which skills can leave this repo, preparing a handoff, or packaging a skill set for another environment."
 argument-hint: "What is the export target: another repo, manual bundle, Gemini conversation, Gemini Gem, Claude Code conversation, Copilot project, or something else"
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "repo-local"
-  requires: "ref-sp-agents-shareable-skills, ref-sp-agents-skills-management"
-  reason: "This workflow depends on this repo's concrete skill catalog, shareability metadata, and skills-management conventions."
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "repo-local"
+  shareable-skills.requires: "ref-sp-agents-shareable-skills, ref-sp-agents-skills-management"
+  shareable-skills.reason: "This workflow depends on this repo's concrete skill catalog, shareability metadata, and skills-management conventions."
 ---
 
 # Export Skills

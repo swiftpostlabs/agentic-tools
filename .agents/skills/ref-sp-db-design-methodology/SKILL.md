@@ -3,10 +3,10 @@ name: ref-sp-db-design-methodology
 description: "Portable database-design methodology guidance for fact-finding, conceptual or logical or physical design, transaction validation, and iterative user review. Use when: starting a schema from requirements, translating business processes into ER models and relations, or planning database design as a lifecycle instead of isolated table edits."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
 ---
 
 # Database Design Methodology

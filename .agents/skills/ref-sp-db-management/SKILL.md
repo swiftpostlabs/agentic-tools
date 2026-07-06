@@ -3,10 +3,10 @@ name: ref-sp-db-management
 description: "Portable database-management guidance for DBMS architecture, transactions, concurrency, storage, recovery, and operational safety. Use when: choosing how a system should store data, planning schema or storage changes, reviewing integrity and recovery guarantees, or tuning database-backed workloads."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
 ---
 
 # Database Management

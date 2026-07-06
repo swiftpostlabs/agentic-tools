@@ -3,7 +3,7 @@
 //
 // Checks general well-formedness and authoring quality only: frontmatter shape, name rules,
 // description rules, body structure, support-file references, and resource layout. It does NOT
-// check the sharing spec (naming grammar, scope registry, visibility, deps, vendoring) — that is
+// check the sharing spec (naming grammar, domain registry, visibility, deps, vendoring) — that is
 // validated separately by ref-sp-agents-shareable-skills/scripts/validate-sharing.mts. Run both when a skill
 // should be good AND shareable.
 //

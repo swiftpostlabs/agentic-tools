@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Sharing-spec validator for Agent Skills (see ../SKILL.md and ../references/spec.md).
 //
-// Checks the SHARING spec only: name grammar, scope registry, visibility tiers, dependency
-// semantics, tags, and vendoring. General skill quality is a separate concern validated by
+// Checks the SHARING spec only: name grammar, domain registry, visibility tiers, dependency
+// semantics, tags, and vendoring. All portability fields live under the metadata.shareable-skills.*
+// namespace; `license` stays top-level. General skill quality is a separate concern validated by
 // ref-sp-agents-skills-authoring/scripts/validate-skill.mts. Run both when a skill should be good AND
 // shareable.
 //
@@ -26,17 +27,17 @@ interface Finding {
   message: string;
 }
 
-interface ScopeEntry {
+interface DomainEntry {
   description: string;
   belongsWhen: string;
 }
 
 interface Registry {
   phase: number;
-  scopes: Record<string, ScopeEntry>;
+  domains: Record<string, DomainEntry>;
   reservedTokens: string[];
   tags: string[];
-  scopeAliases: Record<string, string>;
+  domainAliases: Record<string, string>;
   aliases: Record<string, string>;
 }
 
@@ -162,6 +163,15 @@ function asMetadata(frontmatter: Frontmatter): Metadata {
   return {};
 }
 
+// Portability fields live under the `metadata.shareable-skills.*` namespace so they cannot collide
+// with spec-defined or third-party metadata keys. `ss(metadata, "domain")` reads
+// `metadata["shareable-skills.domain"]`.
+const SS_PREFIX = "shareable-skills.";
+
+function ss(metadata: Metadata, key: string): string | undefined {
+  return metadata[SS_PREFIX + key];
+}
+
 function splitList(value: string | undefined): string[] {
   if (!value) {
     return [];
@@ -172,14 +182,9 @@ function splitList(value: string | undefined): string[] {
     .filter((entry) => entry.length > 0);
 }
 
-function computeVisibility(metadata: Metadata): { visibility: string | null; legacy: boolean } {
-  if (metadata["visibility"] !== undefined) {
-    return { visibility: metadata["visibility"], legacy: false };
-  }
-  if (metadata["shareable-skills.visibility"] !== undefined) {
-    return { visibility: metadata["shareable-skills.visibility"], legacy: true };
-  }
-  return { visibility: null, legacy: false };
+function computeVisibility(metadata: Metadata): string | null {
+  const visibility = ss(metadata, "visibility");
+  return visibility !== undefined ? visibility : null;
 }
 
 function loadRegistry(): { registry: Registry | null; error: string | null } {
@@ -208,7 +213,7 @@ function loadSkillIndex(skillsRoot: string): Map<string, SkillInfo> {
     }
     try {
       const { frontmatter } = parseFrontmatter(readFileSync(skillMd, "utf8"));
-      const { visibility } = computeVisibility(asMetadata(frontmatter));
+      const visibility = computeVisibility(asMetadata(frontmatter));
       index.set(entry.name, { repoLocal: visibility === "repo-local" });
     } catch {
       index.set(entry.name, { repoLocal: false });
@@ -252,41 +257,31 @@ function validateSharingSkill(
 
   const metadata = asMetadata(frontmatter);
 
-  // --- scope ---
-  const scope = metadata["scope"] ?? metadata["agentic-tools-category"];
-  if (metadata["scope"] === undefined && metadata["agentic-tools-category"] !== undefined) {
-    add("warning", "legacy 'agentic-tools-category' in use; migrate to metadata.scope");
-  }
-  if (!scope) {
-    add(gate("error", 1), "missing scope (metadata.scope)");
+  // --- domain ---
+  const domain = ss(metadata, "domain");
+  if (!domain) {
+    add(gate("error", 1), "missing domain (metadata.shareable-skills.domain)");
   } else if (registry) {
-    if (Object.hasOwn(registry.scopes, scope)) {
-      // registered target scope
-    } else if (Object.hasOwn(registry.scopeAliases, scope)) {
+    if (Object.hasOwn(registry.domains, domain)) {
+      // registered target domain
+    } else if (Object.hasOwn(registry.domainAliases, domain)) {
       add(
         "warning",
-        `scope '${scope}' is a legacy scope; migrate to '${registry.scopeAliases[scope]}' and move specifics to tags`,
+        `domain '${domain}' is a legacy domain; migrate to '${registry.domainAliases[domain]}' and move specifics to tags`,
       );
     } else {
       add(
         "error",
-        `scope '${scope}' is not a registered scope. The vocabulary is intentionally growing — open an issue explaining what and why it matters, then add it to registry.json`,
+        `domain '${domain}' is not a registered domain. The vocabulary is intentionally growing — open an issue explaining what and why it matters, then add it to registry.json`,
       );
     }
   }
 
   // --- visibility (and license for public) ---
-  const { visibility, legacy } = computeVisibility(metadata);
+  const visibility = computeVisibility(metadata);
   let shareable = false;
   if (!visibility) {
-    add(gate("error", 2), "missing visibility (metadata.visibility: repo-local | organization | public)");
-  } else if (legacy) {
-    if (visibility !== "shareable" && visibility !== "repo-local") {
-      add("error", "legacy shareable-skills.visibility must be 'shareable' or 'repo-local'");
-    } else {
-      add("warning", `legacy visibility '${visibility}'; migrate to repo-local | organization | public`);
-    }
-    shareable = visibility === "shareable";
+    add(gate("error", 2), "missing visibility (metadata.shareable-skills.visibility: repo-local | organization | public)");
   } else {
     if (visibility !== "repo-local" && visibility !== "organization" && visibility !== "public") {
       add("error", "visibility must be one of repo-local, organization, public");
@@ -300,12 +295,12 @@ function validateSharingSkill(
     }
   }
 
-  if (shareable && !metadata["owner"]) {
-    add(gate("warning", 2), "shareable skill should declare metadata.owner (the canonical repo)");
+  if (shareable && !ss(metadata, "owner")) {
+    add(gate("warning", 2), "shareable skill should declare metadata.shareable-skills.owner (the canonical repo)");
   }
 
   // --- name grammar (only enforced once owner-prefix is present) ---
-  const ownerPrefix = metadata["owner-prefix"];
+  const ownerPrefix = ss(metadata, "owner-prefix");
   const rawName = frontmatter["name"];
   const name = typeof rawName === "string" ? rawName : label;
   if (ownerPrefix) {
@@ -316,21 +311,21 @@ function validateSharingSkill(
     } else if (segments[1] !== ownerPrefix) {
       add(
         "error",
-        `name owner segment '${segments[1] ?? ""}' does not match metadata.owner-prefix '${ownerPrefix}'`,
+        `name owner segment '${segments[1] ?? ""}' does not match metadata.shareable-skills.owner-prefix '${ownerPrefix}'`,
       );
-    } else if (type === "ref" && scope && registry && Object.hasOwn(registry.scopes, scope) && segments[2] !== scope) {
-      add("error", `name scope segment '${segments[2] ?? ""}' does not match metadata.scope '${scope}'`);
+    } else if (type === "ref" && domain && registry && Object.hasOwn(registry.domains, domain) && segments[2] !== domain) {
+      add("error", `name domain segment '${segments[2] ?? ""}' does not match metadata.shareable-skills.domain '${domain}'`);
     }
   } else {
     add(
       gate("warning", 2),
-      "skill not yet migrated to the owner-prefixed name grammar (ref-<owner>-<scope>-... / tool-<owner>-<verb>-...)",
+      "skill not yet migrated to the owner-prefixed name grammar (ref-<owner>-<domain>-... / tool-<owner>-<verb>-...)",
     );
   }
 
   // --- dependencies ---
   const aliases = registry?.aliases ?? {};
-  const requires = splitList(metadata["requires"] ?? metadata["shareable-skills.requires"]);
+  const requires = splitList(ss(metadata, "requires"));
   for (const dep of requires) {
     const resolved = Object.hasOwn(aliases, dep) ? aliases[dep] : dep;
     const info = index.get(resolved);
@@ -344,7 +339,7 @@ function validateSharingSkill(
   // --- tags (advisory) ---
   if (registry) {
     const knownTags = new Set(registry.tags);
-    for (const tag of splitList(metadata["tags"])) {
+    for (const tag of splitList(ss(metadata, "tags"))) {
       if (!knownTags.has(tag)) {
         add("warning", `unknown tag '${tag}' (advisory; consider adding it to registry.json tags)`);
       }
@@ -352,12 +347,12 @@ function validateSharingSkill(
   }
 
   // --- vendoring ---
-  if (metadata["vendored-sha"]) {
-    if (!metadata["vendored-time"]) {
-      add("warning", "vendored copy should record metadata.vendored-time");
+  if (ss(metadata, "vendored-sha")) {
+    if (!ss(metadata, "vendored-time")) {
+      add("warning", "vendored copy should record metadata.shareable-skills.vendored-time");
     }
-    if (!metadata["owner"]) {
-      add("warning", "vendored copy should keep metadata.owner pointing upstream");
+    if (!ss(metadata, "owner")) {
+      add("warning", "vendored copy should keep metadata.shareable-skills.owner pointing upstream");
     }
     const lowered = body.toLowerCase();
     if (!(lowered.includes("vendored") && lowered.includes("do not edit"))) {

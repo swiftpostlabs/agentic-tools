@@ -3,10 +3,10 @@ name: ref-sp-dev-projects-architecture
 description: "Portable architecture guidance for feature folders, boundaries, shared utilities, and separating product code from maintenance scripts. Use when: deciding where code should live, splitting features, or reviewing repository structure."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
 ---
 
 # Projects Architecture

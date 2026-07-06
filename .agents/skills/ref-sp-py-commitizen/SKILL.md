@@ -3,12 +3,12 @@ name: ref-sp-py-commitizen
 description: "Python Commitizen release workflow guidance. Use when: configuring commitizen in pyproject.toml, choosing version providers, generating changelogs, validating conventional commits, or designing Commitizen-led release commands for Python or mixed Python/Node repos."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "py"
-  visibility: "public"
-  tags: "release"
-  requires: "ref-sp-dev-package-management, ref-sp-dev-git-commits"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "py"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "release"
+  shareable-skills.requires: "ref-sp-dev-package-management, ref-sp-dev-git-commits"
 ---
 
 # Python Commitizen

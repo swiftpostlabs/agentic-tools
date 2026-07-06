@@ -3,11 +3,11 @@ name: ref-sp-dev-semantic-versioning
 description: "Portable semantic-versioning guidance for release numbering, prerelease handling, dependency range selection, and package.json dependency fields. Use when: choosing a version bump, reviewing semver compliance, setting npm version ranges, or deciding between dependencies, devDependencies, peerDependencies, optionalDependencies, and overrides."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
-  tags: "release"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "release"
 ---
 
 # Semantic Versioning

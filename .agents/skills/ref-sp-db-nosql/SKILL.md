@@ -3,10 +3,10 @@ name: ref-sp-db-nosql
 description: "Portable NoSQL guidance for choosing document, key-value, graph, or wide-column models, handling CAP and eventual-consistency tradeoffs, and modeling denormalized access patterns deliberately. Use when: relational joins stop matching the workload, horizontal scale or flexible schema dominates, or a distributed data model is being designed."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
 ---
 
 # NoSQL Databases

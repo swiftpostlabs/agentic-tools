@@ -74,8 +74,8 @@ Scope:
 
 Decision:
 
-- Use `shareable-skills.visibility` with `shareable` or `repo-local`.
-- Use `shareable-skills.requires` as a space-separated string of hard dependency skill names.
+- Use `shareable-skills.visibility` with `repo-local`, `organization`, or `public`.
+- Use `shareable-skills.requires` as a comma-separated string of hard dependency skill names.
 - Use `shareable-skills.reason` as an optional short explanation when a skill is repo-local or a dependency is not obvious.
 
 Reason:

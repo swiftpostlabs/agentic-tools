@@ -3,10 +3,10 @@ name: ref-sp-dev-coding-patterns
 description: "Portable coding defaults for readable, strongly-typed, well-tested code across languages and CLIs. Use when: choosing naming, typing, comments, branching structure, CLI ergonomics, or testing defaults in a new or existing codebase."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
 ---
 
 # Coding Patterns

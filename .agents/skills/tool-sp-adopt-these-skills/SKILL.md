@@ -3,11 +3,11 @@ name: tool-sp-adopt-these-skills
 description: "Adopt the most important skills and AI security tooling from this repository into another repository. Use when: bootstrapping a new repo, porting this repo's agent setup elsewhere, choosing whether this repo should be used as a starter, or teaching another agent which files to copy and adapt first."
 argument-hint: "Target repo context and whether to adopt the full skill system, only selected skills, or only AI security tooling"
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "repo-local"
-  reason: "This workflow is specific to transplanting this repo's skill bundle and paths into another repository."
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "repo-local"
+  shareable-skills.reason: "This workflow is specific to transplanting this repo's skill bundle and paths into another repository."
 ---
 
 # Adopt These Skills

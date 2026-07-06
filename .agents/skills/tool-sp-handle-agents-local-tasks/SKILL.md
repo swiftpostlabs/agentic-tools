@@ -3,11 +3,11 @@ name: tool-sp-handle-agents-local-tasks
 description: "Read the local `.agents/tasks/` backlog, choose the next actionable item, and work it through with code changes, validation, and task-file updates. Use when: the user asks to check `.agents/tasks/TODO.md`, continue remaining local tasks, or process the repo's local agent-task backlog."
 argument-hint: "Optional task filter, whether to only triage or to execute tasks, and any stopping condition"
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "organization"
-  requires: "ref-sp-agents-local-tasks"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "organization"
+  shareable-skills.requires: "ref-sp-agents-local-tasks"
 ---
 
 # Handle Agents Local Tasks

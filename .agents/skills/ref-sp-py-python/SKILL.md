@@ -3,10 +3,10 @@ name: ref-sp-py-python
 description: "Portable Python guidance for typed application code, scripts, CLIs, and tests. Use when: writing or refactoring Python modules, designing Python feature folders, or deciding typing and testing patterns."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "py"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "py"
+  shareable-skills.visibility: "public"
 ---
 
 # Python

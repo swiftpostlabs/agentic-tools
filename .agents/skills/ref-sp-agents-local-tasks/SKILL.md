@@ -2,11 +2,11 @@
 name: ref-sp-agents-local-tasks
 description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace for task backlogs, temporary working files, and per-task notes. Use when: reading or updating `.agents/tasks/TODO.md`, maintaining task-specific folders under `.agents/tasks/`, or checking whether local agent task notes still match the active work."
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "organization"
-  tags: "tasks"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "organization"
+  shareable-skills.tags: "tasks"
 ---
 
 # Agents Local Tasks

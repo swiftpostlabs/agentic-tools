@@ -3,11 +3,11 @@ name: ref-sp-baas-supabase
 description: "Portable Supabase guidance for CLI workflows, migrations, supabase-js CRUD usage, Edge Functions, and ORM boundaries. Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "baas"
-  visibility: "public"
-  tags: "supabase, backend"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "baas"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "supabase, backend"
 ---
 
 # Supabase

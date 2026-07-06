@@ -3,11 +3,11 @@ name: ref-sp-dev-docs-authoring
 description: "Portable README and documentation authoring guidance for top-level and feature-level docs. Use when: writing or restructuring a README, deciding whether user usage or developer setup should come first, adding concrete examples, or splitting long docs into focused follow-up files."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
-  tags: "docs"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "docs"
 ---
 
 # Docs Authoring

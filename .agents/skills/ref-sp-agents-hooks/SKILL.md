@@ -3,11 +3,11 @@ name: ref-sp-agents-hooks
 description: "Author agent lifecycle hooks that run deterministic shell commands at session, prompt, tool, and stop events across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI. Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "public"
-  tags: "hooks"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "hooks"
 ---
 
 # Agent Hooks

@@ -3,11 +3,11 @@ name: ref-sp-js-next
 description: "Portable Next.js guidance for App Router structure, client and server boundaries, framework integrations, and Next-friendly library choices. Use when: creating or reviewing Next routes and layouts, deciding where 'use client' belongs, configuring Next.js, or choosing framework-specific integrations like next-intl."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
-  tags: "next"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "next"
 ---
 
 # Next.js

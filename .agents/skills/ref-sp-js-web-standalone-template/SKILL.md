@@ -3,10 +3,10 @@ name: ref-sp-js-web-standalone-template
 description: "App-level guidance for standalone HTML, CSS, and JavaScript tools that should run without framework or build-system overhead. Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
 ---
 
 # Standalone Web App

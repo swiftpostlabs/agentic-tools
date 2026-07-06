@@ -1,7 +1,7 @@
 {
-  "note": "Central registry for the skill standardization spec. See .agents/skills/ref-sp-agents-shareable-skills/references/spec.md. 'phase' controls validator strictness during migration (0=warn-only groundwork, 1=frontmatter enrichment, 2=renames done, 3=hard-fail). Add a scope via PR: give it a description and a belongs-when question. Tags are advisory (any tag passes). scopeAliases map legacy categories to target scopes during migration. aliases map old skill names to new ones and are kept permanently.",
+  "note": "Central registry for the skill standardization spec. See .agents/skills/ref-sp-agents-shareable-skills/references/spec.md. Portability metadata lives under the metadata.shareable-skills.* namespace (metadata.shareable-skills.domain, .owner, .visibility, ...); 'license' stays top-level. 'phase' controls validator strictness during migration (0=warn-only groundwork, 1=frontmatter enrichment, 2=renames done, 3=hard-fail). Add a domain via PR: give it a description and a belongs-when question. Tags are advisory (any tag passes). domainAliases map legacy categories to target domains. aliases map old skill names to new ones and are kept permanently.",
   "phase": 3,
-  "scopes": {
+  "domains": {
     "py": {
       "description": "The Python language, toolchain, and ecosystem.",
       "belongsWhen": "Is this mainly about Python itself, not a feature or domain that merely uses Python?"
@@ -97,7 +97,7 @@
     "aws",
     "hooks"
   ],
-  "scopeAliases": {
+  "domainAliases": {
     "app": "js",
     "github": "dev",
     "git": "dev",

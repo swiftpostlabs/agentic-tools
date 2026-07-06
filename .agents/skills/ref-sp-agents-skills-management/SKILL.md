@@ -2,11 +2,11 @@
 name: ref-sp-agents-skills-management
 description: "Repository-specific guidance for the skills-management CLI and .agents/config.json skills workflow in this repo. Use when: working on the skills-management CLI, updating skills-management docs, or debugging skill linking and sync behavior in a consuming repo."
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "repo-local"
-  reason: "This reference documents the repository-specific agentic-tools package, skills-management CLI surface, and sync conventions implemented in this repo."
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "repo-local"
+  shareable-skills.reason: "This reference documents the repository-specific agentic-tools package, skills-management CLI surface, and sync conventions implemented in this repo."
 ---
 
 # Swiftpost Skills Management

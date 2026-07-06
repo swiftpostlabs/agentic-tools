@@ -3,10 +3,10 @@ name: ref-sp-db-distributed
 description: "Portable distributed-database guidance for fragmentation, replica placement, local and global applications, parallel DBMS topologies, and disconnected synchronization. Use when: designing distributed or replicated databases, choosing site layout, planning mobile or intermittently connected data flows, or separating topology decisions from data-model decisions."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
 ---
 
 # Distributed Databases

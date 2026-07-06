@@ -3,10 +3,10 @@ name: ref-sp-db-normalization
 description: "Portable normalization guidance for relational schema design, dependency analysis, anomaly prevention, and denormalization tradeoffs. Use when: decomposing wide tables, reviewing keys and functional dependencies, or deciding how far to normalize a transactional schema."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
 ---
 
 # Database Normalization

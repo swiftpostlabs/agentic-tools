@@ -3,10 +3,10 @@ name: ref-sp-agents-skills-authoring
 description: "Reference guidance for creating and maintaining project skills. Use when: designing new skills, updating existing skills, establishing skill standards, evaluating skill quality, organizing skill subfiles, or adapting copied skill content to the repo's actual stack."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "public"
 ---
 
 # Skills Authoring
@@ -27,8 +27,8 @@ Ensure project skills are discoverable, activation-worthy, operationally useful,
 This skill owns **how to make a good skill in general, from the agent's perspective**: boundary,
 description/trigger quality, instruction design, progressive disclosure, structure, and evaluation.
 
-It does **not** own the sharing spec. How a skill is **named** (owner-prefix / scope / template /
-topic grammar), **scoped** (the scope registry and tags), given **visibility**
+It does **not** own the sharing spec. How a skill is **named** (owner-prefix / domain / template /
+topic grammar), **assigned a domain** (the domain registry and tags), given **visibility**
 (repo-local / organization / public), declares **hard vs soft dependencies**, and is **vendored or
 forked** is governed by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md.
 
@@ -134,7 +134,7 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Do not use `tool-...` for passive guidance:** If the skill mostly teaches the agent how to understand or review something rather than execute a user-invoked workflow, it should stay under `ref-...`.
 - **Keep `description` under 1024 chars:** It must describe both what the skill does and when to use it.
 - **Use optional fields only when they add execution value:** `compatibility` is for environment requirements, `license` for licensing, `metadata` for extra client metadata, and `allowed-tools` only when the client supports it.
-- **Scope / category metadata is governed by the sharing spec:** every skill carries a domain scope in metadata. This is owned by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md (the `scope` field and scopes registry). During migration the legacy key is `metadata.agentic-tools-category`; the target key is `metadata.scope`. Do not redefine the vocabulary here.
+- **Domain metadata is governed by the sharing spec:** every skill carries a domain in metadata. This is owned by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md (the `metadata.shareable-skills.domain` field and domain registry). Do not redefine the vocabulary here.
 - **Name must match folder:** The `name` field must match the skill folder name.
 - **"When to use" section:** Include a clear section so the AI can determine relevance.
 - **Concrete examples:** Provide small examples, templates, or commands where they reduce ambiguity.
@@ -143,23 +143,23 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Adapt to the real repo:** When a skill is copied or derived from another project, update its commands, libraries, file names, folder layout, and examples to match this repository before keeping it.
 - **Do not preserve stale stack details:** Remove or replace inherited references to the wrong package manager, framework, language conventions, file extensions, or UI library when they do not match the current repo.
 - **Do not leak foreign repo artifacts into generic examples:** If you copied a template or skill from another repo, replace example paths like feature folders, excluded files, and sample script names with synthetic placeholders unless the skill explicitly says it is documenting the source repo itself.
-- **Naming grammar, namespace, and portability live in the sharing spec:** the owner-prefix/scope/topic grammar, and whether a skill is `repo-local`, `organization`, or `public`, are governed by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Portability is recorded in `visibility` metadata, not encoded in the name. Keep a skill's `name` focused on what it does so discovery and trigger quality stay intact.
+- **Naming grammar, namespace, and portability live in the sharing spec:** the owner-prefix/domain/topic grammar, and whether a skill is `repo-local`, `organization`, or `public`, are governed by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Portability is recorded in `metadata.shareable-skills.visibility`, not encoded in the name. Keep a skill's `name` focused on what it does so discovery and trigger quality stay intact.
 - **Make values explicit:** When a skill depends on values like simplicity, clarity, or maintainability, state them directly in the purpose or rules instead of leaving them implicit.
 - **Prefer modern defaults:** When a skill gives coding guidance, prefer modern, intention-revealing language and platform APIs over older sentinel-style patterns when both are supported by the project's runtime targets.
 - **Prefer operational labels:** When naming workflow steps or guidance sections, prefer labels that describe the actual review/update action. Favor concrete labels like `Reflect` or `Capture Lessons` over vaguer labels like `Learn` when the step includes reviewing outcomes, correcting guidance, and updating the source of truth.
 
-## Sharing, Scope, And Dependency Metadata
+## Sharing, Domain, And Dependency Metadata
 
-Naming grammar, scope/category, visibility, dependency declarations, and vendoring are the
+Naming grammar, domain, visibility, dependency declarations, and vendoring are the
 **sharing spec**, owned by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Do not restate or
 redefine those rules here — consult that skill (and its `references/spec.md`) when a skill needs to
-be scoped, shared, or exported.
+be assigned a domain, shared, or exported.
 
 What this skill still asserts, because it is general skill quality rather than sharing policy:
 
-- Every skill carries a single domain scope in metadata (legacy `metadata.agentic-tools-category`,
-  target `metadata.scope`); pick the domain, not the repository namespace, and prefer an existing
-  scope over inventing one. The vocabulary itself is owned by the sharing spec's scopes registry.
+- Every skill carries a single domain in metadata (`metadata.shareable-skills.domain`); pick the
+  domain, not the repository namespace, and prefer an existing domain over inventing one. The
+  vocabulary itself is owned by the sharing spec's domain registry.
 - Track portability, dependencies, and namespace through `metadata`, never through the `name`; keep
   the `name` focused on what the skill does so discovery and trigger quality stay intact.
 - The Agent Skills spec treats `metadata` as a string-to-string mapping, so do not use YAML lists
@@ -246,7 +246,7 @@ Read `./references/scripts-and-resources.md` when deciding whether content belon
 ## Validation And Evaluation
 
 This covers **general skill-quality** validation only. Conformance to the sharing spec (naming
-grammar, scope registry, visibility, deps, vendoring) is validated separately by
+grammar, domain registry, visibility, deps, vendoring) is validated separately by
 .agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Run both when a skill should be good *and* shareable.
 
 Every meaningful skill should be tested in two dimensions:

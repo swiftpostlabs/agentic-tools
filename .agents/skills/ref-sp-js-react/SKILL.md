@@ -3,11 +3,11 @@ name: ref-sp-js-react
 description: "Portable React guidance for components, hooks, client-side state, and React-friendly library choices. Use when: creating or reviewing React components, choosing React libraries, deciding where UI or async state should live, or refactoring a React feature that is getting hard to read."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
-  tags: "react"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "react"
 ---
 
 # React

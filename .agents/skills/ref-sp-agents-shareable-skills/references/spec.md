@@ -8,19 +8,19 @@ Rules are stated as requirements. Each carries a short *why* because several rul
 avoid concrete failure modes; the full rationale and decision log live in the local task brief
 `.agents/tasks/skill-standardization-spec/README.md`.
 
-> **Migration status (read first).** The repo is mid-migration to this spec. Current skills still
-> use the legacy keys `metadata.agentic-tools-category` and `metadata.shareable-skills.*`, and are
-> not yet renamed with an owner prefix. This document describes the **target** schema and the
-> **staged** path to it (see §9). Do not bulk-rename or hard-fail validation until the phase that
-> allows it. When authoring a *new* skill today, prefer the target schema where it does not break
-> the legacy validator, and record intent when unsure.
+> **Schema status (read first).** The migration to this spec is **complete**: every skill is
+> owner-prefix renamed, all portability fields live under the `metadata.shareable-skills.*`
+> namespace, and the validator runs at Phase 3 (**hard-fail**). This document describes that live
+> schema; §9 is retained as the migration history. The legacy keys (`agentic-tools-category`, bare
+> `metadata.<field>`, two-tier `shareable | repo-local` visibility) are retired — the validator no
+> longer accepts them.
 
 ---
 
 ## 1. The problem this solves
 
 The repo accumulated **three overlapping vocabularies** for the same concepts: the name prefix,
-`metadata.agentic-tools-category`, and `metadata.shareable-skills.*`. Three names for "scope" and
+`metadata.agentic-tools-category`, and bare `metadata.<field>` keys. Three names for "domain" and
 two for "deps" drift. This spec collapses them into **one canonical schema enforced by a
 validator**, so metadata cannot lie.
 
@@ -29,11 +29,19 @@ Custom *top-level* frontmatter keys are ignored by compliant loaders, and metada
 be YAML lists or nested objects**. Therefore every custom field nests under `metadata` and is
 string-encoded; conceptual lists are comma-delimited strings.
 
+**One namespace for the portability fields.** Because `metadata` is a shared bag that the Agent
+Skills spec and third-party tooling also write into, bare keys like `owner`, `scope`, `tags`, or
+`license` can silently collide with spec-defined or other-tool keys. So every portability field is
+prefixed: `metadata.shareable-skills.<field>` (a flat string key — the dot is part of the key name,
+not YAML nesting). A search for `shareable-skills.` returns exactly the portability set as a unit,
+and the prefix is self-documenting about which subsystem owns the field. The **only** exception is
+`license`, which uses the spec's **top-level** `license` field (§3) — never `metadata`.
+
 ---
 
 ## 2. Name grammar
 
-- **Reference skills:** `ref-<owner-prefix>-<scope>-<topic>[-template]`
+- **Reference skills:** `ref-<owner-prefix>-<domain>-<topic>[-template]`
 - **Tool skills:** `tool-<owner-prefix>-<verb>[-<topic>]` — the first topic segment is an **action verb**.
 - **Reserved token** `template` is an optional kind-**suffix** on the topic, marking an app-level
   scaffold/blueprint skill — guidance that scaffolds or prescribes a whole app or module, whether
@@ -46,11 +54,11 @@ The first segment is a **type axis** describing what the agent *does* with the s
 
 - The `name` must satisfy the Agent Skills spec: 1–64 chars, lowercase letters/numbers/hyphens
   only, no leading/trailing hyphen, no consecutive hyphens, and it must equal the folder name.
-- The `name` is **derived from and validated against** `metadata.owner-prefix` + `metadata.scope`.
-  A mismatch is a validation failure. *Why:* metadata is canonical; the name is a checked
-  projection of it, so the two cannot diverge.
-- Tools carry `owner-prefix` but **not** `scope`, and lead with a verb. *Why:* tools are
-  cross-cutting actions, not domain knowledge; refs are domain knowledge, so they carry scope.
+- The `name` is **derived from and validated against** `metadata.shareable-skills.owner-prefix` +
+  `metadata.shareable-skills.domain`. A mismatch is a validation failure. *Why:* metadata is
+  canonical; the name is a checked projection of it, so the two cannot diverge.
+- Tools carry `owner-prefix` but **not** `domain`, and lead with a verb. *Why:* tools are
+  cross-cutting actions, not domain knowledge; refs are domain knowledge, so they carry a domain.
 - Do **not** encode shareability, repo-namespace, or vendoring status in the name; those live in
   metadata. *Why:* the name is the discovery/trigger surface and must stay focused on what the
   skill does.
@@ -67,24 +75,26 @@ rename** (§7); renaming on vendor would sever identity and break drift detectio
 
 ## 3. Frontmatter schema (canonical)
 
-All custom fields nest under `metadata` and are strings. Conceptual lists are comma-delimited.
+Every portability field nests under the `metadata.shareable-skills.` namespace and is a string.
+Conceptual lists are comma-delimited. `license` is the **only** exception — it uses the spec's
+top-level `license` field, not `metadata`.
 
 ```yaml
+license: "MIT"                                              # top-level; REQUIRED iff public, soft otherwise
 metadata:
-  owner-prefix: "sp"                            # short token used in the name
-  owner: "swiftpostslabs/agentic-tools"         # canonical home — the REPO, not just the org
-  scope: "agents"                               # from the scopes registry (§4); HARD-validated
-  tags: "ci, github"                            # advisory grouping (§4); any tag passes
-  visibility: "organization"                    # repo-local | organization | public (§6)
-  license: "MIT"                                # REQUIRED iff visibility: public; soft otherwise
-  report-to: ""                                 # optional upstream channel (§8)
-  requires: "ref-sp-dev-git-commits"            # HARD deps, comma-delimited; missing => fail (§5)
-  suggests: "ref-sp-dev-docs-authoring"         # SOFT deps, comma-delimited; may be absent (§5)
+  shareable-skills.owner-prefix: "sp"                       # short token used in the name
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"     # canonical home — the REPO, not just the org
+  shareable-skills.domain: "agents"                         # from the domain registry (§4); HARD-validated
+  shareable-skills.tags: "ci, github"                       # advisory grouping (§4); any tag passes
+  shareable-skills.visibility: "organization"               # repo-local | organization | public (§6)
+  shareable-skills.report-to: ""                            # optional upstream channel (§8)
+  shareable-skills.requires: "ref-sp-dev-git-commits"       # HARD deps, comma-delimited; missing => fail (§5)
+  shareable-skills.suggests: "ref-sp-dev-docs-authoring"    # SOFT deps, comma-delimited; may be absent (§5)
   # vendored copies only — owner stays UPSTREAM:
-  vendored-sha: "a1b2c3d"                        # source commit the copy was taken at (§7)
-  vendored-time: "2026-07-04"                    # when it was vendored (§7)
+  shareable-skills.vendored-sha: "a1b2c3d"                  # source commit the copy was taken at (§7)
+  shareable-skills.vendored-time: "2026-07-04"              # when it was vendored (§7)
   # forks only:
-  forked-from: "upstream/repo@sha"               # provenance when you take ownership (§7)
+  shareable-skills.forked-from: "upstream/repo@sha"        # provenance when you take ownership (§7)
 ```
 
 Field notes:
@@ -92,36 +102,31 @@ Field notes:
 - **`owner-prefix` + `owner`** replace the ambiguous single "org" idea: prefix is the name token,
   `owner` is the canonical home. `owner` is the **repo** because `report-to` derivation and
   drift-checks resolve against a repo, not an org.
+- **`domain`** (formerly `scope`) names the knowledge area (§4). It is renamed from `scope` because
+  "scope" reads as a near-synonym of *visibility/reach* and, in npm, means the `@org/` namespace;
+  `domain` unambiguously names the knowledge area.
 - **`requires` vs `suggests`** — see §5.
-- **`license`** is required the moment `visibility` is `public` because publishing needs an
-  explicit license; below public it is a soft warning.
-
-### Legacy → target key mapping (during migration)
-
-| Legacy key | Target key |
-| --- | --- |
-| `agentic-tools-category` | `scope` (richer, registry-driven) |
-| `shareable-skills.visibility: shareable` | `visibility: organization` or `public` |
-| `shareable-skills.visibility: repo-local` | `visibility: repo-local` |
-| `shareable-skills.requires` | `requires` |
-| `shareable-skills.reason` | keep as an inline note / `reason` where useful |
+- **`license`** is required the moment `visibility` is `public` because publishing needs an explicit
+  license; below public it is a soft warning. It lives at the **top level** (the Agent Skills spec
+  already defines `license` there) — never duplicate it inside `metadata`.
 
 ---
 
-## 4. Scopes and tags
+## 4. Domains and tags
 
-**Scope** is a single token in the name that names the skill's **primary subject** — what a person
-would browse under to find it. It is an **open, growing, registry-driven** vocabulary.
+**Domain** (`metadata.shareable-skills.domain`) is a single token in the name that names the skill's
+**primary subject** — what a person would browse under to find it. It is an **open, growing,
+registry-driven** vocabulary.
 
-- The **scopes registry** (this skill's `references/registry.json`) is the single source of truth. JSON is
+- The **domain registry** (this skill's `references/registry.json`) is the single source of truth. JSON is
   used (not YAML) so the TypeScript validators and any other tooling can read it without a parser
-  dependency. Each scope entry carries a `description` and a `belongsWhen` question an agent can
+  dependency. Each domain entry carries a `description` and a `belongsWhen` question an agent can
   evaluate. Example:
 
   ```json
   {
-    "phase": 0,
-    "scopes": {
+    "phase": 3,
+    "domains": {
       "rust": {
         "description": "The Rust language and toolchain.",
         "belongsWhen": "Is this mainly about Rust itself, not a feature/domain that merely uses Rust?"
@@ -129,36 +134,36 @@ would browse under to find it. It is an **open, growing, registry-driven** vocab
     },
     "reservedTokens": ["template"],
     "tags": ["ci", "github", "docs", "testing", "release"],
-    "scopeAliases": { "app": "js", "github": "dev", "supabase": "platform" },
+    "domainAliases": { "app": "js", "github": "dev", "supabase": "baas" },
     "aliases": {}
   }
   ```
 
-  `phase` controls validator strictness during migration (§9); `scopeAliases` map legacy categories
-  to target scopes; `aliases` is the frozen old-name → new-name skill map (§9).
+  `phase` controls validator strictness (§9); `domainAliases` map legacy categories
+  to target domains; `aliases` is the frozen old-name → new-name skill map (§9).
 
-- Scope deliberately mixes two axes; pick the **primary subject** for the name and push the other
+- A domain deliberately mixes two axes; pick the **primary subject** for the name and push the other
   axis into `tags`:
   - Stack/language axis: `py`, `js`, and on-demand `rust`, `cpp`, `java`, …
-  - Domain/concern axis: `db`, `platform`, `ops`, `agents`, `dev` (catch-all), `biz`, `ai`,
+  - Domain/concern axis: `db`, `baas`, `ops`, `agents`, `dev` (catch-all), `biz`, `ai`,
     `llm`, `ml`, `nlp`, `data`, `seo`, …
-- **Tiebreak (multi-axis):** choose the scope of the primary subject.
+- **Tiebreak (multi-axis):** choose the domain of the primary subject.
   - "Rust borrow/ownership patterns" → `rust`.
   - "Rust data-pipeline patterns" → `data`, `tags: rust`.
   The validator cannot judge this; tags make a wrong guess recoverable by search.
 
-**Scope definitions that matter (with their `belongs-when`):**
+**Domain definitions that matter (with their `belongs-when`):**
 
 - **`db`** — database *concepts* (modeling, normalization, transactions), language-agnostic. **Not**
   products. `belongs-when`: "Is this a general database concept, not a specific product?"
-- **`platform`** — managed third-party *products you build on* (Supabase, Firebase, AWS, GCP,
-  Azure, Vercel, Netlify). `belongs-when`: "Is this about a specific managed platform/service,
-  rather than a general concept or a language?"
+- **`baas`** — managed backend *products you build on* (Supabase, Firebase, Appwrite).
+  `belongs-when`: "Is this about a specific managed backend platform, rather than a database
+  concept, an operational activity, or a language?"
 - **`ops`** — operational *activities* (CI, GitHub Actions, deploy, monitoring). `belongs-when`:
   "Is this an operational activity you perform, rather than a product or concept?"
-  - `platform` vs `ops` = **subject vs activity.** "supabase-js CRUD" → `platform`, `tags: supabase`.
+  - `baas` vs `ops` = **subject vs activity.** "supabase-js CRUD" → `baas`, `tags: supabase`.
     "deploy to AWS via GitHub Actions" → `ops`, `tags: aws`. Never fold platforms into `ops` — it
-    would turn `ops` into "anything cloud." If `platform` grows too broad, split it into
+    would turn `ops` into "anything cloud." If `baas` grows too broad, split it into
     `baas`/`cloud` later via the registry.
 - **`agents`** — agent/skill/hook tooling and this skill system. `belongs-when`: "Is this about an
   *agent operating* a mechanism, rather than humans/teams managing work?"
@@ -170,12 +175,12 @@ would browse under to find it. It is an **open, growing, registry-driven** vocab
   `ml` = classical training/modeling; `nlp` = language processing broadly; `ai` = catch-all for
   AI concepts with no sharper home (keep even alongside the others).
 - **`dev`** — catch-all; absorbs today's leaked buckets (`git`, `github`, `docs`, `code`,
-  `projects`) unless a sharper scope applies. Specifics go in `tags`.
+  `projects`) unless a sharper domain applies. Specifics go in `tags`.
 
 **Validation strictness:**
 
-- **Scope is hard-validated** against the registry; unknown scope → **fail**, with the growth
-  note: *"`<scope>` isn't registered. The vocabulary is intentionally growing — open an issue
+- **Domain is hard-validated** against the registry; unknown domain → **fail**, with the growth
+  note: *"`<domain>` isn't registered. The vocabulary is intentionally growing — open an issue
   explaining what and why it matters, then add it to the registry."* Fail, but with a door.
 - **Tags are advisory** — any tag passes; emit at most a soft "new tag, consider adding to the
   registry" nudge. The tags registry is for autocomplete/consistency, not gatekeeping.
@@ -254,7 +259,12 @@ Two **distinct** operations. Keeping them distinct is what removes provenance re
 
 ---
 
-## 9. Migration (staged; do not skip ahead)
+## 9. Migration (history; completed)
+
+> This section is **retained as history**. The migration is complete: the repo is at Phase 3, every
+> skill is renamed, and all portability fields are namespaced under `metadata.shareable-skills.*`.
+> Keep it as the rationale for why the `aliases` map is permanent and why renames must move all
+> surfaces atomically — useful the next time a bulk rename is needed.
 
 Renaming touches many **reference surfaces**; all must move atomically:
 
@@ -270,24 +280,25 @@ Renaming touches many **reference surfaces**; all must move atomically:
 
 - **Phase 0** — land this spec + the registry + a validator in **warn-only** mode. Nothing breaks.
 - **Phase 1** — **frontmatter enrichment only** (additive, safe): add `owner-prefix`, `owner`,
-  `scope`, `tags`, `visibility`; migrate legacy keys per the §3 table. No renames → no breakage.
+  `domain`, `tags`, `visibility`; migrate legacy keys to the namespaced schema (§3). No renames → no
+  breakage.
 - **Phase 2** — bulk **rename** with a name-map, updating all 7 surfaces in one pass. Keep an
   **alias map** (old-name → new-name) the CLI honors so a missed reference resolves instead of
-  hard-breaking. This includes `ref-swiftpost-*` → `ref-sp-<scope>-*` (the old `swiftpost` name
+  hard-breaking. This includes `ref-swiftpost-*` → `ref-sp-<domain>-*` (the old `swiftpost` name
   signal for "repo-local" is now carried by `visibility: repo-local`).
 - **Phase 3** — flip the validator to **hard-fail**.
 
 **Aliases are permanent.** Keep a frozen `aliases:` section in the registry indefinitely — cheap
 insurance for anyone who vendored a skill during the transition and still references old names.
 
-The meta-skills eat their own dog food: they take the `sp` prefix and `agents` scope
+The meta-skills eat their own dog food: they take the `sp` prefix and `agents` domain
 (`ref-sp-agents-shareable-skills`, `ref-sp-agents-skills-authoring`).
 
 ---
 
 ## 10. Validation rules (the sharing-spec validator)
 
-These are the **sharing-spec** rules — naming grammar, scope, visibility, deps, and vendoring. They
+These are the **sharing-spec** rules — naming grammar, domain, visibility, deps, and vendoring. They
 are validated by *this skill's* validator, `./scripts/validate-sharing.mts` (TypeScript, Node >= 22),
 which reads this skill's `references/registry.json`. It is **separate from and non-overlapping with** the
 general skill-quality validator owned by `ref-sp-agents-skills-authoring`
@@ -295,21 +306,23 @@ general skill-quality validator owned by `ref-sp-agents-skills-authoring`
 well-formedness such as charset, length, and folder-match). A skill can be an excellent skill and
 fail this spec, or vice versa; run both validators. See §11 for how the two skills relate.
 
-- `name` matches `type + owner-prefix + scope (+ optional template) + topic`, and equals the folder
+All portability fields are read from the `metadata.shareable-skills.*` namespace; `license` is read
+from the top level.
+
+- `name` matches `type + owner-prefix + domain (+ optional template) + topic`, and equals the folder
   name → else **fail**. (General charset/length/folder-match well-formedness is the authoring
   validator's job; this check adds the grammar-vs-metadata projection on top.)
-- `scope` exists in the registry → else **fail** (with the growth note, §4).
-- Each `requires` entry resolves to an existing skill → else **fail** (§5).
-- `suggests` entries may be absent → never fails.
+- `shareable-skills.domain` exists in the registry → else **fail** (with the growth note, §4).
+- Each `shareable-skills.requires` entry resolves to an existing skill → else **fail** (§5).
+- `shareable-skills.suggests` entries may be absent → never fails.
 - A `shareable` (organization/public) skill does not hard-depend on a `repo-local` skill → else
   **fail** (§5, §6).
-- `visibility: public` has a `license` → else **fail**; below public, missing license is a soft
-  warn (§6).
-- Unknown `tags` → soft warn only, any tag passes (§4).
-- Vendored copies (`vendored-sha` present) keep `owner` as upstream and carry a read-only body
-  banner → else warn (§7).
-- During migration, unknown legacy keys and un-renamed names are tolerated per the current phase
-  (§9); the validator escalates to hard-fail only at Phase 3.
+- `shareable-skills.visibility: public` has a top-level `license` → else **fail**; below public,
+  missing license is a soft warn (§6).
+- Unknown `shareable-skills.tags` → soft warn only, any tag passes (§4).
+- Vendored copies (`shareable-skills.vendored-sha` present) keep `shareable-skills.owner` as upstream
+  and carry a read-only body banner → else warn (§7).
+- The validator runs at Phase 3 (**hard-fail**); legacy keys are no longer accepted (§9).
 
 ---
 
@@ -321,7 +334,7 @@ The two meta-skills are **complementary but independent**, and neither hard-depe
   perspective*: boundary, description/trigger quality, progressive disclosure, structure,
   evaluation. Its validator is `ref-sp-agents-skills-authoring/scripts/validate-skill.mts`.
 - **`ref-sp-agents-shareable-skills`** (this spec) owns *how to name, share, and vendor a skill according to
-  our standardization spec*: owner prefix, scope registry, visibility, deps semantics, vendoring.
+  our standardization spec*: owner prefix, domain registry, visibility, deps semantics, vendoring.
   Its validator is `ref-sp-agents-shareable-skills/scripts/validate-sharing.mts`.
 - The dependency between them is **soft (`suggests`), not hard (`requires`).** *Why:* you can
   author an excellent skill that is deliberately `repo-local` and never touches the sharing spec,

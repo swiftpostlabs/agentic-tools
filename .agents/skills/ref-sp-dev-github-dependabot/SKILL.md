@@ -3,11 +3,11 @@ name: ref-sp-dev-github-dependabot
 description: "Portable Dependabot guidance for dependabot.yml configuration, ecosystem selection, schedules, grouping, ignore or allow rules, private registries, and GitHub Actions updates. Use when: creating or reviewing .github/dependabot.yml, tuning update volume, or deciding how version and security updates should be grouped and scoped."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
-  tags: "github"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "github"
 ---
 
 # GitHub Dependabot

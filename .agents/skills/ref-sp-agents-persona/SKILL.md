@@ -2,10 +2,10 @@
 name: ref-sp-agents-persona
 description: "Reference guidance for agent persona, working style, and workflow expectations. Use when: starting a new task, addressing feedback, refreshing agent instruction files, or understanding project communication style."
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "organization"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "organization"
 ---
 
 # Agent Persona

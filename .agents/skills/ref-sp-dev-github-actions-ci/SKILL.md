@@ -3,11 +3,11 @@ name: ref-sp-dev-github-actions-ci
 description: "Portable GitHub Actions CI guidance for workflow triggers, job design, permissions, matrix strategy, concurrency, caching, and workflow hardening. Use when: creating or reviewing .github/workflows/*.yml files, setting up CI or reusable workflows, or securing workflow tokens, actions, and runner choices."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "public"
-  tags: "ci, github"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "ci, github"
 ---
 
 # GitHub Actions CI

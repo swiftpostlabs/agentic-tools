@@ -3,12 +3,12 @@ name: ref-sp-js-next-template
 description: "App-level guidance for building a full React and Next.js application. Use when: scaffolding or reviewing a whole React/Next app, choosing the baseline stack and package manager, deciding app-level structure, or comparing a full app against a simpler standalone browser tool."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
-  tags: "react, next"
-  requires: "ref-sp-js-react, ref-sp-js-next, ref-sp-js-typescript"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "react, next"
+  shareable-skills.requires: "ref-sp-js-react, ref-sp-js-next, ref-sp-js-typescript"
 ---
 
 # React + Next App

@@ -7,9 +7,9 @@ Use this checklist when creating, reviewing, or refactoring a skill.
 - Does the `name` field match the folder name and follow the Agent Skills naming constraints?
 - Does the `name` use `ref-...` for reference-style guidance and `tool-...` for action-oriented, user-invoked workflows?
 - If `metadata` is present, does it stay within the spec's string-to-string model instead of using YAML lists or nested objects?
-- If the skill is meant to be shared or exported, does it declare `shareable-skills.visibility` as `shareable` or `repo-local`?
-- If the skill has hard dependencies on other skills, does it record them in `shareable-skills.requires` as a space-separated list of skill names?
-- If the skill is marked `shareable`, are its hard dependencies few and also safe to share?
+- If the skill is meant to be shared or exported, does it declare `shareable-skills.visibility` as `repo-local`, `organization`, or `public`?
+- If the skill has hard dependencies on other skills, does it record them in `shareable-skills.requires` as a comma-separated list of skill names?
+- If the skill is `organization` or `public`, are its hard dependencies few and also safe to share?
 - Is the `description` concise, specific, and written as a trigger for activation rather than a generic summary?
 - Does the skill include a clear `When to use` section?
 - Does the `SKILL.md` contain the core instructions the agent needs on every activation?

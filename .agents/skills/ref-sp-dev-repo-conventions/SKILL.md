@@ -2,11 +2,11 @@
 name: ref-sp-dev-repo-conventions
 description: "Repo-specific conventions for this Python project (agentic-tools): the feature-first src/agentic_tools layout, pyproject.toml configuration hub, Black + Pyright-strict + pytest tooling via Poe, typing rules, CLI and script placement, and translations. Use when: creating or moving features, tests, or CLI entrypoints; deciding which top-level or package folder a file belongs in; adjusting pyproject.toml, Poe tasks, or tool config; or explaining how this repo is wired."
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "dev"
-  visibility: "repo-local"
-  reason: "Documents this repository's concrete Python layout, pyproject wiring, tooling commands, and package boundary."
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "dev"
+  shareable-skills.visibility: "repo-local"
+  shareable-skills.reason: "Documents this repository's concrete Python layout, pyproject wiring, tooling commands, and package boundary."
 ---
 
 # Repo Conventions

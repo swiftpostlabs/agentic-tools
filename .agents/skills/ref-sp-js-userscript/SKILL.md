@@ -3,10 +3,10 @@ name: ref-sp-js-userscript
 description: "Portable guidance for browser userscripts on Tampermonkey, Violentmonkey, and similar managers. Use when: writing or reviewing .user.js or .user.ts scripts, metadata blocks, permissions, or DOM automation."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
 ---
 
 # Userscript

@@ -3,10 +3,10 @@ name: ref-sp-agents-instructions-authoring
 description: "Guidance for structuring and maintaining repository instruction files across major agent entry points such as Copilot, Gemini, and Claude. Use when: designing the repo's instruction system, choosing a source of truth, or updating .github/copilot-instructions.md, GEMINI.md, and .claude/CLAUDE.md together."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "agents"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "agents"
+  shareable-skills.visibility: "public"
 ---
 
 # Agents Instructions Authoring

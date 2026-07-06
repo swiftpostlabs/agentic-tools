@@ -3,11 +3,11 @@ name: ref-sp-db-security
 description: "Portable database-security guidance for threats, access control, views, auditing, encryption, integrity, and secure recovery. Use when: protecting database-backed systems, designing authorization models, reviewing confidentiality, integrity, or availability risks, or securing backups, logs, and administrative access."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "db"
-  visibility: "public"
-  tags: "security"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "db"
+  shareable-skills.visibility: "public"
+  shareable-skills.tags: "security"
 ---
 
 # Database Security

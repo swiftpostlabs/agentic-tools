@@ -3,10 +3,10 @@ name: ref-sp-js-deno
 description: "Portable Deno guidance for modern runtime usage, deno.json configuration, tsconfig and ESLint adoption, permissions, Node interop, and hybrid Deno or Node repositories. Use when: writing Deno code, configuring deno tasks, or adopting Deno into an existing TypeScript or Node repo."
 license: MIT
 metadata:
-  owner-prefix: "sp"
-  owner: "swiftpostlab/agentic-tools"
-  scope: "js"
-  visibility: "public"
+  shareable-skills.owner-prefix: "sp"
+  shareable-skills.owner: "swiftpostlabs/agentic-tools"
+  shareable-skills.domain: "js"
+  shareable-skills.visibility: "public"
 ---
 
 # Deno
