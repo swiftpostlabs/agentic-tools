@@ -189,9 +189,7 @@ def test_symlinked_legacy_skill_is_our_burden_not_the_consumers(
     # A symlinked skill points at a source we own; even if its target is on the
     # legacy schema it must not warn or block the consumer.
     source_root = tmp_path / "source"
-    write_skill_in_root(
-        source_root, "ref-linked", metadata={"visibility": "public"}
-    )
+    write_skill_in_root(source_root, "ref-linked", metadata={"visibility": "public"})
     skills_root = tmp_path / ".agents" / "skills"
     skills_root.mkdir(parents=True)
     (skills_root / "ref-linked").symlink_to(
@@ -1035,7 +1033,9 @@ def test_main_sync_regenerates_stale_skills_gitignore(
     destination_agents_dir = destination_repo / ".agents"
     destination_agents_dir.mkdir(parents=True)
 
-    write_skill(source_repo, "ref-alpha", metadata={"shareable-skills.visibility": "public"})
+    write_skill(
+        source_repo, "ref-alpha", metadata={"shareable-skills.visibility": "public"}
+    )
     (destination_agents_dir / "skills.json").write_text(
         json.dumps({"sources": [{"from": "../source", "skills": ["ref-alpha"]}]}),
         encoding="utf-8",
@@ -1073,7 +1073,9 @@ def test_main_sync_gitignore_lists_configured_source_url(
     destination_agents_dir = destination_repo / ".agents"
     destination_agents_dir.mkdir(parents=True)
 
-    write_skill(source_repo, "ref-alpha", metadata={"shareable-skills.visibility": "public"})
+    write_skill(
+        source_repo, "ref-alpha", metadata={"shareable-skills.visibility": "public"}
+    )
     (destination_agents_dir / "skills.json").write_text(
         json.dumps(
             {
