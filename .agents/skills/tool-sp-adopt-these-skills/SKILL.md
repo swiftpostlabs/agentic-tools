@@ -47,7 +47,7 @@ Treat this as a small interactive decision step. Choose the mode first, then giv
 
 ## Top-Level Instructions: Personality Export
 
-When this skill tells an agent to export or transplant the repo's top-level instructions into another repo, the `## Personality` section from `.github/copilot-instructions.md` should be exported verbatim, not paraphrased.
+When this skill tells an agent to export or transplant the repo's top-level instructions into another repo, the `## Personality` section from `AGENTS.md` should be exported verbatim, not paraphrased.
 
 - Keep the personality text exactly as written unless the user explicitly asks to rewrite it.
 - Treat this as intentional author voice, not incidental wording to be normalized.
@@ -91,7 +91,7 @@ If the target repo wants the same protected-file and exclusion workflow, copy an
 - `.aiexclude` — generated exclusion file.
 - `.claude/settings.json` — generated protected read rules for Claude.
 - `.vscode/settings.json` — generated protected file associations and approval maps for Copilot.
-- `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` — behavioral enforcement layer that tells agents how to respect the policy.
+- `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md` — behavioral enforcement layer that tells agents how to respect the policy.
 
 The target repo should also copy the corresponding command wiring:
 

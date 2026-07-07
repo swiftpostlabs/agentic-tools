@@ -17,7 +17,7 @@ Both matter. File-level restrictions alone are not sufficient in every client.
 | --- | --- | --- | --- |
 | Gemini | Generated exclusion file containing protected and excluded patterns when Gemini output is enabled | `GEMINI.md` routes to the shared top-level instructions | Gemini avoids protected and excluded files and follows the shared security guidance. |
 | Claude Code | `.claude/settings.json` with protected `Read()` deny rules when Claude output is enabled | `.claude/CLAUDE.md` routes to the shared top-level instructions | Claude is blocked from protected reads and also inherits the shared behavioral policy. |
-| GitHub Copilot | `.vscode/settings.json` protected associations and approval rules when Copilot output is enabled | `.github/copilot-instructions.md` contains the primary behavioral guidance | Copilot receives a best-effort file deterrent plus the main operating instructions. |
+| GitHub Copilot | `.vscode/settings.json` protected associations and approval rules when Copilot output is enabled | shared top-level instructions (the root `AGENTS.md`, read natively by Copilot) contain the primary behavioral guidance | Copilot receives a best-effort file deterrent plus the main operating instructions. |
 
 ## Copilot Limitation
 

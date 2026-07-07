@@ -30,7 +30,7 @@ Use this checklist when creating, reviewing, or refactoring a skill.
 - If the skill has maintained evals, do they include realistic prompts, expectations/assertions, and a baseline or previous-version comparison plan?
 - Are graded results supported by evidence rather than benefit-of-the-doubt judgments?
 - Does the skill avoid provider-specific assumptions unless a real platform-specific exception is required?
-- If provider files are mentioned, does the skill preserve the reference-first pattern where `.github/copilot-instructions.md` is the source of truth and `GEMINI.md` / `.claude/CLAUDE.md` are thin stubs by default?
+- If provider files are mentioned, does the skill preserve the reference-first pattern where a root `AGENTS.md` is the source of truth and `GEMINI.md` / `.claude/CLAUDE.md` (and `.github/copilot-instructions.md` when present) are thin stubs by default?
 - Are workflow labels concrete and operational instead of vague?
 
 Typical fixes:

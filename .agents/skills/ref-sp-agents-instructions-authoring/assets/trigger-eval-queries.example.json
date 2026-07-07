@@ -1,6 +1,6 @@
 [
   {
-    "query": "How should we structure .github/copilot-instructions.md, GEMINI.md, and .claude/CLAUDE.md so they do not drift?",
+    "query": "How should we structure AGENTS.md, GEMINI.md, and .claude/CLAUDE.md so they do not drift?",
     "should_trigger": true
   },
   {
@@ -8,7 +8,7 @@
     "should_trigger": true
   },
   {
-    "query": "Update .github/copilot-instructions.md after we added new skills and changed the repo workflow.",
+    "query": "Update AGENTS.md after we added new skills and changed the repo workflow.",
     "should_trigger": true
   },
   {

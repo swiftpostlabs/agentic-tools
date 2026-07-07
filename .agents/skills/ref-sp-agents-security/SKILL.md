@@ -76,11 +76,11 @@ policy source file                 ← Source of truth
 |-------|----------------------|----------------------|
 | **Gemini** | Generated exclusion file containing protected and excluded patterns when Gemini output is enabled | `GEMINI.md` routes to the shared top-level instructions |
 | **Claude Code** | `.claude/settings.json` `permissions.deny` with protected `Read()` patterns when Claude output is enabled | `.claude/CLAUDE.md` routes to the shared top-level instructions |
-| **GitHub Copilot** | `.vscode/settings.json` protected file deterrent plus command/edit guardrails when Copilot output is enabled | `.github/copilot-instructions.md` security directive |
+| **GitHub Copilot** | `.vscode/settings.json` protected file deterrent plus command/edit guardrails when Copilot output is enabled | shared top-level instructions (the root `AGENTS.md`, which Copilot reads natively) carry the security directive |
 
 ### Copilot Limitation
 
-The `.vscode/settings.json` approach maps protected patterns to a `copilot-restricted-file` language ID and disables Copilot for that ID. This is a **best-effort workaround** — `copilot-restricted-file` is not a real language ID. The behavioral directive in `copilot-instructions.md` is still the primary enforcement.
+The `.vscode/settings.json` approach maps protected patterns to a `copilot-restricted-file` language ID and disables Copilot for that ID. This is a **best-effort workaround** — `copilot-restricted-file` is not a real language ID. The behavioral directive in the shared top-level instructions (`AGENTS.md`) is still the primary enforcement.
 
 ## Decision Rules
 

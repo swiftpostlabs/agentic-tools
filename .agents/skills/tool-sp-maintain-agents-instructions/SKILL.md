@@ -1,6 +1,6 @@
 ---
 name: tool-sp-maintain-agents-instructions
-description: "Review and update repository agent instruction files after code, workflow, or skill changes. Use when: .github/copilot-instructions.md, GEMINI.md, or .claude/CLAUDE.md may be outdated, the skill catalog changed, or a multi-provider repo needs its instruction bridge refreshed."
+description: "Review and update repository agent instruction files after code, workflow, or skill changes. Use when: AGENTS.md, GEMINI.md, or .claude/CLAUDE.md may be outdated, the skill catalog changed, or a multi-provider repo needs its instruction bridge refreshed."
 argument-hint: "What changed in the repo and which instruction files or providers need to stay in sync"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -20,7 +20,7 @@ Guide the agent through a short maintenance wizard so top-level instruction file
 
 - The repo's workflows, commands, or package-manager defaults changed.
 - Skills were added, removed, renamed, or substantially rewritten.
-- `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md` may be outdated.
+- `AGENTS.md`, `GEMINI.md`, or `.claude/CLAUDE.md` may be outdated.
 - A repo added multi-provider support and needs a bridge pattern or refresh.
 
 ## First Step
@@ -39,7 +39,7 @@ Read `.agents/skills/ref-sp-agents-instructions-authoring/SKILL.md`, `.agents/sk
 ## Defaults
 
 - Prefer a single source-of-truth instruction file plus thin provider bridges.
-- Prefer `.github/copilot-instructions.md` as the source of truth when the repo already uses that pattern.
+- Prefer a root `AGENTS.md` as the source of truth; fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or already uses that pattern.
 - If the repo supports multiple providers, recommend an import bridge rather than parallel duplicated instruction bodies.
 - When the repo carries a deliberate persona or working style, keep that voice aligned with `.agents/skills/ref-sp-agents-persona/SKILL.md` instead of rewriting tone ad hoc.
 - When skill names or workflows change, update both the source-of-truth file and any provider routing summaries that mention them.

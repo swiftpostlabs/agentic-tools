@@ -70,7 +70,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 ## Gotchas
 
 - Do not refresh every skill just because one area changed.
-- Do not leave `.github/copilot-instructions.md` or equivalent routing files stale after adding or renaming a skill.
+- Do not leave `AGENTS.md` or equivalent routing files stale after adding or renaming a skill.
 - Do not preserve copied examples, commands, or package managers that no longer match the repo.
 - Do not create a new skill when an existing skill can absorb the change cleanly.
 - Do not mutate shareability metadata casually; if a skill becomes repo-local or gains hard dependencies, record that intentionally.
@@ -89,7 +89,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 ## References
 
 - Read `./references/consolidation-checklist.md` when the maintenance pass reveals duplicated or misplaced guidance.
-- Use `.agents/skills/tool-sp-maintain-agents-instructions/SKILL.md` when skill changes imply drift in `.github/copilot-instructions.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
+- Use `.agents/skills/tool-sp-maintain-agents-instructions/SKILL.md` when skill changes imply drift in `AGENTS.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
 - Use `.agents/skills/ref-sp-agents-local-tasks/SKILL.md` when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
 - Read `.agents/skills/ref-sp-agents-skills-authoring/references/quality-evaluation.md` when reviewing important skills against the stricter quality bar adopted from the local Claude skill-creator task.
 - Read `./references/checklist.md` for a quick maintenance review pass.

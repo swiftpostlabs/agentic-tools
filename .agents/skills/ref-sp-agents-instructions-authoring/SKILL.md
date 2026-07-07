@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-instructions-authoring
-description: "Guidance for structuring and maintaining repository instruction files across major agent entry points such as Copilot, Gemini, and Claude. Use when: designing the repo's instruction system, choosing a source of truth, or updating .github/copilot-instructions.md, GEMINI.md, and .claude/CLAUDE.md together."
+description: "Guidance for structuring and maintaining repository instruction files across major agent entry points such as Copilot, Gemini, and Claude. Use when: designing the repo's instruction system, choosing a source of truth, or updating AGENTS.md, GEMINI.md, and .claude/CLAUDE.md together."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -63,7 +63,7 @@ Provide portable defaults for designing maintainable repository instruction syst
 ### Source-of-truth model
 
 - Make one file authoritative.
-- If the repo already has a mature `.github/copilot-instructions.md`, keep it as the default source of truth unless there is a concrete reason not to.
+- Default to a root `AGENTS.md` as that authoritative file; fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or already has a mature file established there (see `./references/agents-md-standard.md`).
 - Avoid parallel hand-maintained instruction bodies across several provider files.
 
 ### Import bridge pattern

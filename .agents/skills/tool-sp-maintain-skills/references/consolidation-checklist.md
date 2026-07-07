@@ -4,7 +4,7 @@ Use this checklist after reorganizing instructions or skills.
 
 - Did each rule end up with one clear source of truth?
 - Did you remove duplicated wording instead of leaving near-copies behind?
-- Does `copilot-instructions.md` now contain only repo-wide rules, workflow, routing, and safety guidance?
+- Does `AGENTS.md` now contain only repo-wide rules, workflow, routing, and safety guidance?
 - Does the owning skill now contain the detailed rule that was removed from the top-level guide?
 - Did you update the skill description so the moved guidance is still discoverable?
 - Did you replace copied-over library names, commands, file extensions, and framework references with ones that actually match this repo?
@@ -15,7 +15,7 @@ Use this checklist after reorganizing instructions or skills.
 
 Typical moves from this repo:
 
-- Dependency preferences belong in `ref-sp-dev-repo-conventions`, not in `copilot-instructions.md`.
-- "Ask for clarification rather than making assumptions" belongs in `copilot-instructions.md` because it applies broadly.
+- Dependency preferences belong in `ref-sp-dev-repo-conventions`, not in `AGENTS.md`.
+- "Ask for clarification rather than making assumptions" belongs in `AGENTS.md` because it applies broadly.
 - Agent guardrail behavior belongs in `ref-sp-agents-security` plus the top-level restricted-file policy summary.
 - Copied examples must use this repo's real commands and libraries instead of inherited ones from another project.

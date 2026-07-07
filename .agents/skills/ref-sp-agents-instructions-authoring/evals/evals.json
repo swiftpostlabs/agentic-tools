@@ -13,7 +13,7 @@
     },
     {
       "id": 2,
-      "prompt": "Review .github/copilot-instructions.md after several new skills were added and tell me what should change.",
+      "prompt": "Review AGENTS.md after several new skills were added and tell me what should change.",
       "expected_output": "A review that updates the skill list, routing hints, and any workflow commands that changed, while keeping feature-level detail in skills.",
       "assertions": [
         "The response checks skill listings or routing hints",

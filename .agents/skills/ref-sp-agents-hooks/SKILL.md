@@ -29,7 +29,7 @@ Give the agent portable defaults for authoring lifecycle hooks -- shell commands
 - This skill centers on `command` (shell) hooks, the one type every platform supports. Non-command types (`http`, `mcp_tool`, `prompt`, `agent`) are noted per platform in the references.
 - For the config location, event vocabulary, and payload field names of one platform, read that platform's reference file.
 - This skill is not about MCP servers, skills, or subagents themselves.
-- For repo instruction files (`.github/copilot-instructions.md`, `GEMINI.md`, `.claude/CLAUDE.md`), use `.agents/skills/ref-sp-agents-instructions-authoring/SKILL.md`.
+- For repo instruction files (`AGENTS.md`, `GEMINI.md`, `.claude/CLAUDE.md`), use `.agents/skills/ref-sp-agents-instructions-authoring/SKILL.md`.
 - When a hook reads or guards protected/secret files, use `.agents/skills/ref-sp-agents-security/SKILL.md`.
 
 ## Mental Model

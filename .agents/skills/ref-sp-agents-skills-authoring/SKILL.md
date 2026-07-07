@@ -286,7 +286,8 @@ Keep instructions consistent across all platform-specific files:
 
 | File | Platform |
 |------|----------|
-| `.github/copilot-instructions.md` | GitHub Copilot |
+| `AGENTS.md` | Cross-provider source of truth (read natively by Copilot and others) |
+| `.github/copilot-instructions.md` | GitHub Copilot (only when a repo keeps a dedicated Copilot file) |
 | `GEMINI.md` | Google Gemini |
 | `.claude/CLAUDE.md` | Anthropic Claude |
 

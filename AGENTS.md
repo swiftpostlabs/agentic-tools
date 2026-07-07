@@ -6,7 +6,7 @@ description: "Project context and guidance for AI coding agents working on this 
 
 Use this file for always-on repository rules and routing. Keep domain-specific detail in the skills under `.agents/skills/`.
 
-This root `AGENTS.md` is the source of truth for repo guidance. `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` should normally stay as thin reference stubs that route back here.
+This root `AGENTS.md` is the source of truth for repo guidance. `GEMINI.md` and `.claude/CLAUDE.md` are thin reference stubs that route back here. GitHub Copilot reads this `AGENTS.md` natively, so there is no separate Copilot instruction file.
 
 ## Personality
 
@@ -78,7 +78,7 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
 **`ref-sp-agents-instructions-authoring`** — Guidance for structuring and maintaining multi-provider instruction files
-- Use when: designing the repo's instruction-file system, choosing the source of truth, or updating `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` together, including provider-specific guidance through the skill's references
+- Use when: designing the repo's instruction-file system, choosing the source of truth, or updating `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md` together, including provider-specific guidance through the skill's references
 
 **`ref-sp-dev-github-actions-ci`** — Portable GitHub Actions CI guidance
 - Use when: creating or reviewing `.github/workflows/*.yml`, setting up CI or reusable workflows, or securing workflow tokens, actions, and runner choices
@@ -204,7 +204,7 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 - For working through the local backlog under `.agents/tasks/TODO.md`: use `tool-sp-handle-agents-local-tasks`.
 - For this repo's `agents-policy` feature, `.agents/config.json` policy section, and generated vendor outputs: use `ref-sp-agents-policy`.
 - For skill scope metadata and the scopes registry: use `ref-sp-agents-shareable-skills`.
-- For writing and maintaining `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-sp-agents-instructions-authoring`.
+- For writing and maintaining `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md`: use `ref-sp-agents-instructions-authoring`.
 - For GitHub Actions workflow design, CI structure, and workflow hardening: use `ref-sp-dev-github-actions-ci`.
 - For Dependabot config, schedules, grouping, and GitHub Actions dependency updates: use `ref-sp-dev-github-dependabot`.
 - For version-bump decisions, semver rules, npm dependency ranges, and package.json dependency-field choices: use `ref-sp-dev-semantic-versioning`.
@@ -224,7 +224,7 @@ For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run po
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
 - For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-sp-export-skills`.
 - For creating a new skill through a guided intake flow: use `tool-sp-create-skill`.
-- For refreshing `.github/copilot-instructions.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-sp-maintain-agents-instructions`.
+- For refreshing `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-sp-maintain-agents-instructions`.
 - For refreshing project skills after repo or branch changes: use `tool-sp-maintain-skills`.
 - For turning an existing skill into a shareable one through a guided review: use `tool-sp-make-skill-shareable`.
 - For grouping the current diff into focused commits and making them: use `tool-sp-commit`.

@@ -273,7 +273,7 @@ Renaming touches many **reference surfaces**; all must move atomically:
 3. `requires`/`suggests` in *other* skills
 4. `$SKILLS_FOLDER/<name>` paths in bodies
 5. cross-links in skill bodies
-6. the catalog in `.github/copilot-instructions.md`, `GEMINI.md`, `.claude/CLAUDE.md`
+6. the catalog in `AGENTS.md`, `GEMINI.md`, `.claude/CLAUDE.md`
 7. the CLI/config that lists or links skills (`.agents/config.json`, `src/agentic_tools/features/skills`)
 
 **Phases:**
