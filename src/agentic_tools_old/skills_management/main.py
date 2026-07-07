@@ -298,7 +298,7 @@ def parse_configured_skill_sources(text: str) -> tuple[ConfiguredSkillSource, ..
 def agents_config_has_skills(config_path: Path) -> bool:
     try:
         parsed = json.loads(config_path.read_text(encoding="utf-8"))
-    except OSError, JSONDecodeError:
+    except (OSError, JSONDecodeError):
         return True
 
     if not isinstance(parsed, dict):
@@ -477,7 +477,7 @@ def load_skill_aliases(source_path: Path) -> dict[str, str]:
 
     try:
         parsed = json.loads(registry_path.read_text(encoding="utf-8"))
-    except OSError, JSONDecodeError:
+    except (OSError, JSONDecodeError):
         return {}
 
     if not isinstance(parsed, dict):
