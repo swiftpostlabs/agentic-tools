@@ -51,11 +51,14 @@ The single-source-of-truth pattern used for repo files also works for global
 config. Keep the real personal guidance in one file and route the others to it,
 instead of hand-maintaining several parallel global bodies.
 
-There is no `AGENTS.md` equivalent for the global/home tier, so — unlike the
-repo tier, where a root `AGENTS.md` is the default source of truth (see
+As of today we could not find documentation from the tools (Copilot, Gemini,
+and others) describing how to place an `AGENTS.md` at the global/home tier — the
+`AGENTS.md` convention is documented as a repo-root file. So — unlike the repo
+tier, where a root `AGENTS.md` is the default source of truth (see
 `./agents-md-standard.md`) — keep **Copilot**
 (`~/.copilot/instructions/*.instructions.md`) as the recommended global source
-of truth and bridge the other providers back to it.
+of truth and bridge the other providers back to it. Revisit this if a tool later
+documents global `AGENTS.md` support.
 
 A common working setup:
 

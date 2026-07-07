@@ -30,9 +30,10 @@ Aider, Zed, Warp, Devin, and others. That changes the source-of-truth calculus.
   AGENTS.md-aware tools also find the guidance.
 - Either way, keep exactly one authoritative body of guidance and route the rest
   to it, per `./import-bridge.md`.
-- This repo-level default does **not** extend to the global/home tier: there is
-  no user-level `AGENTS.md` convention, so global config keeps using Copilot as
-  its source of truth. See `./global-instructions.md`.
+- This repo-level default does **not** extend to the global/home tier: as of
+  today we could not find tool documentation (Copilot, Gemini, and others) for a
+  user-level `AGENTS.md`, so global config keeps using Copilot as its source of
+  truth. See `./global-instructions.md`.
 
 ## Bridging to vendor files
 

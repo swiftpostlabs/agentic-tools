@@ -48,7 +48,7 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Keep always-on repo rules in the source-of-truth file and move domain-specific detail into skills.
 - Add provider-specific exceptions only when a real platform behavior requires them.
 - Keep cross-project personal defaults in user-level/global config, not duplicated into every repo; see `./references/global-instructions.md`.
-- For the global/home tier there is no `AGENTS.md` equivalent, so keep Copilot (`~/.copilot/instructions/*.instructions.md`) as the recommended global source of truth; see `./references/global-instructions.md`.
+- For the global/home tier, as of today no tool documents an `AGENTS.md` equivalent, so keep Copilot (`~/.copilot/instructions/*.instructions.md`) as the recommended global source of truth; see `./references/global-instructions.md`.
 
 ## Task Framing
 
