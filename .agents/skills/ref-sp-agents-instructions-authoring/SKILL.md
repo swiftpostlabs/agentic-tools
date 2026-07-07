@@ -28,6 +28,8 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Use `./references/providers/copilot-instructions.md` for what belongs specifically in `.github/copilot-instructions.md`.
 - Use `./references/providers/gemini-instructions.md` for `GEMINI.md` bridge or provider-specific decisions.
 - Use `./references/providers/claude-instructions.md` for `.claude/CLAUDE.md` bridge or provider-specific decisions.
+- Use `./references/global-instructions.md` for user-level/global instruction files (e.g. `~/.copilot/instructions/*.instructions.md`, `~/.claude/CLAUDE.md`) rather than repo-scoped files.
+- Use `./references/agents-md-standard.md` for the cross-provider root `AGENTS.md` file and how it fits the source-of-truth model.
 - Use `.agents/skills/ref-sp-agents-persona/SKILL.md` when the instruction system needs to preserve or refresh the repo's agent voice, interaction style, or escalation stance.
 - Use `.agents/skills/ref-sp-agents-skills-authoring/SKILL.md` for authoring skills rather than top-level instruction files.
 - Use `.agents/skills/tool-sp-maintain-agents-instructions/SKILL.md` when the user wants a guided update workflow instead of just the reference guidance.
@@ -41,10 +43,12 @@ Provide portable defaults for designing maintainable repository instruction syst
 ## Defaults
 
 - Choose one source-of-truth instruction file for the repo.
-- Prefer `.github/copilot-instructions.md` as the source of truth when the repo already supports Copilot or needs a broadly readable markdown home.
+- Prefer a root `AGENTS.md` as the repo source of truth by default — it is read natively by many agents; see `./references/agents-md-standard.md`. Fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or has a mature file already established there.
 - Use thin provider bridge files for Gemini and Claude by default rather than duplicating the full instruction set.
 - Keep always-on repo rules in the source-of-truth file and move domain-specific detail into skills.
 - Add provider-specific exceptions only when a real platform behavior requires them.
+- Keep cross-project personal defaults in user-level/global config, not duplicated into every repo; see `./references/global-instructions.md`.
+- For the global/home tier there is no `AGENTS.md` equivalent, so keep Copilot (`~/.copilot/instructions/*.instructions.md`) as the recommended global source of truth; see `./references/global-instructions.md`.
 
 ## Task Framing
 
@@ -92,6 +96,8 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Read `./references/providers/copilot-instructions.md` for Copilot-specific source-of-truth guidance.
 - Read `./references/providers/gemini-instructions.md` for `GEMINI.md` bridge guidance.
 - Read `./references/providers/claude-instructions.md` for `.claude/CLAUDE.md` bridge guidance.
+- Read `./references/global-instructions.md` for user-level/global instruction files and how the bridge pattern applies to personal defaults.
+- Read `./references/agents-md-standard.md` for the root `AGENTS.md` convention, nesting/monorepo behavior, and symlink migration.
 - Read `./references/checklist.md` for a quick multi-provider instruction review pass.
 - Read `./references/import-bridge.md` when choosing between thin stubs, bridge files, and rare split-source patterns.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for instruction-authoring prompts.
