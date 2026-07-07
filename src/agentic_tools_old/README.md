@@ -13,7 +13,7 @@ When you need to run a command from a subdirectory, add `--workspace <repo-root>
 Python install example:
 
 ```sh
-uv add --dev "agentic-tools @ git+https://github.com/swiftpostlab/agentic-tools.git"
+uv add --dev "agentic-tools @ git+https://github.com/swiftpostlabs/agentic-tools.git"
 uv run agentic-tools policy sync
 uv run agentic-tools --workspace ../target-repo policy sync
 uv run agentic-tools policy check
@@ -24,7 +24,7 @@ Node install example:
 
 ```sh
 corepack enable
-yarn add --dev github:swiftpostlab/agentic-tools
+yarn add --dev github:swiftpostlabs/agentic-tools
 yarn agentic-tools policy sync
 yarn agentic-tools policy check
 yarn agentic-tools policy import-vscode
