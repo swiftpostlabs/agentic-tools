@@ -12,6 +12,8 @@ from agentic_tools_old.skills_management.main import apply_config_alias_renames
 from agentic_tools_old.skills_management.main import describe_alias_redirects
 from agentic_tools_old.skills_management.main import discover_skill_manifests
 from agentic_tools_old.skills_management.main import find_missing_requested_skills
+from agentic_tools_old.skills_management.main import handle_list_command
+from agentic_tools_old.skills_management.main import legacy_metadata_warning
 from agentic_tools_old.skills_management.main import link_skill_directory
 from agentic_tools_old.skills_management.main import load_skill_aliases
 from agentic_tools_old.skills_management.main import resolve_selected_skills
@@ -91,6 +93,121 @@ def test_discover_skill_manifests_reads_shareability_metadata(tmp_path: Path) ->
     assert alpha.domain == "agents"
     assert alpha.visibility == "public"
     assert alpha.requires == ("ref-beta", "ref-gamma")
+
+
+def test_discover_skill_manifests_reads_legacy_bare_metadata_keys(
+    tmp_path: Path,
+) -> None:
+    # A skill authored against the previous (pre-namespace) schema still resolves.
+    write_skill(
+        tmp_path,
+        "ref-legacy",
+        metadata={
+            "scope": "agents",
+            "visibility": "organization",
+            "requires": "ref-beta",
+            "reason": "Legacy note.",
+        },
+    )
+
+    manifest = discover_skill_manifests(tmp_path)["ref-legacy"]
+
+    assert manifest.domain == "agents"
+    assert manifest.visibility == "organization"
+    assert manifest.requires == ("ref-beta",)
+    assert manifest.reason == "Legacy note."
+    assert manifest.uses_legacy_metadata is True
+
+
+def test_namespaced_metadata_takes_precedence_over_legacy_keys(
+    tmp_path: Path,
+) -> None:
+    write_skill(
+        tmp_path,
+        "ref-both",
+        metadata={
+            "scope": "old",
+            "shareable-skills.domain": "agents",
+            "shareable-skills.visibility": "public",
+        },
+    )
+
+    manifest = discover_skill_manifests(tmp_path)["ref-both"]
+
+    assert manifest.domain == "agents"
+    assert manifest.uses_legacy_metadata is False
+
+
+def test_legacy_shareable_visibility_normalized_to_organization(
+    tmp_path: Path,
+) -> None:
+    write_skill(tmp_path, "ref-old-vis", metadata={"visibility": "shareable"})
+
+    manifest = discover_skill_manifests(tmp_path)["ref-old-vis"]
+
+    assert manifest.visibility == "organization"
+    assert manifest.uses_legacy_metadata is True
+
+
+def test_export_rejects_public_skill_on_legacy_schema(tmp_path: Path) -> None:
+    write_skill(tmp_path, "ref-alpha", metadata={"visibility": "public"})
+    manifests = discover_skill_manifests(tmp_path)
+
+    assert_skills_management_error_contains(
+        lambda: resolve_selected_skills(manifests, ["ref-alpha"]),
+        "legacy metadata schema",
+    )
+
+
+def test_export_tolerates_organization_skill_on_legacy_schema(
+    tmp_path: Path,
+) -> None:
+    write_skill(tmp_path, "ref-alpha", metadata={"visibility": "organization"})
+    manifests = discover_skill_manifests(tmp_path)
+
+    resolved = resolve_selected_skills(manifests, ["ref-alpha"])
+
+    assert [manifest.name for manifest in resolved] == ["ref-alpha"]
+    assert legacy_metadata_warning(resolved[0]) is not None
+
+
+def test_list_annotates_own_legacy_skill(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    write_skill(tmp_path, "ref-legacy", metadata={"visibility": "organization"})
+
+    handle_list_command(str(tmp_path))
+
+    output = capsys.readouterr().out
+    assert "ref-legacy" in output
+    assert "legacy metadata" in output
+
+
+def test_symlinked_legacy_skill_is_our_burden_not_the_consumers(
+    tmp_path: Path,
+) -> None:
+    # A symlinked skill points at a source we own; even if its target is on the
+    # legacy schema it must not warn or block the consumer.
+    source_root = tmp_path / "source"
+    write_skill_in_root(
+        source_root, "ref-linked", metadata={"visibility": "public"}
+    )
+    skills_root = tmp_path / ".agents" / "skills"
+    skills_root.mkdir(parents=True)
+    (skills_root / "ref-linked").symlink_to(
+        source_root / "ref-linked", target_is_directory=True
+    )
+
+    manifests = discover_skill_manifests(tmp_path)
+    manifest = manifests["ref-linked"]
+
+    assert manifest.is_symlink is True
+    assert manifest.uses_legacy_metadata is True
+    assert legacy_metadata_warning(manifest) is None
+    # The public-legacy export error is skipped for symlinked skills.
+    assert [m.name for m in resolve_selected_skills(manifests, ["ref-linked"])] == [
+        "ref-linked"
+    ]
 
 
 def test_discover_skill_manifests_accepts_skills_root_path(tmp_path: Path) -> None:

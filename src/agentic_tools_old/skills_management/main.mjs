@@ -6,13 +6,26 @@ import path from "node:path";
 import { ToolError, createDirectoryLink, createExecutionOptions, deduplicatePreservingOrder, ensureJsonObject, isDirectory, isDirectoryLink, isFile, parseFrontmatter, pathExists, removeDirectoryLink, resolveExistingLinkTarget, resolvePackageRoot, resolvePath, } from "../utils/common.mjs";
 
 /** @import { ExecutionOptions, RunOptions } from "../utils/common.mjs" */
-/** @typedef {{ name: string, directory: string, domain: string | null, visibility: string | null, requires: string[], reason: string | null }} SkillManifest */
+/** @typedef {{ name: string, directory: string, domain: string | null, visibility: string | null, requires: string[], reason: string | null, uses_legacy_metadata: boolean, is_symlink: boolean }} SkillManifest */
 /** @typedef {Record<string, SkillManifest>} SkillManifestMap */
 /** @typedef {{ skills: string[], source: string | null, destination: string | null, useGlobal: boolean, dryRun: boolean, force: boolean, config: string | null }} TargetCommandState */
 /** @typedef {{ _: string[], [key: string]: unknown }} CommandArgs */
 /** @typedef {{ source: string, skills: string[], url: string | null }} ConfiguredSkillSource */
 
 const EXPORTABLE_VISIBILITY = new Set(["public", "organization"]);
+// Frozen transition shim: each canonical `shareable-skills.*` key maps to the
+// bare key it replaced; the namespaced key wins when both are present. Closed set
+// (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md §9).
+/** @type {Record<string, string | undefined>} */
+const LEGACY_METADATA_KEY_ALIASES = {
+    "shareable-skills.domain": "scope",
+    "shareable-skills.visibility": "visibility",
+    "shareable-skills.requires": "requires",
+    "shareable-skills.reason": "reason",
+};
+// Legacy two-tier visibility value -> conservative three-tier equivalent.
+/** @type {Record<string, string | undefined>} */
+const LEGACY_VISIBILITY_VALUE_ALIASES = { shareable: "organization" };
 const SHAREABILITY_WIZARD = "tool-sp-make-skill-shareable";
 const DEFAULT_GLOBAL_SKILLS_DIR = path.join(os.homedir(), ".agents", "skills");
 const PACKAGE_SOURCE_PREFIX = "package:";
@@ -36,6 +49,42 @@ const splitRequires = (value) => {
     // Match the sharing spec and validator: requires is whitespace- or
     // comma-delimited, so both "a b" and "a, b" yield the same dependencies.
     return value.split(/[\s,]+/u).filter(Boolean);
+};
+/**
+ * Read a portability field, falling back to its legacy bare key. Returns the
+ * value and whether it came from the legacy key. The namespaced key always wins.
+ * @param {Record<string, unknown>} metadata
+ * @param {string} canonicalKey
+ * @returns {{ value: string | null, legacy: boolean }}
+ */
+const readPortabilityField = (metadata, canonicalKey) => {
+    const value = metadata[canonicalKey];
+    if (typeof value === "string") {
+        return { value, legacy: false };
+    }
+    const legacyKey = LEGACY_METADATA_KEY_ALIASES[canonicalKey];
+    if (legacyKey !== undefined) {
+        const legacyValue = metadata[legacyKey];
+        if (typeof legacyValue === "string") {
+            return { value: legacyValue, legacy: true };
+        }
+    }
+    return { value: null, legacy: false };
+};
+/**
+ * Map a legacy two-tier visibility value onto the three-tier vocabulary.
+ * @param {string | null} value
+ * @returns {{ value: string | null, legacy: boolean }}
+ */
+const normalizeLegacyVisibility = (value) => {
+    if (value === null) {
+        return { value: null, legacy: false };
+    }
+    const normalized = LEGACY_VISIBILITY_VALUE_ALIASES[value];
+    if (normalized !== undefined) {
+        return { value: normalized, legacy: true };
+    }
+    return { value, legacy: false };
 };
 /**
  * @param {CommandArgs} args
@@ -118,15 +167,28 @@ const readSkillManifest = (skillDirectory) => {
         typeof frontmatter.metadata === "object"
         ? ensureJsonObject(frontmatter.metadata, `Skill metadata for '${rawName}'`)
         : {};
-    // Portability fields live under the metadata.shareable-skills.* namespace
-    // (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md).
+    // Portability fields live under the metadata.shareable-skills.* namespace, with
+    // a read-only fallback to the legacy bare keys for a smooth transition
+    // (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md §9).
+    const domainField = readPortabilityField(metadata, "shareable-skills.domain");
+    const visibilityField = readPortabilityField(metadata, "shareable-skills.visibility");
+    const normalizedVisibility = normalizeLegacyVisibility(visibilityField.value);
+    const requiresField = readPortabilityField(metadata, "shareable-skills.requires");
+    const reasonField = readPortabilityField(metadata, "shareable-skills.reason");
+    const usesLegacyMetadata = domainField.legacy ||
+        visibilityField.legacy ||
+        normalizedVisibility.legacy ||
+        requiresField.legacy ||
+        reasonField.legacy;
     return {
         name: rawName,
         directory: skillDirectory,
-        domain: typeof metadata["shareable-skills.domain"] === "string" ? metadata["shareable-skills.domain"] : null,
-        visibility: typeof metadata["shareable-skills.visibility"] === "string" ? metadata["shareable-skills.visibility"] : null,
-        requires: splitRequires(metadata["shareable-skills.requires"]),
-        reason: typeof metadata["shareable-skills.reason"] === "string" ? metadata["shareable-skills.reason"] : null,
+        domain: domainField.value,
+        visibility: normalizedVisibility.value,
+        requires: splitRequires(requiresField.value ?? undefined),
+        reason: reasonField.value,
+        uses_legacy_metadata: usesLegacyMetadata,
+        is_symlink: fs.lstatSync(skillDirectory).isSymbolicLink(),
     };
 };
 /**
@@ -295,6 +357,26 @@ const buildMakeShareableRecommendation = (skillName) => {
         "shareable-skills.reason where needed.");
 };
 /**
+ * @param {string} skillName
+ */
+const buildLegacyMetadataMigrationHint = (skillName) => `Skill '${skillName}' uses the legacy metadata schema; migrate its frontmatter to the metadata.shareable-skills.* namespace (${AGENTIC_TOOLS_REPO_URL}).`;
+/**
+ * A soft migration nudge for a consumer's own non-public legacy skill. Public
+ * legacy skills are a hard error at the export gate; symlinked skills are our
+ * migration burden (handled by sync), so neither is warned about here.
+ * @param {SkillManifest} manifest
+ * @returns {string | null}
+ */
+export const legacyMetadataWarning = (manifest) => {
+    if (!manifest.uses_legacy_metadata || manifest.is_symlink) {
+        return null;
+    }
+    if (manifest.visibility === "public") {
+        return null;
+    }
+    return `Warning: ${buildLegacyMetadataMigrationHint(manifest.name)}`;
+};
+/**
  * @param {SkillManifest} manifest
  * @param {SkillManifestMap} manifests
  * @param {Record<string, string>} [aliases]
@@ -303,6 +385,12 @@ const ensureShareableManifest = (manifest, manifests, aliases = {}) => {
     if (!manifest.visibility || !EXPORTABLE_VISIBILITY.has(manifest.visibility)) {
         const reasonSuffix = manifest.reason ? ` Reason: ${manifest.reason}` : "";
         throw new ToolError(`Skill '${manifest.name}' is not shareable.${reasonSuffix} ${buildMakeShareableRecommendation(manifest.name)}`);
+    }
+    // A public skill is published to the world, so it must be on the current schema
+    // before export; org-visibility legacy skills are tolerated (warned). Symlinked
+    // skills are ours to migrate, not the consumer's, so they are exempt.
+    if (manifest.uses_legacy_metadata && !manifest.is_symlink && manifest.visibility === "public") {
+        throw new ToolError(`Skill '${manifest.name}' is public but still uses the legacy metadata schema. ${buildLegacyMetadataMigrationHint(manifest.name)}`);
     }
     for (const dependencyName of manifest.requires) {
         const dependency = lookupManifest(dependencyName, manifests, aliases);
@@ -367,7 +455,10 @@ const describeSkills = (manifests) => {
         const visibility = manifest.visibility ?? "missing";
         const requires = manifest.requires.length > 0 ? manifest.requires.join(" ") : "-";
         const reason = manifest.reason ? `; reason ${manifest.reason}` : "";
-        return `${manifest.name}: domain ${domain}; visibility ${visibility}; requires ${requires}${reason}`;
+        const legacy = manifest.uses_legacy_metadata && !manifest.is_symlink
+            ? "; legacy metadata — migrate to shareable-skills.*"
+            : "";
+        return `${manifest.name}: domain ${domain}; visibility ${visibility}; requires ${requires}${reason}${legacy}`;
     })
         .join("\n");
 };
@@ -694,6 +785,10 @@ const handleLinkCommand = (parsed, options) => {
         options.output(message);
     }
     for (const manifest of resolveSelectedSkills(manifests, requestedSkills, aliases)) {
+        const warning = legacyMetadataWarning(manifest);
+        if (warning !== null) {
+            options.output(warning);
+        }
         options.output(linkSkillDirectory(manifest, destinationSkillsDir, parsed.dryRun, parsed.force));
     }
     return 0;
@@ -754,6 +849,10 @@ const handleSyncCommand = (parsed, options) => {
         options.output(message);
     }
     for (const manifest of manifestsToLink) {
+        const warning = legacyMetadataWarning(manifest);
+        if (warning !== null) {
+            options.output(warning);
+        }
         options.output(linkSkillDirectory(manifest, destinationSkillsDir, parsed.dryRun, parsed.force));
     }
     for (const message of writeSyncedSkillsGitignore(destinationSkillsDir, linkedSkillNames, sourceUrls, parsed.dryRun)) {

@@ -36,6 +36,22 @@ SKILL_ALIAS_REGISTRY_PATH = (
 GITIGNORE_FILENAME = ".gitignore"
 AGENTIC_TOOLS_REPO_URL = "https://github.com/swiftpostlabs/agentic-tools"
 
+# Frozen transition shim: skills authored against the previous (pre-namespace)
+# schema still resolve. Each canonical `shareable-skills.*` key maps to the bare
+# key it replaced; the namespaced key always wins when both are present. This set
+# is closed — it is exactly the pre-namespace schema and will not grow. See
+# .agents/skills/ref-sp-agents-shareable-skills/references/spec.md §9.
+LEGACY_METADATA_KEY_ALIASES: dict[str, str] = {
+    "shareable-skills.domain": "scope",
+    "shareable-skills.visibility": "visibility",
+    "shareable-skills.requires": "requires",
+    "shareable-skills.reason": "reason",
+}
+# Legacy two-tier visibility value -> three-tier equivalent. The old "shareable"
+# did not distinguish org-wide from publish-to-world, so it maps to the
+# conservative "organization".
+LEGACY_VISIBILITY_VALUE_ALIASES: dict[str, str] = {"shareable": "organization"}
+
 
 class SkillsManagementError(Exception):
     """Raised when a skills-management action cannot be completed safely."""
@@ -49,6 +65,13 @@ class SkillManifest:
     visibility: str | None
     requires: tuple[str, ...]
     reason: str | None
+    # True when any portability field was read via a legacy bare key or a legacy
+    # visibility value, i.e. the skill has not been migrated to the namespaced
+    # schema yet. Drives the transition warn/error policy for a consumer's own skills.
+    uses_legacy_metadata: bool = False
+    # True when the skill directory is a symlink (a skill linked in from a source
+    # we own); such skills are our migration burden, not the consumer's.
+    is_symlink: bool = False
 
 
 @dataclass(frozen=True)
@@ -118,6 +141,37 @@ def split_requires(value: str | None) -> tuple[str, ...]:
     # Match the sharing spec and validator: requires is whitespace- or
     # comma-delimited, so both "a b" and "a, b" yield the same dependencies.
     return tuple(entry for entry in value.replace(",", " ").split() if entry)
+
+
+def read_portability_field(
+    metadata: dict[str, str], canonical_key: str
+) -> tuple[str | None, bool]:
+    """Read a portability field, falling back to its legacy bare key.
+
+    Returns the value and whether it came from the legacy key (so callers can tell
+    a skill is still on the pre-namespace schema). The namespaced key always wins.
+    """
+    value = metadata.get(canonical_key)
+    if value is not None:
+        return value, False
+
+    legacy_key = LEGACY_METADATA_KEY_ALIASES.get(canonical_key)
+    if legacy_key is not None:
+        legacy_value = metadata.get(legacy_key)
+        if legacy_value is not None:
+            return legacy_value, True
+
+    return None, False
+
+
+def normalize_legacy_visibility(value: str | None) -> tuple[str | None, bool]:
+    """Map a legacy two-tier visibility value onto the three-tier vocabulary."""
+    if value is None:
+        return None, False
+    normalized = LEGACY_VISIBILITY_VALUE_ALIASES.get(value)
+    if normalized is not None:
+        return normalized, True
+    return value, False
 
 
 def is_skills_root(path: Path) -> bool:
@@ -431,12 +485,33 @@ def read_skill_manifest(skill_directory: Path) -> SkillManifest:
 
     metadata = frontmatter.get("metadata", {})
     metadata_mapping = metadata if isinstance(metadata, dict) else {}
-    # Portability fields live under the metadata.shareable-skills.* namespace
-    # (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md).
-    domain = metadata_mapping.get("shareable-skills.domain")
-    visibility = metadata_mapping.get("shareable-skills.visibility")
-    requires = split_requires(metadata_mapping.get("shareable-skills.requires"))
-    reason = metadata_mapping.get("shareable-skills.reason")
+    # Portability fields live under the metadata.shareable-skills.* namespace, with
+    # a read-only fallback to the legacy bare keys for a smooth transition
+    # (see .agents/skills/ref-sp-agents-shareable-skills/references/spec.md §9).
+    domain, legacy_domain = read_portability_field(
+        metadata_mapping, "shareable-skills.domain"
+    )
+    raw_visibility, legacy_visibility_key = read_portability_field(
+        metadata_mapping, "shareable-skills.visibility"
+    )
+    visibility, legacy_visibility_value = normalize_legacy_visibility(raw_visibility)
+    raw_requires, legacy_requires = read_portability_field(
+        metadata_mapping, "shareable-skills.requires"
+    )
+    requires = split_requires(raw_requires)
+    reason, legacy_reason = read_portability_field(
+        metadata_mapping, "shareable-skills.reason"
+    )
+
+    uses_legacy_metadata = any(
+        (
+            legacy_domain,
+            legacy_visibility_key,
+            legacy_visibility_value,
+            legacy_requires,
+            legacy_reason,
+        )
+    )
 
     return SkillManifest(
         name=raw_name,
@@ -445,6 +520,8 @@ def read_skill_manifest(skill_directory: Path) -> SkillManifest:
         visibility=visibility,
         requires=requires,
         reason=reason,
+        uses_legacy_metadata=uses_legacy_metadata,
+        is_symlink=skill_directory.is_symlink(),
     )
 
 
@@ -602,6 +679,28 @@ def build_make_shareable_recommendation(skill_name: str) -> str:
     )
 
 
+def build_legacy_metadata_migration_hint(skill_name: str) -> str:
+    return (
+        f"Skill '{skill_name}' uses the legacy metadata schema; migrate its "
+        "frontmatter to the metadata.shareable-skills.* namespace "
+        f"({AGENTIC_TOOLS_REPO_URL})."
+    )
+
+
+def legacy_metadata_warning(manifest: SkillManifest) -> str | None:
+    """A soft migration nudge for a consumer's own non-public legacy skill.
+
+    Public legacy skills are a hard error at the export gate; symlinked skills are
+    our migration burden (handled by sync's rename/gitignore flow), so neither is
+    warned about here.
+    """
+    if not manifest.uses_legacy_metadata or manifest.is_symlink:
+        return None
+    if manifest.visibility == "public":
+        return None
+    return f"Warning: {build_legacy_metadata_migration_hint(manifest.name)}"
+
+
 def ensure_shareable_manifest(
     manifest: SkillManifest,
     manifests: dict[str, SkillManifest],
@@ -619,6 +718,19 @@ def ensure_shareable_manifest(
         raise SkillsManagementError(
             f"Skill '{manifest.name}' is not shareable. {reason} "
             f"{build_make_shareable_recommendation(manifest.name)}"
+        )
+
+    # A public skill is published to the world, so it must be on the current schema
+    # before it can be exported; org-visibility legacy skills are tolerated (warned).
+    # Symlinked skills are ours to migrate, not the consumer's, so they are exempt.
+    if (
+        manifest.uses_legacy_metadata
+        and not manifest.is_symlink
+        and manifest.visibility == "public"
+    ):
+        raise SkillsManagementError(
+            f"Skill '{manifest.name}' is public but still uses the legacy metadata "
+            f"schema. {build_legacy_metadata_migration_hint(manifest.name)}"
         )
 
     for dependency_name in manifest.requires:
@@ -696,6 +808,8 @@ def describe_skills(manifests: dict[str, SkillManifest]) -> str:
         )
         if manifest.reason:
             line = f"{line}; reason {manifest.reason}"
+        if manifest.uses_legacy_metadata and not manifest.is_symlink:
+            line = f"{line}; legacy metadata — migrate to shareable-skills.*"
         lines.append(line)
 
     return "\n".join(lines)
@@ -1014,6 +1128,9 @@ def handle_link_command(
         print(message)
 
     for manifest in resolve_selected_skills(manifests, requested_skills, aliases):
+        warning = legacy_metadata_warning(manifest)
+        if warning is not None:
+            print(warning)
         print(
             link_skill_directory(
                 manifest,
@@ -1118,6 +1235,9 @@ def handle_sync_command(
         print(message)
 
     for manifest in manifests_to_link:
+        warning = legacy_metadata_warning(manifest)
+        if warning is not None:
+            print(warning)
         print(
             link_skill_directory(
                 manifest,

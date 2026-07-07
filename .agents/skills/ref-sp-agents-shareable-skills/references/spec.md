@@ -291,6 +291,26 @@ Renaming touches many **reference surfaces**; all must move atomically:
 **Aliases are permanent.** Keep a frozen `aliases:` section in the registry indefinitely — cheap
 insurance for anyone who vendored a skill during the transition and still references old names.
 
+### Consumer transition (two alias layers)
+
+A repo that consumes these skills via the `agentic-tools skills` CLI is bridged across this schema
+jump by **two** alias layers, so it keeps working without a manual migration:
+
+1. **Name aliases** (registry `aliases`, above) — renamed skills still resolve. The `sync`/`link`
+   flow self-heals the consumer's config old→new and regenerates its `.gitignore` to the new names.
+   Migrating names is **our** burden, not the consumer's.
+2. **Legacy metadata-key read-compat** (CLI only) — the CLI reads the namespaced
+   `metadata.shareable-skills.*` schema but falls back to the old bare keys (`scope`→`domain`,
+   `visibility`, `requires`, `reason`) and normalizes the old two-tier `visibility: shareable` →
+   `organization`. The namespaced key always wins. This is a **frozen, closed** shim (it is exactly
+   the pre-namespace schema and will not grow), kept only in the CLI reader — **not** in the
+   sharing validator (§10), which stays Phase-3 strict for this repo's own skills.
+
+   For a consumer's **own** (non-symlinked) skill still on the legacy schema, the CLI is lenient by
+   tier: `repo-local`/`organization` get a migration **warning**, while `public` is an **error** at
+   the export gate (a published skill must be on the current schema). Symlinked skills are exempt —
+   they are ours to migrate.
+
 The meta-skills eat their own dog food: they take the `sp` prefix and `agents` domain
 (`ref-sp-agents-shareable-skills`, `ref-sp-agents-skills-authoring`).
 

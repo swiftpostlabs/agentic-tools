@@ -7,7 +7,9 @@ import path from "node:path";
 
 import {
     discoverSkillManifests,
+    legacyMetadataWarning,
     resolvePackageSourceRoot,
+    resolveSelectedSkills,
     runSkillsManagement,
 } from "./main.mjs";
 
@@ -77,6 +79,125 @@ const writeAliasRegistry = (skillsRoot, aliases) => {
 };
 
 describe("skills-management Node CLI", () => {
+  test("discoverSkillManifests reads legacy bare metadata keys", () => {
+    const tempDir = createTempDir();
+    try {
+      writeRepoSkill(tempDir, "ref-legacy", {
+        scope: "agents",
+        visibility: "organization",
+        requires: "ref-beta",
+        reason: "Legacy note.",
+      });
+      const manifest = discoverSkillManifests(tempDir)["ref-legacy"];
+      expect(manifest.domain).toBe("agents");
+      expect(manifest.visibility).toBe("organization");
+      expect(manifest.requires).toEqual(["ref-beta"]);
+      expect(manifest.reason).toBe("Legacy note.");
+      expect(manifest.uses_legacy_metadata).toBe(true);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("namespaced metadata takes precedence over legacy keys", () => {
+    const tempDir = createTempDir();
+    try {
+      writeRepoSkill(tempDir, "ref-both", {
+        scope: "old",
+        "shareable-skills.domain": "agents",
+        "shareable-skills.visibility": "public",
+      });
+      const manifest = discoverSkillManifests(tempDir)["ref-both"];
+      expect(manifest.domain).toBe("agents");
+      expect(manifest.uses_legacy_metadata).toBe(false);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("legacy shareable visibility normalizes to organization", () => {
+    const tempDir = createTempDir();
+    try {
+      writeRepoSkill(tempDir, "ref-old-vis", { visibility: "shareable" });
+      const manifest = discoverSkillManifests(tempDir)["ref-old-vis"];
+      expect(manifest.visibility).toBe("organization");
+      expect(manifest.uses_legacy_metadata).toBe(true);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("export rejects a public skill on the legacy schema", () => {
+    const tempDir = createTempDir();
+    try {
+      writeRepoSkill(tempDir, "ref-alpha", { visibility: "public" });
+      const manifests = discoverSkillManifests(tempDir);
+      expect(() => resolveSelectedSkills(manifests, ["ref-alpha"])).toThrow(
+        /legacy metadata schema/u,
+      );
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("export tolerates an organization skill on the legacy schema and warns", () => {
+    const tempDir = createTempDir();
+    try {
+      writeRepoSkill(tempDir, "ref-alpha", { visibility: "organization" });
+      const manifests = discoverSkillManifests(tempDir);
+      const resolved = resolveSelectedSkills(manifests, ["ref-alpha"]);
+      expect(resolved.map((manifest) => manifest.name)).toEqual(["ref-alpha"]);
+      expect(legacyMetadataWarning(resolved[0])).toContain("legacy metadata schema");
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("list annotates a consumer's own legacy skill", async () => {
+    const tempDir = createTempDir();
+    try {
+      writeRepoSkill(tempDir, "ref-legacy", { visibility: "organization" });
+      /** @type {string[]} */
+      const messages = [];
+      await runSkillsManagement(["list", "--from", tempDir], {
+        cwd: tempDir,
+        output: (message) => {
+          messages.push(message);
+        },
+      });
+      expect(messages.join("\n")).toContain("legacy metadata");
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
+  test("a symlinked legacy skill is our burden, not the consumer's", () => {
+    const tempDir = createTempDir();
+    try {
+      const sourceRoot = path.join(tempDir, "source");
+      writeSkillInRoot(sourceRoot, "ref-linked", { visibility: "public" });
+      const skillsRoot = path.join(tempDir, ".agents", "skills");
+      fs.mkdirSync(skillsRoot, { recursive: true });
+      fs.symlinkSync(
+        path.join(sourceRoot, "ref-linked"),
+        path.join(skillsRoot, "ref-linked"),
+        "dir",
+      );
+      const manifests = discoverSkillManifests(tempDir);
+      const manifest = manifests["ref-linked"];
+      expect(manifest.is_symlink).toBe(true);
+      expect(manifest.uses_legacy_metadata).toBe(true);
+      expect(legacyMetadataWarning(manifest)).toBeNull();
+      expect(
+        resolveSelectedSkills(manifests, ["ref-linked"]).map(
+          (resolvedManifest) => resolvedManifest.name,
+        ),
+      ).toEqual(["ref-linked"]);
+    } finally {
+      cleanupTempDir(tempDir);
+    }
+  });
+
   test("discoverSkillManifests accepts a packaged skills root path", () => {
     const tempDir = createTempDir();
     try {
