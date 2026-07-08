@@ -11,13 +11,14 @@ Translate a lifecycle moment into the concrete event name, config location, and 
 | Prompt submitted | `UserPromptSubmit` | `userPromptSubmitted` / `UserPromptSubmit` | `UserPromptSubmit` | `BeforeAgent` |
 | Before tool use | `PreToolUse` | `preToolUse` / `PreToolUse` | `PreToolUse` | `BeforeTool` |
 | After tool use (success) | `PostToolUse` | `postToolUse` / `PostToolUse` | `PostToolUse` | `AfterTool` |
-| After tool use (failure) | `PostToolUse` | `postToolUseFailure` | (n/a) | `AfterTool` |
+| After tool use (failure) | `PostToolUseFailure` | `postToolUseFailure` / `PostToolUseFailure` | (n/a) | `AfterTool` |
 | Turn / agent ends | `Stop` | `agentStop` / `Stop` | `Stop` | `AfterAgent` |
 | Subagent starts | `SubagentStart` | `subagentStart` | `SubagentStart` | (n/a) |
 | Subagent stops | `SubagentStop` | `subagentStop` / `SubagentStop` | `SubagentStop` | (n/a) |
 | Before compaction | `PreCompact` | `preCompact` / `PreCompact` | `PreCompact` | `PreCompress` |
 | Notification | `Notification` | `notification` | (n/a) | `Notification` |
 | Permission request | `PermissionRequest` | `permissionRequest` | (n/a) | (n/a) |
+| Before tool selection | (n/a) | (n/a) | (n/a) | `BeforeToolSelection` |
 | Before model call | (n/a) | (n/a) | (n/a) | `BeforeModel` |
 | After model call | (n/a) | (n/a) | (n/a) | `AfterModel` |
 | Error occurred | (n/a) | `errorOccurred` / `ErrorOccurred` | (n/a) | (n/a) |

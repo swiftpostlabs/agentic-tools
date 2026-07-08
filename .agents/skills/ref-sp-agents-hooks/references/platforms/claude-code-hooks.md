@@ -86,7 +86,7 @@ Per-event exit-`2` behavior: blocks on `PreToolUse`, `UserPromptSubmit`, `Permis
 
 ## Placeholders And Env
 
-`${CLAUDE_PROJECT_DIR}` (project root), `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` -- available in config and exported to the process. Hooks run **without a controlling terminal** (no `/dev/tty`); use `terminalSequence` in JSON output or a native notifier for alerts.
+`${CLAUDE_PROJECT_DIR}` (project root), `${CLAUDE_PLUGIN_ROOT}`, `${CLAUDE_PLUGIN_DATA}` -- available in config and exported to the process. `SessionStart` hooks additionally get `$CLAUDE_ENV_FILE`, a file path where the hook can persist `KEY=value` lines that later Bash commands inherit. Hooks run **without a controlling terminal** (no `/dev/tty`); use `terminalSequence` in JSON output or a native notifier for alerts.
 
 ## Example: block `rm -rf`
 
