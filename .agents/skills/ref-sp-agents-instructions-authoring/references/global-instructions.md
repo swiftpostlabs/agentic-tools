@@ -51,14 +51,17 @@ The single-source-of-truth pattern used for repo files also works for global
 config. Keep the real personal guidance in one file and route the others to it,
 instead of hand-maintaining several parallel global bodies.
 
-As of today we could not find documentation from the tools (Copilot, Gemini,
-and others) describing how to place an `AGENTS.md` at the global/home tier — the
-`AGENTS.md` convention is documented as a repo-root file. So — unlike the repo
-tier, where a root `AGENTS.md` is the default source of truth (see
-`./agents-md-standard.md`) — keep **Copilot**
-(`~/.copilot/instructions/*.instructions.md`) as the recommended global source
-of truth and bridge the other providers back to it. Revisit this if a tool later
-documents global `AGENTS.md` support.
+The `AGENTS.md` standard itself still documents only repo-root and nested
+placement, with no global/home tier. A few tools outside our provider set
+document their own user-level `AGENTS.md` (e.g. OpenAI Codex reads
+`~/.codex/AGENTS.md`), and the standard's repo has an open proposal for a shared
+`~/.config/agents/AGENTS.md`, but none of Copilot, Claude, or Gemini document a
+user-level `AGENTS.md` today. So — unlike the repo tier, where a root
+`AGENTS.md` is the default source of truth (see `./agents-md-standard.md`) —
+keep **Copilot** (`~/.copilot/instructions/*.instructions.md`) as the
+recommended global source of truth and bridge the other providers back to it.
+Revisit this if one of those tools documents global `AGENTS.md` support or the
+`~/.config/agents/` proposal lands.
 
 A common working setup:
 

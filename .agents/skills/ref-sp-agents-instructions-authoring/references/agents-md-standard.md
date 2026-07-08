@@ -11,6 +11,10 @@ conventions — kept separate from the human-facing `README.md`.
 It is plain Markdown with no required schema. Any headings work; the agent just
 parses the text. That makes it a natural fit for the source-of-truth role.
 
+The standard is no longer just an informal convention: it is stewarded by the
+Agentic AI Foundation under the Linux Foundation, is supported by 25+ coding
+agents, and is used by tens of thousands of open-source repositories.
+
 ## Why it matters for this skill
 
 The provider references in `./providers/` each target one vendor's entry file
@@ -45,6 +49,12 @@ way you would bridge to any source of truth:
   the migration path the standard itself recommends.
 - **Import/route** from the vendor file when it supports imports and you want a
   small provider-specific note plus a pointer back to `AGENTS.md`.
+
+Claude Code is the notable holdout: its docs state it reads `CLAUDE.md`, not
+`AGENTS.md`, and officially recommend exactly this bridge — a `CLAUDE.md`
+containing `@AGENTS.md` (optionally followed by Claude-specific notes) or a
+`CLAUDE.md -> AGENTS.md` symlink. Prefer the `@AGENTS.md` import on Windows,
+where creating a symlink needs Administrator privileges or Developer Mode.
 
 Avoid maintaining two full instruction bodies — a symlink or a thin bridge keeps
 them from drifting.
