@@ -1,6 +1,6 @@
 ---
 name: ref-sp-dev-git-commits
-description: "Reference guidance for grouping changes into focused commits and writing commit messages in this repo. Use when: deciding how to split changes into commits, writing a commit title or body, deciding whether a commit needs a long description, or documenting an automated command for reproducibility."
+description: "Reference guidance for grouping changes into focused commits and writing clear commit messages. Use when: deciding how to split changes into commits, writing a commit title or body, deciding whether a commit needs a long description, or documenting an automated command for reproducibility."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -14,7 +14,7 @@ metadata:
 
 ## Purpose
 
-Define how this repository wants changes grouped into focused commits and how commit messages should be written.
+Define how a repository groups changes into focused commits and how commit messages should be written. The defaults below are portable; the concrete scopes and examples are this repo's instantiation.
 
 ## When to use this skill
 
@@ -52,7 +52,8 @@ Defaults:
 - Add a long description when the commit is not trivial.
 - Use the body to explain the key details and why the change exists, not to restate the title.
 - Separate the title and body with a blank line.
-- For work created from an automated command such as a codemod, include the full command in the body for reproducibility.
+- Record change provenance in the body when the change came from something other than hand-editing. This is most relevant for automated changes such as a codemod, link fixer, formatter, or generator: include the command that produced the change so another engineer can rerun or audit it.
+- Redact personal or private details from a recorded command before committing it. Replace absolute home paths with a repo-relative or generic path, drop the username, and never include tokens, secrets, or machine-specific identifiers. Record the reproducible command shape, not your local environment.
 - Very mundane commits such as a straightforward lint fix do not need a long description.
 
 ## Task Framing
@@ -62,7 +63,7 @@ Defaults:
 | Choose commit boundaries | Decide which changed files belong together. | Focused commits are easier to review, revert, and explain. | Before staging or writing the message. | Each commit has one coherent purpose. |
 | Write the title | Summarize the change in `type(scope): Short description of the commit` form. | The title is the main line readers see in history and reviews. | For every commit. | The title makes the commit easy to categorize and skim. |
 | Add a body | Explain the key details and why. | Non-trivial commits need context that the title cannot carry alone. | When the commit changes behavior, introduces structure, or would be unclear from the title alone. | The commit explains the important reasoning without becoming a changelog dump. |
-| Record an automated command | Include the full command that produced the change. | Reproducibility matters when the work came from automation. | When a codemod, generator, migration command, or bulk rewrite produced the changes. | Another engineer can rerun or audit the automation later. |
+| Record change provenance | Include the command that produced the change, with personal or private details redacted. | Reproducibility matters when the work came from automation, and the body should not leak local paths or credentials. | When a codemod, link fixer, generator, migration command, formatter, or bulk rewrite produced the changes. | Another engineer can rerun or audit the automation without seeing machine-specific or private data. |
 
 ## Examples
 
@@ -90,8 +91,12 @@ Why:
 - keep the rename follow-up deterministic and reproducible
 
 Command:
-- uv run python -m scripts.some_codemod --rewrite-imports
+- uv run python -m scripts.some_codemod --rewrite-imports ./src
 ```
+
+The `Command:` line records the reproducible command shape. Redact private
+details first: use a repo-relative path such as `./src` rather than an absolute
+`/home/<user>/...` path, drop the username, and never include tokens or secrets.
 
 ```text
 chore(formatting): Fix lint formatting
@@ -101,5 +106,5 @@ chore(formatting): Fix lint formatting
 
 - Confirm the title fits the default `type(scope): Short description of the commit` format.
 - Confirm the body exists when the commit would otherwise be unclear.
-- Confirm automated changes include the full generating command.
+- Confirm automated changes include the generating command with private details redacted.
 - Confirm the message matches the actual staged diff, not the whole working tree.
