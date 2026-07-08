@@ -12,6 +12,7 @@ from agentic_tools_old.skills_management.main import apply_config_alias_renames
 from agentic_tools_old.skills_management.main import describe_alias_redirects
 from agentic_tools_old.skills_management.main import discover_skill_manifests
 from agentic_tools_old.skills_management.main import find_missing_requested_skills
+from agentic_tools_old.skills_management.main import find_unshippable_requested_skills
 from agentic_tools_old.skills_management.main import handle_list_command
 from agentic_tools_old.skills_management.main import legacy_metadata_warning
 from agentic_tools_old.skills_management.main import link_skill_directory
@@ -401,6 +402,40 @@ def test_resolve_selected_skills_rejects_repo_local_dependency(tmp_path: Path) -
         lambda: resolve_selected_skills(manifests, ["ref-alpha"]),
         "which is not shareable",
     )
+    # The dependency case is a hard error that points the user at the owner.
+    assert_skills_management_error_contains(
+        lambda: resolve_selected_skills(manifests, ["ref-alpha"]),
+        "contact the owner of 'ref-beta'",
+    )
+
+
+def test_find_unshippable_requested_skills_flags_repo_local_only(
+    tmp_path: Path,
+) -> None:
+    write_skill(
+        tmp_path,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "public"},
+    )
+    write_skill(
+        tmp_path,
+        "ref-local-only",
+        metadata={
+            "shareable-skills.visibility": "repo-local",
+            "shareable-skills.reason": "Relies on a repo-only helper.",
+        },
+    )
+
+    manifests = discover_skill_manifests(tmp_path)
+
+    # Unknown names are not reported here (they are handled as missing); only
+    # existing-but-unshippable skills are flagged.
+    unshippable = find_unshippable_requested_skills(
+        manifests,
+        ["ref-alpha", "ref-local-only", "ref-unknown"],
+    )
+
+    assert unshippable == ("ref-local-only",)
 
 
 def test_discover_skill_manifests_parses_comma_delimited_requires(
@@ -1171,6 +1206,57 @@ def test_main_sync_reports_missing_configured_skills_by_source(
     assert "Skills config references missing skills:" in output
     assert "source '../source': ref-missing, ref-missing-too" in output
     assert "Would link" not in output
+
+
+def test_main_sync_skips_repo_local_skill_but_links_the_rest(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    source_repo = tmp_path / "source"
+    destination_repo = tmp_path / "destination"
+    destination_agents_dir = destination_repo / ".agents"
+    destination_agents_dir.mkdir(parents=True)
+
+    write_skill(
+        source_repo,
+        "ref-alpha",
+        metadata={"shareable-skills.visibility": "public"},
+    )
+    write_skill(
+        source_repo,
+        "ref-local-only",
+        metadata={
+            "shareable-skills.visibility": "repo-local",
+            "shareable-skills.reason": "Relies on a repo-only helper.",
+        },
+    )
+    (destination_agents_dir / "skills.json").write_text(
+        json.dumps(
+            {
+                "sources": [
+                    {
+                        "from": "../source",
+                        "skills": ["ref-alpha", "ref-local-only"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    exit_code = agentic_tools_main(
+        ["skills", "sync", "--to", str(destination_repo), "--dry-run"]
+    )
+    output = capsys.readouterr().out
+
+    # The repo-local skill is reported and skipped; the sync still succeeds and
+    # links the shippable skill.
+    assert exit_code == 0
+    assert "Skipped skills that are not shippable" in output
+    assert "source '../source': ref-local-only" in output
+    assert "Would link" in output
+    assert "ref-alpha" in output
+    assert "ref-local-only ->" not in output
 
 
 def test_main_sync_dry_run_reports_dead_links_before_linking(

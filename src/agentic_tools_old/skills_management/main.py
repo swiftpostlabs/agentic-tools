@@ -679,6 +679,14 @@ def build_make_shareable_recommendation(skill_name: str) -> str:
     )
 
 
+def build_contact_owner_recommendation(skill_name: str) -> str:
+    return (
+        f"Recommended next step: contact the owner of '{skill_name}' (see that skill's "
+        "metadata.shareable-skills.owner) to raise its visibility or to split out a "
+        f"shareable core, or use /{SHAREABILITY_WIZARD} on '{skill_name}'."
+    )
+
+
 def build_legacy_metadata_migration_hint(skill_name: str) -> str:
     return (
         f"Skill '{skill_name}' uses the legacy metadata schema; migrate its "
@@ -749,7 +757,10 @@ def ensure_shareable_manifest(
 
         if dependency.visibility not in EXPORTABLE_VISIBILITY:
             raise SkillsManagementError(
-                f"Skill '{manifest.name}' depends on '{dependency_name}', which is not shareable."
+                f"Skill '{manifest.name}' depends on '{dependency_name}', which is not "
+                f"shareable (visibility '{dependency.visibility}'). A shareable skill must "
+                "not hard-depend on a lower-visibility skill, so this dependency cannot be "
+                f"shipped. {build_contact_owner_recommendation(dependency_name)}"
             )
 
 
@@ -989,6 +1000,41 @@ def describe_missing_configured_skills(
     return "\n".join(lines)
 
 
+def find_unshippable_requested_skills(
+    manifests: dict[str, SkillManifest],
+    requested_names: Sequence[str],
+    aliases: dict[str, str] | None = None,
+) -> tuple[str, ...]:
+    """Requested skills that exist but are not shippable to another repo.
+
+    A `repo-local` skill (or any skill whose visibility is not exportable) may be
+    present in the source, for example when the package was installed from git
+    source, but it must never be linked into a consuming repo. Such a directly
+    requested skill is reported and skipped rather than aborting the whole sync.
+    """
+    aliases = aliases or {}
+    unshippable: list[str] = []
+    for skill_name in deduplicate_preserving_order(requested_names):
+        manifest = lookup_manifest(skill_name, manifests, aliases)
+        if manifest is None:
+            continue
+        if manifest.visibility not in EXPORTABLE_VISIBILITY:
+            unshippable.append(skill_name)
+    return tuple(unshippable)
+
+
+def describe_skipped_unshippable_skills(
+    skipped_by_source: Sequence[tuple[str, Sequence[str]]],
+) -> str:
+    lines = [
+        "Skipped skills that are not shippable to another repo "
+        "(repo-local or otherwise non-exportable):"
+    ]
+    for source, skipped_names in skipped_by_source:
+        lines.append(f"- source '{source}': {', '.join(skipped_names)}")
+    return "\n".join(lines)
+
+
 def cleanup_dead_skill_links(
     destination_skills_dir: Path,
     *,
@@ -1165,6 +1211,7 @@ def handle_sync_command(
     )
 
     missing_by_source: list[tuple[str, Sequence[str]]] = []
+    skipped_by_source: list[tuple[str, Sequence[str]]] = []
     manifests_to_link: list[SkillManifest] = []
     renames_by_index: dict[int, dict[str, str]] = {}
     source_urls: list[str] = []
@@ -1191,7 +1238,25 @@ def handle_sync_command(
             )
             continue
 
-        renames = collect_alias_renames(requested_skill_names, manifests, aliases)
+        # A directly requested skill that exists but is not shippable (repo-local
+        # or otherwise non-exportable) is reported and skipped, not linked. The
+        # rest of the sync proceeds. A repo-local skill pulled in as a dependency
+        # is a different case: resolve_selected_skills raises hard for it below.
+        unshippable_requested_skills = find_unshippable_requested_skills(
+            manifests,
+            requested_skill_names,
+            aliases,
+        )
+        if unshippable_requested_skills:
+            skipped_by_source.append(
+                (configured_source.source, unshippable_requested_skills)
+            )
+        skipped_names = set(unshippable_requested_skills)
+        shippable_requested_skills = tuple(
+            name for name in requested_skill_names if name not in skipped_names
+        )
+
+        renames = collect_alias_renames(shippable_requested_skills, manifests, aliases)
         if renames:
             renames_by_index[index] = renames
 
@@ -1199,7 +1264,7 @@ def handle_sync_command(
             source_urls.append(configured_source.url)
 
         for manifest in resolve_selected_skills(
-            manifests, requested_skill_names, aliases
+            manifests, shippable_requested_skills, aliases
         ):
             if manifest.name in linked_skill_names:
                 raise SkillsManagementError(
@@ -1213,6 +1278,9 @@ def handle_sync_command(
         raise SkillsManagementError(
             describe_missing_configured_skills(missing_by_source)
         )
+
+    if skipped_by_source:
+        print(describe_skipped_unshippable_skills(skipped_by_source))
 
     for message in apply_config_alias_renames(
         config_path,
