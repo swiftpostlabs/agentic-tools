@@ -200,7 +200,12 @@ registry-driven** vocabulary.
   should be split, or a stable piece moved into a smaller shared dependency.
 - Do not use `requires` for optional reading, related references, or nice-to-have neighbors — that
   is what `suggests` is for.
-- A `shareable` (organization/public) skill must not hard-depend on a `repo-local` skill.
+- A skill must not hard-depend on a **lower-visibility** skill. Visibility is ordered
+  `repo-local` < `organization` < `public`, and every `requires` target must be at least as visible
+  as the skill declaring it: `public` requires only `public`; `organization` requires `organization`
+  or `public`; `repo-local` may require anything. This guarantees a skill's hard dependencies travel
+  wherever the skill itself can go. (The older rule — "a shareable skill must not require a
+  `repo-local` skill" — is the special case of this one.)
 
 ---
 
@@ -335,7 +340,7 @@ from the top level.
 - `shareable-skills.domain` exists in the registry → else **fail** (with the growth note, §4).
 - Each `shareable-skills.requires` entry resolves to an existing skill → else **fail** (§5).
 - `shareable-skills.suggests` entries may be absent → never fails.
-- A `shareable` (organization/public) skill does not hard-depend on a `repo-local` skill → else
+- No skill hard-depends on a lower-visibility skill (`repo-local` < `organization` < `public`) → else
   **fail** (§5, §6).
 - `shareable-skills.visibility: public` has a top-level `license` → else **fail**; below public,
   missing license is a soft warn (§6).

@@ -1,29 +1,33 @@
 ---
 name: ref-sp-agents-shareable-skills
-description: "Normative spec for how this repo names, describes, scopes, shares, and vendors skills: owner-prefix naming grammar, the domain registry, visibility tiers, dependency semantics, vendoring vs forking, and the sharing-spec validator. Use when: naming or renaming a skill, setting owner/domain/visibility/tags, recording hard vs soft skill dependencies, vendoring or forking a skill from another repo, or validating a skill for export."
+description: "Normative spec for how a repo names, describes, scopes, shares, and vendors skills: owner-prefix naming grammar, the domain registry, visibility tiers, dependency semantics, vendoring vs forking, and the sharing-spec validator. Use when: naming or renaming a skill, setting owner/domain/visibility/tags, recording hard vs soft skill dependencies, vendoring or forking a skill from another repo, or validating a skill for export."
+license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
 ---
 
 # Shareable Skills (Sharing Spec)
 
 ## Purpose
 
-Define the single normative spec for how skills in this repo are **named**, **described in
-frontmatter**, **scoped**, **shared**, **vendored**, and **validated for export**. This is the
-source of truth for the standardization; other skills point here instead of restating it.
+Define the single normative spec for how a repo **names**, **describes in frontmatter**, **scopes**,
+**shares**, **vendors**, and **validates for export** its skills. This is the source of truth for
+that standardization; other skills point here instead of restating it. The mechanism is portable —
+any repo can adopt it — while the concrete values it fills in (owner prefix, owner, domain registry)
+are that repo's own. The values shown throughout are this repo's instantiation.
 
 This skill owns the **sharing-spec** rules. It does **not** own general skill-quality rules
-(trigger quality, structure, progressive disclosure) — those belong to
-.agents/skills/ref-sp-agents-skills-authoring/SKILL.md. The two are complementary and independent; neither
+(trigger quality, structure, progressive disclosure) — those belong to the repo's skill-authoring
+skill (`ref-sp-agents-skills-authoring` here). The two are complementary and independent; neither
 hard-depends on the other (see the spec's "Relationship" section).
 
-> **Schema status:** the migration is complete. Every skill is owner-prefix renamed, all portability
-> fields live under the `metadata.shareable-skills.*` namespace, and the validator runs at Phase 3
-> (hard-fail). `./references/spec.md` §9 keeps the migration history.
+> **Schema status (this repo):** the migration is complete here. Every skill is owner-prefix renamed,
+> all portability fields live under the `metadata.shareable-skills.*` namespace, and the validator
+> runs at Phase 3 (hard-fail). A repo adopting this spec fresh starts at whatever phase it sets in
+> its registry. `./references/spec.md` §9 keeps this repo's migration history.
 
 ## When to use this skill
 
@@ -90,7 +94,10 @@ metadata:
 - `shareable-skills.requires` = hard deps the skill genuinely needs; validator fails if missing;
   reference them from the body via `$SKILLS_FOLDER/<name>`. Keep the list short or split the skill.
 - `shareable-skills.suggests` = soft deps: optional/richer info that may be absent; reference by name only.
-- A shareable (organization/public) skill must not hard-depend on a `repo-local` skill.
+- A skill must not hard-depend on a **lower-visibility** skill (order: `repo-local` < `organization`
+  < `public`). A `public` skill may require only `public`; an `organization` skill may require
+  `organization` or `public`; `repo-local` may require anything. This keeps every hard dependency at
+  least as portable as the skill that needs it.
 
 ## Visibility (summary)
 
@@ -126,20 +133,21 @@ from `./references/registry.json` and the `phase` there controls strictness (now
 
 ```sh
 node ./scripts/validate-sharing.mts <skill-dir>
+# point it at the skills root with --all (in this repo, .agents/skills):
 node ./scripts/validate-sharing.mts .agents/skills --all
-# from the repo root, the whole catalog via yarn:
+# a repo may wrap it in a package-manager script; this repo exposes:
 yarn validate:sharing        # or `yarn validate` to run both validators
 ```
 
 This validator checks the **sharing spec** and is separate from the general skill-quality validator
-owned by ref-sp-agents-skills-authoring (`validate-skill.mts`). Run both when a skill should be good *and*
-shareable.
+owned by the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here, `validate-skill.mts`).
+Run both when a skill should be good *and* shareable.
 
 - `name` matches `type + owner-prefix + domain (+ template) + topic` and equals the folder name.
 - `shareable-skills.domain` exists in the registry (else hard fail); unknown `shareable-skills.tags`
   warn only.
-- Every `shareable-skills.requires` entry resolves to an existing skill; a shareable skill does not
-  hard-depend on a `repo-local` skill.
+- Every `shareable-skills.requires` entry resolves to an existing skill; no skill hard-depends on a
+  lower-visibility skill (`repo-local` < `organization` < `public`).
 - `shareable-skills.visibility: public` carries a top-level `license`.
 - Vendored copies keep `shareable-skills.owner` upstream and carry a read-only body banner.
 - Legacy keys are no longer accepted (Phase 3). Full rules in `./references/spec.md` §10.
@@ -151,6 +159,6 @@ shareable.
 - `./scripts/validate-sharing.mts` — the sharing-spec validator (TypeScript, Node >= 22).
 - `./scripts/check-vendored-drift.mts` — flags vendored copies that were edited or whose upstream advanced.
 - `./references/registry.json` — the domains/tags/aliases registry and validator `phase`.
-- .agents/skills/ref-sp-agents-skills-authoring/SKILL.md — general skill-quality authoring (complementary).
-- .agents/skills/tool-sp-make-skill-shareable/SKILL.md — guided shareability decision for a skill.
+- `ref-sp-agents-skills-authoring` — general skill-quality authoring (complementary).
+- `tool-sp-make-skill-shareable` — guided shareability decision for a skill.
 - `.agents/tasks/skill-standardization-spec/README.md` — decision log and rationale (local, may be absent).

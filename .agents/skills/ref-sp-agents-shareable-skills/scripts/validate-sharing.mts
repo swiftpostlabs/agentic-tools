@@ -45,8 +45,22 @@ type Metadata = Record<string, string>;
 type FrontmatterValue = string | Metadata;
 type Frontmatter = Record<string, FrontmatterValue>;
 
+type Visibility = "repo-local" | "organization" | "public";
+
 interface SkillInfo {
-  repoLocal: boolean;
+  visibility: Visibility | null;
+}
+
+// Visibility ordered from least to most portable. A skill may only hard-require
+// dependencies at least as visible as itself, so anything it needs travels with it.
+const VISIBILITY_RANK: Record<Visibility, number> = {
+  "repo-local": 0,
+  organization: 1,
+  public: 2,
+};
+
+function visibilityRank(visibility: Visibility | null): number | null {
+  return visibility !== null && Object.hasOwn(VISIBILITY_RANK, visibility) ? VISIBILITY_RANK[visibility] : null;
 }
 
 // --- frontmatter parsing (self-contained; no YAML dependency) ---
@@ -214,9 +228,9 @@ function loadSkillIndex(skillsRoot: string): Map<string, SkillInfo> {
     try {
       const { frontmatter } = parseFrontmatter(readFileSync(skillMd, "utf8"));
       const visibility = computeVisibility(asMetadata(frontmatter));
-      index.set(entry.name, { repoLocal: visibility === "repo-local" });
+      index.set(entry.name, { visibility: visibility as Visibility | null });
     } catch {
-      index.set(entry.name, { repoLocal: false });
+      index.set(entry.name, { visibility: null });
     }
   }
   return index;
@@ -326,13 +340,22 @@ function validateSharingSkill(
   // --- dependencies ---
   const aliases = registry?.aliases ?? {};
   const requires = splitList(ss(metadata, "requires"));
+  const selfRank = visibilityRank(visibility as Visibility | null);
   for (const dep of requires) {
     const resolved = Object.hasOwn(aliases, dep) ? aliases[dep] : dep;
     const info = index.get(resolved);
     if (!info) {
       add("error", `requires '${dep}' does not resolve to an existing skill`);
-    } else if (shareable && info.repoLocal) {
-      add("error", `shareable skill must not hard-depend on repo-local skill '${dep}'`);
+      continue;
+    }
+    // A skill must not hard-depend on a lower-visibility (less portable) skill,
+    // or the dependency would not travel everywhere the dependent skill can.
+    const depRank = visibilityRank(info.visibility);
+    if (selfRank !== null && depRank !== null && depRank < selfRank) {
+      add(
+        "error",
+        `${visibility} skill must not hard-depend on lower-visibility ${info.visibility} skill '${dep}'`,
+      );
     }
   }
 
