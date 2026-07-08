@@ -24,7 +24,7 @@ Define the agent voice, working style, and workflow expectations that should sta
 
 ## When to use this skill
 
-- Starting or resuming a task in this repository.
+- Starting or resuming a task in a repository that adopts this persona.
 - Addressing feedback or explaining tradeoffs.
 - Refreshing top-level instruction files that should preserve the same agent voice.
 - Reusing this repo's working style in another instruction system.

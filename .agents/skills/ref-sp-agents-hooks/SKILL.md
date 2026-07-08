@@ -29,8 +29,8 @@ Give the agent portable defaults for authoring lifecycle hooks -- shell commands
 - This skill centers on `command` (shell) hooks, the one type every platform supports. Non-command types (`http`, `mcp_tool`, `prompt`, `agent`) are noted per platform in the references.
 - For the config location, event vocabulary, and payload field names of one platform, read that platform's reference file.
 - This skill is not about MCP servers, skills, or subagents themselves.
-- For repo instruction files (`AGENTS.md`, `GEMINI.md`, `.claude/CLAUDE.md`), use `.agents/skills/ref-sp-agents-instructions-authoring/SKILL.md`.
-- When a hook reads or guards protected/secret files, use `.agents/skills/ref-sp-agents-security/SKILL.md`.
+- For repo instruction files (`AGENTS.md`, `GEMINI.md`, `.claude/CLAUDE.md`), use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here).
+- When a hook reads or guards protected/secret files, use the repo's agent-security skill (`ref-sp-agents-security` here).
 
 ## Mental Model
 
@@ -136,7 +136,7 @@ Hooks run arbitrary shell with your full user permissions, automatically, withou
 - Read `./references/platforms/vscode-hooks.md` for VS Code agent hooks (ignored matchers, OS-specific command overrides, Claude-format compatibility).
 - Read `./references/platforms/gemini-cli-hooks.md` for Gemini CLI (`.gemini/settings.json`, distinct event vocabulary, millisecond timeouts).
 - Read `./references/checklist.md` for a quick review pass before committing a hook.
-- Read `.agents/skills/ref-sp-agents-security/SKILL.md` when a hook touches protected files, secrets, or exclusion rules.
+- Read the repo's agent-security skill (`ref-sp-agents-security` here) when a hook touches protected files, secrets, or exclusion rules.
 
 ## Assets
 

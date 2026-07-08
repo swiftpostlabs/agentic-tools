@@ -29,10 +29,10 @@ Provide portable defaults for keeping package metadata, version sources, changel
 
 ## Scope Boundaries
 
-- Use `.agents/skills/ref-sp-dev-semantic-versioning/SKILL.md` when deciding the meaning of a bump level or a dependency range.
-- Use `.agents/skills/ref-sp-py-commitizen/SKILL.md` when the release workflow specifically uses the Python `commitizen` package, `cz bump`, Commitizen version providers, or Commitizen-generated changelogs.
-- Use `.agents/skills/ref-sp-dev-github-actions-ci/SKILL.md` for GitHub workflow triggers, `id-token: write`, release job permissions, runner trust, and action pinning.
-- Use `.agents/skills/ref-sp-dev-github-dependabot/SKILL.md` for Dependabot grouping, metadata, automerge, and safe PR automation.
+- Use `ref-sp-dev-semantic-versioning` when deciding the meaning of a bump level or a dependency range.
+- Use `ref-sp-py-commitizen` when the release workflow specifically uses the Python `commitizen` package, `cz bump`, Commitizen version providers, or Commitizen-generated changelogs.
+- Use `ref-sp-dev-github-actions-ci` for GitHub workflow triggers, `id-token: write`, release job permissions, runner trust, and action pinning.
+- Use `ref-sp-dev-github-dependabot` for Dependabot grouping, metadata, automerge, and safe PR automation.
 - Use this skill for workflow, source-of-truth, manifest-alignment, and changelog policy.
 
 ## Defaults
@@ -130,8 +130,8 @@ Provide portable defaults for keeping package metadata, version sources, changel
 
 ## References
 
-- Read `.agents/skills/ref-sp-dev-semantic-versioning/SKILL.md` for bump semantics and dependency-range guidance.
-- Read `.agents/skills/ref-sp-py-commitizen/SKILL.md` for Commitizen-specific release command and configuration guidance.
-- Read `.agents/skills/ref-sp-dev-github-actions-ci/SKILL.md` for workflow permissions, OIDC, runner, and release job hardening.
-- Read `.agents/skills/ref-sp-dev-github-dependabot/SKILL.md` for dependency-update PR automation and automerge guardrails.
+- Read `ref-sp-dev-semantic-versioning` for bump semantics and dependency-range guidance.
+- Read `ref-sp-py-commitizen` for Commitizen-specific release command and configuration guidance.
+- Read `ref-sp-dev-github-actions-ci` for workflow permissions, OIDC, runner, and release job hardening.
+- Read `ref-sp-dev-github-dependabot` for dependency-update PR automation and automerge guardrails.
 - Read `./references/checklist.md` for a quick package-management review pass.

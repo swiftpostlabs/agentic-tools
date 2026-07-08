@@ -26,20 +26,22 @@ Ensure project skills are discoverable, activation-worthy, operationally useful,
 
 This skill owns **how to make a good skill in general, from the agent's perspective**: boundary,
 description/trigger quality, instruction design, progressive disclosure, structure, and evaluation.
+That guidance applies to any repository that uses skills, not just the one it currently lives in.
 
-It does **not** own the sharing spec. How a skill is **named** (owner-prefix / domain / template /
-topic grammar), **assigned a domain** (the domain registry and tags), given **visibility**
-(repo-local / organization / public), declares **hard vs soft dependencies**, and is **vendored or
-forked** is governed by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md.
+It does **not** own a sharing spec. If a repo standardizes how a skill is **named** (owner-prefix /
+domain / template / topic grammar), **assigned a domain** (a domain registry and tags), given
+**visibility** (repo-local / organization / public), declares **hard vs soft dependencies**, and is
+**vendored or forked**, that belongs in a separate sharing-spec skill. In this repo that skill is
+`ref-sp-agents-shareable-skills`.
 
-The two skills are **complementary but independent**, and neither hard-depends on the other. You
-can author an excellent skill that is deliberately `repo-local` and never touches the sharing spec,
-and you can share a skill whose general quality is reviewed here. Consult the sharing spec (a soft
-dependency) when a skill should also be shared; use this skill for quality regardless.
+Skill quality and sharing policy are **complementary but independent**, and neither hard-depends on
+the other. You can author an excellent skill that is deliberately `repo-local` and never touches any
+sharing spec, and you can share a skill whose general quality is reviewed here. Consult the sharing
+spec (a soft dependency) when a skill should also be shared; use this skill for quality regardless.
 
 Their validators are also separate and non-overlapping: this skill's `./scripts/validate-skill.mts`
-checks general well-formedness and quality; the sharing-spec rules are validated by
-ref-sp-agents-shareable-skills. Both are TypeScript and need Node >= 22 (`node ./scripts/validate-skill.mts <skill-dir>`).
+checks general well-formedness and quality; sharing-spec rules are validated by a separate validator
+owned by the sharing-spec skill. Both are TypeScript and need Node >= 22 (`node ./scripts/validate-skill.mts <skill-dir>`).
 
 ## References
 
@@ -69,7 +71,7 @@ Core local references for this skill:
 - `./references/task-framing.md` when a skill needs commands or actions framed by what, why, when, and expected outcome.
 - `./references/agent-components.md` when a skill feels conceptually correct but still does not improve agent behavior.
 - `./references/source-traceability.md` when you need to verify which rules are direct, synthesized, or local.
-- `./references/local-conventions.md` when you need to understand repo-specific conventions added on top of the original references.
+- `./references/local-conventions.md` when you need to understand the conventions a specific repo layers on top of the portable references.
 
 ## Values
 
@@ -107,7 +109,7 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 
 ## Skill File Rules
 
-- **Location:** In this repo, project skills live at `.agents/skills/<skill-name>/SKILL.md`.
+- **Location:** Project skills live in a per-skill folder as `<skills-root>/<skill-name>/SKILL.md`. The skills root is whatever directory the repo has chosen for skills; in this repo it is `.agents/skills/`.
 - **Folder structure:** A skill folder may include supporting subfiles when they keep the main skill focused.
 
 ```text
@@ -122,19 +124,19 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Open format:** Skills should remain compatible with the Agent Skills format rather than depending on one client's private conventions.
 - **Supporting files are allowed:** Put long checklists, detailed examples, templates, or helper scripts in subfolders instead of cramming everything into `SKILL.md`.
 - **Use relative paths only within the same skill:** Link this skill's own resources from `SKILL.md` with `./references/...`, `./scripts/...`, `./assets/...`, or `./evals/...` paths.
-- **Use repo-root-relative paths for other skills in the same repo:** If one skill must point to another skill's `SKILL.md` or files in this repository, use an explicit repo-root-relative path such as `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` so clones, exports, and local folder renames do not break the reference.
+- **Use repo-root-relative paths for other skills in the same repo:** If one skill must point to another skill's `SKILL.md` or files in the same repository, use an explicit repo-root-relative path (for example `<skills-root>/<other-skill-name>/SKILL.md`) so clones, exports, and local folder renames do not break the reference.
 - **Reserve absolute paths for outside-the-repo targets:** Use absolute filesystem paths only when the target is genuinely outside the current repository or when the client cannot resolve repo-root-relative paths reliably.
 - **Keep loading progressive:** Keep `SKILL.md` concise and move large supporting material into subfiles. Prefer one-level-deep references from `SKILL.md` and tell the agent when to load each file.
 - **One responsibility per skill.** A skill about code conventions should not also cover deployment.
 - **Frontmatter required:** Every skill must have `name` and `description` in YAML frontmatter.
 - **Follow the spec for `name`:** 1-64 chars, lowercase letters/numbers/hyphens only, no leading or trailing hyphen, no consecutive hyphens, and it must match the folder name.
-- **Choose the skill prefix by role:** In this repo, use `ref-...` when a skill mainly informs the agent about a domain, workflow, convention, or repository surface. Use `tool-...` when a skill mainly tells the agent to carry out an action-oriented workflow that the user may invoke directly.
-- **Name tool skills as actions:** A `tool-...` skill should read like an action connected to its purpose, such as `tool-sp-adopt-these-skills` or `tool-sp-maintain-skills`, not like a passive topic label.
-- **Name reference skills as stable subjects:** A `ref-...` skill should name the subject area it explains, such as agent persona, code conventions, project setup, agents security, or local feature tracking.
-- **Do not use `tool-...` for passive guidance:** If the skill mostly teaches the agent how to understand or review something rather than execute a user-invoked workflow, it should stay under `ref-...`.
+- **Choose the skill prefix by role when the repo uses a role prefix:** When a repo distinguishes reference from action skills by prefix (this repo uses `ref-` and `tool-`), use the reference prefix when a skill mainly informs the agent about a domain, workflow, convention, or repository surface, and the tool prefix when a skill mainly tells the agent to carry out an action-oriented workflow the user may invoke directly.
+- **Name action skills as actions:** An action (`tool-`) skill should read like an action connected to its purpose, such as `tool-<owner>-adopt-these-skills` or `tool-<owner>-maintain-skills`, not like a passive topic label.
+- **Name reference skills as stable subjects:** A reference (`ref-`) skill should name the subject area it explains, such as agent persona, code conventions, project setup, agent security, or local feature tracking.
+- **Do not use the action prefix for passive guidance:** If the skill mostly teaches the agent how to understand or review something rather than execute a user-invoked workflow, it should stay a reference skill.
 - **Keep `description` under 1024 chars:** It must describe both what the skill does and when to use it.
 - **Use optional fields only when they add execution value:** `compatibility` is for environment requirements, `license` for licensing, `metadata` for extra client metadata, and `allowed-tools` only when the client supports it.
-- **Domain metadata is governed by the sharing spec:** every skill carries a domain in metadata. This is owned by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md (the `metadata.shareable-skills.domain` field and domain registry). Do not redefine the vocabulary here.
+- **Domain metadata is governed by the sharing spec:** when a repo runs a sharing spec, each skill carries a domain in metadata owned by that spec (in this repo, the `metadata.shareable-skills.domain` field and domain registry defined by `ref-sp-agents-shareable-skills`). Do not redefine the vocabulary here.
 - **Name must match folder:** The `name` field must match the skill folder name.
 - **"When to use" section:** Include a clear section so the AI can determine relevance.
 - **Concrete examples:** Provide small examples, templates, or commands where they reduce ambiguity.
@@ -143,7 +145,7 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 - **Adapt to the real repo:** When a skill is copied or derived from another project, update its commands, libraries, file names, folder layout, and examples to match this repository before keeping it.
 - **Do not preserve stale stack details:** Remove or replace inherited references to the wrong package manager, framework, language conventions, file extensions, or UI library when they do not match the current repo.
 - **Do not leak foreign repo artifacts into generic examples:** If you copied a template or skill from another repo, replace example paths like feature folders, excluded files, and sample script names with synthetic placeholders unless the skill explicitly says it is documenting the source repo itself.
-- **Naming grammar, namespace, and portability live in the sharing spec:** the owner-prefix/domain/topic grammar, and whether a skill is `repo-local`, `organization`, or `public`, are governed by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Portability is recorded in `metadata.shareable-skills.visibility`, not encoded in the name. Keep a skill's `name` focused on what it does so discovery and trigger quality stay intact.
+- **Naming grammar, namespace, and portability live in the sharing spec:** the owner-prefix/domain/topic grammar, and whether a skill is `repo-local`, `organization`, or `public`, are governed by the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` here). Portability is recorded in metadata (this repo uses `metadata.shareable-skills.visibility`), not encoded in the name. Keep a skill's `name` focused on what it does so discovery and trigger quality stay intact.
 - **Make values explicit:** When a skill depends on values like simplicity, clarity, or maintainability, state them directly in the purpose or rules instead of leaving them implicit.
 - **Prefer modern defaults:** When a skill gives coding guidance, prefer modern, intention-revealing language and platform APIs over older sentinel-style patterns when both are supported by the project's runtime targets.
 - **Prefer operational labels:** When naming workflow steps or guidance sections, prefer labels that describe the actual review/update action. Favor concrete labels like `Reflect` or `Capture Lessons` over vaguer labels like `Learn` when the step includes reviewing outcomes, correcting guidance, and updating the source of truth.
@@ -151,15 +153,16 @@ Read `./references/playbook.md` for the detailed workflow and decision rules.
 ## Sharing, Domain, And Dependency Metadata
 
 Naming grammar, domain, visibility, dependency declarations, and vendoring are the
-**sharing spec**, owned by .agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Do not restate or
-redefine those rules here — consult that skill (and its `references/spec.md`) when a skill needs to
-be assigned a domain, shared, or exported.
+**sharing spec**, owned by the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` in this
+repo). Do not restate or redefine those rules here — consult that skill (and its `references/spec.md`)
+when a skill needs to be assigned a domain, shared, or exported.
 
 What this skill still asserts, because it is general skill quality rather than sharing policy:
 
-- Every skill carries a single domain in metadata (`metadata.shareable-skills.domain`); pick the
-  domain, not the repository namespace, and prefer an existing domain over inventing one. The
-  vocabulary itself is owned by the sharing spec's domain registry.
+- When the repo runs a sharing spec, every skill carries a single domain in metadata (here,
+  `metadata.shareable-skills.domain`); pick the domain, not the repository namespace, and prefer an
+  existing domain over inventing one. The vocabulary itself is owned by the sharing spec's domain
+  registry.
 - Track portability, dependencies, and namespace through `metadata`, never through the `name`; keep
   the `name` focused on what the skill does so discovery and trigger quality stay intact.
 - The Agent Skills spec treats `metadata` as a string-to-string mapping, so do not use YAML lists
@@ -245,9 +248,10 @@ Read `./references/scripts-and-resources.md` when deciding whether content belon
 
 ## Validation And Evaluation
 
-This covers **general skill-quality** validation only. Conformance to the sharing spec (naming
-grammar, domain registry, visibility, deps, vendoring) is validated separately by
-.agents/skills/ref-sp-agents-shareable-skills/SKILL.md. Run both when a skill should be good *and* shareable.
+This covers **general skill-quality** validation only. Conformance to a sharing spec (naming
+grammar, domain registry, visibility, deps, vendoring) is validated separately by the repo's
+sharing-spec skill (`ref-sp-agents-shareable-skills` here). Run both when a skill should be good
+*and* shareable.
 
 Every meaningful skill should be tested in two dimensions:
 
@@ -275,14 +279,14 @@ Use `./references/evaluation-guide.md` for the detailed evaluation loop. Example
 
 Portable helper scripts live at:
 
-- `./scripts/validate-skill.mts` (TypeScript, Node >= 22) to validate one skill or a whole skills directory against Agent Skills structure and this repo's local quality rules. Run it as `node ./scripts/validate-skill.mts <skill-dir>` or `node ./scripts/validate-skill.mts .agents/skills --all`; from the repo root, `yarn validate:skills` runs the whole catalog (`yarn validate` runs both validators).
+- `./scripts/validate-skill.mts` (TypeScript, Node >= 22) to validate one skill or a whole skills directory against Agent Skills structure and the repo's local quality rules. Run it as `node ./scripts/validate-skill.mts <skill-dir>` or point it at the skills root with `--all` (in this repo, `node ./scripts/validate-skill.mts .agents/skills --all`). A repo may also wrap this in a package-manager script; this repo exposes `yarn validate:skills` for the whole catalog and `yarn validate` to run both validators.
 - `./scripts/aggregate_eval_results.py` to summarize `grading.json` files from output-quality eval runs.
 
 Use `./evals/evals.json` as the maintained evaluation set for this skill itself.
 
 ## Cross-Platform Parity
 
-Keep instructions consistent across all platform-specific files:
+When a repo keeps multiple provider instruction files, keep them consistent by choosing one source of truth and letting the others route back to it:
 
 | File | Platform |
 |------|----------|
@@ -291,9 +295,9 @@ Keep instructions consistent across all platform-specific files:
 | `GEMINI.md` | Google Gemini |
 | `.claude/CLAUDE.md` | Anthropic Claude |
 
-The root `AGENTS.md` is the source of truth in this repo (Copilot reads it natively, so there is no dedicated Copilot file), and `GEMINI.md` plus `.claude/CLAUDE.md` should normally stay thin routing stubs.
+A common layout — and the one this repo uses — makes the root `AGENTS.md` the source of truth (Copilot reads it natively, so there is no dedicated Copilot file) and keeps `GEMINI.md` plus `.claude/CLAUDE.md` as thin routing stubs.
 
-For detailed guidance on writing and maintaining these instruction files, use `.agents/skills/ref-sp-agents-instructions-authoring/SKILL.md` and its provider-specific reference subfiles instead of expanding this skill further.
+For detailed guidance on writing and maintaining these instruction files, use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here) and its provider-specific reference subfiles instead of expanding this skill further.
 
 ## Communication Guidelines
 

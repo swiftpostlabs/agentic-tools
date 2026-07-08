@@ -26,10 +26,10 @@ Provide portable defaults for maintainable Next.js apps, especially around App R
 ## Scope Boundaries
 
 - Use this skill for Next.js framework rules, routing structure, rendering boundaries, and framework-specific integrations.
-- Use `.agents/skills/ref-sp-js-react/SKILL.md` for general React component structure, hooks, local UI state, and React dependency choices that are not specific to Next.js.
-- Use `.agents/skills/ref-sp-js-next-template/SKILL.md` when the user is planning or reviewing a whole React and Next app rather than one framework concern.
-- Use `.agents/skills/ref-sp-js-typescript/SKILL.md` when the question is primarily about strict type modeling or TypeScript configuration.
-- Use `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the requirement is a browser-only app that should stay framework-free and no-build by default.
+- Use `ref-sp-js-react` for general React component structure, hooks, local UI state, and React dependency choices that are not specific to Next.js.
+- Use `ref-sp-js-next-template` when the user is planning or reviewing a whole React and Next app rather than one framework concern.
+- Use `ref-sp-js-typescript` when the question is primarily about strict type modeling or TypeScript configuration.
+- Use `ref-sp-js-web-standalone-template` when the requirement is a browser-only app that should stay framework-free and no-build by default.
 
 ## Defaults
 

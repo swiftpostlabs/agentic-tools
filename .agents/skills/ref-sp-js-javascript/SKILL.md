@@ -25,12 +25,12 @@ Provide portable defaults for maintainable JavaScript when full TypeScript is no
 ## Scope Boundaries
 
 - Use this skill for portable JavaScript structure and JSDoc guidance.
-- Use `.agents/skills/ref-sp-js-react/SKILL.md` when the main question is about React component structure, hooks, or React-specific dependency choices, whether the file is JavaScript or TypeScript.
-- Use `.agents/skills/ref-sp-js-next/SKILL.md` when Next.js framework concerns dominate the design.
-- Use `.agents/skills/ref-sp-js-typescript/SKILL.md` when the main question is about strict type-system design rather than JSDoc-backed JavaScript.
-- Use `.agents/skills/ref-sp-dev-coding-patterns/SKILL.md` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
-- Use `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md` for portable feature-boundary or shared-utility decisions.
-- Use `.agents/skills/ref-sp-js-userscript/SKILL.md` or `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the JavaScript lives inside a userscript or standalone browser app and those constraints dominate the design.
+- Use `ref-sp-js-react` when the main question is about React component structure, hooks, or React-specific dependency choices, whether the file is JavaScript or TypeScript.
+- Use `ref-sp-js-next` when Next.js framework concerns dominate the design.
+- Use `ref-sp-js-typescript` when the main question is about strict type-system design rather than JSDoc-backed JavaScript.
+- Use `ref-sp-dev-coding-patterns` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
+- Use `ref-sp-dev-projects-architecture` for portable feature-boundary or shared-utility decisions.
+- Use `ref-sp-js-userscript` or `ref-sp-js-web-standalone-template` when the JavaScript lives inside a userscript or standalone browser app and those constraints dominate the design.
 
 ## Defaults
 

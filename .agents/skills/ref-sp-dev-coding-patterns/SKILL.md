@@ -26,9 +26,9 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 ## Scope Boundaries
 
 - Use this skill for language-agnostic defaults such as naming, comments, branching, CLI ergonomics, and testing posture.
-- Use `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md` for folder layout, feature boundaries, and shared-utility decisions.
-- Use `.agents/skills/ref-sp-py-python/SKILL.md`, `.agents/skills/ref-sp-js-javascript/SKILL.md`, or `.agents/skills/ref-sp-js-typescript/SKILL.md` for syntax- and runtime-specific guidance.
-- Use repo-local skills like `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` or `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` when the question is about this repository's exact paths or commands.
+- Use `ref-sp-dev-projects-architecture` for folder layout, feature boundaries, and shared-utility decisions.
+- Use `ref-sp-py-python`, `ref-sp-js-javascript`, or `ref-sp-js-typescript` for syntax- and runtime-specific guidance.
+- Use a repo-local conventions skill (in this repo, `ref-sp-dev-repo-conventions`) when the question is about a specific repository's exact paths or commands.
 
 ## Defaults
 

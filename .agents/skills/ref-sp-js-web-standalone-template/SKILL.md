@@ -25,11 +25,11 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 ## Scope Boundaries
 
 - Use this skill for whole browser-only apps and local web tools you control directly.
-- Use `.agents/skills/ref-sp-js-next-template/SKILL.md` when the user explicitly wants a full React and Next app rather than a no-build browser app.
-- Use `.agents/skills/ref-sp-js-react/SKILL.md` or `.agents/skills/ref-sp-js-next/SKILL.md` only after the app has deliberately crossed into those frameworks.
-- Use `.agents/skills/ref-sp-js-userscript/SKILL.md` when the code runs inside a userscript manager on someone else's page.
-- Use `.agents/skills/ref-sp-js-javascript/SKILL.md` for detailed JavaScript module, JSDoc, and runtime-surface questions once the standalone app model itself is chosen.
-- Use `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md` when the question is about repo-wide structure rather than one browser app.
+- Use `ref-sp-js-next-template` when the user explicitly wants a full React and Next app rather than a no-build browser app.
+- Use `ref-sp-js-react` or `ref-sp-js-next` only after the app has deliberately crossed into those frameworks.
+- Use `ref-sp-js-userscript` when the code runs inside a userscript manager on someone else's page.
+- Use `ref-sp-js-javascript` for detailed JavaScript module, JSDoc, and runtime-surface questions once the standalone app model itself is chosen.
+- Use `ref-sp-dev-projects-architecture` when the question is about repo-wide structure rather than one browser app.
 
 ## Defaults
 
@@ -61,7 +61,7 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 
 - Keep the main page on `.html` and colocate any extracted CSS, JS, and assets inside the same app folder.
 - Extract local assets only when the single-file version has become hard to scan.
-- If the app also ships with a userscript, keep that handoff explicit and route the userscript-specific details to `.agents/skills/ref-sp-js-userscript/SKILL.md`.
+- If the app also ships with a userscript, keep that handoff explicit and route the userscript-specific details to `ref-sp-js-userscript`.
 
 ### Independence
 
@@ -100,7 +100,7 @@ src/features/example-dashboard-kit/
 
 - MDN HTML Element Reference: <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
-- Read `.agents/skills/ref-sp-js-javascript/SKILL.md` for detailed JS module, JSDoc, and runtime-surface guidance inside the chosen standalone app model.
+- Read `ref-sp-js-javascript` for detailed JS module, JSDoc, and runtime-surface guidance inside the chosen standalone app model.
 - Read `./references/checklist.md` for a quick standalone-app review pass.
 - Read `./references/library-recommendations.md` when choosing browser-loadable UI or utility libraries for a no-build app.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for standalone app and browser-tool prompts.

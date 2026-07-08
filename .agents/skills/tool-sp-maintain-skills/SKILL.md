@@ -2,11 +2,12 @@
 name: tool-sp-maintain-skills
 description: "Review, consolidate, and update project skills after repo, workflow, or branch changes. Use when: skills may be outdated after code or tooling changes, guidance is duplicated or misplaced, or the repo's skill catalog needs a maintenance pass."
 argument-hint: "What changed in the repo or branch, and which skills may now be stale"
+license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
   shareable-skills.requires: "ref-sp-agents-skills-authoring"
 ---
 
@@ -26,8 +27,8 @@ Keep project guidance simple by giving each rule one clear home when maintenance
 
 ## First Step
 
-Read `.agents/skills/ref-sp-agents-skills-authoring/SKILL.md` before planning updates.
-If the maintenance pass touches skill quality, evals, scripts, or copied guidance, also read `.agents/skills/ref-sp-agents-skills-authoring/references/quality-evaluation.md`.
+Read the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here, the `requires` dependency) before planning updates.
+If the maintenance pass touches skill quality, evals, scripts, or copied guidance, also read that skill's quality-evaluation reference (in this repo, its `references/quality-evaluation.md`).
 
 ## Core Workflow
 
@@ -79,8 +80,8 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 
 - Check the result against `./references/checklist.md`.
 - If guidance moved between skills or out of top-level instructions, check `./references/consolidation-checklist.md` too.
-- Run `node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts <skill-dir>` for touched skills, or add `--all` on `.agents/skills` for the whole catalog (needs Node >= 22). For sharing-spec conformance, also run `node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all`.
-- If output-quality evals produced `grading.json` files, summarize them with `.agents/skills/ref-sp-agents-skills-authoring/scripts/aggregate_eval_results.py <eval-workspace>`.
+- Run the skill-authoring skill's validator (`ref-sp-agents-skills-authoring`; in this repo, `node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts <skill-dir>`) for touched skills, or add `--all` on the skills root for the whole catalog (needs Node >= 22). For sharing-spec conformance, also run the sharing-spec validator owned by `ref-sp-agents-shareable-skills` (here, `node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all`).
+- If output-quality evals produced `grading.json` files, summarize them with the skill-authoring skill's aggregation script (in this repo, `.agents/skills/ref-sp-agents-skills-authoring/scripts/aggregate_eval_results.py <eval-workspace>`).
 - Run a targeted error check on the touched skill files.
 - Run the repo's skill-discovery or catalog-validation command when one exists.
 - Confirm that new or renamed skills are reflected in top-level routing if needed.
@@ -89,9 +90,9 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 ## References
 
 - Read `./references/consolidation-checklist.md` when the maintenance pass reveals duplicated or misplaced guidance.
-- Use `.agents/skills/tool-sp-maintain-agents-instructions/SKILL.md` when skill changes imply drift in `AGENTS.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
-- Use `.agents/skills/ref-sp-agents-local-tasks/SKILL.md` when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
-- Read `.agents/skills/ref-sp-agents-skills-authoring/references/quality-evaluation.md` when reviewing important skills against the stricter quality bar adopted from the local Claude skill-creator task.
+- Use the repo's instruction-maintenance skill (`tool-sp-maintain-agents-instructions` here) when skill changes imply drift in `AGENTS.md`, `GEMINI.md`, or `.claude/CLAUDE.md`.
+- Use the repo's local-tasks skill (`ref-sp-agents-local-tasks` here) when the repo uses `.agents/tasks/` to keep a local maintenance plan or artifact trail.
+- Read the skill-authoring skill's quality-evaluation reference (`ref-sp-agents-skills-authoring`; in this repo, its `references/quality-evaluation.md`) when reviewing important skills against a stricter quality bar.
 - Read `./references/checklist.md` for a quick maintenance review pass.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for branch-aware skill maintenance prompts.
 - Review `./evals/evals.json` when validating output quality for change-to-skill mapping and maintenance decisions.

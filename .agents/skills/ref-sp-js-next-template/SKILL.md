@@ -27,10 +27,10 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 ## Scope Boundaries
 
 - Use this skill for whole-app setup, baseline stack decisions, and top-level app structure.
-- Use `.agents/skills/ref-sp-js-react/SKILL.md` for component internals, hooks, local UI state, and general React dependency choices.
-- Use `.agents/skills/ref-sp-js-next/SKILL.md` for App Router structure, client and server boundaries, framework integrations, and Next-specific library choices.
-- Use `.agents/skills/ref-sp-js-typescript/SKILL.md` for strict type modeling, runtime boundaries, and `tsconfig` design.
-- Use `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the requirement can stay a no-build browser app instead of becoming a full React and Next project.
+- Use `ref-sp-js-react` for component internals, hooks, local UI state, and general React dependency choices.
+- Use `ref-sp-js-next` for App Router structure, client and server boundaries, framework integrations, and Next-specific library choices.
+- Use `ref-sp-js-typescript` for strict type modeling, runtime boundaries, and `tsconfig` design.
+- Use `ref-sp-js-web-standalone-template` when the requirement can stay a no-build browser app instead of becoming a full React and Next project.
 
 ## Defaults
 
@@ -64,9 +64,9 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 
 ### Decision rules
 
-- If the requirement is a local browser app that can stay framework-free, prefer `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` instead of escalating to a full app.
-- If the question turns into component internals, hook design, or React dependency choices, load `.agents/skills/ref-sp-js-react/SKILL.md`.
-- If the question turns into App Router, `use client`, metadata, or Next-specific integrations, load `.agents/skills/ref-sp-js-next/SKILL.md`.
+- If the requirement is a local browser app that can stay framework-free, prefer `ref-sp-js-web-standalone-template` instead of escalating to a full app.
+- If the question turns into component internals, hook design, or React dependency choices, load `ref-sp-js-react`.
+- If the question turns into App Router, `use client`, metadata, or Next-specific integrations, load `ref-sp-js-next`.
 
 ## Validation
 
@@ -77,10 +77,10 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 
 ## References
 
-- Read `.agents/skills/ref-sp-js-react/SKILL.md` for component, hook, and React dependency guidance.
-- Read `.agents/skills/ref-sp-js-next/SKILL.md` for App Router, rendering-boundary, and Next-specific integration guidance.
-- Read `.agents/skills/ref-sp-js-typescript/SKILL.md` for strict TypeScript and runtime-boundary guidance.
-- Read `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the feature may not need a full React and Next app.
+- Read `ref-sp-js-react` for component, hook, and React dependency guidance.
+- Read `ref-sp-js-next` for App Router, rendering-boundary, and Next-specific integration guidance.
+- Read `ref-sp-js-typescript` for strict TypeScript and runtime-boundary guidance.
+- Read `ref-sp-js-web-standalone-template` when the feature may not need a full React and Next app.
 - Read `./references/checklist.md` for a quick whole-app review pass.
 - Read `./references/app-stack.md` when choosing the app baseline and top-level structure.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for app-level React and Next prompts.

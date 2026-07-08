@@ -28,9 +28,9 @@ Guide agents through using the Python `commitizen` package as the owner for conv
 
 ## Scope Boundaries
 
-- Use `.agents/skills/ref-sp-dev-package-management/SKILL.md` for general package metadata, changelog ownership, and multi-manifest release policy.
-- Use `.agents/skills/ref-sp-dev-semantic-versioning/SKILL.md` for bump meaning, prerelease stability, and dependency-range decisions.
-- Use `.agents/skills/ref-sp-dev-git-commits/SKILL.md` for commit grouping, commit bodies, and day-to-day commit message quality.
+- Use `ref-sp-dev-package-management` for general package metadata, changelog ownership, and multi-manifest release policy.
+- Use `ref-sp-dev-semantic-versioning` for bump meaning, prerelease stability, and dependency-range decisions.
+- Use `ref-sp-dev-git-commits` for commit grouping, commit bodies, and day-to-day commit message quality.
 - Use this skill for Commitizen-specific commands, configuration, and failure modes.
 
 ## Default Position

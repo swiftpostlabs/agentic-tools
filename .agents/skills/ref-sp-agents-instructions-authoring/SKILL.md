@@ -30,9 +30,9 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Use `./references/providers/claude-instructions.md` for `.claude/CLAUDE.md` bridge or provider-specific decisions.
 - Use `./references/global-instructions.md` for user-level/global instruction files (e.g. `~/.copilot/instructions/*.instructions.md`, `~/.claude/CLAUDE.md`) rather than repo-scoped files.
 - Use `./references/agents-md-standard.md` for the cross-provider root `AGENTS.md` file and how it fits the source-of-truth model.
-- Use `.agents/skills/ref-sp-agents-persona/SKILL.md` when the instruction system needs to preserve or refresh the repo's agent voice, interaction style, or escalation stance.
-- Use `.agents/skills/ref-sp-agents-skills-authoring/SKILL.md` for authoring skills rather than top-level instruction files.
-- Use `.agents/skills/tool-sp-maintain-agents-instructions/SKILL.md` when the user wants a guided update workflow instead of just the reference guidance.
+- Use the repo's agent-persona skill (`ref-sp-agents-persona` here) when the instruction system needs to preserve or refresh the repo's agent voice, interaction style, or escalation stance.
+- Use the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here) for authoring skills rather than top-level instruction files.
+- Use the guided instruction-maintenance skill (`tool-sp-maintain-agents-instructions` here) when the user wants a guided update workflow instead of just the reference guidance.
 
 ## Major Provider References
 

@@ -2,11 +2,12 @@
 name: tool-sp-make-skill-shareable
 description: "Review an existing skill, decide whether it can be made shareable, and update its shareability metadata through a guided workflow. Use when: a skill lacks shareable-skills metadata, a user wants to export or symlink a skill, the current portability is unclear, or a repo-local skill might need to be split into a shared core."
 argument-hint: "Existing skill name or file path and whether the goal is to export it, link it globally, or just review portability"
+license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
   shareable-skills.requires: "ref-sp-agents-shareable-skills, ref-sp-agents-skills-authoring"
 ---
 
@@ -25,7 +26,7 @@ Guide the agent through reviewing an existing skill, deciding whether it should 
 
 ## First Step
 
-Read .agents/skills/ref-sp-agents-shareable-skills/SKILL.md and .agents/skills/ref-sp-agents-skills-authoring/SKILL.md before deciding whether the target skill can be exported cleanly.
+Read the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` here) and its skill-authoring skill (`ref-sp-agents-skills-authoring` here) — both `requires` dependencies — before deciding whether the target skill can be exported cleanly.
 
 ## Core Workflow
 
@@ -63,7 +64,7 @@ Ask only the questions that are still unanswered after reading the target skill.
 
 ## Validation
 
-- Review the result against .agents/skills/ref-sp-agents-shareable-skills/references/checklist.md.
+- Review the result against the sharing-spec skill's checklist (`ref-sp-agents-shareable-skills`; in this repo, its `references/checklist.md`).
 - Confirm the metadata keys stay within the spec's string-to-string model.
 - Confirm every dependency in `shareable-skills.requires` exists and is itself shareable.
-- Run `uv run agentic-tools skills link <name> --global --dry-run` once the linker CLI exists.
+- Run the repo's skill-linker dry-run once its linker CLI exists (in this repo, `uv run agentic-tools skills link <name> --global --dry-run`).

@@ -1,12 +1,13 @@
 ---
 name: tool-sp-create-skill
-description: "Create a new skill using this repo's skill-authoring standard. Use when: the user wants to add a new skill, scaffold a skill folder, turn repeated guidance into a skill, or run a guided wizard before writing skill files."
+description: "Create a new skill using the repo's skill-authoring standard. Use when: the user wants to add a new skill, scaffold a skill folder, turn repeated guidance into a skill, or run a guided wizard before writing skill files."
 argument-hint: "Skill goal, preferred name if known, whether the skill should be reference-style or tool-style, and any intended domain grouping"
+license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
   shareable-skills.requires: "ref-sp-agents-skills-authoring"
 ---
 
@@ -25,14 +26,14 @@ Guide the agent through a short skill-creation wizard so a new skill is scoped c
 
 ## First Step
 
-Read .agents/skills/ref-sp-agents-skills-authoring/SKILL.md before drafting the new skill.
+Read the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here, the `requires` dependency) before drafting the new skill.
 
 ## Core Workflow
 
 1. Inspect the user's request and the existing skill set to avoid creating an overlapping duplicate.
 2. Ask only the missing intake questions needed to define the skill boundary, name, trigger, outputs, and shareability.
 3. Decide whether the new skill is `ref-...` or `tool-...`. Refs put the domain in the name (`ref-sp-<domain>-<topic>`); tools use `tool-sp-<verb>-<topic>` and carry no domain.
-4. Choose one `domain` from the registry (`.agents/skills/ref-sp-agents-shareable-skills/references/registry.json`); open a registry issue rather than inventing an unregistered domain.
+4. Choose one `domain` from the sharing spec's domain registry (owned by `ref-sp-agents-shareable-skills`; its registry lives at that skill's `references/registry.json`); open a registry issue rather than inventing an unregistered domain.
 5. Decide `visibility` (`public` / `organization` / `repo-local`), and list any hard skill dependencies.
 6. Draft the smallest useful skill package.
 7. Add support files only when they improve progressive disclosure.
@@ -43,7 +44,7 @@ Read .agents/skills/ref-sp-agents-skills-authoring/SKILL.md before drafting the 
 - Default to one `SKILL.md` file first. Add `references/`, `assets/`, or `scripts/` only when the workflow genuinely needs them.
 - Default to `ref-...` when the skill mainly informs the agent. Default to `tool-...` when the skill mainly drives an action-oriented workflow the user may invoke directly.
 - Follow the name grammar: `ref-sp-<domain>-<topic>` (optional `-template` suffix for app blueprints) and `tool-sp-<verb>-<topic>`, such as `ref-sp-js-typescript`, `ref-sp-agents-security`, or `ref-sp-dev-repo-conventions`.
-- Set `metadata.shareable-skills.domain` to a registered domain. Use `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) for the current domain vocabulary; open a registry issue rather than inventing an unregistered domain.
+- Set `metadata.shareable-skills.domain` to a registered domain. Use the sharing spec's domain registry (owned by `ref-sp-agents-shareable-skills`; its registry lives at that skill's `references/registry.json`) for the current domain vocabulary; open a registry issue rather than inventing an unregistered domain.
 - Set `metadata.shareable-skills.visibility`: `public` for portable knowledge (add a top-level `license`), `organization` for org-wide but process-specific skills, `repo-local` when it depends on this repo's concrete layout, policies, or wrappers.
 - Record hard dependencies in `metadata.shareable-skills.requires` (comma-separated skill names); put soft/optional ones in `metadata.shareable-skills.suggests`.
 - Keep hard dependencies few, especially for exportable (`organization`/`public`) skills.
@@ -78,10 +79,10 @@ Ask only the questions that are still unanswered after reading the user's reques
 
 ## Validation
 
-- Review the draft against .agents/skills/ref-sp-agents-skills-authoring/references/checklist.md.
+- Review the draft against the skill-authoring skill's checklist (`ref-sp-agents-skills-authoring`; in this repo, its `references/checklist.md`).
 - Confirm the `name` matches the folder and follows the grammar (`ref-sp-<domain>-<topic>` or `tool-sp-<verb>-<topic>`).
 - Confirm `metadata.shareable-skills.domain` is a registered domain, `metadata.shareable-skills.visibility` is set (with a top-level `license` when `public`), and `metadata.shareable-skills.requires`/`.suggests` are comma-separated strings (metadata is string-to-string, not YAML lists).
-- Run the sharing-spec validator: `node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts <skill-dir>` (Node >= 22).
-- Confirm cross-skill references use repo-root-relative paths for skills in this repo.
+- Run the sharing-spec validator owned by `ref-sp-agents-shareable-skills` (in this repo, `node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts <skill-dir>`, Node >= 22).
+- Confirm cross-skill references use repo-root-relative paths for skills in the same repo.
 - Confirm generic examples use synthetic folder, feature, and script names rather than real names copied from another repo.
 - Run a targeted error check on the new files before concluding.

@@ -2,11 +2,12 @@
 name: tool-sp-handle-agents-local-tasks
 description: "Read the local `.agents/tasks/` workspace — the `TODO.md` notes list and the tracked task folders under `new/`, `open/`, `closed/` — choose the next actionable item, and work it through with code changes, validation, folder moves, and status updates. Use when: the user asks to check `.agents/tasks/TODO.md`, continue remaining local tasks, or process the repo's local agent-task backlog."
 argument-hint: "Optional task filter, whether to only triage or to execute tasks, and any stopping condition"
+license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
   shareable-skills.requires: "ref-sp-agents-local-tasks"
 ---
 
@@ -25,7 +26,7 @@ Guide the agent through reading the repo's local task workspace under `.agents/t
 
 ## First Step
 
-Read `.agents/skills/ref-sp-agents-local-tasks/SKILL.md`, then inspect `.agents/tasks/TODO.md` and the tracked task folders in `.agents/tasks/new/` and `.agents/tasks/open/` before planning or coding.
+Read the repo's local-tasks skill (`ref-sp-agents-local-tasks` here, the `requires` dependency), then inspect `.agents/tasks/TODO.md` and the tracked task folders in `.agents/tasks/new/` and `.agents/tasks/open/` before planning or coding.
 
 ## Core Workflow
 

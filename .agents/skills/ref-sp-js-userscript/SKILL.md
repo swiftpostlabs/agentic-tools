@@ -25,8 +25,8 @@ Provide portable defaults for userscripts that are resilient to DOM changes, sco
 ## Scope Boundaries
 
 - Use this skill when the code runs as a userscript on third-party pages and the metadata block, grants, or page integration rules dominate the design.
-- Use `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the browser code lives in an app you control rather than in a userscript manager.
-- Use `.agents/skills/ref-sp-js-javascript/SKILL.md` for plain JavaScript structure and JSDoc concerns that are not userscript-specific.
+- Use `ref-sp-js-web-standalone-template` when the browser code lives in an app you control rather than in a userscript manager.
+- Use `ref-sp-js-javascript` for plain JavaScript structure and JSDoc concerns that are not userscript-specific.
 
 ## Defaults
 

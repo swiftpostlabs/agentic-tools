@@ -40,7 +40,7 @@ Define how agent clients are prevented from reading sensitive files, how noisy o
 
 Read `./references/policy-workflow.md` for the command-oriented workflow and `./references/agent-enforcement.md` for the client-enforcement model.
 
-If you are working in this repository specifically, use `.agents/skills/ref-sp-agents-policy/SKILL.md` for the concrete `.agents/config.json` policy, `agentic-tools policy`, and generated-file implementation.
+If the repo ships a concrete policy-implementation skill, use it for the concrete policy file, sync command, and generated-file implementation (in this repo, `ref-sp-agents-policy` covers the `.agents/config.json` policy, `agentic-tools policy`, and generated files).
 
 ## Architecture Overview
 
@@ -95,4 +95,4 @@ The `.vscode/settings.json` approach maps protected patterns to a `copilot-restr
 
 - Read `./references/policy-workflow.md` when changing the policy source of truth, syncing outputs, or reviewing policy diffs.
 - Read `./references/agent-enforcement.md` when reviewing how the policy is enforced across Gemini, Claude Code, and GitHub Copilot.
-- Read `.agents/skills/ref-sp-agents-policy/SKILL.md` when you need this repository's concrete policy file location, command names, service-selection model, or generated output details.
+- Read the repo's concrete policy-implementation skill (in this repo, `ref-sp-agents-policy`) when you need that repo's concrete policy file location, command names, service-selection model, or generated output details.

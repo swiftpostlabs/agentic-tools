@@ -1,11 +1,12 @@
 ---
 name: ref-sp-agents-local-tasks
 description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace: a lightweight `TODO.md` notes list plus tracked task folders that move through `new/`, `open/`, and `closed/` lifecycle subfolders. Use when: reading or updating `.agents/tasks/TODO.md`, creating or moving a tracked task folder between `new/`, `open/`, and `closed/`, setting a task's frontmatter `status`, or checking whether local agent task notes still match the active work."
+license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
   shareable-skills.tags: "tasks"
 ---
 

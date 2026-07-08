@@ -26,9 +26,9 @@ Provide portable repository and feature-structure defaults that keep codebases m
 ## Scope Boundaries
 
 - Use this skill for portable structure decisions such as feature boundaries, shared-utility thresholds, and product-versus-maintenance separation.
-- Use `.agents/skills/ref-sp-dev-repo-conventions/SKILL.md` when the question is about this repository's exact top-level folders, `pyproject.toml`, or agent wiring.
-- Use `.agents/skills/ref-sp-py-python/SKILL.md`, `.agents/skills/ref-sp-js-javascript/SKILL.md`, or `.agents/skills/ref-sp-js-typescript/SKILL.md` when the question is about language-specific folder shapes.
-- Use `.agents/skills/ref-sp-js-web-standalone-template/SKILL.md` when the structure question is specific to a browser-only local app or mini-tool.
+- Use a repo-local conventions skill (in this repo, `ref-sp-dev-repo-conventions`) when the question is about a specific repository's exact top-level folders, `pyproject.toml`, or agent wiring.
+- Use `ref-sp-py-python`, `ref-sp-js-javascript`, or `ref-sp-js-typescript` when the question is about language-specific folder shapes.
+- Use `ref-sp-js-web-standalone-template` when the structure question is specific to a browser-only local app or mini-tool.
 
 ## Defaults
 
