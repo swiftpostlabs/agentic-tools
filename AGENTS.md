@@ -165,15 +165,19 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 When working on this project:
 
 1. **Start**: Pull latest changes and rebase.
-2. **Setup**: Run `uv sync` at the start of work and again after rebasing or dependency changes.
+2. **Setup**: Run `uv sync` (Python) and `yarn install` (JS/TS) at the start of work and again after rebasing or dependency changes. Install whichever toolchains cover the code you will touch.
 3. **Implement**: Follow the owning skill for the area you are touching.
-4. **Validate**: Run lint, type-checking, and tests before committing.
+4. **Validate**: Before committing, run the validators for the toolchain you touched — `uv run poe lint/typecheck/test` for Python, `yarn lint/typecheck/test` for JS/TS, and `yarn validate` when you changed a skill under `.agents/skills/`.
 5. **Commit**: Keep commits small and focused.
 6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. Summarize the result to the user and ask if they want the guidance updated. If yes, update the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
 
 ## Quick Commands
 
-- `uv sync` — Install or refresh dependencies.
+This is a mixed repo: the Python code is managed with `uv` (and Poe tasks), and the JS/TS code plus the skill validators are managed with `yarn` (Node >= 22). Use the toolchain that matches the files you are touching.
+
+### Python (uv / Poe)
+
+- `uv sync` — Install or refresh Python dependencies.
 - `uv run poe test` — Run tests.
 - `uv run poe test-focused <path> [<path> ...]` — Run tests only for the touched slice.
 - `uv run poe lint` — Check formatting.
@@ -187,8 +191,19 @@ When working on this project:
 - `uv run agentic-tools policy sync` — Regenerate agent config from `.agents/config.json`.
 - `uv run agentic-tools policy import-vscode` — Import VS Code approvals into policy, then sync.
 
-Use the Poe validation tasks above as the default way to run tests, lint, and type-checking in this repo. Only call the underlying tools directly when a task needs flags or behavior that the Poe wrapper does not expose.
-For iterative post-edit validation, prefer `uv run poe test-focused`, `uv run poe lint-focused`, and `uv run poe typecheck-focused` on the touched files or folders first, then run the full repo-wide Poe validation tasks before committing.
+### JS/TS and skills (yarn, Node >= 22)
+
+- `yarn install` — Install or refresh JS/TS dependencies.
+- `yarn test` — Run the Jest test suite.
+- `yarn typecheck` — Type-check the Node/TS sources.
+- `yarn lint` — Syntax-check the JS entrypoints.
+- `yarn validate:skills` — Validate every skill against the Agent Skills structure and quality rules. Canonical skill-quality check.
+- `yarn validate:sharing` — Validate every skill against the sharing spec (naming, domain, visibility, dependencies). Canonical sharing-spec check.
+- `yarn validate` — Run both `validate:skills` and `validate:sharing`.
+
+Use the Poe tasks as the default way to run tests, lint, and type-checking for the Python code. Only call the underlying tools directly when a task needs flags or behavior that the Poe wrapper does not expose.
+For iterative post-edit validation of Python, prefer `uv run poe test-focused`, `uv run poe lint-focused`, and `uv run poe typecheck-focused` on the touched files or folders first, then run the full repo-wide Poe validation tasks before committing.
+After editing any skill under `.agents/skills/`, validate it with `yarn validate:skills` and `yarn validate:sharing` (or `yarn validate` for both) before committing. These are the canonical skill validators; the underlying `.mts` scripts require Node >= 22, so run them under a matching Node (for example via `nvm use 22`).
 
 ## Asking for Help
 
