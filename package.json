@@ -31,7 +31,8 @@
     "validate": "node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts .agents/skills --all && node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
     "check:drift": "node .agents/skills/ref-sp-agents-shareable-skills/scripts/check-vendored-drift.mts .agents/skills",
     "lint": "node --check scripts/agentic-tools.mjs && node --check src/agentic_tools_old/main.mjs && node --check src/agentic_tools_old/utils/common.mjs && node --check src/agentic_tools_old/agents_policy/main.mjs && node --check src/agentic_tools_old/agents_policy/main.test.mjs && node --check src/agentic_tools_old/skills_management/main.mjs && node --check src/agentic_tools_old/skills_management/main.test.mjs && node --check src/agentic_tools_old/main.test.mjs",
-    "pack": "npm pack --dry-run"
+    "pack": "npm pack --dry-run",
+    "playwright": "playwright-cli"
   },
   "dependencies": {
     "citty": "^0.2.2",
@@ -40,6 +41,7 @@
   "devDependencies": {
     "@types/node": "^24.10.1",
     "jest": "^30.2.0",
+    "@playwright/cli": "^0.1.17",
     "typescript": "^5.9.3"
   },
   "engines": {
