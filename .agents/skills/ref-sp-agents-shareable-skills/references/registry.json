@@ -95,7 +95,9 @@
     "database",
     "deploy",
     "aws",
-    "hooks"
+    "hooks",
+    "browser",
+    "automation"
   ],
   "domainAliases": {
     "app": "js",
