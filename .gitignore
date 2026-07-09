@@ -6,6 +6,9 @@
 node_modules/
 *.tgz
 
+# playwright-cli local session/snapshot data
+/.playwright/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
