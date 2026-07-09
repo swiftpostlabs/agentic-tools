@@ -160,7 +160,7 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-sp-agents-local-tasks`** — Maintain local agent task tracking under `.agents/tasks/`
 - Use when: a task needs local planning, temporary task notes, or structured tracking under `.agents/tasks/`
 
-**`tool-sp-automate-browser`** — Drive a real browser from the terminal via `playwright-cli`
+**`ref-sp-dev-playwright-cli`** — Drive a real browser from the terminal via `playwright-cli`
 - Use when: verifying a UI change in a real browser, debugging page console/network/DOM state, running or debugging Playwright tests, recording video/traces, or gathering live UI/design feedback from the user
 
 ## Workflow

@@ -1,5 +1,5 @@
 ---
-name: tool-sp-automate-browser
+name: ref-sp-dev-playwright-cli
 description: "Automate browser interactions, test web pages, and work with Playwright tests via the playwright-cli terminal tool. Use when: driving a real browser from the command line (open/goto/click/fill/snapshot), debugging a page's console/network/DOM, running or debugging Playwright tests, recording video or traces of a session, or asking the user for live UI/design feedback."
 license: Apache-2.0
 allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*) Bash(yarn:*)
