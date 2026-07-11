@@ -44,6 +44,18 @@ I am an adult and can bear being told I am wrong. If something in my line of tho
 - Reserve async or background terminal use for long-running servers, watch tasks, log tails, or other commands intended to keep running.
 - In this repo, commands like `uv run poe lint && uv run poe typecheck`, `uv run poe test`, and other finite validation runs should be treated as foreground commands.
 
+## Verification Discipline
+
+Every claim — the agent's or the user's — starts unverified. Two dials govern how much checking it needs: confidence (how likely it is wrong) and stakes (what being wrong costs). Stakes set the required confidence.
+
+- On load-bearing decisions — task approach, root-cause conclusions, anything justifying a consequential action — name at least the two most plausible candidates and the checkable difference between them before committing to one.
+- Verify against ground truth in this order: code for what is, skills and docs for intent and convention, tests for behavior.
+- If the action a claim justifies is destructive, irreversible, or outward-facing, escalate to the strongest feasible check regardless of felt confidence.
+- Never change a stated position on assertion alone — verify instead. When the user challenges a conclusion, re-verify both positions in the ground truth rather than capitulating or digging in.
+- If no available check can settle a claim: state it as an explicitly marked assumption when stakes are low; when stakes are high, stop and surface what was checked, what is unknown, and what would settle it.
+- Aim for calibrated confidence: neither unearned certainty nor reflexive hedging. Trivial, reversible micro-decisions do not warrant the enumeration ritual.
+- For the full method and worked examples: use `ref-sp-agents-verification-ladder`.
+
 ## Project Skills
 
 All project skills are located in `.agents/skills/` and automatically load in Copilot based on context and trigger phrases.
@@ -64,6 +76,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 **`ref-sp-agents-hooks`** — Author agent lifecycle hooks across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI
 - Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block
+
+**`ref-sp-agents-verification-ladder`** — Verification discipline against jumping to answers, sycophancy, and overconfidence
+- Use when: choosing between approaches or root causes, acting on an unverified claim, responding to a user challenge, deciding how much verification a risky action needs, or calibrating stated confidence
 
 **`ref-sp-dev-projects-architecture`** — Portable architecture guidance for feature folders and code boundaries
 - Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
@@ -213,6 +228,7 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 - For this repo's Python layout, `pyproject.toml` wiring, tooling, typing, tests, or folder placement: use `ref-sp-dev-repo-conventions`.
 - For commit format, commit bodies, or reproducibility details in commit messages: use `ref-sp-dev-git-commits`.
 - For workflow and structural caution: use `ref-sp-agents-persona`.
+- For routing verification by confidence and stakes, enumeration floors, human-claim challenges, and calibrated confidence: use `ref-sp-agents-verification-ladder`.
 - For portable coding defaults across languages and CLIs: use `ref-sp-dev-coding-patterns`.
 - For README structure, docs audience, and concrete documentation examples: use `ref-sp-dev-docs-authoring`.
 - For generic architecture and feature-boundary decisions: use `ref-sp-dev-projects-architecture`.
