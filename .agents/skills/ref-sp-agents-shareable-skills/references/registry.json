@@ -97,7 +97,11 @@
     "aws",
     "hooks",
     "browser",
-    "automation"
+    "automation",
+    "verification",
+    "calibration",
+    "sycophancy",
+    "overconfidence"
   ],
   "domainAliases": {
     "app": "js",
