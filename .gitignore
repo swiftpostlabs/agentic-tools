@@ -8,6 +8,7 @@ node_modules/
 
 # playwright-cli local session/snapshot data
 /.playwright/
+/.playwright-cli/
 
 
 # Byte-compiled / optimized / DLL files
