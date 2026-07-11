@@ -75,6 +75,7 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Comment why, constraints, invariants, or business context.
 - Do not comment what the code already says clearly.
 - Add comments when a rule is externally imposed, legally required, surprising, or easy to break during refactors.
+- Treat a comment's assertion as a claim, not decoration: verify a stated invariant or safety condition (such as "safe because X") against the code before writing it as fact.
 
 ### CLI ergonomics
 
