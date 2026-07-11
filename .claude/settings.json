@@ -9,6 +9,9 @@
       "Read(credentials.json)",
       "Read(secrets/)",
       "Read(internal-config.yml)"
+    ],
+    "ask": [
+      "Artifact"
     ]
   }
 }
