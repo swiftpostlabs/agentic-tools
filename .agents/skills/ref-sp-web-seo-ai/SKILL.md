@@ -1,14 +1,14 @@
 ---
 name: ref-sp-web-seo-ai
-description: "Visibility in AI answers — Google AI Overviews and AI Mode, and assistants like ChatGPT, Claude, and Perplexity: how they retrieve and cite pages, how to control AI crawler access, how AI surfaces distort your Search Console numbers, and which GEO tactics are defensible versus speculative. Use when: asked how to rank or get cited in AI search, AI Overviews, or chatbots, asked about GEO or answer-engine optimization, deciding whether to allow or block GPTBot, ClaudeBot, PerplexityBot, or Google-Extended, or diagnosing falling clicks while impressions hold steady."
+description: "Visibility in AI answers — Google AI Overviews and AI Mode, and assistants like ChatGPT, Claude, and Perplexity: how they retrieve and cite pages, how to control AI crawler access, how AI surfaces distort your Search Console numbers, and which GEO advice is defensible versus speculative. Use when: asked how to rank, appear, or get cited in AI search, AI Overviews, or chatbots; asked about GEO, AEO, or answer-engine optimization; deciding whether to allow or block AI crawlers (GPTBot, ClaudeBot, Claude-User, PerplexityBot, Google-Extended, CCBot), or whether to opt out of AI training; writing robots.txt rules for AI bots; or diagnosing falling clicks while impressions hold steady."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "web"
-  shareable-skills.tags: "browser"
+  shareable-skills.tags: "browser, verification"
   shareable-skills.visibility: "public"
-  shareable-skills.suggests: "ref-sp-web-seo, ref-sp-web-marketing"
+  shareable-skills.suggests: "ref-sp-web-seo, ref-sp-web-marketing, ref-sp-dev-playwright-cli"
 ---
 
 # AI Search Visibility
@@ -39,9 +39,14 @@ optimization guide, neither of which existed in the docs the draft was built fro
 
 - Asked how to "rank in ChatGPT", "show up in AI Overviews", or "get cited by AI".
 - Asked about GEO (Generative Engine Optimization) or AEO (Answer Engine Optimization).
-- Deciding whether to allow or block AI crawlers in `robots.txt`.
+- Deciding whether to allow or block AI crawlers in `robots.txt`, or **whether to opt out of AI
+  training** — three separate decisions that most people collapse into one.
 - Clicks are falling while impressions hold steady, or CTR dropped with no ranking change.
 - A stakeholder is proposing an AI-search content strategy and wants it sanity-checked.
+
+**Route elsewhere when:** the question is ordinary technical SEO — indexing, canonicals, rendering,
+Core Web Vitals (`.agents/skills/ref-sp-web-seo/SKILL.md`). Note that per Google *and* Bing, ordinary
+SEO **is** the AI-visibility lever, so that skill will often be the real answer.
 
 ## The honest position, stated first
 
@@ -142,23 +147,38 @@ These are checkable, and they are the whole of the defensible baseline.
 
 This is a real decision with a real trade-off, and the owner — not the agent — must make it.
 
-| Crawler | Operator | What it actually does |
-| --- | --- | --- |
-| `GPTBot` | OpenAI | Crawls for **training** foundation models |
-| `OAI-SearchBot` | OpenAI | Crawls for **ChatGPT search**. Block this and you disappear from ChatGPT's search answers |
-| `ChatGPT-User` | OpenAI | **User-initiated** fetches — someone asked ChatGPT to look at a page. Not automatic crawling |
-| `OAI-AdsBot` | OpenAI | Validates pages submitted as ChatGPT ads; not used for training |
-| `ClaudeBot` | Anthropic | Crawling for Claude |
-| `PerplexityBot` | Perplexity | Perplexity answers and citations |
-| `Google-Extended` | Google | AI training and grounding in Google's *other* systems (e.g. Gemini) |
-| `CCBot` | Common Crawl | A corpus many models train on |
+**Every major operator splits its bots into three jobs.** Learn the pattern, not the list — the names
+change, the three jobs do not. These are **three separate decisions**, and conflating them is the most
+common and most damaging mistake in this whole area.
 
-**These are four different decisions, not one.** The most common error is a blanket `Disallow` for
-every AI user-agent, which quietly does three unrelated things: opts out of model training (maybe
-intended), removes you from ChatGPT search results (usually not intended), and **breaks a user's
-ability to have the assistant read a page they explicitly pasted** (almost never intended —
-`ChatGPT-User` is not a crawler; it is a person asking). Separate training from retrieval from
-user-initiated fetching, and ask which the owner actually wants to stop.
+| Job | What blocking it costs you | OpenAI | Anthropic | Perplexity | Google | Common Crawl |
+| --- | --- | --- | --- | --- | --- | --- |
+| **Training** — builds the model | Your content is not used to train. Costs you nothing in visibility. | `GPTBot` | `ClaudeBot` | — | `Google-Extended` | `CCBot` |
+| **Search / retrieval** — indexes you so the assistant can cite you | **You disappear from that assistant's answers.** Usually not what the owner wants. | `OAI-SearchBot` | `Claude-SearchBot` | `PerplexityBot` | `Googlebot` (AI Overviews and AI Mode ride on ordinary Search) | — |
+| **User-initiated** — a person asked the assistant to read *this page* | **You break a user who explicitly pasted your link.** Almost never intended. | `ChatGPT-User` | `Claude-User` | `Perplexity-User` | — | — |
+
+(OpenAI also runs `OAI-AdsBot`, which validates pages submitted as ChatGPT ads and is not used for
+training.)
+
+**The default mistake:** a blanket `Disallow` for every AI user-agent. It reads as one decision and is
+actually three — opting out of training (often intended), vanishing from AI answers (usually not), and
+breaking users who deliberately handed the assistant your URL (essentially never). Ask the owner which
+of the three they want, then write the rules for that.
+
+**Two hard limits on what `robots.txt` can do here:**
+
+- **`robots.txt` is a request, not enforcement** (RFC 9309). Well-behaved crawlers honour it; nothing
+  else does. If the requirement is really "prevent unauthorized use," this is not the control — and
+  saying otherwise gives the owner false comfort.
+- **User-initiated fetchers may ignore it by design.** Perplexity documents that `Perplexity-User`
+  "generally ignores robots.txt rules" because a human initiated the request. So you **cannot** rely
+  on `robots.txt` to stop a person pasting your URL into an assistant. Do not promise an owner that
+  you can.
+
+**Verify the tokens before you write them.** These names change and operators add new bots without
+announcement — Anthropic runs three where most people know one. A misspelled or retired user-agent in
+a `robots.txt` is a silent no-op: it blocks nothing and nobody tells you. Current tokens and their
+sources are in `./references/sources.md`.
 
 The trade-off to put to the user: **blocking protects your content from being used; it also removes
 you from the answers.** You cannot be cited by a system you refuse to let read you. There is no

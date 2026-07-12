@@ -69,13 +69,31 @@ The user-agent names in SKILL.md's crawler table. These are the operators' own d
 central registry, and operators add and rename crawlers without notice. **Re-fetch before advising a
 `robots.txt` change** — a stale user-agent string in a `robots.txt` is a silent no-op.
 
-| Crawler | Operator documentation | Verified |
-| --- | --- | --- |
-| `GPTBot`, `OAI-SearchBot`, `ChatGPT-User`, `OAI-AdsBot` | <https://developers.openai.com/api/docs/bots> | 2026-07-12 |
-| `ClaudeBot` | <https://support.anthropic.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler> | 2026-07-12 |
-| `PerplexityBot` | <https://docs.perplexity.ai/guides/bots> | 2026-07-12 |
-| `Google-Extended` (token reference) | <https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers> | 2026-07-12 |
-| `CCBot` | <https://commoncrawl.org/ccbot> | 2026-07-12 |
+All rows below were **content-read**, not merely status-checked: each operator's page was fetched and
+its user-agent tokens confirmed in the text.
+
+| Operator | Documented tokens | Source | Verified |
+| --- | --- | --- | --- |
+| OpenAI | `GPTBot` (training), `OAI-SearchBot` (ChatGPT search), `ChatGPT-User` (user-initiated), `OAI-AdsBot` (ad validation) | <https://developers.openai.com/api/docs/bots> | 2026-07-12 |
+| Anthropic | `ClaudeBot` (training), `Claude-SearchBot` (search quality), `Claude-User` (user-initiated) | <https://support.claude.com/en/articles/8896518-does-anthropic-crawl-data-from-the-web-and-how-can-site-owners-block-the-crawler> | 2026-07-12 |
+| Perplexity | `PerplexityBot` (automatic, for search inclusion), `Perplexity-User` (user-initiated — **"generally ignores robots.txt rules"**) | <https://docs.perplexity.ai/guides/bots> | 2026-07-12 |
+| Google | `Google-Extended` (training/grounding in Google's *other* systems; **not** Search ranking, **not** AI Overviews) | <https://developers.google.com/search/docs/appearance/ai-features> | 2026-07-12 |
+| Common Crawl | `CCBot` — respects `robots.txt`, offers a separate opt-out registry, and is verifiable by reverse DNS (`*.crawl.commoncrawl.org`) | <https://commoncrawl.org/ccbot> | 2026-07-12 |
+
+**What reading these actually changed** — a record of why "resolves" is not "verified":
+
+- **Anthropic runs three crawlers, not one.** The table previously listed only `ClaudeBot`, missing
+  `Claude-User` and `Claude-SearchBot` entirely. Advice based on the old table would have left two
+  bots unaddressed.
+- **Anthropic's documentation moved** from `support.anthropic.com` to `support.claude.com` (301).
+- **`Perplexity-User` generally ignores `robots.txt`.** This is documented by Perplexity itself and it
+  breaks the assumption underneath most crawler-blocking advice: you cannot use `robots.txt` to stop a
+  human pasting your URL into an assistant. Any advice promising otherwise is wrong.
+- The three-job pattern (training / search / user-initiated) only became visible once all the pages
+  were read. It is the durable model; the token names are not.
+
+**Still assume incompleteness.** Operators ship new bots without announcement. Re-read these pages
+before advising a `robots.txt` change — a misspelled or retired user-agent is a silent no-op.
 
 **Two live examples of why this table exists**, both found while writing it:
 

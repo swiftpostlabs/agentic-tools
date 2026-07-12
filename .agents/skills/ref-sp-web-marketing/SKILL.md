@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-marketing
-description: "Measure web marketing honestly: why the 'Direct' channel is a garbage bucket, how dark social destroys referrer data, when a conversion-rate difference is noise rather than signal, and how to recover attribution you cannot track. Use when: reading a traffic, channel, or conversion report, being asked which channel is working or where to spend budget, interpreting a conversion-rate change or a campaign result, analyzing analytics from Google Analytics, Wix, Shopify, or similar, or judging whether a marketing claim is supported by the data behind it."
+description: "Measure web marketing honestly: why 'Direct' is a bucket of lost origins rather than a channel, how dark social destroys referrer data, when a conversion difference is noise rather than signal, and how to recover attribution you cannot track. Use when: reading a traffic, channel, or conversion report; asked which channel is working or where to spend budget; asked why Direct traffic is so high; interpreting a conversion-rate change, a campaign result, or a traffic spike; setting up UTM tags or self-reported attribution; analyzing analytics from Google Analytics, Wix, Shopify, or similar; or judging whether a marketing claim is supported by the data behind it."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"

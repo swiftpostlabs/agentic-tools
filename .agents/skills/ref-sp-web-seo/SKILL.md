@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-seo
-description: "Audit a website's SEO from what is actually observable — served and rendered HTML, robots.txt, sitemaps, canonicals, metadata, structured data, Core Web Vitals — separate that from the performance data only Search Console can answer, and design valid before/after tests for SEO changes. Use when: asked to check or improve a site's SEO, diagnose why pages are not indexed or not appearing in search, review titles, canonicals, or structured data, debug why Googlebot cannot see JavaScript-rendered content, interpret a Lighthouse or Core Web Vitals report, judge whether an SEO change actually worked, or assess content quality against Google's rater framework."
+description: "Audit a website's SEO from what is actually observable — served and rendered HTML, robots.txt, sitemaps, canonicals, titles, structured data, Core Web Vitals — separate that from the performance data only Search Console can answer, and design before/after tests that mean something. Use when: asked to check, audit, or improve a site's SEO; diagnosing why pages are not indexed, not ranking, or why organic traffic dropped; reviewing robots.txt, sitemaps, canonicals, titles, or structured data; debugging why a crawler cannot see JavaScript-rendered content, or SEO in a Next.js, SSR, or static-export app; interpreting a Lighthouse or Core Web Vitals report; judging whether an SEO change actually worked; weighing an SEO claim from a leak, a vendor, or a blog; or assessing content quality against Google's rater framework."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -45,13 +45,20 @@ request.
 ## When to use this skill
 
 - Asked to "check the SEO" of a site, page, or app.
-- A page is not indexed, not ranking, or disappeared from search results.
-- Reviewing titles, meta descriptions, canonicals, `hreflang`, or structured data.
+- A page is not indexed, not ranking, or disappeared from search results — **or organic traffic
+  dropped** and nobody knows why.
+- Reviewing `robots.txt`, sitemaps, titles, meta descriptions, canonicals, `hreflang`, or structured
+  data.
+- A crawler cannot see JavaScript-rendered content, or the site is a Next.js / SSR / static-export app
+  and metadata or indexing is behaving oddly.
 - Interpreting a Lighthouse run or Core Web Vitals numbers.
 - Deciding whether an SEO change worked, or how to measure one before shipping it.
-- Reading a traffic or conversion report where "Direct" is a large channel.
 - Weighing an SEO claim sourced from a leak, a vendor, or a conference talk.
 - Judging whether a page's *content* is good enough to rank (load `./references/content-quality.md`).
+
+**Route elsewhere when:** the question is about AI answers or AI crawlers
+(`.agents/skills/ref-sp-web-seo-ai/SKILL.md`), or about traffic sources, channels, and conversions —
+including a large "Direct" bucket (`.agents/skills/ref-sp-web-marketing/SKILL.md`).
 
 ## First: separate what you can see from what you cannot
 
@@ -222,8 +229,14 @@ Two neighbouring concerns have their own skills. Hand off rather than duplicatin
 SEO has more confident folklore than almost any technical field, and users will bring you claims
 sourced from leaks, conference talks, and agency blogs. Apply a consistent standard.
 
-**The May 2024 Google leak** (≈2,500 internal API documents; Google confirmed their authenticity but
-cautioned that they may be out-of-context, outdated, or incomplete) is the case that comes up most.
+**The May 2024 Google leak** is the case that comes up most. The facts, so you can correct the myths
+around them: internal Content Warehouse API documentation — **2,596 modules describing 14,014
+attributes** — was committed to a public GitHub repository by an automated bot and surfaced in May
+2024. Google **confirmed the documents were authentic** (29 May 2024) while cautioning, verbatim:
+
+> "We would caution against making inaccurate assumptions about Search based on out-of-context,
+> outdated, or incomplete information."
+
 Treat it correctly:
 
 - **It shows which attributes exist. It does not show their weight, whether they are used in

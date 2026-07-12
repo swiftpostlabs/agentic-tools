@@ -112,7 +112,7 @@ summary in `./content-quality.md` wholesale — do not patch it claim by claim.
 
 | Claim | Source | Verified |
 | --- | --- | --- |
-| The May 2024 leak: ~2,500 internal API documents, authenticity confirmed, Google cautioned they may be out-of-context, outdated, or incomplete | A fixed historical event — **does not rot.** The *interpretation rule* in SKILL.md is method, not a dated fact. | n/a |
+| The May 2024 leak: Content Warehouse API docs — **2,596 modules, 14,014 attributes** — committed to a public GitHub repo by a bot; Google confirmed authenticity 29 May 2024 while cautioning against "inaccurate assumptions… based on out-of-context, outdated, or incomplete information" | [2024 Google Search documentation leak (Wikipedia)](https://en.wikipedia.org/wiki/2024_Google_Search_documentation_leak) — event facts and Google's statement; [SparkToro / Rand Fishkin](https://sparktoro.com/blog/an-anonymous-source-shared-thousands-of-leaked-google-search-api-documents-with-me-everyone-in-seo-should-see-them/) — the recipient's own account | 2026-07-12 |
 | Core and spam update history, used to rule out the algorithm-update confounder | [Search Status Dashboard](https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history) — live; consult per test, never cache | 2026-07-12 |
 | Split-testing, control groups, lag, confounders, leading vs lagging metrics | **Method, not citation.** Ordinary experimental design. It needs no vendor to confirm it and cannot go stale. | n/a |
 
