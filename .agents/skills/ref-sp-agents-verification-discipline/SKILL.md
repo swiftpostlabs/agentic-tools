@@ -1,12 +1,13 @@
 ---
 name: ref-sp-agents-verification-discipline
 description: "Portable verification discipline that counters jumping to answers, sycophancy, and overconfidence: enumerate candidate approaches or root causes, route verification by confidence and stakes, prune on evidence, abstain explicitly when nothing can settle a claim. Use when: choosing between approaches or root causes, acting on an unverified claim or assumption, responding when the user challenges or contradicts a conclusion, deciding how much verification a risky or irreversible action needs, or calibrating stated confidence in answers, reviews, and reports."
+license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
   shareable-skills.tags: "verification, calibration, sycophancy, overconfidence"
-  shareable-skills.visibility: "organization"
+  shareable-skills.visibility: "public"
   shareable-skills.suggests: "ref-sp-agents-mr-wolf-persona"
 ---
 
