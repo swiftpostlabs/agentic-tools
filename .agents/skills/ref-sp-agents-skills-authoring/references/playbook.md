@@ -58,7 +58,7 @@ Pick the skill name only after you know whether the skill is primarily reference
 
 - Use `ref-...` when the skill mainly explains a domain, repo convention, workflow model, or decision surface.
 - Use `tool-...` when the skill mainly tells the agent how to perform an action-oriented workflow that the user may invoke directly.
-- Make `tool-...` names sound like actions, such as `tool-sp-adopt-these-skills`, not passive topic labels.
+- Make `tool-...` names sound like actions, such as `tool-sp-create-skill` or `tool-sp-maintain-skills`, not passive topic labels. Avoid deictic words like "these" or "this" in a name — they do not resolve outside the repo the skill came from.
 - Do not use `tool-...` just because the skill mentions commands. If the skill mainly informs the agent when interpreting or reviewing something, it still belongs under `ref-...`.
 
 ## What Belongs In `SKILL.md`

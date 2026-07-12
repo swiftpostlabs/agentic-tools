@@ -175,14 +175,6 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: writing or reviewing `.user.js` or `.user.ts` scripts, metadata blocks, permissions, or page automation
 
-**`tool-sp-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
-
-- Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
-
-**`tool-sp-export-skills`** — Export selected skills from this repo for repos, AI handoffs, and Gems
-
-- Use when: choosing which skills can leave this repo, preparing a handoff, or packaging a skill set for another environment, AI conversation, or Gemini Gem
-
 **`tool-sp-create-skill`** — Guided wizard for creating a new skill
 
 - Use when: the user wants to add a new skill or scaffold one through a guided intake flow
@@ -214,6 +206,10 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-sp-dev-playwright-cli`** — Drive a real browser from the terminal via `playwright-cli`
 
 - Use when: verifying a UI change in a real browser, debugging page console/network/DOM state, running or debugging Playwright tests, recording video/traces, or gathering live UI/design feedback from the user
+
+**`ref-sp-seo-audit`** — Audit a site's SEO from observable evidence, and design SEO tests that mean something
+
+- Use when: checking or improving a site's SEO, diagnosing why pages are not indexed or not ranking, reviewing titles, canonicals, or structured data, interpreting Core Web Vitals, or judging whether an SEO change actually worked
 
 ## Workflow
 
@@ -293,10 +289,10 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 - For browser userscripts: use `ref-sp-js-userscript`.
 - For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-sp-js-deno`.
 - For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-baas-supabase`.
+- For auditing a site's SEO, indexing and crawl diagnosis, Core Web Vitals, content quality against Google's rater framework, or designing a valid before/after SEO test: use `ref-sp-seo-audit`.
 - For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
-- For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, a Gemini Gem, or a published plugin marketplace: use `tool-sp-export-skills`.
-- For packaging skills as an agent plugin, writing `plugin.json` or `marketplace.json`, hosting a marketplace, reaching Claude Code, Copilot CLI, and VS Code users from one repo, or releasing and updating a published plugin: use `ref-sp-agents-plugin-marketplaces`.
+- For getting this repo's skills into another repo — packaging them as an agent plugin, writing `plugin.json` or `marketplace.json`, hosting a marketplace, reaching Claude Code, Copilot CLI, and VS Code users from one repo, or releasing and updating a published plugin: use `ref-sp-agents-plugin-marketplaces`. For consuming them in a repo that links skills from a source, use `ref-sp-agents-skills-management`.
 - For creating a new skill through a guided intake flow: use `tool-sp-create-skill`.
 - For refreshing `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-sp-maintain-agents-instructions`.
 - For refreshing project skills after repo or branch changes: use `tool-sp-maintain-skills`.
