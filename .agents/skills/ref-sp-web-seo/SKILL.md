@@ -1,22 +1,39 @@
 ---
-name: ref-sp-seo-audit
-description: "Audit a website's SEO from what is actually observable — served and rendered HTML, robots.txt, sitemaps, canonicals, metadata, structured data, Core Web Vitals — separate that from the performance data only Search Console can answer, and design valid before/after tests for SEO changes. Use when: asked to check or improve a site's SEO, diagnose why pages are not indexed or not appearing in search, review titles, canonicals, or structured data, interpret a Lighthouse or Core Web Vitals report, judge whether an SEO change actually worked, or assess content quality against Google's rater framework."
+name: ref-sp-web-seo
+description: "Audit a website's SEO from what is actually observable — served and rendered HTML, robots.txt, sitemaps, canonicals, metadata, structured data, Core Web Vitals — separate that from the performance data only Search Console can answer, and design valid before/after tests for SEO changes. Use when: asked to check or improve a site's SEO, diagnose why pages are not indexed or not appearing in search, review titles, canonicals, or structured data, debug why Googlebot cannot see JavaScript-rendered content, interpret a Lighthouse or Core Web Vitals report, judge whether an SEO change actually worked, or assess content quality against Google's rater framework."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
-  shareable-skills.domain: "seo"
+  shareable-skills.domain: "web"
   shareable-skills.tags: "testing, browser"
   shareable-skills.visibility: "public"
-  shareable-skills.suggests: "ref-sp-dev-playwright-cli"
+  shareable-skills.suggests: "ref-sp-dev-playwright-cli, ref-sp-web-seo-ai, ref-sp-web-marketing"
 ---
 
-# SEO Audit
+# Web SEO
 
 ## Purpose
 
 Audit a site's SEO using evidence you can actually obtain, state plainly which questions cannot be
 answered without the owner's Search Console data, and design SEO tests whose results mean something.
+
+## This file goes stale in months, not years
+
+Search changes faster than almost anything else this repo documents, and the AI surfaces are changing
+faster still. **Treat every vendor-specific claim below as dated, not permanent.** Content here was
+verified **2026-07-12**; a specific that is more than a few months old has a real chance of being
+wrong, and stating it confidently is worse than looking it up.
+
+What is durable: the crawl → render → index → rank → measure pipeline, the observable/not-observable
+split, the claim-tiering rule, and the test-design discipline. Those are method, and method holds.
+
+What rots: thresholds, report names, which directives Google honours, what Search Console exposes,
+and anything about AI answers. Before asserting one of those, check "Sources" — and check the Search
+Central blog, which is the earliest signal that something moved.
+
+This is not boilerplate caution. A freshness pass on this skill's own first draft found two claims
+that had already been superseded within weeks of being written.
 
 ## When to use this skill
 
@@ -99,7 +116,7 @@ project.
 | `curl -sS -A '<googlebot-ua>' <url>` | The served HTML. | This is what a non-rendering crawler indexes. | Right after the header check. | Title and body copy present in source, not just an empty app shell. |
 | `curl -sS <origin>/robots.txt` | Crawl directives and sitemap pointers. | One `Disallow: /` here overrides every other optimization on the site. | Before any page-level work. | Production is crawlable; a `Sitemap:` line is present. |
 | Check `robots.txt` for AI crawler user-agents (`GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, and others). | Whether AI assistants may crawl the site. | Sites block these deliberately or by copy-pasted default; either way the owner should know, because it decides whether the site can be cited by assistants at all. | Whenever the user cares about visibility in AI answers. | The allow/block state is intentional and the user has confirmed it. |
-| `curl -sS <origin>/sitemap.xml` | The declared canonical URL set. | Sitemap URLs must be indexable, canonical, and `200`; mismatches confuse selection. | When auditing a site rather than one page. | Sitemap URLs match the canonicals the pages declare. |
+| `curl -sS <origin>/sitemap.xml` | The declared canonical URL set. | Sitemap URLs must be indexable, canonical, absolute, and `200`; mismatches confuse selection. Hard limits: 50MB uncompressed and 50,000 URLs per file — split via a sitemap index beyond that. | When auditing a site rather than one page. | Sitemap URLs match the canonicals the pages declare. |
 | Render the page and dump the DOM + console, via `.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`. | The post-JS DOM and any JS errors. | Distinguishes "content missing from HTML" from "content missing entirely". | Whenever the served HTML looks like an empty shell. | Rendered DOM has the content; no errors that abort rendering. |
 | `npx lighthouse <url> --only-categories=seo,performance --output=json --quiet` | A lab audit. | Cheap lint for obvious on-page misses plus a lab performance baseline. | After crawl/index checks, never before. | A list of concrete defects — hints, not a score to chase. |
 
@@ -118,61 +135,50 @@ A local Lighthouse run is **lab** data from one machine on one network. The asse
 uses **field** data from real users (CrUX, surfaced in Search Console). A green lab score alongside a
 failing field score is common, and the field score is the one that counts.
 
-## AI answers, and what they do to your data
+**Do not oversell this.** There is no single "page experience signal," and relevance dominates:
+Google states that Search "always seeks to show the most relevant content, even if the page
+experience is sub-par," and that good Core Web Vitals "doesn't guarantee that your pages will rank at
+the top." Page experience contributes when there is lots of comparable helpful content — a
+tiebreaker, not a lever, and not a penalty. Anyone framing Core Web Vitals as an "algorithmic
+penalty" you must avoid is wrong.
 
-AI Overviews and AI Mode change how a page earns a visit, and — more importantly for an auditor —
-they corrupt the metrics you would otherwise reason from. Know the mechanics before you interpret any
-Search Console trend.
+## JavaScript rendering
 
-- **An AI Overview occupies one position, and every link inside it is assigned that same position.**
-  So average position mixes AI-Overview citations and classic blue links into one number. A moved
-  average may mean nothing about either.
-- **An impression only counts if the link is scrolled or expanded into view.** A page cited inside a
-  collapsed AI Overview can be shown to the user and register *neither* an impression nor a click.
-- **A click still requires a click-through.** When the answer is on the results page, the user's need
-  is met without a visit. Impressions holding steady while clicks fall is the signature of this, and
-  it is not a ranking loss — do not "fix" a ranking problem that does not exist.
-- **Search Console does not break AI-surface data out of the Web totals** in the standard Performance
-  report, so you generally cannot isolate it. Verify current behavior in the docs rather than assuming
-  — this area is changing fast.
+Google processes JS apps in three phases: **crawl** (fetch the URL, parse the HTML for `href` links),
+**render** (a headless Chromium executes the JS — but only after sitting in a **render queue**, which
+"can take longer" than a few seconds), then **index** the rendered result. Rendering is deferred and
+not guaranteed, and most non-Google crawlers do not render at all.
 
-**The auditor's rule:** before diagnosing a CTR or traffic drop as a ranking or quality failure,
-check whether the query now returns an AI answer. If it does, you are looking at a changed SERP, not
-a demoted page, and the fix is a different conversation.
+Documented pitfalls, all of which you can check yourself:
 
-**Do not chase speculative GEO tactics.** "Generative Engine Optimization" is a real emerging
-concern, but the tactics are unstable and largely unvalidated, and practitioners with the best view
-of it advise against optimizing hard for a target still in active development. What is defensible
-today is what was already defensible: be crawlable (including by AI crawlers, if the owner wants
-that), be renderable without JS, mark up content with valid structured data, and be genuinely worth
-citing. Treat anything beyond that as a hypothesis to test, not a recommendation to ship.
+- **Blocked resources kill rendering.** Google will not render JS from files or pages blocked in
+  `robots.txt`. A `Disallow`d `/static/` or `/_next/` directory silently blanks the page.
+- **A `noindex` in the initial HTML can stop rendering entirely.** Google may skip rendering when it
+  sees `noindex`, so you *cannot* use JavaScript to remove one. The server must not send it.
+- **SPA soft 404s.** Client-side routing cannot return a real status code. A missing route that
+  renders "not found" with a `200` gets indexed as thin content. Redirect to a real 404 URL or emit
+  `noindex`.
+- **Fragment URLs (`#/route`) are not reliably resolved.** Use real paths.
+- **Lazy-loaded images may never be indexed** if they only load on interaction.
 
-## Attribution: "Direct traffic" is a garbage bucket
+Google's recommendation is plain: **server-side rendering, static rendering, or hydration.** It also
+now **discourages dynamic rendering** (serving crawlers a pre-rendered copy) — in its words, "a
+workaround and not a recommended solution, because it creates additional complexities and resource
+requirements." Do not propose it.
 
-Analytics reports a channel called Direct. It is not a channel — it is the bucket for every visit
-whose origin was lost. Links shared in encrypted messengers and DMs (WhatsApp, Signal, Snapchat,
-Instagram DMs), pasted into documents, or opened from some native apps arrive with no referrer and
-land in Direct. This is often called "dark social."
+## Adjacent skills
 
-**The invalid inference to refuse:** *"Direct is our biggest channel, so we have strong brand
-recognition and loyalty."* Direct conflates people typing the URL from memory (real brand strength)
-with people who clicked a link a friend sent them (someone else's referral, invisible to you). You
-cannot tell those apart from analytics alone, so you cannot conclude either.
+Two neighbouring concerns have their own skills. Hand off rather than duplicating them:
 
-What to do instead:
-
-- **Ask the user.** A self-reported attribution field ("How did you hear about us?") on the
-  checkout or lead form is the only reliable way to recover the lost origin. It is crude, and it
-  beats a confident number that means nothing.
-- **Never rank channels by volume when Direct is one of the rows.** The comparison is not
-  like-for-like.
-- **Treat a Direct spike as an unexplained event, not an achievement.** It usually means someone
-  shared you somewhere you cannot see.
-
-The same discipline applies to sample size. Day-of-week and hour-of-day conclusions drawn from a few
-hundred conversions — especially when most days have zero — are noise dressed as insight. Before
-recommending "run campaigns on Tuesdays," check whether the difference survives the sparsity. Usually
-it does not.
+- **AI answers and AI-search visibility** — how AI Overviews, AI Mode, and assistants retrieve and
+  cite pages, how AI surfaces distort your Search Console numbers, and which GEO tactics are
+  defensible versus speculative: `.agents/skills/ref-sp-web-seo-ai/SKILL.md`. Load it whenever the
+  user asks about AI search, or when clicks fall while impressions hold steady — that pattern is
+  usually an AI answer, not a demoted page.
+- **Attribution, channels, and campaign measurement** — why "Direct" is a garbage bucket, dark
+  social, self-reported attribution, and sample-size discipline:
+  `.agents/skills/ref-sp-web-marketing/SKILL.md`. Load it whenever the discussion moves from search
+  rankings to traffic sources or conversions.
 
 ## Evaluating SEO claims: leaks, rumors, and vendor advice
 
@@ -232,6 +238,14 @@ Google states these explicitly. Do not "fix" them, and push back when a user ask
 - **E-E-A-T is not a ranking factor** and has no score to optimize. It describes what Google's
   systems aim to reward. Quality rater ratings never move an individual page's position.
 - **Keyword stuffing is a spam policy violation,** not an optimization.
+- **Google ignores `<priority>` and `<changefreq>` in sitemaps entirely.** Tuning them is wasted
+  work. `<lastmod>` is used only if it is "consistently and verifiably accurate" — a build process
+  that stamps today's date on every URL makes it worthless, so an inaccurate `lastmod` is worse than
+  none.
+- **Dynamic rendering is not a fix.** Google calls it "a workaround and not a recommended solution."
+- **Meeting every technical requirement guarantees nothing.** Google states plainly that satisfying
+  Search Essentials does not guarantee it will crawl, index, or serve your content. Eligibility is
+  not entitlement.
 
 The starter guide's own summary: creating content people find compelling and useful "will likely
 influence your website's presence in search results more than any of the other suggestions."
@@ -277,10 +291,14 @@ around that.
   hours produces noise, not a verdict.
 - **Pick a leading, attributable metric.** Impressions and average position for the affected page set
   move earlier and cleaner than sessions or revenue. A single-position rank change is nothing.
-- **Name the confounders up front:** algorithm updates, seasonality, competitor moves, other deploys
-  in the same window, and **the arrival of an AI answer on the target queries** — that last one can
-  move clicks and average position on its own, with nothing about your page having changed. Write
-  down which you cannot rule out, and say so in the result.
+- **Rule out the algorithm update, do not just name it.** Google's Search Status Dashboard lists core
+  and spam updates with start dates and durations (and offers JSON feeds). Cross-reference the traffic
+  change against it before blaming your own deploy — or before crediting it. A core update that
+  overlaps your test window invalidates the test.
+- **Name the remaining confounders up front:** seasonality, competitor moves, other deploys in the
+  same window, and **the arrival of an AI answer on the target queries** — that last one can move
+  clicks and average position on its own, with nothing about your page having changed. Write down
+  which you cannot rule out, and say so in the result.
 - **One change at a time per bucket.** Ship the title rewrite and the internal-linking change
   together and you have learned nothing about either.
 
@@ -307,9 +325,23 @@ Before reporting an audit as complete:
 
 ## Sources
 
-Check these before asserting any current specific; they are the authority, and they change.
+Check these before asserting any current specific; they are the authority, and they change. **Content
+below was verified 2026-07-12** — search behavior shifts fast, so re-verify rather than trusting this
+file's summary. The Search Central blog is the earliest signal that something has moved.
 
+- Search Central blog — <https://developers.google.com/search/blog>
+- Page experience — why Core Web Vitals are a tiebreaker, not a penalty —
+  <https://developers.google.com/search/docs/appearance/page-experience>
+
+- Search Essentials — technical requirements, spam policies, key best practices. The baseline for
+  eligibility — <https://developers.google.com/search/docs/essentials>
 - SEO Starter Guide — <https://developers.google.com/search/docs/fundamentals/seo-starter-guide>
+- JavaScript SEO basics — the crawl/render/index pipeline and its pitfalls —
+  <https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics>
+- Build and submit a sitemap — limits, `lastmod`, and the ignored tags —
+  <https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap>
+- Search Status Dashboard — the history of ranking and spam updates; use it to rule out the
+  algorithm-update confounder — <https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history>
 - Search Console — <https://developers.google.com/search/docs/monitor-debug/search-console-start>
 - Core Web Vitals — <https://web.dev/explore/learn-core-web-vitals>
 - Search Quality Rater Guidelines (PDF) —

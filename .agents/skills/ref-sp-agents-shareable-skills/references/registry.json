@@ -50,9 +50,9 @@
       "description": "Data analytics and data engineering.",
       "belongsWhen": "Is the primary subject the data/analytics work, regardless of language?"
     },
-    "seo": {
-      "description": "Search engine optimization and related concerns.",
-      "belongsWhen": "Is this about SEO or search visibility?"
+    "web": {
+      "description": "The web as a platform and as a presence: site platforms and CMSes (WordPress, Shopify), web standards and crawler/browser behavior, and discoverability — search, AI answers, and marketing measurement.",
+      "belongsWhen": "Is the subject the web itself — a web platform, or how a site is found, served, and consumed on it — rather than a programming language or a generic engineering practice? Use js for the JS/TS ecosystem, dev for language-agnostic dev practice, and baas for managed backend platforms."
     },
     "rust": {
       "description": "The Rust language and toolchain.",
@@ -110,6 +110,7 @@
     "nosql"
   ],
   "domainAliases": {
+    "seo": "web",
     "app": "js",
     "github": "dev",
     "git": "dev",
@@ -175,6 +176,7 @@
     "ref-sp-db-management": "ref-sp-db-operations",
     "ref-sp-db-design-methodology": "ref-sp-db-schema-design",
     "ref-sp-db-relational": "ref-sp-db-schema-design",
-    "ref-sp-db-normalization": "ref-sp-db-schema-design"
+    "ref-sp-db-normalization": "ref-sp-db-schema-design",
+    "ref-sp-seo-audit": "ref-sp-web-seo"
   }
 }
