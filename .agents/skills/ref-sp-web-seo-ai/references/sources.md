@@ -41,6 +41,28 @@ existed in the docs the draft was built from. Assume the same is happening now.
 | Inclusion settings for AI surfaces | [Search generative AI control](https://support.google.com/webmasters/answer/16908024) | 2026-07-12 | The control model changes |
 | An AI Overview occupies one position with all links at that position; impressions require scroll/expand; clicks require click-through | [Impressions, position, and clicks](https://support.google.com/webmasters/answer/7042828) | 2026-07-12 | The counting rules change |
 
+## Section: The honest position — independent corroboration
+
+The strongest evidence in this skill, because it is **not** Google talking about Google.
+
+| Claim in SKILL.md | Source | Verified | Notes |
+| --- | --- | --- | --- |
+| "Bing and Copilot search experiences rely on the same core crawling, indexing, and ranking foundation as traditional search. SEO best practices… also support eligibility for AI-generated experiences, grounding results, and citations." Section title: *"SEO Fundamentals Still Apply to Grounding and AI Experiences"* | [Bing Webmaster Guidelines](https://www.bing.com/webmasters/help/webmaster-guidelines-30fba23a) | 2026-07-12 | **Independent of Google.** Two engines with two AI surfaces both say the lever is ordinary SEO. This is what upgrades "no special AI optimization" from a vendor claim to a corroborated one. |
+| Bing lists *"Hiding critical content behind client-side rendering"* under **Avoid**; *"Content that cannot be reliably rendered may not be indexed or selected for grounding results."* | [Bing Webmaster Guidelines](https://www.bing.com/webmasters/help/webmaster-guidelines-30fba23a) | 2026-07-12 | Confirms the one genuinely load-bearing technical requirement for AI visibility: be renderable without JS. |
+
+**Reading Bing requires a real browser.** The page returns HTTP 200 to `curl` and is a client-rendered
+JavaScript shell — a non-rendering fetch gets the title and no body. Use
+`.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`:
+
+```sh
+yarn playwright open
+yarn playwright goto "https://www.bing.com/webmasters/help/webmaster-guidelines-30fba23a"
+```
+
+The canonical path is `webmaster-guidelines` (singular); the plural redirects. Note the irony and take
+the lesson: Bing's own guidance against hiding content behind client-side rendering is itself hidden
+behind client-side rendering.
+
 ## Provenance — non-Google crawlers
 
 The user-agent names in SKILL.md's crawler table. These are the operators' own docs; there is no

@@ -251,6 +251,23 @@ which tier you are in:
 When a user asserts a tier-3 or tier-4 claim as fact, say which tier it is and what would move it up.
 Do not adopt it because they sound certain, and do not dismiss it because it is unofficial.
 
+**Briefing documents are leads, not sources.** When someone hands you a research export, a strategy
+brief, a slide deck, or an AI-generated summary — including one they wrote themselves — it is a **map
+of what to go verify**, never a citation. Mine it for the URLs and claims worth chasing, then fetch
+the live primary source and cite *that*. These documents are stale or will be, and they carry errors
+that get laundered into fact by being quoted. Real examples encountered building this skill: a
+research export mislabelled Google's Search Essentials with the starter-guide URL and claimed Core
+Web Vitals carry "algorithmic penalties" (they do not); a strategy brief recommended "semantic
+chunking," which Google's own AI optimization guide explicitly warns against. Both would have been
+shipped as advice if quoted rather than checked.
+
+**Read the content, never the status code.** A source that returns HTTP 200 is not a source that
+supports your claim. Pages move, get rewritten, and drop the section you cited while the URL keeps
+resolving. And a page can return 200 with an empty body: client-rendered documentation is invisible
+to `curl`. When plain fetching fails, read it in a real browser rather than paraphrasing what it
+surely says — see `.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`. Citing an unread source is
+fabrication, however confident the paraphrase.
+
 ## Defaults
 
 - **Diagnose in pipeline order.** Crawl, render, index, rank. Do not reorder for convenience.

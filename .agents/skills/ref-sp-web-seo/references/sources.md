@@ -16,9 +16,8 @@ So, wherever one exists, this file names a second, independent source:
 
 - **Standards** (IETF, sitemaps.org, schema.org, WHATWG) define what the protocol actually says, and
   bind every crawler, not just Google's.
-- **Other search engines** (Bing) would reveal which behaviours are universal and which are
-  Google-specific — but see "The Bing problem" below: that corroboration was attempted and it failed,
-  and the rows relying on it are honestly marked Google-only rather than quietly padded.
+- **Other search engines** (Bing) reveal which behaviours are universal and which are Google-specific.
+  Bing's guidelines defeat plain fetching — read them with a real browser (see "Reading Bing" below).
 - **Framework docs** (Next.js) determine what a crawler physically receives, which no search engine
   can tell you.
 
@@ -56,7 +55,7 @@ loud.** A claim resting on a single interested source is a tier-1 document but n
 | --- | --- | --- | --- |
 | Meta keywords unused; no word-count target; heading order irrelevant to search (matters for accessibility); domain keywords barely matter; E-E-A-T is not a ranking factor; keyword stuffing is a spam violation | [SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide) | [Search Essentials — spam policies](https://developers.google.com/search/docs/essentials/spam-policies); heading semantics are an accessibility concern per [WHATWG HTML](https://html.spec.whatwg.org/multipage/sections.html#headings-and-outlines) | 2026-07-12 |
 | Meeting every technical requirement guarantees nothing | [Search Essentials](https://developers.google.com/search/docs/essentials) | — (Google-only; it is a statement about Google's own discretion, and no external source can corroborate it) | 2026-07-12 |
-| Google ignores `<priority>` and `<changefreq>`; uses `<lastmod>` only if consistently and verifiably accurate | [Build and submit a sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) | The [sitemaps.org protocol](https://www.sitemaps.org/protocol.html) *defines* these tags — which is exactly the point: the standard specifies them and Google declines to use them. A tag existing in the spec is not a tag anyone honours. | 2026-07-12 |
+| Google ignores `<priority>` and `<changefreq>`; uses `<lastmod>` only if consistently and verifiably accurate | [Build and submit a sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) | The [sitemaps.org protocol](https://www.sitemaps.org/protocol.html) *defines* these tags — which is exactly the point: the standard specifies them and the engines decline to use them. A tag in the spec is not a tag anyone honours. **Bing** independently values *"accurate `lastmod` values and HTTP validation headers such as ETags"* — so `lastmod` accuracy matters to both engines, while `priority`/`changefreq` matter to neither. | 2026-07-12 |
 | Dynamic rendering is "a workaround and not a recommended solution" | [Dynamic rendering](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering) | — (Google-only) | 2026-07-12 |
 
 ## Section: Crawl, robots.txt, and sitemaps
@@ -66,13 +65,13 @@ loud.** A claim resting on a single interested source is a tier-1 document but n
 | `robots.txt` syntax and semantics; it is a **request, not enforcement** | [RFC 9309 — Robots Exclusion Protocol](https://www.rfc-editor.org/rfc/rfc9309.html) — the actual standard, binding on every crawler | [Google's robots.txt interpretation](https://developers.google.com/search/docs/crawling-indexing/robots/robots_txt) | 2026-07-12 |
 | A `Disallow` prevents Google from *seeing* a `noindex`. Verbatim: *"For the `noindex` rule to be effective, the page or resource must not be blocked by a robots.txt file… the crawler will never see the `noindex` rule, and the page can still appear in search results."* | [Google: block indexing](https://developers.google.com/search/docs/crawling-indexing/block-indexing) | Follows directly from RFC 9309: a crawler forbidden to fetch the page cannot read a directive inside it. **Mechanically true, not merely documented** — the strongest class of claim in this skill. | 2026-07-12 |
 | Sitemap limits: 50MB uncompressed, 50,000 URLs, UTF-8, absolute canonical URLs, sitemap index above that | [sitemaps.org protocol](https://www.sitemaps.org/protocol.html) — the vendor-neutral spec | [Google build-sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) | 2026-07-12 |
-| Discovery is mostly via links; an orphan page is invisible | [SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide) | **Corroboration attempted and failed** — see "The Bing problem" below. Currently Google-only. | 2026-07-12 |
+| Discovery is mostly via links; an orphan page is invisible | [SEO Starter Guide](https://developers.google.com/search/docs/fundamentals/seo-starter-guide) | **Bing, independently**: discover URLs via "XML sitemaps, Crawlable internal links, External links from relevant websites"; "Ensure each important URL is reachable through crawlable internal links"; "Use standard `<a href>` links" | 2026-07-12 |
 
 ## Section: JavaScript rendering
 
 | Claim | Primary source | Corroboration | Verified |
 | --- | --- | --- | --- |
-| Crawl → render → index, with a deferred render queue; blocked resources prevent rendering; `noindex` in initial HTML can skip rendering; SPA soft 404s; fragment URLs unreliable; lazy-loaded images may not be indexed | [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) | **Not independently corroborated** — see "The Bing problem". Google-only for now. | 2026-07-12 |
+| Crawl → render → index, with a deferred render queue; blocked resources prevent rendering; `noindex` in initial HTML can skip rendering; SPA soft 404s; fragment URLs unreliable; lazy-loaded images may not be indexed | [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) | **Bing, independently**, lists under "Avoid": *"Hiding critical content behind client-side rendering"*, and warns *"Content that cannot be reliably rendered may not be indexed or selected for grounding results."* Two engines agree — this is not a Google quirk. | 2026-07-12 |
 | Most non-Google crawlers do not execute JavaScript | Inferred, not documented by any single vendor | Corroborated by Next.js's own `htmlLimitedBots` mechanism (below), which exists *precisely because* a class of bots cannot run JS. **Label this as a well-supported inference, not a citation.** | 2026-07-12 |
 
 ## Section: Framework traps (Next.js App Router)
@@ -117,24 +116,31 @@ summary in `./content-quality.md` wholesale — do not patch it claim by claim.
 | Core and spam update history, used to rule out the algorithm-update confounder | [Search Status Dashboard](https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history) — live; consult per test, never cache | 2026-07-12 |
 | Split-testing, control groups, lag, confounders, leading vs lagging metrics | **Method, not citation.** Ordinary experimental design. It needs no vendor to confirm it and cannot go stale. | n/a |
 
-## The Bing problem — a worked example of "200 is not support"
+## Reading Bing — and why "200" is not "supported"
 
-Bing's Webmaster Guidelines were the intended independent corroboration for the crawl and
-JavaScript-rendering sections. **The corroboration failed, and the failure is instructive.**
+Bing's Webmaster Guidelines are the independent corroboration for the crawl, rendering, and
+link-discovery sections. Getting them required a lesson worth keeping.
 
-The page returns HTTP 200. It is also a client-rendered JavaScript shell: a non-rendering fetch
-retrieves the `<title>` and essentially no body. So the content could not be read, and therefore
-**cannot be cited** — an unread source is not a source, however confidently one might paraphrase what
-it "surely says."
+**The trap.** The page returns HTTP 200 to `curl`, and is a client-rendered JavaScript shell: a
+non-rendering fetch retrieves the `<title>` and essentially no body. The first attempt at this file
+cited Bing anyway, on the strength of the status code. That is a fabricated citation — an unread
+source is not a source, however confident the paraphrase.
 
-Two consequences, and do not skip the second:
+**The fix.** Read it in a real browser:
 
-1. Those rows are now marked Google-only. If independent corroboration matters for a decision, read
-   Bing's guidelines **in a real browser** (`ref-sp-dev-playwright-cli`) and update the rows.
-2. Bing's own public guidance about making content crawlable is served in a way that a
-   non-JavaScript crawler cannot read. That is not a joke at Bing's expense — it is the exact failure
-   this skill exists to catch, found in the wild, on the first independent source we reached for.
-   Assume it is happening on the site you are auditing.
+```sh
+yarn playwright open
+yarn playwright goto "https://www.bing.com/webmasters/help/webmaster-guidelines-30fba23a"
+```
+
+(Note the canonical path is `webmaster-guidelines`, singular; the plural form redirects.) See
+`.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`.
+
+**The lesson, twice over.** Check content, never status codes — and note *what* defeated the fetch:
+Bing's own public guidance telling site owners not to hide content behind client-side rendering is
+itself served as a client-rendered shell that a non-JavaScript crawler cannot read. That is the exact
+failure this skill exists to catch, found on the first independent source we reached for. Assume it is
+happening on the site you are auditing.
 
 ## Standing entry points
 

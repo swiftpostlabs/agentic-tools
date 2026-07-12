@@ -68,10 +68,25 @@ your opinion against theirs — quote the guide.
 Eligibility for AI Overviews and AI Mode is ordinary Search eligibility: be indexed, be eligible for
 snippets, meet the normal requirements. There is no GEO lever for Google.
 
+**Bing says the same thing, independently — and that matters.** Google describing its own product is
+an interested party. But Microsoft's Webmaster Guidelines open with a section titled *"SEO
+Fundamentals Still Apply to Grounding and AI Experiences"*:
+
+> "Bing and Copilot search experiences rely on the same core crawling, indexing, and ranking
+> foundation as traditional search. SEO best practices that support discovery, indexing accuracy, and
+> content clarity also support eligibility for AI-generated experiences, grounding results, and
+> citations."
+
+Two independent search engines, each with its own AI answer surface, both say the lever is ordinary
+SEO. That is as close to settled as this field gets. Bing also lists *"hiding critical content behind
+client-side rendering"* under **Avoid**, warning that content it cannot reliably render "may not be
+indexed or selected for grounding results" — which is the one genuinely load-bearing technical
+requirement, confirmed twice.
+
 **For non-Google assistants, the honest answer is that nobody knows.** Retrieval and citation behavior
 in ChatGPT, Claude, Perplexity, and the rest is proprietary, changes without notice, and is not
-documented the way Google's crawl and index behavior is. Correlation studies on a moving target are
-not mechanisms.
+documented the way search crawling and indexing is. Correlation studies on a moving target are not
+mechanisms.
 
 So the deliverable is: **do ordinary good SEO, control crawler access deliberately, and refuse to
 invent the rest.**

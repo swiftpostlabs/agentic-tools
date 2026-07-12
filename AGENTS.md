@@ -261,6 +261,7 @@ This is a mixed repo: the Python code is managed with `uv` (and Poe tasks), and 
 - `yarn validate:skills` — Validate every skill against the Agent Skills structure and quality rules. Canonical skill-quality check.
 - `yarn validate:sharing` — Validate every skill against the sharing spec (naming, domain, visibility, dependencies). Canonical sharing-spec check.
 - `yarn validate` — Run both `validate:skills` and `validate:sharing`.
+- `yarn playwright <command>` — Drive a real browser from the terminal (`@playwright/cli` devDependency; `playwright-cli` is not on `PATH`, so use this script or `node_modules/.bin/playwright-cli`). Use it to verify UI changes, debug page console/network/DOM, and read pages that plain fetching cannot — client-rendered JavaScript shells return HTTP 200 with an empty body to `curl`. See `ref-sp-dev-playwright-cli`.
 
 Use the Poe tasks as the default way to run tests, lint, and type-checking for the Python code. Only call the underlying tools directly when a task needs flags or behavior that the Poe wrapper does not expose.
 For iterative post-edit validation of Python, prefer `uv run poe test-focused`, `uv run poe lint-focused`, and `uv run poe typecheck-focused` on the touched files or folders first, then run the full repo-wide Poe validation tasks before committing.
