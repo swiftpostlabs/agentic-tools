@@ -23,6 +23,17 @@ Provide portable defaults for modern Deno projects, especially when the codebase
 - Mixing Deno code with Node or TypeScript code in one repository.
 - Reviewing Deno permissions, testing, or runtime patterns.
 
+## Scope boundaries
+
+This skill owns the **Deno runtime**: `deno.json`, tasks, permissions, Node interop, and adopting
+Deno into a repo that already runs Node.
+
+- `ref-sp-js-typescript` — the type system itself. Deno runs TypeScript natively, but strict typing
+  and runtime boundaries are a separate subject from the runtime that executes them.
+- `ref-sp-js-javascript` — plain JavaScript and JSDoc typing.
+- `ref-sp-js-react` and `ref-sp-js-next` — framework concerns, whichever runtime is underneath.
+- `ref-sp-dev-package-management` — dependency and version policy across manifests.
+
 ## Defaults
 
 - Use `deno.json` as the Deno source of truth.

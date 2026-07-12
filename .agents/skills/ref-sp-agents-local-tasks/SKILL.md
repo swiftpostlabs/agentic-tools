@@ -29,6 +29,18 @@ Treat `.agents/tasks/` for task tracking and `.agents/playground/` for scratch a
 - Storing temporary working files such as `pr-description.md`, `notes.md`, `validation.md`, or `plan.md` inside a task folder.
 - Reviewing whether local task files still match the active work.
 
+## Scope boundaries
+
+This skill owns the **format and conventions** of `.agents/tasks/`: the directory model, the
+lifecycle subfolders, `TODO.md` syntax, and frontmatter `status`.
+
+- `tool-sp-handle-agents-local-tasks` — actually working the backlog: picking the next item, doing
+  it, moving the folder. Read this skill for the format; invoke that one to run the loop.
+- `ref-sp-dev-repo-conventions` — where `.agents/tasks/` and `.agents/playground/` sit in this repo's
+  layout.
+- Issue trackers, project boards, and anything outside `.agents/tasks/` are out of scope. This is the
+  local, gitignored workspace only.
+
 ## Core Workflow
 
 1. Check `.agents/tasks/TODO.md` for quick notes and small items, and scan `new/`, `open/`, and `closed/` for tracked task folders.

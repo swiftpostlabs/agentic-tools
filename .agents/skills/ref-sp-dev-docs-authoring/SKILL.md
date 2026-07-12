@@ -24,6 +24,19 @@ Write README files and focused documentation that orient the right audience quic
 - Replacing vague prose with concrete commands, config examples, or workflows.
 - Splitting an overloaded README into a concise entry document plus deeper linked docs.
 
+## Scope boundaries
+
+This skill owns documentation written for **humans**: READMEs and feature docs, and the question of
+whether users or developers come first. It is one of three "authoring" skills; the audience tells
+them apart.
+
+- `ref-sp-agents-instructions-authoring` — `AGENTS.md` and the provider bridges. Those are written
+  for *agents*, and they are instructions, not documentation.
+- `ref-sp-agents-skills-authoring` — `SKILL.md` files. Also written for agents, with their own
+  structure and trigger rules.
+- `ref-sp-dev-git-commits` — commit bodies. A commit message explains a change; it is not project
+  documentation.
+
 ## External references
 
 - GitHub Docs: <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes>

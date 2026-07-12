@@ -24,6 +24,18 @@ Provide portable defaults for working with Supabase across local development, re
 - Using `@supabase/supabase-js` in browser or trusted server contexts.
 - Deciding how an ORM should coexist with Supabase.
 
+## Scope boundaries
+
+This skill owns **Supabase the product**: the CLI, migrations, `supabase-js` CRUD, Edge Functions,
+RLS as Supabase applies it, and where an ORM does or does not fit.
+
+- `ref-sp-db-schema-design` — relational modeling, keys, constraints, normalization. Supabase is
+  Postgres underneath: the schema is designed there, then shipped through Supabase's migrations.
+- `ref-sp-db-security` — the authorization *model* (least privilege, exposure, auditing). This skill
+  owns how Supabase expresses it; that one owns whether the model is sound.
+- `ref-sp-db-operations` — transactions, indexing, and migration safety as database concerns.
+- `ref-sp-js-next` and `ref-sp-js-react` — the frontend that calls Supabase.
+
 ## Defaults
 
 - Use the Supabase CLI as the operational backbone for local and remote workflows, migration history, and function deployment.

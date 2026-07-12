@@ -23,6 +23,20 @@ Define how a repository groups changes into focused commits and how commit messa
 - You need to decide whether one change set should become one commit or several.
 - The work came from an automated command and the commit message needs reproducibility details.
 
+## Scope boundaries
+
+This skill owns the **rules**: how changes are grouped into commits, and how a commit title and body
+are written.
+
+- `tool-sp-commit` — applying those rules to a real working diff. Read this skill for the rules;
+  invoke that one to group and write the actual commits.
+- `ref-sp-py-commitizen` — the release tooling that consumes conventional-commit types: `cz bump`,
+  version providers, generated changelogs.
+- `ref-sp-dev-semantic-versioning` — what a bump level means. A commit's type feeds a future bump;
+  choosing the bump is not this skill's job.
+- `ref-sp-dev-docs-authoring` — project documentation. A commit body explains one change to a
+  reviewer; it is not a doc.
+
 ## Core Rules
 
 - Keep each commit focused on one logical change.

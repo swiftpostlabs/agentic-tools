@@ -23,6 +23,19 @@ Provide portable defaults for designing databases that span multiple sites, proc
 - Supporting mobile, offline-capable, or intermittently connected workflows.
 - Reviewing whether distribution is justified by geography, autonomy, availability, throughput, or disconnected work.
 
+## Scope boundaries
+
+This skill owns **topology** — where data physically sits and how sites coordinate. Topology is an
+axis of its own: distribution is not a data model, and a distributed database is not automatically a
+NoSQL one.
+
+- `ref-sp-db-schema-design` — the logical model. It stays one model no matter how many sites hold it.
+- `ref-sp-db-nosql` — whether the store should be relational or not. A separate choice from whether
+  it is distributed.
+- `ref-sp-db-operations` — transactions, indexing, recovery, and migration. Reach for it for what
+  happens *within* a site; come here when the failure or the latency is *between* sites.
+- `ref-sp-db-security` — protecting the replicas, backups, and cross-site links this skill places.
+
 ## Defaults
 
 - Treat distribution as a topology decision separate from relational versus NoSQL modeling.

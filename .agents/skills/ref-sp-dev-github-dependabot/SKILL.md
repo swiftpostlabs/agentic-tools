@@ -24,6 +24,17 @@ Provide portable defaults for configuring Dependabot so repositories stay curren
 - Configuring updates for GitHub Actions, private registries, or multi-directory repositories.
 - Automating safe Dependabot PR handling, such as metadata-driven labels, approvals, automerge, or release-intent file generation.
 
+## Scope boundaries
+
+This skill owns **`.github/dependabot.yml`**: ecosystems, schedules, grouping, ignore and allow
+rules, private registries, and update volume.
+
+- `ref-sp-dev-github-actions-ci` — `.github/workflows/*.yml`. Same folder, different job: this config
+  opens the dependency PRs; those workflows are what run on them.
+- `ref-sp-dev-semantic-versioning` — what a version range actually permits, and which dependency
+  field a package belongs in. Those rules decide what Dependabot is even allowed to propose.
+- `ref-sp-dev-package-management` — keeping versions in step across manifests once an update lands.
+
 ## Defaults
 
 - Keep the config in `.github/dependabot.yml` and start it with `version: 2`.

@@ -22,6 +22,18 @@ Document this repository's concrete AI policy implementation: the canonical poli
 - Debugging why `.aiexclude`, `.claude/settings.json`, or `.vscode/settings.json` did or did not change.
 - Explaining how the `policy` section in `.agents/config.json` should be authored in this repo.
 
+## Scope boundaries
+
+This skill is the **repo-local layer**: how the `agents-policy` feature is actually built here — the
+`.agents/config.json` policy section, the sync command, and the generated vendor outputs.
+
+- `ref-sp-agents-security` — the portable model behind it: protected vs excluded files, the
+  multi-client enforcement story, and why the policy exists. Read that for the *why*, this for the
+  *how it is wired here*.
+- `ref-sp-agents-skills-management` — the other consumer of `.agents/config.json`. The two features
+  share a config file, not a subject.
+- `ref-sp-dev-repo-conventions` — where the feature's code belongs in this repo's layout.
+
 ## Stable Surface
 
 - Canonical policy file: `.agents/config.json` with a top-level `policy` object

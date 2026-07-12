@@ -24,6 +24,18 @@ Provide portable defaults for building maintainable and secure GitHub Actions CI
 - Hardening workflows that process pull requests, forks, or deployment credentials.
 - Designing release workflows that publish packages with OIDC trusted publishing, npm provenance, or npm staged publishing.
 
+## Scope boundaries
+
+This skill owns **workflows** — `.github/workflows/*.yml`: triggers, jobs, permissions, matrices,
+concurrency, caching, and hardening.
+
+- `ref-sp-dev-github-dependabot` — `.github/dependabot.yml`. Same folder, different job: that config
+  opens dependency PRs, while this skill owns the workflows that run *on* them.
+- `ref-sp-dev-package-management` and `ref-sp-dev-semantic-versioning` — what a release job should
+  do and what the version means. This skill owns the workflow that runs it.
+- `ref-sp-agents-security` — which files an agent may read. Workflow token scope and runner trust are
+  a separate attack surface, owned here.
+
 ## Defaults
 
 - Keep workflows in `.github/workflows` with clear names and narrow triggers.

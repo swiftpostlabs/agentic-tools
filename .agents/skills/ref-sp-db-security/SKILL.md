@@ -24,6 +24,19 @@ Provide portable defaults for protecting databases as socio-technical systems wh
 - Reviewing how backups, logs, replicas, exports, and operational tooling expose database data.
 - Building a database threat model that includes accidental damage as well as malicious misuse.
 
+## Scope boundaries
+
+This skill owns **protecting a database**: threats, privileges, exposure, auditing, encryption, and
+secure recovery.
+
+- `ref-sp-agents-security` — despite the similar name, an unrelated subject: which files an *agent*
+  may read in a repo. Nothing to do with database access control.
+- `ref-sp-db-schema-design` — constraints that keep data *correct*. This skill uses constraints and
+  views to keep data *protected*; the two overlap in mechanism, not in purpose.
+- `ref-sp-db-operations` — how backup, restore, and migration work. This skill owns keeping those
+  artifacts and paths from becoming an attack surface.
+- `ref-sp-db-distributed` — where replicas and cross-site links live. This skill owns securing them.
+
 ## Defaults
 
 - Treat database security as a combination of confidentiality, integrity, availability, and privacy, not as authentication alone.

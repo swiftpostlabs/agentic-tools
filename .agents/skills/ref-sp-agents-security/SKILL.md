@@ -31,6 +31,19 @@ Define how agent clients are prevented from reading sensitive files, how noisy o
 - Reviewing AI security configuration across clients.
 - Adopting the policy system in another repository.
 
+## Scope boundaries
+
+This skill owns the **agent file-access policy**: which files an agent may read, how exclusions are
+generated, and how each client enforces them.
+
+- `ref-sp-agents-policy` — this repo's concrete implementation of that model: the `.agents/config.json`
+  policy section, the sync command, and the generated vendor outputs. This skill is the portable
+  model; that one is the local machinery.
+- `ref-sp-db-security` — despite the similar name, an unrelated subject: protecting a *database*
+  (privileges, encryption, auditing). Nothing to do with agent file access.
+- `ref-sp-dev-github-actions-ci` — workflow token scope, runner trust, and action pinning. CI
+  hardening is a different attack surface from agent read policy.
+
 ## Core Workflow
 
 1. Edit the policy source-of-truth file.

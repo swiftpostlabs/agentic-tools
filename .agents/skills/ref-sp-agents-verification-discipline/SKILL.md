@@ -28,6 +28,18 @@ checking it needs before it may drive an action.
 - Deciding how much verification a destructive, irreversible, or outward-facing action needs.
 - Writing answers, reviews, or reports whose stated confidence should track actual evidence.
 
+## Scope boundaries
+
+This skill owns the **method**: how much checking a claim needs, how to enumerate candidates, how to
+prune on evidence, and when to abstain.
+
+- `ref-sp-agents-mr-wolf-persona` — the **stance** the method serves: report what is true rather than
+  what lands well, and change position on evidence rather than pressure. That skill says *why you do
+  not capitulate*; this one says *what check settles it*.
+- `ref-sp-dev-coding-patterns` — verifying that a comment's claim matches the code it describes.
+- The owning skill for whatever is being verified. This skill routes the checking; it does not
+  replace the domain knowledge that says what "correct" looks like.
+
 ## The Two Dials
 
 - **Confidence** — how likely is this claim to be wrong?
