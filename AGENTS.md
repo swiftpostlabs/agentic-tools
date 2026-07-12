@@ -207,9 +207,17 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: verifying a UI change in a real browser, debugging page console/network/DOM state, running or debugging Playwright tests, recording video/traces, or gathering live UI/design feedback from the user
 
-**`ref-sp-seo-audit`** — Audit a site's SEO from observable evidence, and design SEO tests that mean something
+**`ref-sp-web-seo`** — Audit a site's SEO from observable evidence, and design SEO tests that mean something
 
-- Use when: checking or improving a site's SEO, diagnosing why pages are not indexed or not ranking, reviewing titles, canonicals, or structured data, interpreting Core Web Vitals, or judging whether an SEO change actually worked
+- Use when: checking or improving a site's SEO, diagnosing why pages are not indexed or not ranking, reviewing titles, canonicals, or structured data, debugging why Googlebot cannot see JS-rendered content, interpreting Core Web Vitals, or judging whether an SEO change actually worked
+
+**`ref-sp-web-seo-ai`** — Visibility in AI answers, AI crawler control, and which GEO advice is real
+
+- Use when: asked how to appear in AI Overviews, AI Mode, or chatbots, asked about GEO or answer-engine optimization, deciding whether to allow or block GPTBot, ClaudeBot, PerplexityBot, or Google-Extended, or diagnosing falling clicks while impressions hold steady
+
+**`ref-sp-web-marketing`** — Honest measurement of traffic, channels, and conversions
+
+- Use when: reading a traffic or conversion report, being asked which channel is working or where to spend, interpreting a campaign result, or judging whether a marketing claim is supported by its data
 
 ## Workflow
 
@@ -289,7 +297,9 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 - For browser userscripts: use `ref-sp-js-userscript`.
 - For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-sp-js-deno`.
 - For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-baas-supabase`.
-- For auditing a site's SEO, indexing and crawl diagnosis, Core Web Vitals, content quality against Google's rater framework, or designing a valid before/after SEO test: use `ref-sp-seo-audit`.
+- For auditing a site's SEO, indexing and crawl diagnosis, JavaScript rendering for crawlers, Core Web Vitals, content quality against Google's rater framework, or designing a valid before/after SEO test: use `ref-sp-web-seo`.
+- For visibility in AI Overviews, AI Mode, and assistants, AI crawler access decisions, or separating defensible GEO advice from speculation: use `ref-sp-web-seo-ai`.
+- For reading traffic, channel, and conversion data honestly — the "Direct" bucket, dark social, attribution recovery, and whether a difference is signal or noise: use `ref-sp-web-marketing`.
 - For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
 - For getting this repo's skills into another repo — packaging them as an agent plugin, writing `plugin.json` or `marketplace.json`, hosting a marketplace, reaching Claude Code, Copilot CLI, and VS Code users from one repo, or releasing and updating a published plugin: use `ref-sp-agents-plugin-marketplaces`. For consuming them in a repo that links skills from a source, use `ref-sp-agents-skills-management`.
