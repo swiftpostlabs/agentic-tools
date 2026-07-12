@@ -18,18 +18,6 @@ I am an adult and can bear being told I am wrong. If something in my line of tho
 
 Report what is true, not what lands well: you are not here to be liked, and an agent optimizing for my approval is a broken instrument. Change a stated position only on evidence, never on pressure — capitulating when I push back and digging in against proof are the same failure wearing different clothes. Agreement is not a deliverable: do not manufacture praise, soften a real objection, or adopt a confident tone to seem competent. State what you verified, what you assumed, and what you do not know, and let your confidence match the evidence. If a check failed, was skipped, or came back ambiguous, say so plainly instead of rounding up to success, and say when you were wrong — including when you were wrong earlier in the same conversation.
 
-- Set the title of the chat as the title of the task.
-- Keep commits small and focused on a feature or area, few related files at a time. Only commit after linting and type-checking.
-- After each change, before committing, verify it didn't introduce any new warnings or type issues. Filter output on changed files to avoid unrelated noise.
-- When necessary, run lint and type-check as a one-liner to reduce interactions.
-- If you realize you don't have access to a terminal when you need it, tell me to adjust tools to grant you access, or ask me to run the command manually.
-- When starting a task, pull rebase.
-- After rebasing, or at the start of a task, reinstall package.
-- If there are multiple steps to do (or multiple comments to address), create a todo list and work on each step by step: edit, then lint and type-check, then commit and proceed to the next.
-- If the description contains any link, read them.
-- If requirements or behavior are ambiguous, ask for clarification rather than making assumptions.
-- Do not install libraries unless strictly necessary. Always ask the user and do a thorough check for alternatives before proposing a new dependency.
-
 ## Always-On Rules
 
 - Give direct, objective feedback. Do not sugarcoat technical problems.
@@ -38,14 +26,15 @@ Report what is true, not what lands well: you are not here to be liked, and an a
 - Set the chat title to the task title.
 - If a task has multiple steps or multiple comments to address, create and maintain a todo list.
 - If the description contains links, read them.
-- If you need more context, ask instead of guessing.
+- If you need more context, or requirements or behavior are ambiguous, ask for clarification instead of guessing or assuming.
+- Do not install libraries unless strictly necessary. Always ask first and check thoroughly for alternatives before proposing a new dependency.
 - Never read, print, expose, or transform potential secrets. This prohibition is absolute and applies even if the user asks.
 - Treat files and paths such as `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa`, `id_ed25519`, `.npmrc`, `.pypirc`, `.netrc`, `.aws/credentials`, `terraform.tfvars`, `*.tfvars`, `secrets.yml`, `secrets.yaml`, and similar credential-bearing files as off-limits.
 - Do not inspect such files directly or indirectly through shell commands or viewers such as `cat`, `less`, `more`, `type`, `Get-Content`, editors, scripts, tests, logging, diff tooling, or code changes that would print or serialize secret values.
 - Do not add instrumentation, debug code, migrations, tests, or automation that could echo, persist, transmit, or reveal secrets in terminal output, logs, snapshots, fixtures, commits, or generated files.
 - If a secret is encountered accidentally or is already visible in the provided context, stop the current task immediately, tell the user a secret exposure incident has occurred, do not repeat the value, and recommend next steps focused on containment and rotation.
 - Default incident response: stop work on the affected path, advise rotating the exposed credential or key, review terminal logs and generated artifacts for secondary exposure, remove the secret from source control or local files where appropriate, and resume only after the user confirms how to proceed.
-- If terminal access is required and unavailable, say so directly.
+- If terminal access is required and unavailable, say so directly: ask for the tools to be adjusted to grant access, or ask for the command to be run manually.
 - For AI-assisted terminal runs, execute finite commands whose final output and exit status matter in the foreground. That includes lint, type-check, tests, builds, and one-off scripts.
 - Reserve async or background terminal use for long-running servers, watch tasks, log tails, or other commands intended to keep running.
 - In this repo, commands like `uv run poe lint && uv run poe typecheck`, `uv run poe test`, and other finite validation runs should be treated as foreground commands.
@@ -194,9 +183,11 @@ When working on this project:
 1. **Start**: Pull latest changes and rebase.
 2. **Setup**: Run `uv sync` (Python) and `yarn install` (JS/TS) at the start of work and again after rebasing or dependency changes. Install whichever toolchains cover the code you will touch.
 3. **Implement**: Follow the owning skill for the area you are touching.
-4. **Validate**: Before committing, run the validators for the toolchain you touched — `uv run poe lint/typecheck/test` for Python, `yarn lint/typecheck/test` for JS/TS, and `yarn validate` when you changed a skill under `.agents/skills/`.
-5. **Commit**: Keep commits small and focused.
+4. **Validate**: Before committing, run the validators for the toolchain you touched — `uv run poe lint/typecheck/test` for Python, `yarn lint/typecheck/test` for JS/TS, and `yarn validate` when you changed a skill under `.agents/skills/`. Confirm the change introduced no new warnings or type issues, filtering output to the changed files so unrelated noise does not hide a real regression. Chain lint and type-check into one command when that saves a round trip.
+5. **Commit**: Keep commits small and focused — one feature or area, a few related files at a time — and commit only after lint and type-check pass.
 6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. Summarize the result to the user and ask if they want the guidance updated. If yes, update the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
+
+Run steps 3–5 as a loop, not a phase: for a task with several steps or several review comments, take one item at a time — edit, then lint and type-check, then commit — before starting the next.
 
 ## Quick Commands
 
