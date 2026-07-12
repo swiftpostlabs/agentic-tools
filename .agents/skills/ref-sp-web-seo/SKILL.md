@@ -29,11 +29,18 @@ What is durable: the crawl → render → index → rank → measure pipeline, t
 split, the claim-tiering rule, and the test-design discipline. Those are method, and method holds.
 
 What rots: thresholds, report names, which directives Google honours, what Search Console exposes,
-and anything about AI answers. Before asserting one of those, check "Sources" — and check the Search
-Central blog, which is the earliest signal that something moved.
+and anything about AI answers. Before asserting one of those, check `./references/sources.md`.
 
 This is not boilerplate caution. A freshness pass on this skill's own first draft found two claims
 that had already been superseded within weeks of being written.
+
+**Every dated claim here has a source, and re-verifying is one command.** Read
+`./references/sources.md` before asserting a specific, and whenever the skill may be stale. It maps
+each claim to the document it came from, the date it was checked, and what would invalidate it — and
+it opens with the cheap path: fetch Google's documentation changelog
+(`curl -s https://developers.google.com/search/updates/search_docs_updates.rss`), scan it for the
+documents in the table, and only re-fetch what actually moved. If nothing moved, you are done in one
+request.
 
 ## When to use this skill
 
@@ -224,7 +231,7 @@ Do not adopt it because they sound certain, and do not dismiss it because it is 
 - **Treat performance as a tiebreaker, not a cause.** Core Web Vitals rarely explain a page absent
   from the index; they matter at the margin between comparable results.
 - **Look it up, do not recall it.** For any current specific, check Google Search Central
-  (see "Sources"). Memory of ranking advice is stale by construction and full of folklore.
+  (via `./references/sources.md`). Memory of ranking advice is stale by construction and full of folklore.
 
 ## Anti-folklore
 
@@ -313,38 +320,18 @@ Before reporting an audit as complete:
   general belief about SEO.
 - Findings are grouped by pipeline stage and ordered by impact, crawl/index blockers first.
 - The report states explicitly which questions require the user's Search Console or analytics data.
-- Any current-specifics claim was checked against a source below rather than recalled.
+- Any dated specific was checked against `./references/sources.md` rather than recalled, and its
+  verified date is recent enough to trust.
 - No Lighthouse score is presented as an SEO outcome.
 - No recommendation appears in the "Anti-folklore" list.
 
 ## References
 
+- Read `./references/sources.md` **before asserting any dated specific, and whenever this skill may be
+  stale.** It carries the per-claim provenance table (claim → source → verified date → what would
+  invalidate it) and the one-command re-verification procedure.
 - Read `./references/content-quality.md` when the audit reaches the content or ranking stage: it
   carries Google's quality-rater framework (page purpose, YMYL, E-E-A-T with Trust at the center, and
   the Lowest-quality criteria) and how to use it without over-claiming.
-
-## Sources
-
-Check these before asserting any current specific; they are the authority, and they change. **Content
-below was verified 2026-07-12** — search behavior shifts fast, so re-verify rather than trusting this
-file's summary. The Search Central blog is the earliest signal that something has moved.
-
-- Search Central blog — <https://developers.google.com/search/blog>
-- Page experience — why Core Web Vitals are a tiebreaker, not a penalty —
-  <https://developers.google.com/search/docs/appearance/page-experience>
-
-- Search Essentials — technical requirements, spam policies, key best practices. The baseline for
-  eligibility — <https://developers.google.com/search/docs/essentials>
-- SEO Starter Guide — <https://developers.google.com/search/docs/fundamentals/seo-starter-guide>
-- JavaScript SEO basics — the crawl/render/index pipeline and its pitfalls —
-  <https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics>
-- Build and submit a sitemap — limits, `lastmod`, and the ignored tags —
-  <https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap>
-- Search Status Dashboard — the history of ranking and spam updates; use it to rule out the
-  algorithm-update confounder — <https://status.search.google.com/products/rGHU1u87FJnkP6W2GwMi/history>
-- Search Console — <https://developers.google.com/search/docs/monitor-debug/search-console-start>
-- Core Web Vitals — <https://web.dev/explore/learn-core-web-vitals>
-- Search Quality Rater Guidelines (PDF) —
-  <https://static.googleusercontent.com/media/guidelines.raterhub.com/en//searchqualityevaluatorguidelines.pdf>
-- Performance report, including how AI Overviews and AI Mode count clicks, impressions, and position
-  — <https://support.google.com/webmasters/answer/7042828>
+- Hand off to `.agents/skills/ref-sp-web-seo-ai/SKILL.md` for AI answers, and to
+  `.agents/skills/ref-sp-web-marketing/SKILL.md` for traffic and conversion data.

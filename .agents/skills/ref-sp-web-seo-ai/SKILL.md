@@ -20,6 +20,21 @@ checkable, what it does to your measurements, and — the part most sources get 
 prevailing "GEO" advice is actually unvalidated guesswork that should not be shipped as a
 recommendation.
 
+## Verify before you assert — this file rots fastest
+
+**Content below was verified 2026-07-12** and this is the fastest-moving material in the repo. Every
+dated claim has a row in `./references/sources.md` giving its source, its verified date, and what
+would invalidate it. Re-verification is cheap — one request tells you whether anything moved:
+
+```sh
+curl -s https://developers.google.com/search/updates/search_docs_updates.rss
+```
+
+Scan it for the documents in that table, re-fetch only those, and update the claim and its row.
+Proof this is not theoretical: the first draft of this skill was superseded **within the same working
+session** — Search Console shipped a Generative AI performance report and Google published an AI
+optimization guide, neither of which existed in the docs the draft was built from.
+
 ## When to use this skill
 
 - Asked how to "rank in ChatGPT", "show up in AI Overviews", or "get cited by AI".
@@ -89,14 +104,23 @@ These are checkable, and they are the whole of the defensible baseline.
 
 This is a real decision with a real trade-off, and the owner — not the agent — must make it.
 
-| Crawler | Operator | Typically used for |
+| Crawler | Operator | What it actually does |
 | --- | --- | --- |
-| `GPTBot` | OpenAI | Training and retrieval for ChatGPT |
-| `OAI-SearchBot` | OpenAI | ChatGPT search results |
+| `GPTBot` | OpenAI | Crawls for **training** foundation models |
+| `OAI-SearchBot` | OpenAI | Crawls for **ChatGPT search**. Block this and you disappear from ChatGPT's search answers |
+| `ChatGPT-User` | OpenAI | **User-initiated** fetches — someone asked ChatGPT to look at a page. Not automatic crawling |
+| `OAI-AdsBot` | OpenAI | Validates pages submitted as ChatGPT ads; not used for training |
 | `ClaudeBot` | Anthropic | Crawling for Claude |
 | `PerplexityBot` | Perplexity | Perplexity answers and citations |
 | `Google-Extended` | Google | AI training and grounding in Google's *other* systems (e.g. Gemini) |
 | `CCBot` | Common Crawl | A corpus many models train on |
+
+**These are four different decisions, not one.** The most common error is a blanket `Disallow` for
+every AI user-agent, which quietly does three unrelated things: opts out of model training (maybe
+intended), removes you from ChatGPT search results (usually not intended), and **breaks a user's
+ability to have the assistant read a page they explicitly pasted** (almost never intended —
+`ChatGPT-User` is not a crawler; it is a person asking). Separate training from retrieval from
+user-initiated fetching, and ask which the owner actually wants to stop.
 
 The trade-off to put to the user: **blocking protects your content from being used; it also removes
 you from the answers.** You cannot be cited by a system you refuse to let read you. There is no
@@ -190,20 +214,18 @@ problem exists. Chasing a phantom demotion wastes a quarter.
 
 ## References
 
-This area moves faster than anything else in search. **Re-check these before asserting; do not trust
-this file's summary if it is more than a few months old.** Verified 2026-07-12.
+**Read `./references/sources.md` before asserting anything dated.** It carries the per-claim
+provenance table (claim → source → verified date → what would invalidate it), the crawler user-agent
+sources, and the re-verification procedure. The cheap path is one request:
 
-- Google's guide to optimizing for generative AI features — the authority that says there is no
-  special AI markup and warns against chunking —
-  <https://developers.google.com/search/docs/fundamentals/ai-optimization-guide>
-- AI features and your website — eligibility and the snippet controls —
-  <https://developers.google.com/search/docs/appearance/ai-features>
-- Generative AI performance report (Search) — impressions only, inside the Web totals —
-  <https://support.google.com/webmasters/answer/16984139>
-- Search generative AI control — inclusion settings —
-  <https://support.google.com/webmasters/answer/16908024>
-- Impressions, position, and clicks — how AI Overviews and AI Mode are counted —
-  <https://support.google.com/webmasters/answer/7042828>
-- Search Central blog — the earliest signal that any of the above has changed —
-  <https://developers.google.com/search/blog>
+```sh
+curl -s https://developers.google.com/search/updates/search_docs_updates.rss
+```
+
+Scan it for the documents in that table; re-fetch only what moved. For this skill also check the
+Search Central blog (<https://developers.google.com/search/blog>) — AI features are announced there
+before the reference docs are updated, so for AI surfaces the blog is a primary source, not a
+backstop.
+
 - The technical audit that underpins all of this: `.agents/skills/ref-sp-web-seo/SKILL.md`
+- Traffic and conversion measurement: `.agents/skills/ref-sp-web-marketing/SKILL.md`
