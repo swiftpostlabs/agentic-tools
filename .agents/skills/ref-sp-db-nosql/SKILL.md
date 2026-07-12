@@ -6,7 +6,9 @@ metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "db"
+  shareable-skills.tags: "database, nosql"
   shareable-skills.visibility: "public"
+  shareable-skills.suggests: "ref-sp-db-schema-design, ref-sp-db-distributed"
 ---
 
 # NoSQL Databases
@@ -22,6 +24,17 @@ Provide portable defaults for deciding when non-relational databases fit better 
 - Planning horizontally scaled or geographically distributed data systems.
 - Reviewing denormalized schemas, duplication strategy, or eventual-consistency behavior.
 - Deciding how a NoSQL store should coexist with a relational system of record.
+
+## Scope boundaries
+
+This skill owns the **store-choice decision** — relational, non-relational, or hybrid — and
+non-relational modeling. Once the answer is "relational", hand off.
+
+- `ref-sp-db-schema-design` — relational modeling, keys, constraints, and normalization.
+- `ref-sp-db-operations` — transactions, indexing, recovery, and migration for whichever store wins.
+- `ref-sp-db-distributed` — site topology, fragmentation, and replica placement. Distribution is a
+  separate axis from the data model: distributed databases are not automatically NoSQL, and NoSQL
+  systems are not automatically distributed.
 
 ## Defaults
 

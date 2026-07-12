@@ -104,7 +104,10 @@
     "overconfidence",
     "persona",
     "communication",
-    "working-style"
+    "working-style",
+    "modeling",
+    "operations",
+    "nosql"
   ],
   "domainAliases": {
     "app": "js",
@@ -127,12 +130,12 @@
     "ref-app-web-standalone": "ref-sp-js-web-standalone-template",
     "ref-code-conventions": "ref-sp-dev-repo-conventions",
     "ref-coding-patterns": "ref-sp-dev-coding-patterns",
-    "ref-db-design-methodology": "ref-sp-db-design-methodology",
+    "ref-db-design-methodology": "ref-sp-db-schema-design",
     "ref-db-distributed": "ref-sp-db-distributed",
-    "ref-db-management": "ref-sp-db-management",
-    "ref-db-normalization": "ref-sp-db-normalization",
+    "ref-db-management": "ref-sp-db-operations",
+    "ref-db-normalization": "ref-sp-db-schema-design",
     "ref-db-nosql": "ref-sp-db-nosql",
-    "ref-db-relational": "ref-sp-db-relational",
+    "ref-db-relational": "ref-sp-db-schema-design",
     "ref-db-security": "ref-sp-db-security",
     "ref-dev-package-management": "ref-sp-dev-package-management",
     "ref-dev-semantic-versioning": "ref-sp-dev-semantic-versioning",
@@ -170,6 +173,10 @@
     "ref-sp-py-code-conventions": "ref-sp-dev-repo-conventions",
     "ref-sp-dev-project-setup": "ref-sp-dev-repo-conventions",
     "ref-sp-dev-project-folders": "ref-sp-dev-repo-conventions",
-    "ref-sp-agents-persona": "ref-sp-agents-mr-wolf-persona"
+    "ref-sp-agents-persona": "ref-sp-agents-mr-wolf-persona",
+    "ref-sp-db-management": "ref-sp-db-operations",
+    "ref-sp-db-design-methodology": "ref-sp-db-schema-design",
+    "ref-sp-db-relational": "ref-sp-db-schema-design",
+    "ref-sp-db-normalization": "ref-sp-db-schema-design"
   }
 }
