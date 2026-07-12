@@ -140,8 +140,24 @@ These are checkable, and they are the whole of the defensible baseline.
 - **The answer has to actually be on the page, in text.** A page whose substance is in an image, a
   video with no transcript, or a PDF behind a click cannot be quoted.
 - **Being worth citing is not a trick.** Systems that cite sources are built to prefer ones that are
-  accurate, specific, and attributable. That is the same target as `references/content-quality.md`
-  in the SEO skill, not a separate discipline.
+  accurate, specific, and attributable. That is the same target as ordinary content quality — load
+  `.agents/skills/ref-sp-web-seo/references/content-quality.md` (Google's rater framework: page
+  purpose, YMYL, E-E-A-T with Trust at the centre). It is not a separate discipline, and there is no
+  AI-specific version of it.
+
+**Every bullet above is an ordinary SEO task.** That is the point, and it is where this skill hands
+off. The work of *being fetchable and renderable* lives in `.agents/skills/ref-sp-web-seo/SKILL.md`:
+
+| To do this | Go to `ref-sp-web-seo` |
+| --- | --- |
+| Check that a bot can actually fetch the page | "Commands" — the `curl` bot probes and `robots.txt` checks |
+| Check that content survives without JavaScript | "JavaScript rendering" — served HTML vs rendered DOM |
+| Check a Next.js app is not hiding metadata from non-JS bots | "Framework traps (Next.js App Router)" |
+| Judge whether the content deserves citing at all | `references/content-quality.md` |
+| Measure whether anything you changed worked | "Testing SEO changes" |
+
+If the user's real problem is any of those, stop here and go there. Most "how do I rank in AI"
+questions are ordinary SEO questions wearing a new hat.
 
 ## Controlling AI crawler access
 
@@ -285,5 +301,26 @@ Search Central blog (<https://developers.google.com/search/blog>) — AI feature
 before the reference docs are updated, so for AI surfaces the blog is a primary source, not a
 backstop.
 
-- The technical audit that underpins all of this: `.agents/skills/ref-sp-web-seo/SKILL.md`
-- Traffic and conversion measurement: `.agents/skills/ref-sp-web-marketing/SKILL.md`
+## Adjacent skills
+
+### The technical audit — `.agents/skills/ref-sp-web-seo/SKILL.md`
+
+**This skill is the smaller half of one job.** Google and Bing both say ordinary SEO *is* the
+AI-visibility lever, so a question that arrives dressed as "how do we win at AI search" is usually a
+technical SEO question. Send it back:
+
+| The user actually needs | Go to `ref-sp-web-seo`, section |
+| --- | --- |
+| To find out whether a bot can fetch the page at all | "Commands" — bot `curl` probes, `robots.txt`, sitemaps |
+| To check content survives with JavaScript disabled (the one real AI requirement) | "JavaScript rendering" |
+| To find out why a Next.js app hides metadata from non-JS bots | "Framework traps (Next.js App Router)" |
+| To know whether the content deserves to be cited | `references/content-quality.md` — Google's rater framework |
+| To judge an SEO or GEO claim from a leak, vendor, or blog | "Evaluating SEO claims" — the four-tier rule this skill applies |
+| To design a test that can actually detect the effect of a change | "Testing SEO changes" |
+| To diagnose *not indexed* / *not ranking* / *organic traffic dropped* | "The durable model" — crawl → render → index → rank → measure |
+| Core Web Vitals, canonicals, structured data, titles | The corresponding sections there |
+
+### Traffic and conversions — `.agents/skills/ref-sp-web-marketing/SKILL.md`
+
+When the conversation moves from *appearing in answers* to *what that traffic did*: attribution, the
+"Direct" bucket, dark social, and whether a difference is signal or noise.

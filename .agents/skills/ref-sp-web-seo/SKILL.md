@@ -129,7 +129,7 @@ project.
 | `curl -sSIL -A 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' <url>` | Status chain and headers as a bot. | Reveals redirect chains, `X-Robots-Tag`, and bot-specific blocking. | First probe, always. | One `200` after at most one redirect; no `noindex` header. |
 | `curl -sS -A '<googlebot-ua>' <url>` | The served HTML. | This is what a non-rendering crawler indexes. | Right after the header check. | Title and body copy present in source, not just an empty app shell. |
 | `curl -sS <origin>/robots.txt` | Crawl directives and sitemap pointers. | One `Disallow: /` here overrides every other optimization on the site. | Before any page-level work. | Production is crawlable; a `Sitemap:` line is present. |
-| Check `robots.txt` for AI crawler user-agents (`GPTBot`, `ClaudeBot`, `PerplexityBot`, `Google-Extended`, and others). | Whether AI assistants may crawl the site. | Sites block these deliberately or by copy-pasted default; either way the owner should know, because it decides whether the site can be cited by assistants at all. | Whenever the user cares about visibility in AI answers. | The allow/block state is intentional and the user has confirmed it. |
+| Check `robots.txt` for AI crawler user-agents. **Do not advise a change from this skill** — load `.agents/skills/ref-sp-web-seo-ai/SKILL.md` first. | Whether AI assistants may crawl, cite, or train on the site. | Operators split their bots into **training / search-retrieval / user-initiated**, and a blanket AI `Disallow` silently does all three — including breaking users who deliberately paste your URL into an assistant. The token list also changes without notice. | Whenever the user cares about AI visibility, or is about to block AI bots. | The allow/block state is intentional per *job*, not per vendor, and the user has confirmed it. |
 | `curl -sS <origin>/sitemap.xml` | The declared canonical URL set. | Sitemap URLs must be indexable, canonical, absolute, and `200`; mismatches confuse selection. Hard limits: 50MB uncompressed and 50,000 URLs per file — split via a sitemap index beyond that. | When auditing a site rather than one page. | Sitemap URLs match the canonicals the pages declare. |
 | Render the page and dump the DOM + console, via `.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`. | The post-JS DOM and any JS errors. | Distinguishes "content missing from HTML" from "content missing entirely". | Whenever the served HTML looks like an empty shell. | Rendered DOM has the content; no errors that abort rendering. |
 | `npx lighthouse <url> --only-categories=seo,performance --output=json --quiet` | A lab audit. | Cheap lint for obvious on-page misses plus a lab performance baseline. | After crawl/index checks, never before. | A list of concrete defects — hints, not a score to chase. |
@@ -212,17 +212,33 @@ page as a bot and look. The framework may be doing something you did not authori
 
 ## Adjacent skills
 
-Two neighbouring concerns have their own skills. Hand off rather than duplicating them:
+Two neighbouring concerns have their own skills. Hand off rather than duplicating them.
 
-- **AI answers and AI-search visibility** — how AI Overviews, AI Mode, and assistants retrieve and
-  cite pages, how AI surfaces distort your Search Console numbers, and which GEO tactics are
-  defensible versus speculative: `.agents/skills/ref-sp-web-seo-ai/SKILL.md`. Load it whenever the
-  user asks about AI search, or when clicks fall while impressions hold steady — that pattern is
-  usually an AI answer, not a demoted page.
-- **Attribution, channels, and campaign measurement** — why "Direct" is a garbage bucket, dark
-  social, self-reported attribution, and sample-size discipline:
-  `.agents/skills/ref-sp-web-marketing/SKILL.md`. Load it whenever the discussion moves from search
-  rankings to traffic sources or conversions.
+### AI answers — `.agents/skills/ref-sp-web-seo-ai/SKILL.md`
+
+This skill and that one are **two halves of one job**, and the boundary is worth stating plainly:
+per Google *and* Bing, **ordinary SEO is the AI-visibility lever** — there is no separate GEO
+mechanism. So most AI questions resolve back into the work in *this* file. Load the AI skill for the
+things that genuinely differ:
+
+| Symptom or question | Go to `ref-sp-web-seo-ai`, section |
+| --- | --- |
+| "How do we rank / get cited in ChatGPT, AI Overviews, AI Mode?" | "The honest position, stated first" |
+| Someone is proposing GEO tactics — chunking, entity engineering, schema for AI | "How to read GEO advice" — Google's guide *warns against* chunking, and there is no AI schema |
+| **Clicks falling while impressions hold steady**, or CTR fell with no ranking change | "What AI answers do to your data" — this is an AI answer absorbing the visit, not a demotion |
+| Reading Search Console now that AI Overviews blend into the numbers | Same — average position mixes AI citations with blue links; the Generative AI report is impressions-only |
+| Blocking or allowing `GPTBot`, `ClaudeBot`, `Claude-User`, `PerplexityBot`, `Google-Extended` | "Controlling AI crawler access" — training / search / user-initiated are **three** decisions |
+| "Should we opt out of AI training?" | Same — and note `Perplexity-User` documents that it ignores `robots.txt` |
+
+**Do not answer an AI-crawler or GEO question from this file.** The token list and the AI surfaces
+change monthly; that skill carries the current ones and their provenance.
+
+### Traffic, channels, conversions — `.agents/skills/ref-sp-web-marketing/SKILL.md`
+
+Why "Direct" is a bucket of lost origins rather than a channel, how dark social destroys referrer
+data, self-reported attribution, and when a difference is sparsity rather than signal. Load it as soon
+as the discussion moves from *search* to *traffic sources or conversions* — including any report where
+Direct is a large row.
 
 ## Evaluating SEO claims: leaks, rumors, and vendor advice
 
@@ -287,7 +303,10 @@ fabrication, however confident the paraphrase.
 - **Compare served HTML against rendered DOM every time** the site is a JS app. That one diff
   explains most "Google can't see my content" reports.
 - **Prefer one self-referencing, absolute canonical per page.** Conflicting canonicals are a defect.
-- **Prefer JSON-LD** for structured data, and validate it rather than eyeballing it.
+- **Prefer JSON-LD** for structured data, and validate it rather than eyeballing it. But add it for
+  **rich results**, never for AI visibility — Google states there is no special schema for generative
+  AI. If someone is adding schema to win AI citations, see
+  `.agents/skills/ref-sp-web-seo-ai/SKILL.md`.
 - **Treat performance as a tiebreaker, not a cause.** Core Web Vitals rarely explain a page absent
   from the index; they matter at the margin between comparable results.
 - **Look it up, do not recall it.** For any current specific, check Google Search Central
@@ -365,7 +384,10 @@ around that.
 - **Name the remaining confounders up front:** seasonality, competitor moves, other deploys in the
   same window, and **the arrival of an AI answer on the target queries** — that last one can move
   clicks and average position on its own, with nothing about your page having changed. Write down
-  which you cannot rule out, and say so in the result.
+  which you cannot rule out, and say so in the result. Before blaming your own change for a CTR
+  collapse, rule out the AI surface: `.agents/skills/ref-sp-web-seo-ai/SKILL.md` (its "What AI
+  answers do to your data" section explains why *impressions steady, clicks falling* is the
+  signature, and why average position now blends AI citations with blue links).
 - **One change at a time per bucket.** Ship the title rewrite and the internal-linking change
   together and you have learned nothing about either.
 

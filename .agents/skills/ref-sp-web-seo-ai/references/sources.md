@@ -127,6 +127,22 @@ cannot corroborate a position by reading one side of it — and Google, on the q
 Google's AI surfaces need special optimization, is not a neutral party either. Where the two agree
 (no special markup, no chunking), the claim is strong. Where only one speaks, say so.
 
+## Sources that live in the SEO skill
+
+These two files are deliberately split, and claims cross the boundary. Do not duplicate a row — look
+it up in `.agents/skills/ref-sp-web-seo/references/sources.md`, which owns:
+
+- **Bing's Webmaster Guidelines** in full — including the crawl, rendering, and link-discovery
+  corroboration, and the note that the page is a JavaScript shell requiring a real browser to read.
+- **RFC 9309** (`robots.txt` is a request, not enforcement) — the standard underneath every crawler
+  decision in this skill.
+- **Google's JavaScript SEO basics** — the crawl/render/index pipeline; the reason "be renderable
+  without JS" is the one load-bearing AI requirement.
+- **Next.js `htmlLimitedBots`** — why a non-JS bot outside a hardcoded User-Agent list can receive
+  metadata it cannot read.
+- **The rater guidelines** (`references/content-quality.md`) — what "worth citing" actually means.
+- **The claim-tiering rule** — the four tiers this skill applies to GEO advice.
+
 ## What does not rot
 
 The epistemic content — claim-tiering, refusing to ship unvalidated tactics as recommendations,
