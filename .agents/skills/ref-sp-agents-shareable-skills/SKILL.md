@@ -39,6 +39,20 @@ hard-depends on the other (see the spec's "Relationship" section).
 - Vendoring or forking a skill from another repo, including provenance and read-only handling.
 - Validating a skill against the sharing spec before linking, exporting, or publishing.
 
+## Scope boundaries
+
+This skill owns **how a skill is named, scoped, shared, and vendored** — the metadata layer. It owns
+nothing about whether the skill is any good, and nothing about the machinery that moves it.
+
+- `ref-sp-agents-skills-authoring` — skill *quality*: structure, triggers, description wording,
+  progressive disclosure. Complementary and independent; neither hard-depends on the other.
+- `ref-sp-agents-skills-management` — the CLI that links and syncs skills into a consuming repo.
+  This skill decides *whether* a skill may travel; that one moves it.
+- `ref-sp-agents-plugin-marketplaces` — publishing skills as an installable plugin. This skill owns
+  the visibility tiers; that one owns the manifest that must respect them.
+- `tool-sp-make-skill-shareable` — the guided workflow for applying this spec to one skill.
+  Read this skill for the rules; invoke that one to walk a skill through them.
+
 ## Read this first
 
 **`./references/spec.md` is the full normative spec.** Load it whenever you need the exact rules.

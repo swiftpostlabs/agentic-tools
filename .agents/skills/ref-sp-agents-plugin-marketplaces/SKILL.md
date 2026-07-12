@@ -38,6 +38,23 @@ release reaches an existing user.**
 - Cutting a release, or choosing between pinned and rolling versioning.
 - Debugging an installed plugin that is missing skills, or that will not update.
 
+## Scope boundaries
+
+This skill owns **publishing** — the manifests, the enumeration, the install cache, the release.
+It is one of two ways skills leave a repo; pick by how the consumer gets them.
+
+- `ref-sp-agents-skills-management` — the other way out: linking and syncing skills into a consuming
+  repo from a source it already has. Use that when the consumer is a repo you control; use this when
+  the consumer *installs* the skills from a marketplace.
+- `ref-sp-agents-shareable-skills` — owns the visibility tiers this skill's manifest must respect,
+  and the validator that enforces the two against each other. It decides what *may* be published;
+  this skill decides how.
+- `ref-sp-dev-semantic-versioning` and `ref-sp-dev-package-management` — what a version number means
+  and how it stays in sync across manifests. This skill only owns why a stale plugin version freezes
+  users.
+- Hooks, MCP servers, LSP servers, agents, and commands are plugin components too, but they are out
+  of scope here.
+
 ## The mental model
 
 Three nested things, often conflated:

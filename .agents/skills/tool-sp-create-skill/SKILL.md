@@ -24,6 +24,20 @@ Guide the agent through a short skill-creation wizard so a new skill is scoped c
 - Repeated repo guidance should be promoted into a reusable skill.
 - The user knows the goal of the skill but not its final name, shape, or supporting files yet.
 
+## Scope boundaries
+
+This tool creates **one new skill**. If the skill already exists, this is the wrong tool.
+
+- `tool-sp-maintain-skills` — updating, consolidating, or refreshing skills that already exist. If
+  the request is really "an existing skill should cover this", hand off rather than creating a
+  near-duplicate.
+- `tool-sp-make-skill-shareable` — revisiting the portability of an existing skill. This tool sets
+  `visibility` and dependencies at creation; that one fixes them afterwards.
+- `ref-sp-agents-skills-authoring` — the quality rules this tool applies (structure, triggers,
+  progressive disclosure). The rules live there; the intake flow lives here.
+- `ref-sp-agents-shareable-skills` — the naming grammar, domain registry, and visibility tiers this
+  tool fills in.
+
 ## First Step
 
 Read the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here, the `requires` dependency) before drafting the new skill.

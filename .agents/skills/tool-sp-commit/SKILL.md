@@ -24,6 +24,19 @@ Guide the agent through inspecting the current diff, grouping changes into coher
 - The agent needs help deciding whether changes belong together.
 - The user wants the commit work done, not just explained.
 
+## Scope boundaries
+
+This tool groups a working diff into commits and writes their messages. It owns the grouping
+decision, nothing further down the git pipeline.
+
+- `ref-sp-dev-git-commits` — the rules this tool applies: title format, body content, when a commit
+  needs a long description. Read it for the rules; use this tool to apply them to a real diff.
+- `ref-sp-py-commitizen` and `ref-sp-dev-semantic-versioning` — releases, version bumps, and
+  changelog generation. A conventional-commit *type* affects a future bump, but choosing the bump is
+  not this tool's job.
+- Branching, rebasing, pushing, and opening pull requests are out of scope. This tool stops at the
+  commit.
+
 ## First Step
 
 Read the repo's commit-guidance skill (`ref-sp-dev-git-commits` here, the `requires` dependency) before deciding commit boundaries or writing commit messages.

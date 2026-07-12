@@ -25,6 +25,22 @@ Keep project guidance simple by giving each rule one clear home when maintenance
 - Existing skills may still describe old commands, old package managers, or renamed features.
 - The skill catalog changed and the top-level routing may need a corresponding refresh.
 
+## Scope boundaries
+
+This tool maintains the **existing skill catalog**: what drifted, what duplicates what, which skill
+should own a rule. It is a catalog-level pass, not a single-file edit and not an authoring guide.
+
+- `tool-sp-create-skill` — when the change genuinely needs a *new* skill rather than an update to an
+  existing one. Deciding between the two is this tool's job; executing the creation is that one's.
+- `tool-sp-make-skill-shareable` — when the question is one skill's portability rather than the
+  catalog's freshness.
+- `tool-sp-maintain-agents-instructions` — when the drift is in `AGENTS.md`, `GEMINI.md`, or
+  `.claude/CLAUDE.md` rather than in the skills. The two hand off to each other: renaming a skill
+  usually drifts both.
+- `ref-sp-agents-skills-authoring` — the quality bar this tool checks against.
+- `ref-sp-agents-shareable-skills` — the sharing spec and its validator, including the plugin-manifest
+  check that catches a skill this pass renamed or re-scoped.
+
 ## First Step
 
 Read the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here, the `requires` dependency) before planning updates.

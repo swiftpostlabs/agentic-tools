@@ -24,6 +24,21 @@ Guide the agent through reading the repo's local task workspace under `.agents/t
 - The user asks to work through the repo's local backlog instead of one already-scoped code change.
 - The agent needs a repeatable workflow for reconciling `.agents/tasks/` with the current repository state.
 
+## Scope boundaries
+
+This tool works the local `.agents/tasks/` backlog: pick the next item, do it, move the folder, update
+the status. It is deliberately broad about *what* the work is — the work itself belongs to whichever
+skill owns that domain.
+
+- `ref-sp-agents-local-tasks` — the conventions this tool follows: directory model, lifecycle
+  subfolders, `TODO.md` syntax, frontmatter `status`. Read it for the format; use this tool to work
+  the backlog.
+- The owning skill for whatever the task touches. This tool routes and tracks; it does not replace
+  the domain skill for the change being made.
+- `tool-sp-commit` — grouping the resulting diff into commits.
+- Issue trackers and any backlog outside `.agents/tasks/` are out of scope; this is the local,
+  gitignored workspace only.
+
 ## First Step
 
 Read the repo's local-tasks skill (`ref-sp-agents-local-tasks` here, the `requires` dependency), then inspect `.agents/tasks/TODO.md` and the tracked task folders in `.agents/tasks/new/` and `.agents/tasks/open/` before planning or coding.

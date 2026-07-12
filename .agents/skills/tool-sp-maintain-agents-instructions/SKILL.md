@@ -24,6 +24,21 @@ Guide the agent through a short maintenance wizard so top-level instruction file
 - `AGENTS.md`, `GEMINI.md`, or `.claude/CLAUDE.md` may be outdated.
 - A repo added multi-provider support and needs a bridge pattern or refresh.
 
+## Scope boundaries
+
+This tool maintains the **instruction files** — `AGENTS.md` and the provider bridges — not the skills
+they route to.
+
+- `tool-sp-maintain-skills` — drift inside the skills themselves. The two hand off constantly:
+  renaming a skill drifts the routing here, and a rule that outgrew an instruction file usually
+  belongs in a skill over there.
+- `ref-sp-agents-instructions-authoring` — the rules this tool applies: source-of-truth model, bridge
+  pattern, persona placement.
+- `ref-sp-agents-mr-wolf-persona` — the canonical persona text. The instruction file carries a
+  verbatim projection of it; this tool re-syncs that copy but never rewrites the voice in place.
+- Domain detail belongs in the owning skill, not in an instruction file. Moving a rule out of
+  `AGENTS.md` and into its skill is a valid outcome of this pass.
+
 ## First Step
 
 Read the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here, the `requires` dependency), its agent-persona skill (`ref-sp-agents-mr-wolf-persona` here), and the provider reference files under the instruction-authoring skill's `references/providers/` folder that match the files being touched.

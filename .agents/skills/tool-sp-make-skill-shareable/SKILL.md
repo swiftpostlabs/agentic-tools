@@ -24,6 +24,21 @@ Guide the agent through reviewing an existing skill, deciding whether it should 
 - The portability of a current skill is unclear.
 - A repo-local skill might need to be split into a shared core plus a local layer.
 
+## Scope boundaries
+
+This tool answers one question about **one existing skill**: how far can it travel, and does it need
+splitting to get there. It sets `visibility`, `requires`/`suggests`, and the split decision.
+
+- `tool-sp-create-skill` — a new skill sets its own visibility at creation. Come here only to revisit
+  or backfill an existing one.
+- `tool-sp-maintain-skills` — catalog-wide drift, duplication, and ownership. If several skills need
+  re-scoping at once, that is a maintenance pass, not a repeat of this one.
+- `ref-sp-agents-shareable-skills` — the spec this tool applies: naming grammar, domain registry,
+  visibility tiers, dependency semantics, vendoring. Read it for the rules; use this tool to walk a
+  skill through them.
+- `ref-sp-agents-plugin-marketplaces` and `ref-sp-agents-skills-management` — actually *moving* a
+  skill once it is cleared to travel. This tool only decides whether it may.
+
 ## First Step
 
 Read the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` here) and its skill-authoring skill (`ref-sp-agents-skills-authoring` here) — both `requires` dependencies — before deciding whether the target skill can be exported cleanly.
