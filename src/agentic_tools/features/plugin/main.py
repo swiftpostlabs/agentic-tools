@@ -56,7 +56,9 @@ def check_plugin(root: RootOption = Path(".")) -> None:
     drifted = find_drifted_manifests(root, manifests)
     if drifted:
         for path in drifted:
-            typer.echo(translate("plugin.check.drifted", path=path.as_posix()), err=True)
+            typer.echo(
+                translate("plugin.check.drifted", path=path.as_posix()), err=True
+            )
         typer.echo(translate("plugin.check.hint"), err=True)
         raise typer.Exit(code=1)
 
