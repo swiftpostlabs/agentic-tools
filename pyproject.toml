@@ -51,7 +51,7 @@ reportUnnecessaryTypeIgnoreComment = "warning"
 name = "cz_conventional_commits"
 version_provider = "uv"
 version_scheme = "semver2"
-version_files = ["package.json:version", "VERSION"]
+version_files = ["package.json:version", "VERSION", ".claude-plugin/plugin.json:version"]
 changelog_file = "CHANGELOG.md"
 major_version_zero = true
 bump_message = "chore(release): $current_version -> $new_version"
@@ -63,6 +63,8 @@ agentic-tools = "agentic_tools_old.main:main"
 [tool.poe.tasks]
 policy-check = "uv run python -m agentic_tools_old.main policy check"
 version-check = "python scripts/check_version_drift.py check"
+plugin-sync = "python -m agentic_tools.main.cli plugin sync"
+plugin-check = "python -m agentic_tools.main.cli plugin check"
 version-next = "cz bump --get-next --yes"
 release-prepare-preview = { help = "Preview the next Commitizen-managed release bump without changing files", shell = "cz bump --dry-run --check-consistency --allow-no-commit --increment ${part} --yes", args = [
   { name = "part", positional = true, required = true },
@@ -74,7 +76,7 @@ release-publish-python = "uv build && uv publish"
 release-publish-node = "npm publish"
 release-publish = ["release-publish-python", "release-publish-node"]
 py-lint = "python -m black --check ./src"
-lint = ["policy-check", "version-check", "py-lint"]
+lint = ["policy-check", "version-check", "plugin-check", "py-lint"]
 lint-fix = "python -m black ./src"
 lint-focused = { help = "Check formatting for selected paths", shell = "python -m black --check ${paths}", args = [
   { name = "paths", positional = true, required = true, multiple = true },

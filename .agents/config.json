@@ -51,5 +51,23 @@
       "**/*.{pem,key,pub}": false,
       "**/internal-config.yml": false
     }
+  },
+  "plugin": {
+    "name": "agentic-tools",
+    "displayName": "Agentic Tools",
+    "description": "Shared agent skills for repo conventions, coding practice, databases, and agent tooling.",
+    "category": "productivity",
+    "license": "MIT",
+    "repository": "https://github.com/swiftpostlabs/agentic-tools",
+    "keywords": ["skills", "agents", "conventions"],
+    "skillsRoot": ".agents/skills",
+    "publishVisibility": ["public"],
+    "marketplace": {
+      "name": "swiftpostlabs",
+      "owner": {
+        "name": "SwiftPost Labs",
+        "url": "https://github.com/swiftpostlabs"
+      }
+    }
   }
 }

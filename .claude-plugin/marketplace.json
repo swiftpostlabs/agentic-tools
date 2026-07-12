@@ -1,0 +1,24 @@
+{
+  "name": "swiftpostlabs",
+  "owner": {
+    "name": "SwiftPost Labs",
+    "url": "https://github.com/swiftpostlabs"
+  },
+  "metadata": {
+    "description": "Shared agent skills for repo conventions, coding practice, databases, and agent tooling.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "agentic-tools",
+      "source": "./",
+      "description": "Shared agent skills for repo conventions, coding practice, databases, and agent tooling.",
+      "category": "productivity",
+      "keywords": [
+        "skills",
+        "agents",
+        "conventions"
+      ]
+    }
+  ]
+}
