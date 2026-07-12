@@ -31,13 +31,28 @@ This skill is about knowing which conclusions the data can actually carry.
 
 Analytics shows a row called Direct. It is not a traffic source — it is the bucket for every visit
 whose origin was **lost**. A visit lands there when the referrer is missing, which happens when a link
-is:
+is shared in a messenger or DM ("dark social"), opened from a native app, an email client, or a PDF,
+pasted into a note or a ticket, stripped by a privacy setting — or, sometimes, genuinely typed from
+memory.
 
-- shared in an encrypted messenger or DM (WhatsApp, Signal, Snapchat, Instagram DMs) — "dark social",
-- opened from a native mobile app, a desktop email client, or a PDF or document,
-- pasted into a chat, a note, or a ticket,
-- followed from an `https` page to an `http` one, or stripped by a privacy setting,
-- or — sometimes — genuinely typed from memory.
+**This is measured, not assumed.** A SparkToro controlled experiment (16 tracking URLs, 11 networks,
+~100 participants, 1,113 visits) found how much referrer data each network destroys:
+
+| Source | Visits arriving with no referrer, logged as Direct |
+| --- | --- |
+| TikTok, Slack, Discord, Mastodon, WhatsApp | **100%** |
+| Facebook Messenger | 75% |
+| Instagram DMs | 30% |
+| LinkedIn public posts | 14% |
+| Pinterest | 12% |
+
+A link shared on TikTok or WhatsApp arrives *indistinguishable from someone typing your URL from
+memory.* That is the whole problem in one sentence.
+
+**But do not over-claim in the other direction either.** That study measures what each *network*
+loses. It does **not** tell you what share of *your* Direct is dark social — nobody has measured that
+for your site. So the defensible statement is "traffic from these networks is systematically misfiled
+as Direct," never "N% of your Direct is dark social." See `./references/sources.md`.
 
 **The invalid inference to refuse, out loud:** *"Direct is our biggest channel, so we have strong
 brand recognition."* Direct conflates people who typed your URL from memory (real brand strength)
@@ -94,7 +109,13 @@ conclusive and state what would make it so — usually more time or more events.
 ## Zero-click and platform reality
 
 Platforms suppress outbound links to keep users on-platform, and answer surfaces increasingly satisfy
-the need without a visit. Two consequences worth stating to a stakeholder:
+the need without a visit. SparkToro reports that roughly **60% of Google searches end without a
+click**, with a further ~30% of clicks going to Google-owned properties, and that **a third to a half
+of users run an ad blocker** that prevents tracking outright. Cite those as *"SparkToro reports"* —
+they come from an interested party (see `./references/sources.md`), unlike the dark-social experiment
+above, which is a controlled study.
+
+Two consequences worth stating to a stakeholder:
 
 - **Click-through is a shrinking and biased measure of reach.** Impressions and engagement on the
   platform may be doing work that never appears in your analytics.
@@ -128,6 +149,14 @@ For how AI answer surfaces specifically distort search metrics, use
   visits and purchases but nothing between, you cannot say where people dropped.
 - **The industry-average benchmark is a trap.** "Our 5% conversion rate matches the industry average"
   compares your business to an aggregate of businesses that are not yours. It justifies nothing.
+
+## References
+
+- `./references/sources.md` — provenance by section: the SparkToro dark-social experiment and its
+  numbers, the zero-click figures and why they carry a vendor caveat, and the analytics channel
+  definitions. Read it before quoting any percentage.
+- `.agents/skills/ref-sp-web-seo-ai/SKILL.md` — how AI answer surfaces distort search metrics.
+- `.agents/skills/ref-sp-web-seo/SKILL.md` — the claim-tiering rule this skill also applies.
 
 ## Validation
 

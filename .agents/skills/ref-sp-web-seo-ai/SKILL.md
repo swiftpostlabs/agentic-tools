@@ -82,6 +82,29 @@ a recommendation. See the claim-tiering rule in `.agents/skills/ref-sp-web-seo/S
 Say this to users plainly. They are being sold certainty that does not exist, and an agent that plays
 along is part of the problem.
 
+## How to read GEO advice
+
+You will be handed GEO articles, decks, and vendor reports. Judge them with these four questions,
+which are drawn from actually reading the leading ones rather than from suspicion.
+
+1. **Who profits if this is true?** The most-cited GEO evidence is Semrush's "AI Visibility Index" —
+   published by a company that *sells AI-visibility monitoring*. That does not make it false; it means
+   it is not disinterested, and it cannot be the only source for a recommendation.
+2. **Does the article's own data undercut its advice?** Frequently, yes. One leading GEO piece reports
+   that **40–60% of cited sources change from month to month**, and then claims "patterns emerged."
+   Both cannot be true. That volatility figure is the single most useful number in the GEO literature,
+   and it argues *against* the article carrying it: if more than half the citations churn monthly, you
+   cannot attribute a change to your optimization, and you cannot tell success from noise.
+3. **Is there a mechanism, or only a correlation?** GEO articles theorize about "extractability" and
+   "entity clarity" and assert these "likely" drive citations. No mechanism, no causal evidence.
+4. **Read the caveat the author already wrote.** They are usually honest in the fine print: "these
+   principles increase your probability… they don't guarantee it", "what works today may shift as
+   models update." Quote that back to anyone selling the headline.
+
+Prediction pieces ("what SEO leaders expect in 2026") are tier-4 by construction: forward-looking
+opinion, framed as "will be," with the bullish claims foregrounded and the cautions buried. Treat them
+as a map of what people are *excited* about, never as input to a recommendation.
+
 ## What is mechanically true
 
 These are checkable, and they are the whole of the defensible baseline.

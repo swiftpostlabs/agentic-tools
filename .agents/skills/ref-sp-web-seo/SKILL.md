@@ -173,6 +173,36 @@ now **discourages dynamic rendering** (serving crawlers a pre-rendered copy) —
 workaround and not a recommended solution, because it creates additional complexities and resource
 requirements." Do not propose it.
 
+## Framework traps (Next.js App Router)
+
+The framework decides what a crawler actually receives, and the defaults are not always what you would
+guess. These are verified against the Next.js docs (see `./references/sources.md`); check the version,
+because they change.
+
+- **Metadata may be streamed into `<body>`, not `<head>`.** Since Next 15.2, when `generateMetadata`
+  resolves after the initial UI is sent, the tags are appended to `<body>`. Vercel verified that bots
+  which execute JavaScript and inspect the full DOM (Googlebot) read it correctly. For **HTML-limited
+  bots** that cannot run JS, Next blocks rendering and puts metadata in `<head>` instead — but it
+  identifies those bots from a **hardcoded User-Agent list** (`htmlLimitedBots`). **A non-JS crawler
+  that is not on that list gets metadata it cannot see.** That is the exact population of most AI
+  fetchers. If metadata must be in `<head>` for everyone, either keep `generateMetadata` free of
+  request-time data so it prerenders, or widen `htmlLimitedBots`.
+- **`generateMetadata` is Server Components only.** Metadata cannot be set from a `'use client'`
+  component. If a page is a Client Component, its metadata has to move to a Server parent.
+- **Canonicals come from `alternates.canonical`, and need `metadataBase`** to resolve to absolute
+  URLs. A relative URL in a metadata field with no `metadataBase` is a build error — which is the good
+  case. The bad case is a canonical that silently resolves against the wrong origin.
+- **Metadata merges shallowly.** A child segment that sets *any* `openGraph` field replaces the whole
+  parent `openGraph` object. Pages routinely lose `og:description` this way and nobody notices.
+- **Static export (`output: 'export'`) removes server-dependent SEO levers.** No redirects, no custom
+  headers, no rewrites — so no `X-Robots-Tag` and no 301s from Next config; those must move to the
+  host. Also no ISR, no Middleware, and no default-loader image optimization (a custom loader works).
+  Static Route Handlers (`GET` only) *can* generate `sitemap.xml` and `robots.txt` at build time, so a
+  standalone script is not required.
+
+The general rule this illustrates: **never infer what a crawler sees from the source code.** Fetch the
+page as a bot and look. The framework may be doing something you did not authorize.
+
 ## Adjacent skills
 
 Two neighbouring concerns have their own skills. Hand off rather than duplicating them:

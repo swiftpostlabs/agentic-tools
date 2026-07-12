@@ -70,6 +70,23 @@ operator docs — which is how the incomplete list (missing `ChatGPT-User` and `
 **Re-fetch these before advising any `robots.txt` change.** A stale or misspelled user-agent in a
 `robots.txt` is a silent no-op: it blocks nothing and no one tells you.
 
+## Section: How to read GEO advice
+
+Non-Google, and deliberately so: this section exists to judge the GEO literature, so it must cite it.
+
+| Claim in SKILL.md | Source | Verified | Notes |
+| --- | --- | --- | --- |
+| GEO's most-cited evidence is Semrush's "AI Visibility Index"; the same article reports **40–60% of cited sources change month to month**; its tactics assert "likely" causation with no mechanism; its own caveats are "these principles increase your probability… they don't guarantee it" and "what works today may shift as models update" | [What is GEO — Search Engine Land](https://searchengineland.com/what-is-generative-engine-optimization-geo-444418) | 2026-07-12 | **Interested source**, cited *as an example of the genre*, not as authority: Semrush sells AI-visibility tooling. The 40–60% churn figure is the useful part, precisely because it undercuts the article's own advice. |
+| Prediction pieces are bullish, forward-looking, and light on caution — tier-4 by construction | [AI search predictions for 2026 — Search Engine Land](https://searchengineland.com/ai-search-visibility-seo-predictions-2026-468042) | 2026-07-12 | Read for what the industry *believes*; never as input to a recommendation. |
+| The GEO tactics an agent must be able to recognize when a stakeholder proposes them (semantic chunking, entity and citation engineering) | [GEO strategies](https://searchengineland.com/generative-engine-optimization-strategies-446723), [Planning for GEO in 2026](https://searchengineland.com/plan-for-geo-2026-evolve-search-strategy-463399) — Search Engine Land | 2026-07-12 | Google's AI optimization guide contradicts the chunking advice directly — see the Google table above. That contradiction is the point. |
+
+**Why sources you disagree with belong in a provenance table.** A table that cites only what you agree
+with is not provenance, it is confirmation. The GEO literature is here so the agent can quote it,
+locate its conflicts of interest, and turn its own numbers and caveats against its headline. You
+cannot corroborate a position by reading one side of it — and Google, on the question of whether
+Google's AI surfaces need special optimization, is not a neutral party either. Where the two agree
+(no special markup, no chunking), the claim is strong. Where only one speaks, say so.
+
 ## What does not rot
 
 The epistemic content — claim-tiering, refusing to ship unvalidated tactics as recommendations,
