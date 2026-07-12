@@ -158,6 +158,25 @@ Run both when a skill should be good *and* shareable.
 - Vendored copies keep `shareable-skills.owner` upstream and carry a read-only body banner.
 - Legacy keys are no longer accepted (Phase 3). Full rules in `./references/spec.md` §10.
 
+### Plugin-manifest check (`--all` runs only)
+
+If the repo publishes a plugin (`.claude-plugin/plugin.json`), the validator also checks that
+manifest against the catalog. This matters because **the manifest's `skills` list is where the
+visibility tiers are actually enforced**: with a marketplace-root source the enumerated paths are the
+complete published set, and nothing else stops a `repo-local` skill from shipping. Severity follows
+the stakes:
+
+- **Error** — a listed skill is not `public`. Publishing leaks a skill that was never meant to leave,
+  and installs are cached on users' machines, so it cannot be recalled.
+- **Error** — a listed path is not a skill. Dangling entries silently drop from the published plugin.
+- **Error** — the manifest lists the skills *container* while non-public skills exist inside it.
+  Listing the container publishes everything in it, tier metadata notwithstanding.
+- **Warning** — a `public` skill is missing from the manifest. It will not ship, but a skill can be
+  legitimately in flight before its first release, and an omission is recoverable where a leak is not.
+
+A repo with no `.claude-plugin/plugin.json` is unaffected. The manifest's semantics are owned by
+`ref-sp-agents-plugin-marketplaces`; this validator only enforces that they agree with the tiers.
+
 ## References
 
 - `./references/spec.md` — the full normative spec (load for exact rules, examples, migration).

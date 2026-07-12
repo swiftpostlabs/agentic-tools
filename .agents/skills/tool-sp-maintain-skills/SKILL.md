@@ -59,6 +59,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 | Change scope | What changed in the repo, branch, or workflow that might affect skill guidance? | The maintenance pass should respond to real drift rather than guess. | When the trigger for the maintenance pass is broad or vague. | The update scope is anchored to concrete repo changes. |
 | Skill ownership | Which existing skill should own this guidance, or does the repo need a new one? | Skills drift when new behavior is documented in the wrong file. | When a change spans multiple skills or introduces a new domain. | One clear owner is chosen for each rule. |
 | Routing impact | Should top-level instructions or help-routing sections be refreshed too? | A new or renamed skill is incomplete if the catalog and routing stay stale. | When skills were added, removed, renamed, or materially repurposed. | Discovery and routing stay aligned with the actual catalog. |
+| Publication impact | If the repo publishes a plugin, does its manifest still match the catalog and the visibility tiers? | The manifest's skill list is what actually enforces visibility at the publication boundary, and it fails silently in both directions. | When skills were added, removed, renamed, or had their `visibility` changed. | The published set matches the catalog, with no leaked or dropped skills. |
 | Consolidation need | Is this drift exposing duplicated, misplaced, or copied-over guidance? | Maintenance should reduce future drift, not just patch one symptom. | When multiple skills mention the same outdated rule. | The fix lands in one primary owner, with optional follow-up consolidation. |
 
 ## Branch-Diff Guidance
@@ -72,6 +73,7 @@ Ask only the questions that remain unanswered after inspecting the repo and bran
 
 - Do not refresh every skill just because one area changed.
 - Do not leave `AGENTS.md` or equivalent routing files stale after adding or renaming a skill.
+- Do not leave the plugin manifest stale either. If the repo publishes a plugin, adding, removing, renaming, or re-scoping a skill changes what ships: a renamed folder leaves a dangling entry that silently drops from the published plugin, and a skill demoted to `repo-local` while still listed leaks to the world on the next release.
 - Do not preserve copied examples, commands, or package managers that no longer match the repo.
 - Do not create a new skill when an existing skill can absorb the change cleanly.
 - Do not mutate shareability metadata casually; if a skill becomes repo-local or gains hard dependencies, record that intentionally.

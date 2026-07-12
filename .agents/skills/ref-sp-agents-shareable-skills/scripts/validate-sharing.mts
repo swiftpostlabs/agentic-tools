@@ -389,6 +389,103 @@ function validateSharingSkill(
   return findings;
 }
 
+// --- Plugin manifest ---
+
+// A published plugin's `skills` list is the visibility gate: when the marketplace entry's source is
+// the marketplace root, the enumerated paths are the COMPLETE set that ships. Nothing else enforces
+// the visibility tiers at the publication boundary, so the manifest and the catalog must agree.
+// See ref-sp-agents-plugin-marketplaces for the enumeration and versioning rules.
+
+const MANIFEST_LABEL = "plugin-manifest";
+
+interface PluginManifest {
+  root: string;
+  path: string;
+  skills: string[];
+}
+
+function findPluginManifest(skillsRoot: string): PluginManifest | null {
+  let dir = skillsRoot;
+  for (;;) {
+    const path = join(dir, ".claude-plugin", "plugin.json");
+    if (existsSync(path)) {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(readFileSync(path, "utf8"));
+      } catch {
+        return { root: dir, path, skills: [] };
+      }
+      const raw = (parsed as { skills?: unknown } | null)?.skills;
+      const skills = typeof raw === "string" ? [raw] : Array.isArray(raw) ? raw.filter((s): s is string => typeof s === "string") : [];
+      return { root: dir, path, skills };
+    }
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
+function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo>): Finding[] {
+  const manifest = findPluginManifest(skillsRoot);
+  // A repo that publishes no plugin has nothing to keep in sync.
+  if (manifest === null) return [];
+
+  const findings: Finding[] = [];
+  const add = (severity: Severity, message: string): void => {
+    findings.push({ skill: MANIFEST_LABEL, severity, message });
+  };
+
+  const listed = new Set<string>();
+  let containerListed = false;
+
+  for (const entry of manifest.skills) {
+    const resolved = resolve(manifest.root, entry);
+    if (resolved === skillsRoot) {
+      containerListed = true;
+      continue;
+    }
+    if (!existsSync(join(resolved, "SKILL.md"))) {
+      add("error", `'${entry}' does not point at a skill — a dangling entry silently drops from the published plugin`);
+      continue;
+    }
+    listed.add(basename(resolved));
+  }
+
+  const manifestName = basename(manifest.path);
+
+  if (containerListed) {
+    // Listing the container publishes everything inside it, tier metadata notwithstanding.
+    for (const [name, info] of index) {
+      if (info.visibility === "public") continue;
+      add(
+        "error",
+        `manifest lists the skills container, which publishes every skill in it — '${name}' is ${info.visibility ?? "untiered"} and would leak. Enumerate individual skill directories instead.`,
+      );
+    }
+    return findings;
+  }
+
+  for (const name of listed) {
+    const visibility = index.get(name)?.visibility ?? null;
+    if (visibility !== "public") {
+      add(
+        "error",
+        `'${name}' is ${visibility ?? "untiered"} but listed in ${manifestName} — publishing it would leak a skill that is not public`,
+      );
+    }
+  }
+
+  // A public skill may legitimately be in flight before its first release, so this is a warning:
+  // the omission is recoverable, unlike a leak.
+  for (const [name, info] of index) {
+    if (info.visibility === "public" && !listed.has(name)) {
+      add("warning", `'${name}' is public but missing from ${manifestName} — it will not ship in the published plugin`);
+    }
+  }
+
+  return findings;
+}
+
 // --- CLI ---
 
 function findSkillDirs(target: string, validateAll: boolean): string[] {
@@ -473,6 +570,12 @@ function main(): number {
   const skillDirs = findSkillDirs(resolvedTarget, validateAll);
   for (const skillDir of skillDirs) {
     findings.push(...validateSharingSkill(skillDir, registry, index));
+  }
+
+  // The manifest check compares the published set against the whole catalog, so it is only
+  // meaningful on a full run — a single-skill run cannot know what else exists.
+  if (validateAll) {
+    findings.push(...validatePluginManifest(skillsRoot, index));
   }
 
   if (format === "json") {

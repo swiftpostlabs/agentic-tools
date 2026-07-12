@@ -124,6 +124,24 @@ Two traps follow, and both fail *silently*:
 - **Never set `version` in both `plugin.json` and the marketplace entry.** `plugin.json` always wins,
   with no warning, so a stale manifest can mask the version you set in the catalog.
 
+Wire the version into the release tool rather than bumping it by hand. In this repo, Commitizen's
+`version_files` in `pyproject.toml` rewrites `.claude-plugin/plugin.json:version` and
+`.claude-plugin/marketplace.json:version` alongside `package.json` and `VERSION`, so one `cz bump`
+keeps every manifest on the same number. A version a human has to remember to bump is a version that
+silently freezes users.
+
+### Enforce the enumeration, do not trust it
+
+Because rule 2 makes the `skills` list the complete published set, that list — not the frontmatter —
+is what actually enforces your visibility policy. Nothing in the plugin format checks it, so a
+`repo-local` skill added to the list ships to the world, and a renamed folder silently drops out.
+
+Validate it mechanically. The sharing-spec validator
+(`ref-sp-agents-shareable-skills`, `scripts/validate-sharing.mts <skills-root> --all`) cross-checks
+the manifest against the catalog: it errors on a non-public skill being listed, on a dangling path,
+and on listing the container while non-public skills live inside it; it warns when a public skill is
+missing from the manifest. Run it before cutting a release.
+
 ## Cross-client compatibility
 
 Every client auto-detects the plugin manifest, and **`.claude-plugin/` is in every search order**:
