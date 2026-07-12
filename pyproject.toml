@@ -37,14 +37,13 @@ python_files = ["*_test.py"]
 pythonVersion = "3.14"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
+exclude = ["**/__pycache__", "src/typings"]
 stubPath = "src/typings"
 reportUnknownVariableType = "warning"
 reportUnknownArgumentType = "none"
 reportUnknownParameterType = "warning"
 reportUnknownLambdaType = "warning"
-reportUnknownMemberAccess = "warning"
 reportUnknownMemberType = "none"
-reportUnknownModuleType = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"
 
 [tool.commitizen]
