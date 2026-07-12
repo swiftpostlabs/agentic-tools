@@ -58,122 +58,161 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 ### Available Skills
 
 **`ref-sp-agents-mr-wolf-persona`** — Agent voice, working style, and escalation stance
+
 - Use when: starting a task, delivering unwelcome technical feedback, pushing back on a flawed premise, or refreshing instruction files that must preserve the agent's voice
 
 **`ref-sp-dev-repo-conventions`** — This repo's Python layout, `pyproject.toml` wiring, tooling, typing, and folder placement
+
 - Use when: creating or moving features, tests, or CLI entrypoints, deciding which folder a file belongs in, or adjusting `pyproject.toml`, Poe tasks, or tool config
 
 **`ref-sp-dev-git-commits`** — Commit grouping and commit message guidance
+
 - Use when: deciding how changes should be committed, writing commit titles or bodies, or documenting automated commands in commit messages
 
 **`ref-sp-agents-security`** — Agent security policy, protected files, exclusion sync, and multi-client enforcement
+
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
 **`ref-sp-agents-hooks`** — Author agent lifecycle hooks across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI
+
 - Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block
 
 **`ref-sp-agents-verification-discipline`** — Verification discipline against jumping to answers, sycophancy, and overconfidence
+
 - Use when: choosing between approaches or root causes, acting on an unverified claim, responding to a user challenge, deciding how much verification a risky action needs, or calibrating stated confidence
 
 **`ref-sp-dev-projects-architecture`** — Portable architecture guidance for feature folders and code boundaries
+
 - Use when: deciding where code should live, splitting features, or separating product code from maintenance scripts
 
 **`ref-sp-dev-coding-patterns`** — Portable coding defaults across languages and CLIs
+
 - Use when: choosing naming, typing, comments, branching structure, CLI ergonomics, or testing defaults
 
 **`ref-sp-dev-docs-authoring`** — Portable README and documentation authoring guidance
+
 - Use when: writing or restructuring a README, deciding whether usage or developer setup should come first, or adding concrete documentation examples
 
 **`ref-sp-agents-skills-authoring`** — Guidelines for creating and maintaining project skills
+
 - Use when: designing skills, updating copied skills, or evaluating skill quality
 
 **`ref-sp-agents-instructions-authoring`** — Guidance for structuring and maintaining multi-provider instruction files
+
 - Use when: designing the repo's instruction-file system, choosing the source of truth, or updating `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md` together, including provider-specific guidance through the skill's references
 
 **`ref-sp-dev-github-actions-ci`** — Portable GitHub Actions CI guidance
+
 - Use when: creating or reviewing `.github/workflows/*.yml`, setting up CI or reusable workflows, or securing workflow tokens, actions, and runner choices
 
 **`ref-sp-dev-github-dependabot`** — Portable Dependabot configuration guidance
+
 - Use when: creating or reviewing `.github/dependabot.yml`, tuning update volume, or deciding how version and security updates should be grouped and scoped
 
 **`ref-sp-dev-semantic-versioning`** — Portable semantic-versioning and dependency-range guidance
+
 - Use when: choosing a release bump, reviewing semver compliance, setting npm version ranges, or deciding how package.json dependency fields should be used
 
 **`ref-sp-dev-package-management`** — Portable package-management and changelog workflow guidance
+
 - Use when: syncing versions across multiple manifests, defining a changelog workflow, or designing a repo command for release metadata management
 
 **`ref-sp-py-commitizen`** — Python Commitizen release workflow guidance
+
 - Use when: configuring Commitizen in `pyproject.toml`, choosing version providers, generating changelogs, validating conventional commits, or designing Commitizen-led release commands
 
 **`ref-sp-js-deno`** — Portable Deno guidance for modern runtime usage, tsconfig or ESLint adoption, and hybrid repos
+
 - Use when: writing Deno code, configuring `deno.json`, or adopting Deno into an existing TypeScript or Node repo
 
 **`ref-sp-js-javascript`** — Portable JavaScript guidance for scripts and browser code with JSDoc
+
 - Use when: writing plain JavaScript, adding JSDoc, or keeping JavaScript maintainable without TypeScript
 
 **`ref-sp-js-react`** — Portable React guidance for components, hooks, and library choices
+
 - Use when: creating or reviewing React components, choosing React-friendly libraries, deciding where UI or async state should live, or refactoring a React feature that is getting hard to read
 
 **`ref-sp-js-next`** — Portable Next.js guidance for App Router structure and framework integrations
+
 - Use when: creating or reviewing Next routes and layouts, deciding where `'use client'` belongs, configuring Next.js, or choosing framework-specific integrations like `next-intl`
 
 **`ref-sp-py-python`** — Portable Python guidance for typed code, scripts, and tests
+
 - Use when: writing or refactoring Python modules, designing Python CLIs, or deciding typing and testing patterns
 
 **`ref-sp-js-web-standalone-template`** — App-level guidance for standalone HTML, CSS, and JavaScript tools
+
 - Use when: creating or reviewing a whole browser-only app, deciding whether it can stay no-build, or choosing local assets and browser-loadable libraries
 
 **`ref-sp-js-next-template`** — App-level guidance for full React and Next.js apps
+
 - Use when: scaffolding or reviewing a whole React/Next app, choosing the baseline stack and package manager, or deciding app-level structure
 
 **`ref-sp-agents-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
+
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
 
 **`ref-sp-agents-plugin-marketplaces`** — Publishing skills as an agent plugin through a plugin marketplace, installable from Claude Code, Copilot CLI, and VS Code
+
 - Use when: packaging skills as a plugin, writing `plugin.json` or `marketplace.json`, deciding which skills may be published, targeting Copilot or VS Code users, cutting a plugin release, or debugging an installed plugin that is missing skills or not updating
 
 **`ref-sp-baas-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
+
 - Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
 **`ref-sp-agents-policy`** — Repo-specific agents-policy guidance
+
 - Use when: working on the agents-policy feature, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
 **`ref-sp-agents-skills-management`** — Repo-specific skills-management CLI guidance
 - Use when: working on the skills-management CLI, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
 
 **`ref-sp-js-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
+
 - Use when: writing or reviewing TypeScript code, types, or configuration decisions
 
 **`ref-sp-js-userscript`** — Portable guidance for browser userscripts and DOM automation
+
 - Use when: writing or reviewing `.user.js` or `.user.ts` scripts, metadata blocks, permissions, or page automation
 
 **`tool-sp-adopt-these-skills`** — Adopt this repo's core skills and AI security tooling in another repository
+
 - Use when: bootstrapping another repo with this repo's agent setup or porting the AI security workflow elsewhere
 
 **`tool-sp-export-skills`** — Export selected skills from this repo for repos, AI handoffs, and Gems
+
 - Use when: choosing which skills can leave this repo, preparing a handoff, or packaging a skill set for another environment, AI conversation, or Gemini Gem
 
 **`tool-sp-create-skill`** — Guided wizard for creating a new skill
+
 - Use when: the user wants to add a new skill or scaffold one through a guided intake flow
 
 **`tool-sp-maintain-agents-instructions`** — Guided workflow for updating repo instruction files
+
 - Use when: instruction files may be outdated after code, workflow, or skill changes, or a multi-provider repo needs its instruction bridge refreshed
 
 **`tool-sp-maintain-skills`** — Guided workflow for refreshing and consolidating project skills after repo changes
+
 - Use when: skills may be outdated after code, workflow, or branch changes, guidance is duplicated or misplaced, or a skill catalog needs a maintenance pass
 
 **`tool-sp-make-skill-shareable`** — Guided workflow for making an existing skill shareable
+
 - Use when: a skill lacks shareability metadata, portability is unclear, or a repo-local skill may need to be split before export
 
 **`tool-sp-commit`** — Group edited files into logical commits and create focused commits
+
 - Use when: the user asks to commit changes, split work into focused commits, or decide how the current diff should be grouped before committing
 
 **`tool-sp-handle-agents-local-tasks`** — Guided workflow for reading and handling the local `.agents/tasks/` backlog
+
 - Use when: the user asks to check `.agents/tasks/TODO.md`, continue remaining local tasks, or work through the repo's local task backlog
 
 **`ref-sp-agents-local-tasks`** — Maintain local agent task tracking under `.agents/tasks/`
+
 - Use when: a task needs local planning, temporary task notes, or structured tracking under `.agents/tasks/`
 
 **`ref-sp-dev-playwright-cli`** — Drive a real browser from the terminal via `playwright-cli`
+
 - Use when: verifying a UI change in a real browser, debugging page console/network/DOM state, running or debugging Playwright tests, recording video/traces, or gathering live UI/design feedback from the user
 
 ## Workflow
