@@ -3,6 +3,10 @@
 Load this when writing or debugging either manifest. Examples use synthetic names
 (`acme/agent-skills`, plugin `acme-skills`).
 
+The schemas below are Claude Code's. Copilot CLI and VS Code read the same `.claude-plugin/` manifests
+— it is the last entry in their four-location search order — and define a few extra fields of their
+own. See `./cross-agent-compat.md` before assuming a field or behavior is universal.
+
 ## Where files go
 
 ```text
@@ -64,9 +68,12 @@ If present, `name` is the only required field.
 
 ### Unrecognized fields are ignored
 
-Claude reads only `name`, `description`, and `disable-model-invocation` from a `SKILL.md`'s
+Clients read only `name`, `description`, and `disable-model-invocation` from a `SKILL.md`'s
 frontmatter. Any other `metadata.*` keys — a repo's ownership, domain, visibility, or dependency
 metadata — pass through untouched. Publishing does not require stripping them.
+
+The same tolerance applies to the manifests: a `plugin.json` carrying Copilot-only fields
+(`lspServers`, `extensions`) still loads in Claude, and vice versa.
 
 ## `marketplace.json`
 

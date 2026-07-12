@@ -11,10 +11,10 @@
     "conventions"
   ],
   "skills": [
-    "./.agents/skills/ref-sp-agents-claude-marketplaces",
     "./.agents/skills/ref-sp-agents-hooks",
     "./.agents/skills/ref-sp-agents-instructions-authoring",
     "./.agents/skills/ref-sp-agents-local-tasks",
+    "./.agents/skills/ref-sp-agents-plugin-marketplaces",
     "./.agents/skills/ref-sp-agents-shareable-skills",
     "./.agents/skills/ref-sp-agents-skills-authoring",
     "./.agents/skills/ref-sp-baas-supabase",

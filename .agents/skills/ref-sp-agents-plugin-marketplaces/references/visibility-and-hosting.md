@@ -23,7 +23,7 @@ this repo's (`repo-local` / `organization` / `public`); substitute whatever poli
 | `organization` | **Private** git repo. | `extraKnownMarketplaces` pre-registers it; teammates who trust the project folder are prompted to install. Auto-update needs a token (below). |
 | `repo-local` | Not published at all. If it must be loadable, a local `directory`/`file` source never touches the network. | `/plugin marketplace add ./my-marketplace` |
 
-**Claude has no notion of skill-level visibility.** It publishes exactly what the manifest enumerates.
+**No client has a notion of skill-level visibility.** Each publishes exactly what the manifest enumerates.
 The tier is therefore enforced by *what you list* — which is why the skills list should be generated
 from the visibility metadata rather than hand-maintained, and why a CI drift check is the thing that
 actually keeps a local-only skill from leaking.
@@ -53,6 +53,10 @@ Without the token, manual installs still work but auto-update silently stops kee
 private `github` / `git` / `url` / `directory` repo. Teammates who trust the project folder are then
 prompted to install it. This is the concrete home for an `organization` tier: distribution to a team
 with nothing published publicly.
+
+Copilot's analogue is enterprise-managed plugins, declared in `.github/copilot/settings.json`: an
+enterprise administrator can pre-register marketplaces and force-install plugins for users on the
+enterprise's Copilot plan. VS Code uses `chat.plugins.marketplaces`. See `./cross-agent-compat.md`.
 
 Related administrative controls worth knowing about when a marketplace is org-managed:
 

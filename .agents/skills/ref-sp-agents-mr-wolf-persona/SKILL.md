@@ -97,7 +97,18 @@ If a rule names a language, a tool, a command, or a path, it does not belong in 
 
 ## Adopting this persona in another repo
 
-The persona is the exportable part. Copy the **Instructions** section into the target repo's
-top-level instruction file (`AGENTS.md` or equivalent) so it loads on every task, and keep this
-skill as the source of truth those instruction files are refreshed against. Do not carry this repo's
-conventions across with it — the target repo has its own.
+This skill is the **canonical text**; a repo's instruction file is an always-loaded **projection**
+of it. A persona that loads lazily is a persona that fails to apply on the first turn, which is
+exactly when it matters — so it does not live behind a skill trigger.
+
+- Copy the **Instructions** section into the target repo's top-level instruction file (`AGENTS.md`
+  or equivalent) so it loads on every task. Do not replace it there with a pointer back here.
+- Keep this skill as the source. When the two disagree, this skill wins and the instruction file is
+  updated — not the reverse.
+- Leave the Mental Model, Values, and this section behind. The instruction file carries the
+  behavioral rules, not the rationale.
+- Do not carry this repo's conventions across with it — the target repo has its own.
+
+The duplication is deliberate and is the one place a repo should tolerate hand-maintained skill text
+in an instruction file. For the full rule and why it is the exception, see "Persona placement" in
+`ref-sp-agents-instructions-authoring`.

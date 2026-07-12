@@ -1,14 +1,14 @@
 ---
 name: tool-sp-export-skills
-description: "Help export selected skills from this repository in the right format for another repo, a manual bundle, AI conversations, a Gemini Gem, a Copilot project, or a published Claude Code plugin marketplace. Use when: choosing which skills can leave this repo, preparing a handoff, publishing skills for install, or packaging a skill set for another environment."
-argument-hint: "What is the export target: another repo, manual bundle, Gemini conversation, Gemini Gem, Claude Code conversation, Copilot project, Claude plugin marketplace, or something else"
+description: "Help export selected skills from this repository in the right format for another repo, a manual bundle, AI conversations, a Gemini Gem, a Copilot project, or a published plugin marketplace. Use when: choosing which skills can leave this repo, preparing a handoff, publishing skills for install, or packaging a skill set for another environment."
+argument-hint: "What is the export target: another repo, manual bundle, Gemini conversation, Gemini Gem, Claude Code conversation, Copilot project, plugin marketplace, or something else"
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
   shareable-skills.visibility: "repo-local"
   shareable-skills.requires: "ref-sp-agents-shareable-skills, ref-sp-agents-skills-management"
-  shareable-skills.suggests: "ref-sp-agents-claude-marketplaces"
+  shareable-skills.suggests: "ref-sp-agents-plugin-marketplaces"
   shareable-skills.reason: "This workflow depends on this repo's concrete skill catalog, shareability metadata, and skills-management conventions."
 ---
 
@@ -40,8 +40,8 @@ If the target is not already explicit, start by choosing the export mode first a
 - [AI conversation handoff](./references/ai-conversation.md)
 - [Gemini Gem handoff](./references/gemini-gem.md)
 - [Copilot project handoff](./references/copilot-project.md)
-- [Claude Code plugin marketplace](./references/claude-marketplace.md) — publishing, not a one-time
-  handoff; defers to `ref-sp-agents-claude-marketplaces` for the mechanics.
+- [Plugin marketplace](./references/plugin-marketplace.md) — publishing, not a one-time handoff;
+  defers to `ref-sp-agents-plugin-marketplaces` for the mechanics.
 - [Other or fill blank](./references/other-mode.md)
 
 ## Core Rules

@@ -42,7 +42,7 @@ Read the repo's instruction-authoring skill (`ref-sp-agents-instructions-authori
 - Prefer a single source-of-truth instruction file plus thin provider bridges.
 - Prefer a root `AGENTS.md` as the source of truth; fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or already uses that pattern.
 - If the repo supports multiple providers, recommend an import bridge rather than parallel duplicated instruction bodies.
-- When the repo carries a deliberate persona or working style, keep that voice aligned with the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) instead of rewriting tone ad hoc.
+- When the repo carries a deliberate persona or working style, keep the persona core **inline** in the source-of-truth file — it must load on every turn — and treat the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) as the canonical text that copy is refreshed from. Sync in that direction; never rewrite the tone ad hoc in the instruction file. See "Persona placement" in `ref-sp-agents-instructions-authoring`.
 - When skill names or workflows change, update both the source-of-truth file and any provider routing summaries that mention them.
 - If the top-level instruction file grows too large, move domain detail into the owning skill and keep only routing at the top level.
 

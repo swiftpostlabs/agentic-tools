@@ -1,10 +1,13 @@
-"""Build the Claude Code plugin and marketplace manifests from the skills catalog.
+"""Build the plugin and marketplace manifests from the skills catalog.
 
-Claude has no concept of skill-level visibility: a plugin publishes exactly the
-skill directories its manifest enumerates. The enumeration produced here is
-therefore the only thing keeping a `repo-local` skill out of a published plugin,
-which is why it is generated from `shareable-skills.visibility` rather than
-hand-maintained. See the `ref-sp-agents-claude-marketplaces` skill.
+No agent client has a concept of skill-level visibility: a plugin publishes
+exactly the skill directories its manifest enumerates. The enumeration produced
+here is therefore the only thing keeping a `repo-local` skill out of a published
+plugin, which is why it is generated from `shareable-skills.visibility` rather
+than hand-maintained. See the `ref-sp-agents-plugin-marketplaces` skill.
+
+The manifests live under `.claude-plugin/`, which Claude Code, GitHub Copilot
+CLI, and VS Code all detect, so one generated set serves every client.
 """
 
 import json

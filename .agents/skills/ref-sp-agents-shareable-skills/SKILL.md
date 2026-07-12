@@ -107,11 +107,11 @@ metadata:
 - `public` — anywhere + marketplace; **requires `license`**.
 - Operational model: your own org/public skills = symlink from home; foreign skills you consume =
   vendor-copy with provenance. Read `./references/spec.md` §6.
-- **Publishing to a Claude Code plugin marketplace is one more export destination**, gated by these
-  same tiers. Claude itself has no notion of skill-level visibility — it publishes exactly what the
-  plugin manifest enumerates — so the tier is only enforced by generating that list from
+- **Publishing to a plugin marketplace is one more export destination**, gated by these same tiers.
+  No client has a notion of skill-level visibility — a plugin publishes exactly what its manifest
+  enumerates — so the tier is only enforced by generating that list from
   `shareable-skills.visibility` and drift-checking it. The packaging, hosting, and release mechanics
-  are owned by `ref-sp-agents-claude-marketplaces`; do not restate them here.
+  are owned by `ref-sp-agents-plugin-marketplaces`; do not restate them here.
 
 ## Vendoring vs forking (summary)
 
@@ -166,7 +166,7 @@ Run both when a skill should be good *and* shareable.
 - `./scripts/check-vendored-drift.mts` — flags vendored copies that were edited or whose upstream advanced.
 - `./references/registry.json` — the domains/tags/aliases registry and validator `phase`.
 - `ref-sp-agents-skills-authoring` — general skill-quality authoring (complementary).
-- `ref-sp-agents-claude-marketplaces` — publishing skills as a Claude Code plugin via a marketplace;
+- `ref-sp-agents-plugin-marketplaces` — publishing skills as an agent plugin via a marketplace;
   the mechanics behind the marketplace export destination named under Visibility.
 - `tool-sp-make-skill-shareable` — guided shareability decision for a skill.
 - `.agents/tasks/skill-standardization-spec/README.md` — decision log and rationale (local, may be absent).

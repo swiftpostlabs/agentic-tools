@@ -3,6 +3,10 @@
 Load this when cutting a release, wiring versioning into an existing release flow, or debugging a
 plugin that will not update.
 
+The version-resolution model and the release decisions here apply to any client. The concrete cache
+paths and commands are Claude Code's; see `./cross-agent-compat.md` for the Copilot CLI and VS Code
+equivalents.
+
 ## There is no build artifact
 
 For the git-based source types (`github`, `url`, `git-subdir`, and relative paths inside a git-hosted

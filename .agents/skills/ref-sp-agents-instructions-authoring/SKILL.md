@@ -7,6 +7,7 @@ metadata:
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
   shareable-skills.domain: "agents"
   shareable-skills.visibility: "public"
+  shareable-skills.suggests: "ref-sp-agents-mr-wolf-persona"
 ---
 
 # Agents Instructions Authoring
@@ -46,6 +47,7 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Prefer a root `AGENTS.md` as the repo source of truth by default — it is read natively by many agents; see `./references/agents-md-standard.md`. Fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or has a mature file already established there.
 - Use thin provider bridge files for Gemini and Claude by default rather than duplicating the full instruction set.
 - Keep always-on repo rules in the source-of-truth file and move domain-specific detail into skills.
+- Inline the persona core in the source-of-truth file rather than routing to a persona skill — persona is the one category of guidance that must shape *every* turn, and a skill only loads when something triggers it. See "Persona placement" below.
 - Add provider-specific exceptions only when a real platform behavior requires them.
 - Keep cross-project personal defaults in user-level/global config, not duplicated into every repo; see `./references/global-instructions.md`.
 - For the global/home tier, as of today no tool documents an `AGENTS.md` equivalent, so keep Copilot (`~/.copilot/instructions/*.instructions.md`) as the recommended global source of truth; see `./references/global-instructions.md`.
@@ -72,6 +74,30 @@ Provide portable defaults for designing maintainable repository instruction syst
 - Keep bridge files minimal and readable.
 - Use repo-root imports when the provider supports them so the bridge does not depend on folder depth.
 
+### Persona placement
+
+Persona is the deliberate exception to "move detail into skills". Everything else in a skill can
+afford to load on demand; the agent's voice, directness, and escalation stance cannot, because they
+govern how the agent behaves on the very first turn — before any skill has been triggered.
+
+- **Inline the persona core** in the source-of-truth instruction file (`AGENTS.md` or equivalent),
+  where it loads on every task. Do not replace it with a pointer to a persona skill.
+- **Keep the persona skill as the canonical text** the inline copy is refreshed against. The skill
+  is the source; the instruction file is the always-loaded projection of it. When they disagree, the
+  skill wins and the instruction file gets updated — not the reverse.
+- **Inline the core, not the whole skill.** The instruction file carries voice, directness, pushing
+  back, and escalation stance. Worked examples, rationale, and adoption guidance stay in the skill.
+- Accept the duplication. It is real, and it is the correct trade: a persona that loads lazily is a
+  persona that does not apply when it matters most. Treat it as a deliberate sync point, reviewed
+  whenever either side changes.
+- This is the one place a repo should tolerate a hand-maintained copy of skill text in an
+  instruction file. It is not a licence to inline anything else.
+
+**In SwiftPost-opinionated setups**, that persona is `ref-sp-agents-mr-wolf-persona`: the repo's
+`AGENTS.md` carries its Instructions section inline as the Personality block, and the skill remains
+the canonical source it is refreshed against. A repo adopting this instruction architecture without
+the SwiftPost persona applies the same pattern with whatever persona skill it owns.
+
 ### Provider-specific exceptions
 
 - Add provider-specific text only when the platform has a real bootstrap requirement, limitation, or routing constraint.
@@ -80,7 +106,8 @@ Provide portable defaults for designing maintainable repository instruction syst
 
 ### Maintenance
 
-- Review top-level instructions when quick commands, workflow defaults, safety policy, or the skill catalog changes.
+- Review top-level instructions when quick commands, workflow defaults, safety policy, the persona skill, or the skill catalog changes.
+- When the persona skill changes, re-sync the inline persona block in the source-of-truth file in the same pass. This is the deliberate duplication from "Persona placement", and it only stays correct if it is refreshed deliberately.
 - If the repo adds or removes important skills, update both the skill inventory and the routing hints in the source-of-truth file.
 - Keep instruction files aligned with generated policy files and provider settings when the repo uses them.
 
@@ -89,6 +116,7 @@ Provide portable defaults for designing maintainable repository instruction syst
 - The repo has one clear instruction source of truth.
 - Bridge files stay thin unless a provider-specific exception is genuinely required.
 - Top-level instructions contain durable repo workflow and routing, not duplicated domain detail.
+- The persona core is inline in the source-of-truth file, not merely pointed at, and it still matches the persona skill it is projected from.
 - The instruction files still match the current skills, commands, and policy model.
 
 ## References
