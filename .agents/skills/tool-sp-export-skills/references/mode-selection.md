@@ -8,7 +8,8 @@ If the target is not already explicit, start by asking which export target the u
 4. Gemini Gem
 5. Claude Code conversation
 6. Copilot project
-7. Other (fill blank)
+7. Claude Code plugin marketplace (publish for install by anyone who adds the marketplace)
+8. Other (fill blank)
 
 Treat this as a small interactive decision step.
 Do not dump all instructions at once if the target format is still ambiguous.
