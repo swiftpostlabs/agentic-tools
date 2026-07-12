@@ -47,6 +47,7 @@
     "./.agents/skills/ref-sp-web-marketing",
     "./.agents/skills/ref-sp-web-seo",
     "./.agents/skills/ref-sp-web-seo-ai",
+    "./.agents/skills/ref-sp-web-social-media",
     "./.agents/skills/tool-sp-commit",
     "./.agents/skills/tool-sp-create-skill",
     "./.agents/skills/tool-sp-handle-agents-local-tasks",

@@ -8,7 +8,7 @@ metadata:
   shareable-skills.domain: "web"
   shareable-skills.tags: "verification"
   shareable-skills.visibility: "public"
-  shareable-skills.suggests: "ref-sp-web-seo, ref-sp-web-seo-ai"
+  shareable-skills.suggests: "ref-sp-web-seo, ref-sp-web-seo-ai, ref-sp-web-social-media"
 ---
 
 # Web Marketing Measurement
@@ -124,7 +124,9 @@ Two consequences worth stating to a stakeholder:
   unfalsifiable claims about "brand awareness."
 
 For how AI answer surfaces specifically distort search metrics, use
-`.agents/skills/ref-sp-web-seo-ai/SKILL.md`.
+`.agents/skills/ref-sp-web-seo-ai/SKILL.md`. For whether the link suppression is real and whether a
+brand should be on a platform at all — the strategy side, kept separate from this measurement side —
+use `.agents/skills/ref-sp-web-social-media/SKILL.md`.
 
 ## Defaults
 
@@ -156,6 +158,8 @@ For how AI answer surfaces specifically distort search metrics, use
   numbers, the zero-click figures and why they carry a vendor caveat, and the analytics channel
   definitions. Read it before quoting any percentage.
 - `.agents/skills/ref-sp-web-seo-ai/SKILL.md` — how AI answer surfaces distort search metrics.
+- `.agents/skills/ref-sp-web-social-media/SKILL.md` — organic discovery and reach on social/video
+  platforms; the strategy counterpart to this measurement skill.
 - `.agents/skills/ref-sp-web-seo/SKILL.md` — the claim-tiering rule this skill also applies.
 
 ## Validation

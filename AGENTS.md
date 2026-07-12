@@ -219,6 +219,10 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: reading a traffic or conversion report, being asked which channel is working or where to spend, interpreting a campaign result, or judging whether a marketing claim is supported by its data
 
+**`ref-sp-web-social-media`** — Organic discovery on social and video platforms, folklore separated from fact
+
+- Use when: asked whether to be on TikTok/YouTube/Instagram for reach, how in-app discovery or search works, whether outbound links hurt reach, how younger audiences find things, how social content shows up in Google, or judging a social-strategy claim
+
 ## Workflow
 
 When working on this project:
@@ -301,6 +305,7 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 - For auditing a site's SEO, indexing and crawl diagnosis, JavaScript rendering for crawlers, Core Web Vitals, content quality against Google's rater framework, or designing a valid before/after SEO test: use `ref-sp-web-seo`.
 - For visibility in AI Overviews, AI Mode, and assistants, AI crawler access decisions, or separating defensible GEO advice from speculation: use `ref-sp-web-seo-ai`.
 - For reading traffic, channel, and conversion data honestly — the "Direct" bucket, dark social, attribution recovery, and whether a difference is signal or noise: use `ref-sp-web-marketing`.
+- For organic discovery and reach on social and video platforms — in-app search, link suppression, cohort behaviour, and how social content surfaces in Google, with folklore separated from documented fact: use `ref-sp-web-social-media`.
 - For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
 - For getting this repo's skills into another repo — packaging them as an agent plugin, writing `plugin.json` or `marketplace.json`, hosting a marketplace, reaching Claude Code, Copilot CLI, and VS Code users from one repo, or releasing and updating a published plugin: use `ref-sp-agents-plugin-marketplaces`. For consuming them in a repo that links skills from a source, use `ref-sp-agents-skills-management`.

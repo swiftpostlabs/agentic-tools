@@ -8,7 +8,7 @@ metadata:
   shareable-skills.domain: "web"
   shareable-skills.tags: "browser, verification"
   shareable-skills.visibility: "public"
-  shareable-skills.suggests: "ref-sp-web-seo, ref-sp-web-marketing, ref-sp-dev-playwright-cli"
+  shareable-skills.suggests: "ref-sp-web-seo, ref-sp-web-marketing, ref-sp-web-social-media, ref-sp-dev-playwright-cli"
 ---
 
 # AI Search Visibility
