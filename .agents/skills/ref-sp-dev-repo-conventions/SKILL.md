@@ -51,6 +51,8 @@ Use this skill for the concrete package name, folder placement, `pyproject.toml`
 AGENTS.md                          # source-of-truth agent guidance (Copilot reads it natively)
 .agents/skills/<skill>/SKILL.md    # agent workflow skills (+ references/ assets/ evals/ scripts/)
 .agents/config.json                # policy + skills config
+.agents/playground/                # local scratch space for temporary helper files (gitignored)
+.agents/tasks/                     # local task backlog and tracked task folders (gitignored)
 src/agentic_tools/                 # shipped Python package (feature-first, see below)
 src/agentic_tools_old/             # legacy Node port (boundary; do not extend unless asked)
 scripts/                           # repo maintenance/automation, not shipped product
@@ -92,6 +94,13 @@ src/agentic_tools/
 - Repo maintenance scripts stay in `scripts/` (`if __name__ == "__main__":` is fine there). A user-facing feature belongs under `features/<feature>/`, not hidden in `scripts/`.
 - Use `[tool.poe.tasks]` for dev workflows and shell-like orchestration that do not fit `[project.scripts]`.
 - Ask before moving an existing script into the package or changing how the user runs it.
+
+## Scratch and task workspaces
+
+- Temporary helper files go under `.agents/playground/`, created with the edit tools — not generated
+  through terminal heredocs or shell redirection.
+- Local task notes and tracked task folders go under `.agents/tasks/` (see `ref-sp-agents-local-tasks`).
+- Both are local workspaces: never ship product code from them.
 
 ## Testing conventions
 

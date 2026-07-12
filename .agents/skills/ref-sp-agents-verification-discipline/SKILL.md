@@ -7,7 +7,7 @@ metadata:
   shareable-skills.domain: "agents"
   shareable-skills.tags: "verification, calibration, sycophancy, overconfidence"
   shareable-skills.visibility: "organization"
-  shareable-skills.suggests: "ref-sp-agents-persona"
+  shareable-skills.suggests: "ref-sp-agents-mr-wolf-persona"
 ---
 
 # Verification Discipline

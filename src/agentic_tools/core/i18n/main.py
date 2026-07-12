@@ -8,6 +8,7 @@ _PACKAGE_ROOT = Path(__file__).resolve().parents[2]
 _TRANSLATION_DIRECTORIES = (
     _PACKAGE_ROOT / "main" / "translations",
     _PACKAGE_ROOT / "features" / "skills" / "translations",
+    _PACKAGE_ROOT / "features" / "plugin" / "translations",
 )
 
 

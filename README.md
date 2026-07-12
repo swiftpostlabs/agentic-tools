@@ -36,7 +36,7 @@ Then declare which shared skills you want in `.agents/config.json`:
         "from": "package:agentic-tools",
         "url": "https://github.com/swiftpostlabs/agentic-tools",
         "skills": [
-          "ref-sp-agents-persona",
+          "ref-sp-agents-mr-wolf-persona",
           "ref-sp-agents-security",
           "ref-sp-dev-coding-patterns",
           "ref-sp-py-python"

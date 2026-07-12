@@ -26,7 +26,7 @@ Guide the agent through a short maintenance wizard so top-level instruction file
 
 ## First Step
 
-Read the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here, the `requires` dependency), its agent-persona skill (`ref-sp-agents-persona` here), and the provider reference files under the instruction-authoring skill's `references/providers/` folder that match the files being touched.
+Read the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here, the `requires` dependency), its agent-persona skill (`ref-sp-agents-mr-wolf-persona` here), and the provider reference files under the instruction-authoring skill's `references/providers/` folder that match the files being touched.
 
 ## Core Workflow
 
@@ -42,7 +42,7 @@ Read the repo's instruction-authoring skill (`ref-sp-agents-instructions-authori
 - Prefer a single source-of-truth instruction file plus thin provider bridges.
 - Prefer a root `AGENTS.md` as the source of truth; fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or already uses that pattern.
 - If the repo supports multiple providers, recommend an import bridge rather than parallel duplicated instruction bodies.
-- When the repo carries a deliberate persona or working style, keep that voice aligned with the repo's agent-persona skill (`ref-sp-agents-persona` here) instead of rewriting tone ad hoc.
+- When the repo carries a deliberate persona or working style, keep that voice aligned with the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) instead of rewriting tone ad hoc.
 - When skill names or workflows change, update both the source-of-truth file and any provider routing summaries that mention them.
 - If the top-level instruction file grows too large, move domain detail into the owning skill and keep only routing at the top level.
 
@@ -74,6 +74,6 @@ Ask only the questions that are still unanswered after inspecting the repo.
 ## References
 
 - Read the instruction-authoring skill's provider references (`ref-sp-agents-instructions-authoring`; in this repo, its `references/providers/copilot-instructions.md`, `references/providers/gemini-instructions.md`, and `references/providers/claude-instructions.md`) for file-specific authoring rules.
-- Use the repo's agent-persona skill (`ref-sp-agents-persona` here) when the instruction changes need to preserve the repo's agent voice, interaction style, or escalation stance.
+- Use the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) when the instruction changes need to preserve the repo's agent voice, interaction style, or escalation stance.
 - Use the repo's skill-maintenance skill (`tool-sp-maintain-skills` here) when the instruction pass also needs skill consolidation or routing cleanup.
 - Use the repo's agent-security skill (`ref-sp-agents-security` here) when instruction changes must stay aligned with generated policy files or provider restrictions.

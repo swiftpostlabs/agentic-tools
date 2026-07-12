@@ -101,7 +101,10 @@
     "verification",
     "calibration",
     "sycophancy",
-    "overconfidence"
+    "overconfidence",
+    "persona",
+    "communication",
+    "working-style"
   ],
   "domainAliases": {
     "app": "js",
@@ -118,7 +121,7 @@
     "ref-agents-hooks": "ref-sp-agents-hooks",
     "ref-agents-instructions-authoring": "ref-sp-agents-instructions-authoring",
     "ref-agents-local-tasks": "ref-sp-agents-local-tasks",
-    "ref-agents-persona": "ref-sp-agents-persona",
+    "ref-agents-persona": "ref-sp-agents-mr-wolf-persona",
     "ref-agents-security": "ref-sp-agents-security",
     "ref-app-react-next": "ref-sp-js-next-template",
     "ref-app-web-standalone": "ref-sp-js-web-standalone-template",
@@ -166,6 +169,7 @@
     "ref-sp-js-web-standalone": "ref-sp-js-web-standalone-template",
     "ref-sp-py-code-conventions": "ref-sp-dev-repo-conventions",
     "ref-sp-dev-project-setup": "ref-sp-dev-repo-conventions",
-    "ref-sp-dev-project-folders": "ref-sp-dev-repo-conventions"
+    "ref-sp-dev-project-folders": "ref-sp-dev-repo-conventions",
+    "ref-sp-agents-persona": "ref-sp-agents-mr-wolf-persona"
   }
 }

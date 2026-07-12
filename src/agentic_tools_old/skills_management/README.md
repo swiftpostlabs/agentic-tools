@@ -37,7 +37,7 @@ Example config:
     "from": "package:agentic-tools",
     "url": "https://github.com/swiftpostlabs/agentic-tools",
     "skills": [
-     "ref-sp-agents-persona",
+     "ref-sp-agents-mr-wolf-persona",
      "ref-sp-dev-coding-patterns",
      "ref-sp-py-python"
     ]

@@ -12,7 +12,7 @@ Use these as starting points, not as mandatory all-or-nothing bundles.
 
 ### General coding and architecture
 
-- `ref-sp-agents-persona`
+- `ref-sp-agents-mr-wolf-persona`
 - `ref-sp-dev-coding-patterns`
 - `ref-sp-dev-projects-architecture`
 - `ref-sp-dev-git-commits`

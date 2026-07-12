@@ -62,8 +62,8 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 ### Available Skills
 
-**`ref-sp-agents-persona`** — Agent persona and workflow expectations
-- Use when: starting tasks, planning commits, preserving structure, or understanding communication expectations
+**`ref-sp-agents-mr-wolf-persona`** — Agent voice, working style, and escalation stance
+- Use when: starting a task, delivering unwelcome technical feedback, pushing back on a flawed premise, or refreshing instruction files that must preserve the agent's voice
 
 **`ref-sp-dev-repo-conventions`** — This repo's Python layout, `pyproject.toml` wiring, tooling, typing, and folder placement
 - Use when: creating or moving features, tests, or CLI entrypoints, deciding which folder a file belongs in, or adjusting `pyproject.toml`, Poe tasks, or tool config
@@ -230,7 +230,7 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 
 - For this repo's Python layout, `pyproject.toml` wiring, tooling, typing, tests, or folder placement: use `ref-sp-dev-repo-conventions`.
 - For commit format, commit bodies, or reproducibility details in commit messages: use `ref-sp-dev-git-commits`.
-- For workflow and structural caution: use `ref-sp-agents-persona`.
+- For agent voice, directness, pushing back on a flawed premise, and structural caution: use `ref-sp-agents-mr-wolf-persona`.
 - For routing verification by confidence and stakes, enumeration floors, human-claim challenges, and calibrated confidence: use `ref-sp-agents-verification-discipline`.
 - For portable coding defaults across languages and CLIs: use `ref-sp-dev-coding-patterns`.
 - For README structure, docs audience, and concrete documentation examples: use `ref-sp-dev-docs-authoring`.

@@ -1,0 +1,21 @@
+{
+  "en": {
+    "plugin": {
+      "description": "Generate and verify the Claude Code plugin and marketplace manifests.",
+      "error": "Error: {{message}}",
+      "root": {
+        "help": "Repository root to read the catalog from and write manifests to."
+      },
+      "sync": {
+        "help": "Regenerate the plugin manifests from the skills catalog.",
+        "written": "wrote {{path}}"
+      },
+      "check": {
+        "help": "Fail if the committed plugin manifests drift from the skills catalog.",
+        "drifted": "Drift detected: {{path}} does not match the skills catalog",
+        "hint": "Run `uv run poe plugin-sync` and commit the regenerated manifests.",
+        "ok": "Plugin manifests are up to date."
+      }
+    }
+  }
+}
