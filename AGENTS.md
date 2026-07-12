@@ -134,6 +134,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-sp-agents-shareable-skills`** — Shareability metadata and export-readiness guidance for skills
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
 
+**`ref-sp-agents-claude-marketplaces`** — Publishing skills as a Claude Code plugin through a plugin marketplace
+- Use when: packaging skills as a plugin, writing `plugin.json` or `marketplace.json`, deciding which skills may be published, cutting a plugin release, or debugging an installed plugin that is missing skills or not updating
+
 **`ref-sp-baas-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
 - Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
@@ -256,7 +259,8 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 - For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-baas-supabase`.
 - For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.
-- For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, or a Gemini Gem: use `tool-sp-export-skills`.
+- For exporting selected skills from this repo into another repo, a copied bundle, an AI conversation, a Gemini Gem, or a published plugin marketplace: use `tool-sp-export-skills`.
+- For packaging skills as a Claude Code plugin, writing `plugin.json` or `marketplace.json`, hosting a marketplace, or releasing and updating a published plugin: use `ref-sp-agents-claude-marketplaces`.
 - For creating a new skill through a guided intake flow: use `tool-sp-create-skill`.
 - For refreshing `AGENTS.md`, `GEMINI.md`, and `.claude/CLAUDE.md` after repo changes: use `tool-sp-maintain-agents-instructions`.
 - For refreshing project skills after repo or branch changes: use `tool-sp-maintain-skills`.
