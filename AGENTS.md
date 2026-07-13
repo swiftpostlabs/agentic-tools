@@ -161,10 +161,32 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase
 
+**`ref-sp-db-schema-design`** — Portable relational schema design from requirements to physical model
+
+- Use when: starting a schema from requirements, turning business rules into entities, keys, and relationships, decomposing a wide table, reviewing functional dependencies and normal forms, or deciding how far to normalize
+
+**`ref-sp-db-operations`** — Portable guidance for running a database as a durable system of record
+
+- Use when: planning transactions or isolation levels, diagnosing lock contention or a slow query, choosing or pruning indexes, planning a migration or rollback, or reviewing whether backups actually restore
+
+**`ref-sp-db-nosql`** — Portable NoSQL guidance for document, key-value, graph, and wide-column models
+
+- Use when: relational joins stop matching the workload, horizontal scale or flexible schema dominates, or CAP and eventual-consistency tradeoffs need to be made deliberately
+
+**`ref-sp-db-security`** — Portable database-security guidance for access control, auditing, encryption, and secure recovery
+
+- Use when: protecting database-backed systems, designing authorization models, reviewing confidentiality, integrity, or availability risks, or securing backups, logs, and administrative access
+
+**`ref-sp-db-distributed`** — Portable distributed-database guidance for fragmentation, replication, and topology
+
+- Use when: designing distributed or replicated databases, choosing site layout, planning mobile or intermittently connected data flows, or separating topology decisions from data-model decisions
+
 **`ref-sp-agents-policy`** — Repo-specific agents-policy guidance
 
 - Use when: working on the agents-policy feature, updating policy docs, or debugging generated policy outputs for Copilot, Claude Code, or Gemini in this repo
+
 **`ref-sp-agents-skills-management`** — Repo-specific skills-management CLI guidance
+
 - Use when: working on the skills-management CLI, updating skills-management docs, or debugging linking and sync behavior in a consuming repo
 
 **`ref-sp-js-typescript`** — Portable TypeScript guidance for strict typing and runtime boundaries
@@ -218,6 +240,10 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 **`ref-sp-web-marketing`** — Honest measurement of traffic, channels, and conversions
 
 - Use when: reading a traffic or conversion report, being asked which channel is working or where to spend, interpreting a campaign result, or judging whether a marketing claim is supported by its data
+
+**`ref-sp-web-wordpress`** — Building on WordPress: security gates, hooks, safe DB access, headless
+
+- Use when: writing or reviewing a WordPress plugin or theme, handling request data in PHP, adding an admin/AJAX/REST endpoint, querying the database, extending WordPress without editing core, or auditing a WordPress site's security posture
 
 **`ref-sp-web-social-media`** — Organic discovery on social and video platforms, folklore separated from fact
 
@@ -302,9 +328,16 @@ After editing any skill under `.agents/skills/`, validate it with `yarn validate
 - For browser userscripts: use `ref-sp-js-userscript`.
 - For Deno runtime, tsconfig or ESLint adoption, and hybrid Deno or Node repos: use `ref-sp-js-deno`.
 - For Supabase CLI, schema, CRUD API, edge functions, and ORM boundaries: use `ref-sp-baas-supabase`.
+- For designing a relational schema from requirements — ER modeling, keys and relationships, functional dependencies, normalization, and workload-driven physical design: use `ref-sp-db-schema-design`.
+- For running a database in production — transaction boundaries and isolation, lock contention, indexing, query optimization, backup and restore, and safe migrations: use `ref-sp-db-operations`.
+- For choosing a non-relational model and living with its tradeoffs — document, key-value, graph, or wide-column, CAP, and eventual consistency: use `ref-sp-db-nosql`.
+- For database security — access control, views, auditing, encryption, integrity, and secure recovery: use `ref-sp-db-security`.
+- For distributed and replicated databases — fragmentation, replica placement, topology, and disconnected synchronization: use `ref-sp-db-distributed`.
+- For driving a real browser from the terminal — verifying a UI change, debugging page console, network, or DOM state, running Playwright tests, or reading a page that plain fetching cannot: use `ref-sp-dev-playwright-cli`.
 - For auditing a site's SEO, indexing and crawl diagnosis, JavaScript rendering for crawlers, Core Web Vitals, content quality against Google's rater framework, or designing a valid before/after SEO test: use `ref-sp-web-seo`.
 - For visibility in AI Overviews, AI Mode, and assistants, AI crawler access decisions, or separating defensible GEO advice from speculation: use `ref-sp-web-seo-ai`.
 - For reading traffic, channel, and conversion data honestly — the "Direct" bucket, dark social, attribution recovery, and whether a difference is signal or noise: use `ref-sp-web-marketing`.
+- For building on WordPress — the sanitize/capability/escape security gates, hooks instead of editing core, `$wpdb->prepare`, child themes, and headless REST: use `ref-sp-web-wordpress`. (WordPress *SEO* lives in `ref-sp-web-seo`'s `references/frameworks.md`.)
 - For organic discovery and reach on social and video platforms — in-app search, link suppression, cohort behaviour, and how social content surfaces in Google, with folklore separated from documented fact: use `ref-sp-web-social-media`.
 - For this repo's skills-management CLI and `.agents/config.json` skills sync model: use `ref-sp-agents-skills-management`.
 - For deciding whether a skill should be shared, exported, or kept repo-local: use `ref-sp-agents-shareable-skills`.

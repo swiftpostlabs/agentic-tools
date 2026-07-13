@@ -88,6 +88,10 @@ publish webhook to CI, or accept that the site is only as fresh as its last buil
 
 ## WordPress
 
+**This file covers WordPress *SEO* only.** For building on WordPress — the security gates
+(sanitize/capability/escape), hooks, `$wpdb->prepare`, child themes, and the headless REST API — use
+`.agents/skills/ref-sp-web-wordpress/SKILL.md`.
+
 ### Core sitemaps
 
 WordPress core has shipped XML sitemaps since **5.5**, at **`/wp-sitemap.xml`**, generated from posts
