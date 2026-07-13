@@ -74,15 +74,23 @@ loud.** A claim resting on a single interested source is a tier-1 document but n
 | Crawl → render → index, with a deferred render queue; blocked resources prevent rendering; `noindex` in initial HTML can skip rendering; SPA soft 404s; fragment URLs unreliable; lazy-loaded images may not be indexed | [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) | **Bing, independently**, lists under "Avoid": *"Hiding critical content behind client-side rendering"*, and warns *"Content that cannot be reliably rendered may not be indexed or selected for grounding results."* Two engines agree — this is not a Google quirk. | 2026-07-12 |
 | Most non-Google crawlers do not execute JavaScript | Inferred, not documented by any single vendor | Corroborated by Next.js's own `htmlLimitedBots` mechanism (below), which exists *precisely because* a class of bots cannot run JS. **Label this as a well-supported inference, not a citation.** | 2026-07-12 |
 
-## Section: Framework traps (Next.js App Router)
+## Section: Framework and CMS traps → `./frameworks.md`
 
-Fast-moving. Both pages carry a version and `lastUpdated` — check them; the behaviour changes between
-minor versions. Verified against Next.js **16.2.10** docs (`lastUpdated: 2026-03-03`).
+Fast-moving. The Next.js pages carry a version and `lastUpdated` — check them; behaviour changes
+between minor versions. Verified against Next.js **16.2.10**.
 
 | Claim | Source | Verified |
 | --- | --- | --- |
-| Streaming metadata appends tags to `<body>`; Googlebot handles it; **HTML-limited bots are detected by a hardcoded User-Agent list** (`htmlLimitedBots`), and non-JS bots outside that list get metadata they cannot read; `generateMetadata` is Server-Components-only; shallow merge replaces whole nested objects (`openGraph`); canonicals via `alternates.canonical` + `metadataBase` | [generateMetadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata) | 2026-07-12 |
-| `output: 'export'` disables redirects, headers, rewrites, Middleware, ISR, Server Actions, and default-loader image optimization; static `GET` Route Handlers *can* emit `sitemap.xml` / `robots.txt` at build time | [Static exports](https://nextjs.org/docs/app/guides/static-exports) | 2026-07-12 |
+| Streaming metadata appends tags to `<body>`; Googlebot handles it; **HTML-limited bots are detected by a hardcoded User-Agent list** (`htmlLimitedBots`); `generateMetadata` is Server-Components-only; shallow merge replaces whole nested objects; canonicals via `alternates.canonical` + `metadataBase` | [generateMetadata](https://nextjs.org/docs/app/api-reference/functions/generate-metadata) | 2026-07-13 |
+| `app/sitemap.ts` and `app/robots.ts` file conventions generate the files at build; `generateSitemaps` splits large sets; `alternates.languages` emits `hreflang`; the `Sitemap` type accepts `changeFrequency` and `priority` — **which Google ignores** (see Anti-folklore above; the framework offering a field is not the engine honouring it) | [sitemap.xml](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap); [robots.txt](https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots); [Metadata files](https://nextjs.org/docs/app/api-reference/file-conventions/metadata) | 2026-07-13 |
+| `output: 'export'` disables redirects, headers, rewrites, Middleware, ISR, Server Actions, and default-loader image optimization; static `GET` Route Handlers (incl. `sitemap.ts`/`robots.ts`) still emit at build | [Static exports](https://nextjs.org/docs/app/guides/static-exports) | 2026-07-13 |
+| WordPress core ships XML sitemaps since **5.5** at `/wp-sitemap.xml`, built from posts, taxonomies, **and users**; disable/filter via `wp_sitemaps_enabled` | [Make WordPress Core — XML sitemaps in 5.5](https://make.wordpress.org/core/2020/07/22/new-xml-sitemaps-functionality-in-wordpress-5-5/); [WP_Sitemaps class](https://developer.wordpress.org/reference/classes/wp_sitemaps/) | 2026-07-13 |
+| Yoast REST API exposes `yoast_head` (prefabricated HTML blob incl. schema) and `yoast_head_json` (structured); `GET /wp-json/yoast/v1/get_head?url=`; read-only; a 404 means the object is missing from Yoast's *indexables* | [Yoast developer portal — REST API](https://developer.yoast.com/customization/apis/rest-api/) | 2026-07-13 |
+| **Yoast assumes the CMS and frontend share a domain**, so in a headless setup its canonical / `og:url` / schema `@id` point at the CMS origin and must be rewritten | Yoast's REST API docs describe the fields; the same-domain assumption and the required URL rewrite are **widely reported by headless practitioners** and follow mechanically from the API returning the CMS's own URLs. **Tier: inferred + widely reported, not a Yoast-documented caveat.** Verify against the actual `yoast_head` output of the site you are auditing — it is a one-request check. | 2026-07-13 |
+
+**The strongest claim in that file is also the cheapest to verify.** "Your headless canonical points at
+the CMS" is not something to take on authority — `curl` the frontend and read the `<link rel=canonical>`.
+Do that rather than citing this row.
 
 ## Section: Structured data
 

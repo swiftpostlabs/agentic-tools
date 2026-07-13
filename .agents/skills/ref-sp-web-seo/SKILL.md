@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-seo
-description: "Audit a website's SEO from what is actually observable — served and rendered HTML, robots.txt, sitemaps, canonicals, titles, structured data, Core Web Vitals — separate that from the performance data only Search Console can answer, and design before/after tests that mean something. Use when: asked to check, audit, or improve a site's SEO; diagnosing why pages are not indexed, not ranking, or why organic traffic dropped; reviewing robots.txt, sitemaps, canonicals, titles, or structured data; debugging why a crawler cannot see JavaScript-rendered content, or SEO in a Next.js, SSR, or static-export app; interpreting a Lighthouse or Core Web Vitals report; judging whether an SEO change actually worked; weighing an SEO claim from a leak, a vendor, or a blog; or assessing content quality against Google's rater framework."
+description: "Audit a website's SEO from what is actually observable — served and rendered HTML, robots.txt, sitemaps, canonicals, titles, structured data, Core Web Vitals — separate that from the performance data only Search Console can answer, and design before/after tests that mean something. Use when: asked to check, audit, or improve a site's SEO; diagnosing why pages are not indexed, not ranking, or why organic traffic dropped; reviewing robots.txt, sitemaps, canonicals, titles, or structured data; debugging why a crawler cannot see JavaScript-rendered content; SEO on Next.js, WordPress, or headless WordPress + Next.js (metadata, sitemaps, canonicals, static export); interpreting a Lighthouse or Core Web Vitals report; judging whether an SEO change actually worked; weighing an SEO claim from a leak, a vendor, or a blog; or assessing content quality against Google's rater framework."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -49,8 +49,9 @@ request.
   dropped** and nobody knows why.
 - Reviewing `robots.txt`, sitemaps, titles, meta descriptions, canonicals, `hreflang`, or structured
   data.
-- A crawler cannot see JavaScript-rendered content, or the site is a Next.js / SSR / static-export app
-  and metadata or indexing is behaving oddly.
+- A crawler cannot see JavaScript-rendered content.
+- The site is **Next.js, WordPress, or headless WordPress + Next.js** and metadata, canonicals,
+  sitemaps, or indexing are behaving oddly — load `./references/frameworks.md`.
 - Interpreting a Lighthouse run or Core Web Vitals numbers.
 - Deciding whether an SEO change worked, or how to measure one before shipping it.
 - Weighing an SEO claim sourced from a leak, a vendor, or a conference talk.
@@ -180,35 +181,28 @@ now **discourages dynamic rendering** (serving crawlers a pre-rendered copy) —
 workaround and not a recommended solution, because it creates additional complexities and resource
 requirements." Do not propose it.
 
-## Framework traps (Next.js App Router)
+## Framework and CMS traps
 
-The framework decides what a crawler actually receives, and the defaults are not always what you would
-guess. These are verified against the Next.js docs (see `./references/sources.md`); check the version,
-because they change.
+The framework decides what a crawler actually receives, and the defaults are not what you would guess.
+**If the site is Next.js or WordPress — or both, headless — load `./references/frameworks.md` before
+auditing.** It carries the sourced detail; these are the three traps you must recognize on sight:
 
-- **Metadata may be streamed into `<body>`, not `<head>`.** Since Next 15.2, when `generateMetadata`
-  resolves after the initial UI is sent, the tags are appended to `<body>`. Vercel verified that bots
-  which execute JavaScript and inspect the full DOM (Googlebot) read it correctly. For **HTML-limited
-  bots** that cannot run JS, Next blocks rendering and puts metadata in `<head>` instead — but it
-  identifies those bots from a **hardcoded User-Agent list** (`htmlLimitedBots`). **A non-JS crawler
-  that is not on that list gets metadata it cannot see.** That is the exact population of most AI
-  fetchers. If metadata must be in `<head>` for everyone, either keep `generateMetadata` free of
-  request-time data so it prerenders, or widen `htmlLimitedBots`.
-- **`generateMetadata` is Server Components only.** Metadata cannot be set from a `'use client'`
-  component. If a page is a Client Component, its metadata has to move to a Server parent.
-- **Canonicals come from `alternates.canonical`, and need `metadataBase`** to resolve to absolute
-  URLs. A relative URL in a metadata field with no `metadataBase` is a build error — which is the good
-  case. The bad case is a canonical that silently resolves against the wrong origin.
-- **Metadata merges shallowly.** A child segment that sets *any* `openGraph` field replaces the whole
-  parent `openGraph` object. Pages routinely lose `og:description` this way and nobody notices.
-- **Static export (`output: 'export'`) removes server-dependent SEO levers.** No redirects, no custom
-  headers, no rewrites — so no `X-Robots-Tag` and no 301s from Next config; those must move to the
-  host. Also no ISR, no Middleware, and no default-loader image optimization (a custom loader works).
-  Static Route Handlers (`GET` only) *can* generate `sitemap.xml` and `robots.txt` at build time, so a
-  standalone script is not required.
+- **Next.js may stream metadata into `<body>`, not `<head>`.** Since 15.2, when `generateMetadata`
+  resolves after the initial UI is sent, its tags are appended to `<body>`. Googlebot copes because it
+  runs JS. Next protects non-JS bots via a **hardcoded User-Agent list** (`htmlLimitedBots`) — so a
+  non-JS crawler *outside that list* receives metadata it cannot see. That is most AI fetchers and many
+  social unfurlers.
+- **Headless WordPress emits canonicals pointing at the CMS.** Yoast assumes the CMS and frontend share
+  an origin. They do not. Inject its `yoast_head` blob unmodified and you have told Google that
+  **`cms.example.com` is the canonical version of your site.** Rewrite every origin, and make the CMS
+  non-indexable — an open WordPress backend serving the same content is a full-site duplicate.
+- **WordPress generates a large surface of thin, near-duplicate URLs by default** — category, tag,
+  author, and date archives, paginated archives, and attachment pages. This dwarfs anything on an
+  individual page. (And core has shipped sitemaps at `/wp-sitemap.xml` since 5.5, including a *users*
+  sitemap.)
 
-The general rule this illustrates: **never infer what a crawler sees from the source code.** Fetch the
-page as a bot and look. The framework may be doing something you did not authorize.
+The general rule all three illustrate: **never infer what a crawler sees from the source code.** Fetch
+the page as a bot and look at the bytes. The framework may be doing something you did not authorize.
 
 ## Adjacent skills
 
@@ -412,6 +406,9 @@ Before reporting an audit as complete:
 - Read `./references/sources.md` **before asserting any dated specific, and whenever this skill may be
   stale.** It carries the per-claim provenance table (claim → source → verified date → what would
   invalidate it) and the one-command re-verification procedure.
+- Read `./references/frameworks.md` when the site is **Next.js or WordPress** (or headless WordPress +
+  Next.js): metadata streaming, `sitemap.ts`/`robots.ts` conventions, static-export limits, WordPress
+  archives and core sitemaps, and the headless canonical trap.
 - Read `./references/content-quality.md` when the audit reaches the content or ranking stage: it
   carries Google's quality-rater framework (page purpose, YMYL, E-E-A-T with Trust at the center, and
   the Lowest-quality criteria) and how to use it without over-claiming.
