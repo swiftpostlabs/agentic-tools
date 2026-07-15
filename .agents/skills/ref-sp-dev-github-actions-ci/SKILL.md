@@ -103,6 +103,7 @@ concurrency, caching, and hardening.
 - When inline shell must consume untrusted event input, pass it through environment variables rather than interpolating it directly into shell source.
 - Prefer an action or dedicated script over large inline shell when the logic touches untrusted input.
 - Treat `workflow_run` as privileged when it is used after an untrusted validation workflow; it can access secrets and write tokens even when the triggering workflow could not. Do not download or execute untrusted artifacts without validation.
+- When a workflow auto-merges Dependabot (or other) PRs, put the `gh pr merge` step in its own job gated by `needs:` on the build/test job, and grant `contents: write` + `pull-requests: write` on that job alone. The build/test job executes untrusted dependency code and must stay read-only; do not raise the whole workflow's permissions just to reach the merge step.
 
 ### Runners and caching
 
@@ -116,6 +117,7 @@ concurrency, caching, and hardening.
 ## Gotchas
 
 - Dependabot pull request workflows run with a read-only token and no secrets, similar to forked PR restrictions.
+- A `gh pr merge` step failing with `Resource not accessible by integration (mergePullRequest)` lacks token scope — it needs `contents: write` + `pull-requests: write` on that job. A different failure, `Auto merge is not allowed for this repository (enablePullRequestAutoMerge)`, is the repo's "Allow auto-merge" setting being off, not a token problem; see `ref-sp-dev-github-dependabot`.
 - `paths` and `paths-ignore` cannot be combined on the same event; use `paths` with negative patterns when you need both include and exclude behavior.
 - `branches` and `branches-ignore` cannot be combined on the same event.
 - `queue: max` and `cancel-in-progress: true` are mutually exclusive in `concurrency`.
@@ -130,6 +132,7 @@ concurrency, caching, and hardening.
 - Token permissions and secret access are least-privileged.
 - Third-party actions are pinned and reviewed appropriately.
 - Pull request workflows do not mix untrusted code execution with write tokens or secrets.
+- Any auto-merge or other write step runs in a dedicated `needs`-gated job with job-scoped write permissions, never in a job that also executes untrusted PR code.
 - Release jobs use OIDC/trusted publishing where available, with exact registry trust rules and minimal job-level permissions.
 - npm workflows state whether they publish directly, publish with provenance, or stage the package for 2FA approval.
 

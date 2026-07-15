@@ -99,6 +99,19 @@ rules, private registries, and update volume.
 - Prefer enabling GitHub auto-merge for approved low-risk PR classes over force-merging directly; branch protection and required checks should remain the gate.
 - Keep auto-merge policies narrow, such as patch-only development dependencies or grouped GitHub Actions updates, until the repo has evidence that broader automation is safe.
 
+### Making auto-merge actually work
+
+Enabling Dependabot auto-merge with `gh pr merge --auto` needs **three** independent things in place. Missing any one fails only part of the time, which makes it look flaky rather than broken:
+
+- **Write-scoped workflow token** — `contents: write` + `pull-requests: write` on the merging job (job design owned by `ref-sp-dev-github-actions-ci`). Missing → `GraphQL: Resource not accessible by integration (mergePullRequest)`.
+- **The repo "Allow auto-merge" setting** — Settings → General → Pull Requests. Off → `GraphQL: Auto merge is not allowed for this repository (enablePullRequestAutoMerge)`. This is a repository setting, not YAML; no workflow change can fix it.
+- **A branch protection rule with an unmet requirement** — auto-merge can only be *enabled* on a PR that cannot merge immediately (a required status check or review still pending, or "require branches up to date" / "require linear history" leaving it behind base). With nothing to wait on, there is no deferred merge to enable.
+
+`gh pr merge --auto` takes one of two paths depending on PR state, which is why a missing setting can appear to "sometimes work":
+
+- **Immediately mergeable** → direct `mergePullRequest`. Needs only the token, not the setting. A lone Dependabot PR usually hits this and succeeds.
+- **Not immediately mergeable** (behind base after another PR merged, a lockfile conflict, a pending required check) → `enablePullRequestAutoMerge`. Needs the token *and* the setting. Concurrent Dependabot PRs routinely hit this, so "it fails only when two race" points at the setting being off, not at the YAML.
+
 ### Private registries and restricted ecosystems
 
 - Put registry definitions in top-level `registries` and reference them from specific `updates` blocks.
@@ -130,6 +143,8 @@ rules, private registries, and update volume.
 - Dependabot PR workflows are constrained like forked PRs: assume no ordinary Actions secrets and a limited token unless the workflow deliberately uses a trusted event.
 - `pull_request_target` runs with the base repository context. It is useful for Dependabot metadata automation, but unsafe if it checks out and runs PR-controlled code.
 - Auto-generating release-intent files for dependency updates can create noisy releases if every dev-only update publishes a package version.
+- "Allow auto-merge" gates only the deferred-merge feature (`enablePullRequestAutoMerge`), not an immediate merge; with the setting off a directly-mergeable PR still merges via `mergePullRequest`, so auto-merge looks like it works until a non-fast-forward PR needs to queue.
+- Auto-merge is silently disabled if someone without write access pushes to the PR head branch or switches its base — for example a fork contributor pushing after a maintainer enabled it.
 
 ## Validation
 
@@ -139,6 +154,7 @@ rules, private registries, and update volume.
 - Private registry access is explicit and credential handling stays secret-backed.
 - Workflow dependencies are covered if the repository depends on GitHub Actions.
 - Dependabot automation conditions on actor, repository, dependency metadata, update type, and dependency scope before approving or enabling auto-merge.
+- Dependabot auto-merge has all three prerequisites in place: a write-scoped token, the repo "Allow auto-merge" setting, and a branch protection rule that gives auto-merge a requirement to wait on.
 - Any generated changeset or release-intent file matches the package's real release policy and does not run untrusted PR code.
 
 ## References
@@ -146,6 +162,9 @@ rules, private registries, and update volume.
 - Dependabot Options Reference: <https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference>
 - Configuring Dependabot Version Updates: <https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates>
 - About Dependabot Version Updates: <https://docs.github.com/en/code-security/dependabot/dependabot-version-updates>
+- Automating Dependabot with GitHub Actions (the auto-merge workflow pattern): <https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions>
+- Automatically merging a pull request (auto-merge prerequisites and auto-disable rules): <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request>
+- Managing auto-merge for pull requests (the "Allow auto-merge" repo setting): <https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-auto-merge-for-pull-requests-in-your-repository>
 - Read `./references/checklist.md` for a quick Dependabot review pass.
 - Read `./references/config-patterns.md` when deciding how to split ecosystems, group updates, or wire private registries.
 - Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for Dependabot prompts.
