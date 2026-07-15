@@ -1,6 +1,6 @@
 """Context-local translation catalog."""
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Generator, Iterable
 from contextlib import contextmanager
 from contextvars import ContextVar, Token
 from pathlib import Path
@@ -43,7 +43,7 @@ class I18n:
         self._active_locale.reset(token)
 
     @contextmanager
-    def use_locale(self, locale: LocaleTag) -> Iterator[None]:
+    def use_locale(self, locale: LocaleTag) -> Generator[None]:
         """Temporarily use a locale tag inside a context manager."""
 
         token = self.set_locale(locale)
