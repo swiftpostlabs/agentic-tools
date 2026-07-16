@@ -13,7 +13,7 @@ dev = [
   "poethepoet>=0.48.0",
   "pytest>=9.1.1",
   "black>=26.5.1",
-  "pyright>=1.1.400",
+  "pyright>=1.1.411",
   "commitizen>=4.16.4",
 ]
 
