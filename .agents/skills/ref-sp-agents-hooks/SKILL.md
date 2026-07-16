@@ -141,6 +141,7 @@ Hooks run arbitrary shell with your full user permissions, automatically, withou
 ## Assets
 
 - `./assets/portable-hook.sh` is a starter `command` hook that reads stdin JSON, reads a field under both snake_case and camelCase spellings, and returns an allow/deny decision. Adapt it per platform.
+- `./assets/git-identity-guard.sh` is a worked `PreToolUse` example: it blocks a `git commit` when the repo's configured author identity does not match the account its `origin` remote points at -- the common multi-identity failure where an unset local `user.email` silently commits under the global identity. Edit its rules table to your own accounts.
 - `./assets/trigger-eval-queries.example.json` holds should-trigger / should-not-trigger prompts for checking this skill's activation.
 
 ## Validation
