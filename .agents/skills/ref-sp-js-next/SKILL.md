@@ -62,6 +62,7 @@ Provide portable defaults for maintainable Next.js apps, especially around App R
 - Default to Server Components when the code does not need browser state, DOM APIs, or event handlers.
 - Add `'use client'` at the narrowest practical boundary.
 - Do not move entire route trees to the client just because one leaf needs interactivity.
+- Do not construct request-scoped state at module scope: a module-level `new QueryClient()` (or a similar client) is shared across requests on the server and can leak data between users. Create such clients per request inside a client component with `useState(() => new QueryClient())` instead. See `ref-sp-dev-coding-patterns` for the general import-side-effect rule.
 
 ### Integrations and libraries
 

@@ -102,6 +102,8 @@ export type StatValueLabel = Values<typeof statValueLabels>;
 
 ### Code structure
 
+- Keep module top level free of side effects: importing a module should bind names, not open connections, read environment, or construct stateful clients. Export a factory such as `export const createDb = () => connect(env.databaseUrl)` instead of a ready-made instance, so imports stay order-independent and tree-shaking and test isolation keep working.
+- Construction at an application entry point or composition root is the intended exception; the rule targets work triggered by *importing* an ordinary module. See `ref-sp-dev-coding-patterns` for the portable rule.
 - Keep types close to the feature or module that owns them.
 - Extract shared types only when they are truly shared.
 - Prefer readable named `const` arrow functions and objects over dense callback chains.
@@ -156,6 +158,7 @@ tsconfig.json
 - Large type-level abstractions can hide the domain model instead of clarifying it.
 - Parallel literal types and literal objects drift unless one becomes the clear source of truth; prefer the const object and derive from it.
 - Node's TypeScript execution strips types; it does not replace a checker or make non-erasable TypeScript syntax safe in every runtime mode.
+- A side effect at module top level — a `connect(...)` or `new Client(...)` bound at import — breaks `sideEffects: false` tree-shaking and makes import order significant; defer it to an exported factory.
 - No-build package runtime under `node_modules` is the important exception: use emitted JavaScript or JSDoc-backed `.mjs` there.
 
 ## Validation
@@ -163,6 +166,7 @@ tsconfig.json
 - No new `any` escapes or unchecked casts were introduced without strong justification.
 - External input is validated before domain logic uses it.
 - Shared types are easy to locate and easy to understand.
+- Module imports have no side effects; connections and stateful clients are built by exported factories, not at import time.
 - Functions follow the local const-arrow default unless overloads, generators, intentional hoisting, or an API convention justify a declaration.
 - The code does not stay on plain JavaScript merely to avoid `tsc`, `ts-node`, or a build step that modern Node and Deno runtimes no longer need.
 - The resulting code remains readable to someone who did not write the types.

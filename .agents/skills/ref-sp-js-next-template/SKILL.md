@@ -59,6 +59,7 @@ Provide app-level defaults for planning and reviewing a whole React and Next.js 
 ### Top-level structure
 
 - Keep the route tree, feature code, shared UI, and app-shell code in predictable separate areas.
+- Designate one composition root — the root layout and its providers — as the place to wire app-wide singletons and context providers; keep ordinary feature modules import-inert so importing them does no work. See `ref-sp-js-react` and `ref-sp-js-next` for the per-request and `use client` specifics.
 - Keep app-level ownership boundaries obvious before worrying about lower-level route or component refinements.
 - Avoid leaving prototypes, migration scripts, or maintenance helpers inside the main app tree.
 

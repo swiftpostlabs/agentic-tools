@@ -96,6 +96,7 @@ export const statValueLabels = /** @type {const} */ ({
 - Use a function declaration only when the declaration-specific behavior matters, such as intentional hoisting, generators, or compatibility with an existing API shape.
 - Keep DOM access, state transitions, rendering, and event wiring conceptually separate in browser code.
 - Avoid giant anonymous functions when a named local helper would clarify intent.
+- Keep the module top level side-effect-free: importing should bind names, not open connections, read the environment, or build stateful clients. Export a factory and let the caller construct, so import order stays irrelevant. Wiring at an application entry point is the intended exception; see `ref-sp-dev-coding-patterns`.
 
 ### Scripts
 
@@ -156,6 +157,7 @@ src/features/example-data-transform/
 - Repeated or complex logic has been named and isolated.
 - Fixed literal maps stay const-typed and do not duplicate the same closed set in a separate hand-written union unless the toolchain truly requires it.
 - Browser code keeps responsibilities readable.
+- Module imports stay side-effect-free; work is deferred to factories or explicit initialization rather than running at import time.
 - Script inputs and outputs are explicit and predictable.
 - Functions follow the local const-arrow default unless a declaration-specific behavior is intentionally needed.
 - Node and Deno files are still on JavaScript only when that choice is deliberate rather than inertia.

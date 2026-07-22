@@ -56,6 +56,7 @@ Provide app-level defaults for self-contained browser apps and local web tools t
 - Use semantic sections such as `header`, `main`, `section`, `form`, and `dialog` where they fit.
 - Keep the app layout obvious from the markup alone.
 - Extract CSS or JS into local sibling files only when the inline version becomes hard to scan.
+- Initialize app state and construct any singletons from one entry script rather than as a side effect of an imported helper module; keep extracted JS siblings inert on import. See `ref-sp-js-javascript` for the general import-side-effect rule.
 
 ### Local asset boundaries
 

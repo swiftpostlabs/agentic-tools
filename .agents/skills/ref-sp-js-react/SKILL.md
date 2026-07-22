@@ -79,6 +79,7 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - For component-heavy React apps that need a ready-made system, prefer MUI with `@emotion/react` and `@emotion/styled`; if that stack needs icons, prefer `@mui/icons-material`.
 - Prefer `zod` for runtime schema validation at form, URL, persistence, and network boundaries.
 - Prefer `@tanstack/react-query` for async server state, caching, invalidation, and background refresh when that complexity is real.
+- Instantiate an app-wide client such as a TanStack `QueryClient` at the composition root, not at the top of an imported module. In a purely client-side app a single module-level instance is acceptable; when the code can also run on the server, create it inside the component with `useState(() => new QueryClient())` so it is not shared across requests. See `ref-sp-dev-coding-patterns` for the general import-side-effect rule.
 - Avoid mixing styling systems casually; if an app already uses a component and theme system such as MUI, do not add Tailwind or a second styling stack without a repo-wide reason.
 
 ## Validation

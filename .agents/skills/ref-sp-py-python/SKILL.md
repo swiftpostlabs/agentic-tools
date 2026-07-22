@@ -38,6 +38,7 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Prefer `pathlib.Path` over raw path strings.
 - Prefer dataclasses, typed dicts, or small domain objects over loose dictionaries when structure matters.
 - Prefer explicit exceptions and clear error messages over silent fallbacks.
+- Prefer inert module imports: defer connections, I/O, and client construction to factory functions or lazy accessors rather than running them at module scope.
 - Prefer `uv` for Python dependency management, virtual environments, and runnable project commands unless the repo already mandates another Python workflow.
 - In `uv`-managed repos that use Poe, prefer tasks that invoke installed console entry points through `uv run` instead of adding tiny wrapper scripts.
 - Prefer the repo's standard formatter, type checker, and test task wrappers when they exist.
@@ -70,6 +71,23 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Keep tests close to the behavior they cover when the repo layout supports it.
 - Extract helper modules only when the behavior is truly shared or the file has become hard to navigate.
 - On modern Python baselines, do not create `__init__.py` files solely to make directories importable; use implicit namespace packages unless package-level code is actually needed.
+
+### Module initialization
+
+- Remember that `import module` executes the module's entire top level, so a module-scope `client = SomeClient(...)` runs its work at import time and makes import order significant.
+- Prefer a factory function or a lazy accessor — for example a `get_client()` function, optionally memoized with `functools.lru_cache` — over a ready-built instance at module scope.
+- Keep module-scope bindings limited to constants, type aliases, and other inert values; defer connections, configuration or environment reads, and I/O to call time.
+- Treat module-scope instantiation of a stateful object as a deliberate, shared decision with a stated reason, not a default; explore a factory first. See `ref-sp-dev-coding-patterns` for the portable rule.
+- In tests, module-scope setup is more acceptable given small modules, but still prefer fixtures over import-time work when it could couple test order.
+
+```python
+# avoid: runs at import time, import order now matters
+client = ApiClient(os.environ["API_URL"])
+
+# prefer: construction deferred to call time
+def get_client() -> ApiClient:
+    return ApiClient(settings.api_url)
+```
 
 ### CLI and scripts
 
@@ -110,6 +128,7 @@ scripts/
 - Public Python code is typed clearly and reads without guesswork.
 - Modern-baseline projects do not carry legacy compatibility imports without a version-specific reason.
 - Paths, errors, and data structures are explicit.
+- Importing a module runs no connections or I/O; stateful clients are built by factories or lazy accessors, not at module scope.
 - Product CLIs and maintenance scripts are separated intentionally.
 - Tests cover non-trivial logic and stay readable.
 

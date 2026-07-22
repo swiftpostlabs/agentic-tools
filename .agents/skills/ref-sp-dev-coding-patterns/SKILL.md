@@ -37,6 +37,7 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Prefer names that scream intent over vague verbs.
 - Prefer early returns over deep nesting.
 - Prefer small focused functions over multi-purpose handlers.
+- Prefer modules whose import has no side effects; defer real work to functions, factories, or explicit initialization.
 - Prefer safe CLI defaults and discoverable help.
 - Prefer focused tests over broad integration-style guesswork.
 
@@ -70,6 +71,16 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Keep conditions local and explicit rather than encoding them through side effects.
 - If a branch exists because of a business rule, name that rule in code or in a short comment.
 
+### Module initialization and import side effects
+
+- Treat importing a module as binding names only: it must not open connections, read files or environment, call the network, run expensive work, or instantiate stateful clients, pools, or singletons.
+- Keep modules order-independent. If changing import order changes behavior, something is doing work at import time that should be deferred.
+- Prefer a factory function, a lazy accessor, or caller-injected dependencies over a ready-made instance built at module scope.
+- Pure constants and frozen lookup data at module scope are fine; the rule targets work and side effects, not values.
+- Distinguish an importable module from an application entry point or composition root. Wiring things up at an entry point — an app root, a `main()`, a provider setup — is expected, and some frameworks recommend it. The rule is that *importing* a module must not trigger the work, not that construction can never happen at module scope.
+- Allow a module-scope exception only as a deliberate, documented decision with a stated reason, never as something that happens by accident.
+- Give tests more latitude here because their modules are small and short-lived, but still avoid hidden import-order coupling.
+
 ### Comments
 
 - Comment why, constraints, invariants, or business context.
@@ -98,6 +109,7 @@ Provide portable defaults for writing code that is explicit, intention-revealing
 - Public functions and shared structures are typed clearly.
 - Names reveal intent without needing surrounding explanation.
 - Comments explain non-obvious constraints rather than narrating syntax.
+- Importing a module does no I/O or heavy construction; such work is deferred to factories, lazy accessors, or an explicit entry point.
 - CLI flags are consistent, discoverable, and safe.
 - Tests cover risky logic and failure modes, not only success paths.
 
