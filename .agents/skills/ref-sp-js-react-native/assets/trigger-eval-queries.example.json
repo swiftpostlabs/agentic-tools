@@ -1,0 +1,50 @@
+[
+  {
+    "query": "This FlatList gets janky once we load a few thousand rows. How should we fix it?",
+    "should_trigger": true
+  },
+  {
+    "query": "Why does my text not show up inside this View in my mobile app?",
+    "should_trigger": true
+  },
+  {
+    "query": "Our animation stutters whenever the app is fetching. How do we keep it smooth?",
+    "should_trigger": true
+  },
+  {
+    "query": "How should I build a Stack component for our React Native app so screens look like our MUI code?",
+    "should_trigger": true
+  },
+  {
+    "query": "The layout is stacked vertically on mobile but it was side by side on the web version.",
+    "should_trigger": true
+  },
+  {
+    "query": "Where should we store the auth token in our iOS and Android app?",
+    "should_trigger": true
+  },
+  {
+    "query": "This screen is cut off by the notch on iPhone and the keyboard covers the input on Android.",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up EAS Build profiles and ship an over-the-air update to the production channel.",
+    "should_trigger": false
+  },
+  {
+    "query": "Should this Next.js App Router page stay a Server Component or move to 'use client'?",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this React component's hook usage and local state ownership.",
+    "should_trigger": false
+  },
+  {
+    "query": "What contrast ratio does this button need to pass WCAG AA?",
+    "should_trigger": false
+  },
+  {
+    "query": "How should I split tsconfig files for Node scripts and browser modules in one repo?",
+    "should_trigger": false
+  }
+]

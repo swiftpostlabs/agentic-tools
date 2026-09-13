@@ -1,0 +1,62 @@
+{
+  "skill_name": "ref-sp-js-react-native",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We are porting a React web screen to React Native. It renders a list of 5000 transactions in a ScrollView, uses a CSS class for layout, and the row text sits directly inside the container div. Review it.",
+      "expected_output": "A review that replaces ScrollView with a virtualized or recycling list and a stable keyExtractor, wraps all text in Text, replaces the cascade-based layout with JavaScript styles colocated with the component, and notes that flexDirection defaults to column.",
+      "assertions": [
+        "The response replaces ScrollView with a virtualized or recycling list for the unbounded collection",
+        "The response requires a stable identity keyExtractor rather than an index",
+        "The response states that text must be wrapped in a Text element",
+        "The response notes that styles do not cascade and flexDirection defaults to column",
+        "The response does not recommend a detached stylesheet module"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our React Native app needs a consistent UI foundation. The web app uses MUI with Stack, Box and the sx prop. What should we do on native?",
+      "expected_output": "Guidance to build a thin in-house primitive layer from core components that keeps the MUI-shaped API behind a ui/base seam, rather than adopting a third-party UI kit or reimplementing sx.",
+      "assertions": [
+        "The response recommends building thin wrappers from React Native primitives rather than adopting a third-party UI kit by default",
+        "The response keeps the MUI-shaped prop API such as direction and spacing",
+        "The response advises against reimplementing the full sx prop",
+        "The response mentions theme tokens for spacing and colour",
+        "The response states that MUI itself does not run on React Native"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our list animation stutters while data is loading, and the designer asks us to animate the card height. How do we make it smooth?",
+      "expected_output": "An explanation of the JS thread and UI thread split, directing animation to worklets or useNativeDriver, and noting that height is a layout property that cannot be native-driven so the animation should be restructured toward transforms.",
+      "assertions": [
+        "The response explains that blocking the JS thread freezes animation and touch",
+        "The response directs animation to the UI thread via worklets or useNativeDriver",
+        "The response states that layout properties such as height cannot be native-driven",
+        "The response suggests restructuring toward transform or opacity"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Where should we keep the user's auth token and the analytics API key in our React Native app?",
+      "expected_output": "Guidance that the token belongs in the platform keychain or keystore via secure storage, that async key-value storage is plaintext, and that any key bundled into the app is public and therefore not a secret.",
+      "assertions": [
+        "The response directs the auth token to secure platform storage rather than async storage",
+        "The response states that async key-value storage is unencrypted",
+        "The response states that anything bundled into the app is extractable and therefore public",
+        "The response does not suggest that a client-side environment variable keeps a key secret"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "Should we enable the New Architecture in our Expo app, and which SDK version supports it?",
+      "expected_output": "A response that does not assert version specifics from memory, states that the New Architecture is now the only architecture and the toggle has been removed, and fetches current version facts from the documentation indexes instead.",
+      "assertions": [
+        "The response does not produce migration steps for adopting the New Architecture",
+        "The response states that the New Architecture is the only supported architecture on current versions",
+        "The response defers version-specific facts to the live documentation rather than recalling them",
+        "The response references the documentation index or the markdown docs convention"
+      ]
+    }
+  ]
+}
