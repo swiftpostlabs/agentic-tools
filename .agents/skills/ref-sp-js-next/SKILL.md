@@ -30,6 +30,7 @@ Provide portable defaults for maintainable Next.js apps, especially around App R
 - Use `ref-sp-js-next-template` when the user is planning or reviewing a whole React and Next app rather than one framework concern.
 - Use `ref-sp-js-typescript` when the question is primarily about strict type modeling or TypeScript configuration.
 - Use `ref-sp-js-web-standalone-template` when the requirement is a browser-only app that should stay framework-free and no-build by default.
+- Use `ref-sp-js-expo` when the app is a native mobile app. Expo Router is also file-based, but Server Components, `'use client'`, and Next's metadata and data-fetching APIs are Next concepts that do not transfer to it.
 
 ## Defaults
 

@@ -31,6 +31,8 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Use `ref-sp-js-javascript` when the code intentionally stays plain JavaScript with JSDoc and the main question is not React-specific.
 - Use `ref-sp-js-next-template` when the user is planning or reviewing a whole React and Next app rather than one React feature.
 - Use `ref-sp-js-web-standalone-template` for no-build browser apps that should stay framework-free by default.
+- Use `ref-sp-js-react-native` when the target is a native mobile app. This skill stays the base for React itself, but several rules below do not transfer: there is no DOM to keep semantic, MUI does not run on native, and the styling and list guidance differs.
+- Use `ref-sp-js-expo` for the mobile toolchain — app config, builds, and over-the-air updates.
 
 ## Defaults
 
@@ -62,7 +64,9 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Preserve semantic HTML even when a component library provides generic wrappers. A native element
   carries role, focusability, and keyboard behaviour that a styled `<div>` does not, and every
   capability you drop has to be rebuilt in ARIA and kept correct — see
-  `.agents/skills/ref-sp-ux-accessibility/references/semantic-structure.md`.
+  `.agents/skills/ref-sp-ux-accessibility/references/semantic-structure.md`. This rule is web-only:
+  React Native has no semantic elements, so the equivalent discipline there is declaring
+  `accessibilityRole` and friends explicitly. See `ref-sp-js-react-native`.
 - When a component relies on a closed set of variants or labels, keep the canonical list in a const object or tuple and derive the prop or state union from that value.
 - In JSDoc-backed React files, import external types with `/** @import { SomeType } from './somewhere.js' */` instead of duplicating typedefs locally.
 
