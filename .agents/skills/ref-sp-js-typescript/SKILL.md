@@ -28,6 +28,7 @@ Provide portable TypeScript defaults that keep types honest, runtime boundaries 
 - Use `ref-sp-js-react` when the main question is about React component structure, hooks, client-side state ownership, or React-specific dependency choices.
 - Use `ref-sp-js-next` when the main question is about Next.js framework structure, App Router, or Next-specific integrations.
 - Use `ref-sp-js-javascript` when the code intentionally stays in plain JavaScript with JSDoc rather than full TypeScript.
+- Use `ref-sp-js-react-native` or `ref-sp-js-expo` for native mobile specifics. The typing guidance here applies unchanged, but the bundler is Metro rather than a Node or browser toolchain, so the direct-Node-execution and `tsconfig`-per-runtime rules do not describe app code there.
 - Use `ref-sp-dev-coding-patterns` for language-agnostic naming, comments, CLI ergonomics, and testing defaults.
 - Use `ref-sp-dev-projects-architecture` for generic feature-boundary or shared-utility decisions that are not TypeScript-specific.
 

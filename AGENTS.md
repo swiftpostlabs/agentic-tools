@@ -146,6 +146,16 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: creating or reviewing Next routes and layouts, deciding where `'use client'` belongs, configuring Next.js, or choosing framework-specific integrations like `next-intl`
 
+**`ref-sp-js-react-native`** — Portable React Native guidance for the native rendering model
+
+- Use when: writing or reviewing React Native screens, components, or styles, choosing between `View`, `Text`, `Pressable`, and a virtualized list, diagnosing dropped frames or list jank, writing animations or gestures, handling iOS and Android differences, or porting React web code to mobile
+- Owns the delta from `ref-sp-js-react`, which stays the base for React itself; all accessibility thresholds belong to `ref-sp-ux-accessibility`
+
+**`ref-sp-js-expo`** — Portable Expo guidance for the toolchain around a React Native app
+
+- Use when: scaffolding or configuring an Expo app, adding a library needing native setup, deciding why `ios/` and `android/` should not be hand-edited, setting up file-based routing, building for TestFlight or Play, shipping an over-the-air update, upgrading the SDK, or debugging a client-versus-build mismatch
+- Deliberately defers version-specific mechanics to the live docs; pair with `ref-sp-js-react-native` for screen and component work
+
 **`ref-sp-py-python`** — Portable Python guidance for typed code, scripts, and tests
 
 - Use when: writing or refactoring Python modules, designing Python CLIs, or deciding typing and testing patterns

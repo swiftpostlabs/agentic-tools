@@ -1,0 +1,50 @@
+[
+  {
+    "query": "I edited the Podfile and my change disappeared after the last build. What happened?",
+    "should_trigger": true
+  },
+  {
+    "query": "Can we ship this fix over the air or does it need a new App Store build?",
+    "should_trigger": true
+  },
+  {
+    "query": "The camera library works on my machine but throws a null native module in the app. Why?",
+    "should_trigger": true
+  },
+  {
+    "query": "How should I add a package to our Expo project so the versions stay compatible?",
+    "should_trigger": true
+  },
+  {
+    "query": "Set up file-based routing and build profiles for preview and production.",
+    "should_trigger": true
+  },
+  {
+    "query": "We need to upgrade to the latest Expo SDK. What is the process?",
+    "should_trigger": true
+  },
+  {
+    "query": "Should the ios and android folders be committed to git?",
+    "should_trigger": true
+  },
+  {
+    "query": "This FlatList gets janky once we load a few thousand rows. How should we fix it?",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I build a Stack component from View so our screens read like our MUI code?",
+    "should_trigger": false
+  },
+  {
+    "query": "Should this Next.js App Router page stay a Server Component or move to 'use client'?",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this React component's hook usage and local state ownership.",
+    "should_trigger": false
+  },
+  {
+    "query": "What contrast ratio does this button need to pass WCAG AA?",
+    "should_trigger": false
+  }
+]
