@@ -3,9 +3,15 @@
 Load this when writing or debugging either manifest. Examples use synthetic names
 (`acme/agent-skills`, plugin `acme-skills`).
 
-The schemas below are Claude Code's. Copilot CLI and VS Code read the same `.claude-plugin/` manifests
-— it is the last entry in their four-location search order — and define a few extra fields of their
-own. See `./cross-agent-compat.md` before assuming a field or behavior is universal.
+The schemas below are **Claude Code's**, the format with the richest component vocabulary. Copilot CLI
+and VS Code read the same `.claude-plugin/` manifests, since it is the last entry in their search
+orders, and define a few extra fields of their own.
+
+For the portable alternative, read `./agent-plugins-spec.md`: a root `plugin.json` on a **closed**
+schema that carries no component fields at all and discovers `skills/` and `mcp.json` by fixed
+location. Codex reads that one, not `.claude-plugin/plugin.json`. Nothing below applies to it.
+
+See `./cross-agent-compat.md` before assuming a field or behavior is universal.
 
 ## Where files go
 

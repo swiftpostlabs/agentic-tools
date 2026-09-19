@@ -23,7 +23,9 @@ this repo's (`repo-local` / `organization` / `public`); substitute whatever poli
 | `organization` | **Private** git repo. | `extraKnownMarketplaces` pre-registers it; teammates who trust the project folder are prompted to install. Auto-update needs a token (below). |
 | `repo-local` | Not published at all. If it must be loadable, a local `directory`/`file` source never touches the network. | `/plugin marketplace add ./my-marketplace` |
 
-**No client has a notion of skill-level visibility.** Each publishes exactly what the manifest enumerates.
+**No client has a notion of skill-level visibility.** Each publishes exactly what the artifact offers:
+the paths the manifest enumerates under the Claude format, or the contents of the staged `skills/`
+directory under Agent Plugins, which has no enumeration field at all. See `./agent-plugins-spec.md`.
 The tier is therefore enforced by *what you list* — which is why the skills list should be generated
 from the visibility metadata rather than hand-maintained, and why a CI drift check is the thing that
 actually keeps a local-only skill from leaking.
