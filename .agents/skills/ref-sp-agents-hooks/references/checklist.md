@@ -14,7 +14,7 @@ Run through this before committing or enabling a hook.
 - stdout carries **only** JSON (or nothing); every log/diagnostic line goes to stderr.
 - Blocking uses exit `2` or the platform's JSON deny decision -- never exit `1`.
 - Field access is defensive across casings (`tool_name` and `toolName`) when the hook is cross-platform.
-- `timeout` uses the right unit (milliseconds for Gemini, seconds elsewhere) and is short enough not to stall the agent.
+- `timeout` uses the right unit (milliseconds for Gemini, seconds elsewhere) and is set explicitly rather than inherited, since the defaults range from tens of seconds up to Codex's 600.
 
 ## Safety
 

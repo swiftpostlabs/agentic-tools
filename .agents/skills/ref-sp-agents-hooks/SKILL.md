@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-hooks
-description: "Author agent lifecycle hooks that run deterministic shell commands at session, prompt, tool, and stop events across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI. Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block."
+description: "Author agent lifecycle hooks that run deterministic shell commands at session, prompt, tool, and stop events across Claude Code, OpenAI Codex, GitHub Copilot CLI, VS Code, and Gemini CLI. Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, bundling a hook inside an agent plugin, or debugging why a hook does not fire or block."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -29,6 +29,7 @@ Give the agent portable defaults for authoring lifecycle hooks -- shell commands
 - This skill centers on `command` (shell) hooks, the one type every platform supports. Non-command types (`http`, `mcp_tool`, `prompt`, `agent`) are noted per platform in the references.
 - For the config location, event vocabulary, and payload field names of one platform, read that platform's reference file.
 - This skill is not about MCP servers, skills, or subagents themselves.
+- A hook can be configured **at repo or user scope** (the config files below) or **bundled inside a plugin**. This skill owns both, because the event vocabulary and the stdin/stdout contract are identical either way; only the config location changes. Agent Plugins 1.0 does not standardize hooks, so a plugin-bundled hook is always client-specific configuration living in that client's extension namespace. For how a plugin is packaged and which namespace each client reads, use the repo's plugin-distribution skill (`.agents/skills/ref-sp-agents-plugin-marketplaces/SKILL.md`).
 - For repo instruction files (`AGENTS.md`, `GEMINI.md`, `.claude/CLAUDE.md`), use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here).
 - When a hook reads or guards protected/secret files, use the repo's agent-security skill (`ref-sp-agents-security` here).
 
@@ -36,7 +37,7 @@ Give the agent portable defaults for authoring lifecycle hooks -- shell commands
 
 A hook is a triple: **(event, matcher, command)**. At a lifecycle event, the agent runs your command, passes a JSON event payload on stdin, and interprets the command's exit code plus stdout as a decision. Hooks are deterministic: unlike asking the model to "remember to run the linter," a hook always fires.
 
-The one contract that holds on all four platforms:
+The one contract that holds on every platform here:
 
 - **Input:** the event payload arrives as JSON on **stdin**.
 - **Diagnostics:** human/debug text goes to **stderr**, never stdout.
@@ -66,7 +67,7 @@ Map behavior to a lifecycle moment first, then look up the event name per platfo
 
 | Moment | What you can do here | Common names |
 | --- | --- | --- |
-| Session start | Inject context, validate setup | `SessionStart` (Gemini/Claude/VS Code/Copilot) |
+| Session start | Inject context, validate setup | `SessionStart` (Claude/Codex/VS Code/Copilot/Gemini) |
 | Prompt submitted | Audit, add context, block prompt | `UserPromptSubmit` / `BeforeAgent` (Gemini) |
 | Before tool use | Allow / deny / rewrite a tool call | `PreToolUse` / `BeforeTool` (Gemini) |
 | After tool use | Format, lint, log, inject follow-up context | `PostToolUse` / `AfterTool` (Gemini) |
@@ -74,6 +75,8 @@ Map behavior to a lifecycle moment first, then look up the event name per platfo
 | Before compaction | Save/export context | `PreCompact` / `PreCompress` (Gemini) |
 
 `PreToolUse` and `PostToolUse` are where most real hooks live: gate dangerous commands, and format/validate after edits.
+
+Two moments exist on only one platform, so reach for them knowing the hook will not port: Codex `PostCompact` (after compaction finishes) and Codex `Interrupt` (the user stopped the run).
 
 ## Core Authoring Workflow
 
@@ -92,11 +95,13 @@ When one hook must serve multiple agents:
 
 - **Read fields defensively.** Payload keys differ: snake_case (`tool_name`, `tool_input`) on Claude/Gemini/VS Code vs camelCase (`toolName`, `toolArgs`) on Copilot CLI's native form. Copilot and VS Code also accept the Claude PascalCase form. Probe both spellings.
 - **Do not key on one tool name.** The same action has different tool names per platform (Claude `Write`/`Edit` vs VS Code `create_file`/`replace_string_in_file`). Match on intent, or match broadly and re-check inside the script.
-- **`timeout` units differ.** Seconds on Claude, Copilot, and VS Code; **milliseconds** on Gemini CLI.
+- **`timeout` units differ.** Seconds on Claude, Codex, Copilot, and VS Code; **milliseconds** on Gemini CLI.
+- **`timeout` defaults differ far more than the units.** Codex defaults to **600 seconds** where the others sit in the tens. Set an explicit timeout rather than inheriting whichever default the target platform happens to use.
 - **Matchers are not uniform.** Regex is anchored as `^(?:PATTERN)$`; VS Code ignores matchers entirely, so filter in-script.
 - **Project-root env vars differ.** `CLAUDE_PROJECT_DIR` (Claude), `GEMINI_PROJECT_DIR` (Gemini, plus a `CLAUDE_PROJECT_DIR` compatibility alias). Resolve a root with a fallback rather than hardcoding paths.
-- **Config shape differs.** Claude and Gemini nest `{ "matcher", "hooks": [ ... ] }`; Copilot CLI and VS Code use flat hook entries. See the references.
-- **Reuse across Claude-family tools.** Copilot CLI and VS Code both read Claude-format PascalCase events (and VS Code even reads `.claude/settings.json`), so one config often covers all three. Gemini uses a distinct vocabulary (`BeforeTool`/`AfterTool`/`BeforeAgent`) and needs its own.
+- **Config shape differs.** Claude, Codex, and Gemini nest `{ "matcher", "hooks": [ ... ] }`; Copilot CLI and VS Code use flat hook entries. See the references.
+- **Reuse across Claude-family tools.** Codex, Copilot CLI, and VS Code all read Claude-format PascalCase events and the Claude nesting (VS Code even reads `.claude/settings.json`), so one config often covers four platforms once it is copied to each one's config path. Gemini uses a distinct vocabulary (`BeforeTool`/`AfterTool`/`BeforeAgent`) and needs its own.
+- **Config format is not always JSON.** Codex additionally accepts `[hooks]` tables in `.codex/config.toml`. Write the JSON form when a hook must travel; it is the one shape every platform reads.
 
 ## Security
 
@@ -125,6 +130,7 @@ Hooks run arbitrary shell with your full user permissions, automatically, withou
 - **VS Code ignores matchers** -- every configured hook fires; filter in the script.
 - **Gemini `timeout` is milliseconds**, unlike the second-based platforms.
 - **Copilot `preToolUse` fails closed on crash, open on timeout** -- a slow hook silently lets the call through.
+- **Codex's default timeout is 600 seconds**, so a hanging hook stalls the session for ten minutes instead of failing fast. Its `SessionEnd` and `Interrupt` invert this at 1 second, capped at 3, so teardown work that cannot finish in three seconds belongs in a detached process.
 - **Payload casing varies** (snake_case vs camelCase) and **tool names vary** across platforms.
 - **No controlling terminal.** Claude hooks cannot use `/dev/tty`; for desktop alerts use the platform's notification mechanism, not an interactive prompt.
 
@@ -132,6 +138,7 @@ Hooks run arbitrary shell with your full user permissions, automatically, withou
 
 - Read `./references/platform-matrix.md` first to translate a lifecycle moment into the event name and config shape for each platform.
 - Read `./references/platforms/claude-code-hooks.md` for Claude Code (`.claude/settings.json`, nested config, hook types, JSON decision fields).
+- Read `./references/platforms/codex-hooks.md` for OpenAI Codex (`.codex/hooks.json` or `.codex/config.toml`, Claude-format events plus `PostCompact` and `Interrupt`, the 600-second default timeout).
 - Read `./references/platforms/copilot-cli-hooks.md` for GitHub Copilot CLI (`.github/hooks/*.json`, camel/Pascal duality, fail-closed preToolUse).
 - Read `./references/platforms/vscode-hooks.md` for VS Code agent hooks (ignored matchers, OS-specific command overrides, Claude-format compatibility).
 - Read `./references/platforms/gemini-cli-hooks.md` for Gemini CLI (`.gemini/settings.json`, distinct event vocabulary, millisecond timeouts).
