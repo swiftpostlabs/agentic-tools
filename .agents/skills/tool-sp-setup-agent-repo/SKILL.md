@@ -78,7 +78,7 @@ script exists to replace.
 | `I1` | A root `AGENTS.md` exists and carries personality, always-on rules, workflow/commands, and skill routing. |
 | `I2` | Every other instruction file is a thin bridge to `AGENTS.md`, not a second body. |
 | `C1` | Every client the repo shows traces of is wired. |
-| `C2` | When Claude is in use, `.claude/skills` is a gitignored symlink to `../.agents/skills`. |
+| `C2` | When Claude is in use, `.claude/skills` is a gitignored symlink resolving to the repo's `.agents/skills/`. |
 | `C3` | When VS Code is in use, `chat.useAgentsMdFile` is enabled. |
 | `R1` | The stack markers found have their matching skills installed. |
 
