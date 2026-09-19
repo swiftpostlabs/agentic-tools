@@ -73,9 +73,9 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: changing a policy source file, sync behavior, generated restriction files, or agent file-access enforcement
 
-**`ref-sp-agents-hooks`** — Author agent lifecycle hooks across Claude Code, GitHub Copilot CLI, VS Code, and Gemini CLI
+**`ref-sp-agents-hooks`** — Author agent lifecycle hooks across Claude Code, OpenAI Codex, GitHub Copilot CLI, VS Code, and Gemini CLI
 
-- Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, or debugging why a hook does not fire or block
+- Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, bundling a hook inside an agent plugin, or debugging why a hook does not fire or block
 
 **`ref-sp-agents-local-setup`** — Running an agent on a local model: hardware sizing, harness class, Ollama, model choice, and wiring pi or Hermes
 
@@ -172,10 +172,11 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 - Use when: deciding whether a skill should be shareable or repo-local, backfilling shareable metadata, or reviewing hard skill dependencies before export
 
-**`ref-sp-agents-plugin-marketplaces`** — Publishing skills as an agent plugin through a plugin marketplace, installable from Claude Code, Copilot CLI, and VS Code
+**`ref-sp-agents-plugin-marketplaces`** — Publishing skills and MCP servers as an agent plugin through a plugin marketplace, installable from Claude Code, OpenAI Codex, Copilot CLI, and VS Code
 
-- Use when: packaging skills as a plugin, writing `plugin.json` or `marketplace.json`, deciding which skills may be published, targeting Copilot or VS Code users, cutting a plugin release, or debugging an installed plugin that is missing skills or not updating
+- Use when: packaging skills as a plugin, choosing between the Claude-format manifest and the portable Agent Plugins 1.0 schema, writing `plugin.json` or `marketplace.json`, deciding which skills may be published, targeting Codex, Copilot, or VS Code users, submitting a Claude plugin to OpenAI, cutting a plugin release, or debugging an installed plugin that is missing skills or not updating
 - For consuming skills in a repo that links them from a source, use `ref-sp-agents-skills-management` instead
+- For authoring the hooks a plugin may carry, use `ref-sp-agents-hooks`
 
 **`ref-sp-baas-supabase`** — Portable Supabase guidance for CLI workflows, migrations, CRUD API usage, edge functions, and ORM boundaries
 
