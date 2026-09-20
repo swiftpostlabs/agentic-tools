@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-local-tasks
-description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace: a lightweight `TODO.md` notes list plus date-prefixed tracked task folders that move through the `10-new/`, `20-open/`, and `90-closed/` lifecycle subfolders, each carrying `status`, `created`, `updated`, and (once closed) a prose `outcome` in frontmatter. Use when: reading or updating `.agents/tasks/TODO.md`, creating or moving a tracked task folder between `10-new/`, `20-open/`, and `90-closed/`, setting a task's frontmatter `status` or `outcome`, naming a task folder, or checking whether local agent task notes still match the active work."
+description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace: a lightweight `TODO.md` notes list plus date-prefixed tracked task folders that move through the `10-new/`, `20-open/`, and `90-closed/` lifecycle subfolders, each carrying `status`, `created`, `updated`, and (once closed) a prose `outcome` in frontmatter. Use when: reading or updating `.agents/tasks/TODO.md`, creating or moving a tracked task folder between `10-new/`, `20-open/`, and `90-closed/`, setting a task's frontmatter `status` or `outcome`, naming a task folder, writing a task brief and deciding how much of a proposed solution belongs in it, or checking whether local agent task notes still match the active work."
 license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -47,7 +47,7 @@ lifecycle subfolders, folder naming, `TODO.md` syntax, and the frontmatter field
 2. Decide whether the item is a quick note (leave it in `TODO.md`) or substantial enough to become a tracked task folder.
 3. For substantial work, create `.agents/tasks/10-new/<YYYY-MM-DD>-<task-name>/` with a `README.md` whose frontmatter sets `status:` (`new`, `ready`, or `blocked`) plus `created:` and `updated:`.
 4. When work begins, move the folder to `20-open/` and update `status` to `in-progress` (or `in-review` / `blocked`).
-5. Keep the `README.md` brief current — objective, status, blockers, assumptions, and next steps — as the task changes, bumping `updated` in the same edit.
+5. Keep the `README.md` brief current — objective, status, blockers, assumptions, and next steps — as the task changes, bumping `updated` in the same edit. Default that brief to describing the problem rather than prescribing its fix; see [Task README body](#task-readme-body).
 6. When the task finishes, move the folder to `90-closed/`, set `status` to `done` or `cancelled`, and write the prose `outcome`.
 7. For complex tasks, prepare a concise closeout answer that explains what was done, what was not done, how and why important decisions were made, validation, and any remaining caveats.
 8. Remove or refresh stale local files once a task is done or no longer relevant.
@@ -150,6 +150,34 @@ The invariants hold only because this checklist is followed. `updated` is the fi
 drift; when it looks wrong, the filesystem is the fallback ground truth, but note that a folder's
 `mtime` tracks child add/remove rather than content edits, so compare against the files inside it.
 
+### Task README body
+
+Frontmatter carries the lifecycle; the body carries the brief. Default the body to **descriptive,
+not prescriptive**: state the problem, its context, and why it matters, and leave deciding the fix to
+whoever picks the task up.
+
+Filing a task and working it are usually separated by weeks and by a changed repo. A README that
+prescribes an implementation freezes a judgment made with the information available on the day it was
+filed, and whoever picks it up inherits the conclusion without the evidence behind it. Describing the
+problem well is what survives; prescribing the fix usually does not.
+
+This is a default about content shape, not a ban on solution material. Solution content belongs in
+the body, framed so it does not bind:
+
+- **Record as fact** what was verified: the current state, the evidence, the sources behind each
+  claim.
+- **Record as decided** only what was actually settled, and say that it was settled rather than
+  derived. A decision someone made explicitly is context, not prescription.
+- **Record as open** the questions nobody answered, so the next reader knows they are still live.
+- **Record everything else as options**, under a heading that says so. Notes, examples, candidate
+  approaches, and half-formed leads are worth keeping; they just must not read as instructions.
+
+What to leave out is implementation detail invented while filing: step sequences, file layouts, and
+function or flag names that nothing has validated. Those read like findings and are not.
+
+A task whose brief explicitly asks for a prescriptive plan overrides this default. Say so in the task
+rather than leaving the next reader to infer it.
+
 ## TODO.md Syntax
 
 `TODO.md` holds quick notes and small tasks only; anything substantial becomes a tracked task folder. Unfinished items in `.agents/tasks/TODO.md` may use any of these forms:
@@ -193,6 +221,7 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 - Use `blocked` in `10-new/` when a not-yet-started task is blocked, and in `20-open/` when an in-flight task is blocked; do not move a task to `90-closed/` just because it is blocked.
 - Bump `updated` in the same edit that changes the `README.md` or moves the folder, exactly as `status` is kept in step with the subfolder.
 - Write `outcome` as prose when closing a task, and say plainly what was left undone rather than rounding a partial result up to `done`.
+- Default a task `README.md` body to describing the problem, its context, and why it matters; keep solution material as clearly labelled options, notes, or examples, and record only what was explicitly settled as settled.
 - If a task is simple and well-defined, execute it directly instead of forcing a planning ritual first.
 - Treat mundane chores such as creating a branch, running a simple command, or applying a narrow typo fix as simple unless they reveal broader decisions or blockers.
 - Treat feature development, broad refactors, multi-file skill or workflow changes, cross-repo updates, and tasks with meaningful tradeoffs as complex.
@@ -215,6 +244,7 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 - A task's lifecycle subfolder and its `status` frontmatter can drift apart if the folder is moved without updating `status`, or vice versa; keep them in sync.
 - A temporary draft under `.agents/tasks/` is not a substitute for updating the actual repo source of truth when the information becomes permanent.
 - Broad task text is not authorization to improvise missing requirements; refine it first when the scope is unclear.
+- A task `README.md` that prescribes an implementation freezes a judgment made on the day it was filed; whoever works it weeks later inherits the conclusion without the evidence, and against a repo that has since moved.
 - A broken premise in a task should be corrected, not silently worked around.
 
 ## Example Next-Todo Readers

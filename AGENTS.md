@@ -256,7 +256,7 @@ All project skills are located in `.agents/skills/` and automatically load in Co
 
 **`ref-sp-agents-local-tasks`** — Maintain local agent task tracking under `.agents/tasks/`
 
-- Use when: a task needs local planning, temporary task notes, or structured tracking under `.agents/tasks/`
+- Use when: a task needs local planning, temporary task notes, or structured tracking under `.agents/tasks/`, or when writing a task brief and deciding how much of a proposed solution belongs in it
 
 **`ref-sp-agents-retro`** — Record a descriptive task retrospective under `.agents/retro/`
 
