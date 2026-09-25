@@ -14,7 +14,7 @@ dev = [
   "pytest>=9.1.1",
   "black>=26.5.1",
   "pyright>=1.1.414",
-  "commitizen>=4.18.1",
+  "commitizen>=4.19.0",
 ]
 
 [build-system]
