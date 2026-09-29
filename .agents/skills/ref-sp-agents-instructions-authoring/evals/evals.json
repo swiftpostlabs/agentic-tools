@@ -15,9 +15,9 @@
     {
       "id": 2,
       "prompt": "Review AGENTS.md after several new skills were added and tell me what should change.",
-      "expected_output": "A review that checks commands and workflow drift and size budgets, and does not add the new skills as a catalog because clients already list skill descriptions.",
+      "expected_output": "A review that checks command and workflow drift and size budgets, and adds a new skill to the compact area index only if it owns a main repo area, without copying descriptions.",
       "assertions": [
-        "The response does not add a skill catalog to AGENTS.md",
+        "The response does not copy skill descriptions into AGENTS.md",
         "The response checks workflow or command drift",
         "The response checks the file against the size budgets"
       ]

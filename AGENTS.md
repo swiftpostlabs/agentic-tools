@@ -52,7 +52,20 @@ Every claim — the agent's or the user's — starts unverified. Two dials gover
 
 ## Skills
 
-Project skills live in `.agents/skills/`, with `.claude/skills` symlinked to it for Claude Code, which does not read `.agents/`. Every client lists each skill's name and description on its own, so this file does not repeat the catalog: the description's `Use when:` clause is the routing. Open the skill whose description matches the task before editing the area it owns.
+Project skills live in `.agents/skills/` (`.claude/skills` symlinks there for Claude Code). Clients list every skill's description, but agents often skip loading one, so check this index after exploring the task and before editing, and open the matching skill:
+
+| Area | Skill |
+| --- | --- |
+| Python, `pyproject.toml`, Poe tasks, folder placement | `ref-sp-dev-repo-conventions`, `ref-sp-py-python` |
+| Any file under `.agents/skills/` | `ref-sp-agents-skills-authoring`, `ref-sp-agents-shareable-skills` |
+| `AGENTS.md` or other instruction files | `ref-sp-agents-instructions-authoring` |
+| Policy, protected files, `.agents/config.json` | `ref-sp-agents-security`, `ref-sp-agents-policy` |
+| Skills CLI, linking, sync | `ref-sp-agents-skills-management` |
+| Plugin manifests, `.claude-plugin/` | `ref-sp-agents-plugin-marketplaces` |
+| Commits | `ref-sp-dev-git-commits` |
+| `.agents/tasks/`, `.agents/retro/` | `ref-sp-agents-local-tasks`, `ref-sp-agents-retro` |
+
+For anything else, match the task against the skill descriptions' `Use when:` clauses.
 
 ## Workflow
 

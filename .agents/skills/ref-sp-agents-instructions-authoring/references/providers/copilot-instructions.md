@@ -15,11 +15,11 @@ Provide focused guidance for authoring `.github/copilot-instructions.md` in repo
 - Prefer a root `AGENTS.md` as the source of truth; use `.github/copilot-instructions.md` as the source of truth only as a Copilot-centric fallback. Copilot reads `AGENTS.md` natively, so otherwise delete the file rather than bridging.
 - Whichever file is authoritative, keep durable repo workflow and safety policy there.
 - Do not let framework, language, or feature-specific detail grow here when a skill should own that guidance.
-- Do not list available skills; Copilot already lists skill names and descriptions.
+- Do not copy skill descriptions; Copilot already lists them. A compact area-to-skill index is fine.
 - When the repo changes quick commands, package managers, or validation workflows, update the top-level instruction file promptly.
 
 ## Validation
 
 - The file exists only in a Copilot-centric repo; elsewhere `AGENTS.md` replaces it.
-- The file carries no skill catalog.
+- The file does not copy skill descriptions.
 - Commands and workflow rules still match the repo.

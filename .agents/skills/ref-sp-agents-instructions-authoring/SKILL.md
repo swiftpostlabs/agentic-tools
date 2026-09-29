@@ -46,10 +46,12 @@ all of it, with domain detail pushed into skills that load on demand.
   `context.fileName`, VS Code's `chat.useAgentsMdFile`).
 - **Bridge only as a fallback,** for a client or version that cannot read `AGENTS.md`. Then use an
   `@AGENTS.md` import or a symlink, never a second body.
-- **No skill catalog in `AGENTS.md`.** Every skills-aware client already lists each skill's name
-  and description. Repeating them doubles the context cost and drifts. Route with the description's
-  `Use when:` clause instead, and mention a skill in `AGENTS.md` only for a rule it must enforce
-  every turn.
+- **A compact skill index, not a catalog.** Clients already list every skill's description, so
+  copying descriptions into `AGENTS.md` only doubles the cost. But agents often fail to load a
+  matching skill on their own: in Vercel's 2026 evals the skill went unused in 56% of cases, and an
+  explicit instruction to use it raised the pass rate from 53% to 79%. So keep a short
+  area-to-skill table for the repo's main areas plus one instruction to check it after exploring
+  and before editing. Vercel found "explore first, then invoke" beat "you MUST invoke".
 - **Stay inside the smallest budget.** Claude Code recommends under 200 lines per file; Codex stops
   reading at `project_doc_max_bytes` (32 KiB default); Hermes truncates at 20,000 characters. Aim
   for roughly 150 lines and 15 KB.
@@ -68,7 +70,11 @@ Only what must shape every turn and cannot be derived from the code:
 
 Everything else goes to a skill: multi-step procedures, framework or language detail, anything that
 matters for one area of the codebase. Directory layouts, dependency lists, and architecture tours
-the agent can read from the repo are noise; cut them.
+the agent can read from the repo are noise; cut them. Evidence backs this: Gloaguen et al. (ETH
+Zurich, 2026) found context files raised inference cost by over 20% with little or no gain in task
+success, and recommend describing only minimal requirements. Knowledge the agent must apply that is
+absent from its training data (a new framework API) is the exception, where always-loaded context
+beat on-demand skills in Vercel's evals.
 
 Write instructions concretely enough to verify ("run `uv run poe test` before committing", not
 "test your changes"). Contradictions between files are resolved arbitrarily by the model, so remove
@@ -99,11 +105,16 @@ also picks up a subdirectory's file when it first reads a file there.
 
 - The repo has one instruction body, in `AGENTS.md`, and no `CLAUDE.md`, `.claude/CLAUDE.md`, or
   `GEMINI.md` unless a documented fallback needs it.
-- `AGENTS.md` is under the budgets above and carries no skill catalog.
+- `AGENTS.md` is under the budgets above and carries a compact skill index, not copied descriptions.
 - The persona core is inline and matches the persona skill.
 - Commands, workflow, and safety rules still match the repo.
 
 ## References
+
+- Vercel, "AGENTS.md outperforms skills in our agent evals" (2026-01-27):
+  <https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals>
+- Gloaguen et al., "Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding
+  Agents?" (2026): <https://www.sri.inf.ethz.ch/publications/gloaguen2026agentsmd>
 
 - `./references/agents-md-standard.md`: client support, size limits, nesting, fallback bridges,
   and removing old bridges.

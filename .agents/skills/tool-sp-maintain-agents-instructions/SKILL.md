@@ -1,6 +1,6 @@
 ---
 name: tool-sp-maintain-agents-instructions
-description: "Review and update a repo's AGENTS.md after code, workflow, or skill changes, and retire leftover CLAUDE.md, GEMINI.md, or Copilot bridge files. Use when: AGENTS.md may be outdated, has grown too long, still carries a skill catalog, or the repo still has instruction bridges that current clients no longer need."
+description: "Review and update a repo's AGENTS.md after code, workflow, or skill changes, and retire leftover CLAUDE.md, GEMINI.md, or Copilot bridge files. Use when: AGENTS.md may be outdated, has grown too long, copies skill descriptions, or the repo still has instruction bridges that current clients no longer need."
 argument-hint: "What changed in the repo, or which instruction files look stale"
 license: "MIT"
 metadata:
@@ -21,7 +21,7 @@ need to exist.
 ## When to use this skill
 
 - The repo's workflows, commands, or package-manager defaults changed.
-- `AGENTS.md` may be outdated, is past the size budget, or still lists skills.
+- `AGENTS.md` may be outdated, is past the size budget, or copies skill descriptions.
 - The repo still has `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, or
   `.github/copilot-instructions.md` alongside `AGENTS.md`.
 
@@ -45,7 +45,7 @@ This tool maintains `AGENTS.md` and any leftover instruction files, not the skil
    in use.
 4. Update commands, workflow, and safety rules that drifted. Re-sync the persona block if the
    persona skill changed.
-5. Cut what does not belong: skill catalogs, content derivable from the code, and area-specific
+5. Cut what does not belong: copied skill descriptions, content derivable from the code, and area-specific
    detail that a skill should own.
 6. Check the budgets: about 150 lines, well under 32 KiB (`wc -l -c AGENTS.md`).
 
@@ -57,8 +57,8 @@ contradict each other and the repo does not show which one is right.
 - Adding a `CLAUDE.md` of any kind makes Claude Code stop reading `AGENTS.md`. Do not "fix" missing
   Claude context by creating one; check the Claude Code version and the Project instructions
   setting first.
-- A skill rename needs no `AGENTS.md` change unless `AGENTS.md` names that skill for an always-on
-  rule.
+- A skill rename or a new skill that owns a main repo area needs a matching edit to the compact
+  area-to-skill index in `AGENTS.md`.
 - Keep instructions consistent with policy-managed files such as `.aiexclude` or
   `.claude/settings.json`.
 
