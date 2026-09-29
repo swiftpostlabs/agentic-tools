@@ -1,7 +1,7 @@
 ---
 name: tool-sp-maintain-agents-instructions
-description: "Review and update repository agent instruction files after code, workflow, or skill changes. Use when: AGENTS.md, GEMINI.md, or .claude/CLAUDE.md may be outdated, the skill catalog changed, or a multi-provider repo needs its instruction bridge refreshed."
-argument-hint: "What changed in the repo and which instruction files or providers need to stay in sync"
+description: "Review and update a repo's AGENTS.md after code, workflow, or skill changes, and retire leftover CLAUDE.md, GEMINI.md, or Copilot bridge files. Use when: AGENTS.md may be outdated, has grown too long, still carries a skill catalog, or the repo still has instruction bridges that current clients no longer need."
+argument-hint: "What changed in the repo, or which instruction files look stale"
 license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -15,80 +15,60 @@ metadata:
 
 ## Purpose
 
-Guide the agent through a short maintenance wizard so top-level instruction files stay aligned with current repo workflows, skill changes, and provider support without drifting into duplicate or conflicting guidance.
+Keep `AGENTS.md` accurate and small after repo changes, and remove instruction files that no longer
+need to exist.
 
 ## When to use this skill
 
 - The repo's workflows, commands, or package-manager defaults changed.
-- Skills were added, removed, renamed, or substantially rewritten.
-- `AGENTS.md`, `GEMINI.md`, or `.claude/CLAUDE.md` may be outdated.
-- A repo added multi-provider support and needs a bridge pattern or refresh.
+- `AGENTS.md` may be outdated, is past the size budget, or still lists skills.
+- The repo still has `CLAUDE.md`, `.claude/CLAUDE.md`, `GEMINI.md`, or
+  `.github/copilot-instructions.md` alongside `AGENTS.md`.
 
 ## Scope boundaries
 
-This tool maintains the **instruction files** — `AGENTS.md` and the provider bridges — not the skills
-they route to.
+This tool maintains `AGENTS.md` and any leftover instruction files, not the skills.
 
-- `tool-sp-maintain-skills` — drift inside the skills themselves. The two hand off constantly:
-  renaming a skill drifts the routing here, and a rule that outgrew an instruction file usually
-  belongs in a skill over there.
-- `ref-sp-agents-instructions-authoring` — the rules this tool applies: source-of-truth model, bridge
-  pattern, persona placement.
-- `ref-sp-agents-mr-wolf-persona` — the canonical persona text. The instruction file carries a
-  verbatim projection of it; this tool re-syncs that copy but never rewrites the voice in place.
-- Domain detail belongs in the owning skill, not in an instruction file. Moving a rule out of
-  `AGENTS.md` and into its skill is a valid outcome of this pass.
-
-## First Step
-
-Read the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here, the `requires` dependency), its agent-persona skill (`ref-sp-agents-mr-wolf-persona` here), and the provider reference files under the instruction-authoring skill's `references/providers/` folder that match the files being touched.
+- `ref-sp-agents-instructions-authoring`: the rules applied here (one file, no bridges, budgets,
+  persona placement) and the client table in its `references/agents-md-standard.md`.
+- `ref-sp-agents-mr-wolf-persona`: canonical persona text. This tool re-syncs the inline copy and
+  never rewrites the voice in place.
+- `tool-sp-maintain-skills`: drift inside skills. A rule that outgrew `AGENTS.md` usually moves
+  there.
 
 ## Core Workflow
 
-1. Inspect the current instruction files and the code or skill changes that may affect them.
-2. Ask only the missing questions needed to determine the source of truth, supported providers, and any real provider-specific exceptions.
-3. Update the source-of-truth instruction file first.
-4. Refresh provider bridge files so they still point back to the source of truth cleanly.
-5. Update skill listings, help-routing sections, quick commands, and workflow summaries that drifted.
-6. Validate that the files still agree and that bridge files remain thin.
+1. Read `ref-sp-agents-instructions-authoring` and its `references/agents-md-standard.md`.
+2. Inspect `AGENTS.md`, any other instruction files, and the change that triggered the pass.
+3. Fold any real content from other instruction files into `AGENTS.md`, then delete them unless a
+   documented fallback applies. Replace a `GEMINI.md` bridge with `context.fileName` if Gemini is
+   in use.
+4. Update commands, workflow, and safety rules that drifted. Re-sync the persona block if the
+   persona skill changed.
+5. Cut what does not belong: skill catalogs, content derivable from the code, and area-specific
+   detail that a skill should own.
+6. Check the budgets: about 150 lines, well under 32 KiB (`wc -l -c AGENTS.md`).
 
-## Defaults
-
-- Prefer a single source-of-truth instruction file plus thin provider bridges.
-- Prefer a root `AGENTS.md` as the source of truth; fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or already uses that pattern.
-- If the repo supports multiple providers, recommend an import bridge rather than parallel duplicated instruction bodies.
-- When the repo carries a deliberate persona or working style, keep the persona core **inline** in the source-of-truth file — it must load on every turn — and treat the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) as the canonical text that copy is refreshed from. Sync in that direction; never rewrite the tone ad hoc in the instruction file. See "Persona placement" in `ref-sp-agents-instructions-authoring`.
-- When skill names or workflows change, update both the source-of-truth file and any provider routing summaries that mention them.
-- If the top-level instruction file grows too large, move domain detail into the owning skill and keep only routing at the top level.
-
-## Wizard Questions
-
-Ask only the questions that are still unanswered after inspecting the repo.
-
-| Question area | What to ask | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Provider support | Which providers or entry files does this repo actively support now? | The maintenance pass should not update phantom entry points or miss live ones. | When the supported provider set is unclear. | The update scope matches the real instruction surfaces. |
-| Source of truth | Which file should own the real repo guidance after this update? | The maintenance pass needs one authoritative file before bridges can be refreshed. | When the current source of truth is unclear or changing. | One file owns the real workflow and policy text. |
-| Provider-specific exceptions | Does any provider need a real provider-specific note, or should the bridge stay thin? | Unnecessary provider-specific text creates drift. | When a bridge file is growing or behaving differently. | Exceptions stay narrow and justified. |
-| Drift scope | Which commands, workflows, skills, or policies changed? | The maintenance pass should update the exact sections that drifted, not rewrite the whole file blindly. | When the triggering change is broad or loosely described. | The edit is focused on the real drift surface. |
+Ask the user only when it is unclear which clients are in use, or when two instruction files
+contradict each other and the repo does not show which one is right.
 
 ## Gotchas
 
-- Do not rewrite every instruction file independently if an import bridge already exists.
-- Do not leave skill listings or quick-command sections stale after renames or workflow changes.
-- Do not move framework or language detail into the top-level instructions when the owning skill should hold it.
-- If the repo already uses policy-managed files such as `.aiexclude` or `.claude/settings.json`, instruction updates should still match that model.
+- Adding a `CLAUDE.md` of any kind makes Claude Code stop reading `AGENTS.md`. Do not "fix" missing
+  Claude context by creating one; check the Claude Code version and the Project instructions
+  setting first.
+- A skill rename needs no `AGENTS.md` change unless `AGENTS.md` names that skill for an always-on
+  rule.
+- Keep instructions consistent with policy-managed files such as `.aiexclude` or
+  `.claude/settings.json`.
 
 ## Validation
 
-- Check the result against the instruction-authoring skill's checklist (`ref-sp-agents-instructions-authoring`; in this repo, its `references/checklist.md`).
-- Confirm the source-of-truth file and bridge files still agree.
-- Confirm provider bridge files remain minimal unless a real provider-specific exception exists.
-- Run a targeted error check on the touched instruction files before concluding.
+- Run the checklist in `ref-sp-agents-instructions-authoring` (`references/checklist.md` there).
+- Only `AGENTS.md` carries instructions, unless a documented fallback is recorded.
+- The budgets hold.
 
 ## References
 
-- Read the instruction-authoring skill's provider references (`ref-sp-agents-instructions-authoring`; in this repo, its `references/providers/copilot-instructions.md`, `references/providers/gemini-instructions.md`, and `references/providers/claude-instructions.md`) for file-specific authoring rules.
-- Use the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) when the instruction changes need to preserve the repo's agent voice, interaction style, or escalation stance.
-- Use the repo's skill-maintenance skill (`tool-sp-maintain-skills` here) when the instruction pass also needs skill consolidation or routing cleanup.
-- Use the repo's agent-security skill (`ref-sp-agents-security` here) when instruction changes must stay aligned with generated policy files or provider restrictions.
+- `ref-sp-agents-instructions-authoring`: source rules, client table, checklist.
+- `ref-sp-agents-security`: when instruction changes touch generated policy files.
