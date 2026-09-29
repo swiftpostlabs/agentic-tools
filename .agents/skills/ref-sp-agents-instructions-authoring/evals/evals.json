@@ -3,42 +3,43 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Design the instruction-file architecture for a repo that supports Copilot, Gemini, and Claude without duplicating the same workflow text in three places.",
-      "expected_output": "Guidance that chooses one source of truth, recommends thin provider bridges, and separates durable repo rules from domain-specific skill detail.",
+      "prompt": "Design the instruction-file architecture for a repo used from Claude Code, Codex, Copilot, and Gemini without duplicating the same workflow text.",
+      "expected_output": "A single root AGENTS.md with no CLAUDE.md or GEMINI.md stubs, Gemini pointed at AGENTS.md through context.fileName, and domain detail kept in skills.",
       "assertions": [
-        "The response chooses one instruction source of truth",
-        "The response recommends thin bridge or stub files for the other providers",
+        "The response makes AGENTS.md the only instruction body",
+        "The response does not add a CLAUDE.md bridge by default and notes that one would stop Claude Code reading AGENTS.md",
+        "The response configures Gemini through context.fileName rather than a GEMINI.md body",
         "The response distinguishes top-level instruction content from skill-level detail"
       ]
     },
     {
       "id": 2,
       "prompt": "Review AGENTS.md after several new skills were added and tell me what should change.",
-      "expected_output": "A review that updates the skill list, routing hints, and any workflow commands that changed, while keeping feature-level detail in skills.",
+      "expected_output": "A review that checks commands and workflow drift and size budgets, and does not add the new skills as a catalog because clients already list skill descriptions.",
       "assertions": [
-        "The response checks skill listings or routing hints",
+        "The response does not add a skill catalog to AGENTS.md",
         "The response checks workflow or command drift",
-        "The response avoids moving feature-level detail into the top-level file by default"
+        "The response checks the file against the size budgets"
       ]
     },
     {
       "id": 3,
-      "prompt": "Review GEMINI.md and tell me whether it is too heavy or whether it should just bridge back to the shared instructions.",
-      "expected_output": "Guidance that keeps GEMINI.md thin by default, allows only narrow Gemini-specific notes, and routes back to the shared source of truth.",
+      "prompt": "Our repo has a .claude/CLAUDE.md that just contains @../AGENTS.md. Should we keep it?",
+      "expected_output": "Guidance that deletes the stub because current Claude Code reads AGENTS.md natively, keeping it only for clients on versions before v2.1.277.",
       "assertions": [
-        "The response keeps GEMINI.md thin by default",
-        "The response allows only narrow provider-specific exceptions",
-        "The response routes Gemini back to the shared instructions"
+        "The response recommends deleting the stub by default",
+        "The response names the Claude Code version condition",
+        "The response does not suggest moving content into CLAUDE.md"
       ]
     },
     {
       "id": 4,
-      "prompt": "Review .claude/CLAUDE.md and tell me whether it is too heavy or whether it should just bridge back to the shared instructions.",
-      "expected_output": "Guidance that keeps .claude/CLAUDE.md thin by default, allows only narrow Claude-specific notes, and routes back to the shared source of truth.",
+      "prompt": "Our CLAUDE.md has 120 lines of its own rules and AGENTS.md has different ones. Clean this up.",
+      "expected_output": "Merge the CLAUDE.md body into AGENTS.md, resolve contradictions, then delete CLAUDE.md.",
       "assertions": [
-        "The response keeps .claude/CLAUDE.md thin by default",
-        "The response allows only narrow provider-specific exceptions",
-        "The response routes Claude back to the shared instructions"
+        "The response merges the CLAUDE.md content into AGENTS.md",
+        "The response resolves contradictions rather than keeping both",
+        "The response deletes CLAUDE.md afterwards"
       ]
     }
   ]

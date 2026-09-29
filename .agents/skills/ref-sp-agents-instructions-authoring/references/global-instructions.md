@@ -78,8 +78,8 @@ A common working setup:
   the repo-level files carry the rest.
 
 This keeps one authoritative personal-defaults file while every agent still
-loads it. See `./import-bridge.md` for the bridge vs. stub vs. split-source
-tradeoffs — they apply identically to the providers that support imports.
+loads it. Unlike the repo tier, the global tier still needs bridges, because
+Claude Code reads `AGENTS.md` only from the project path, not from `~/.claude/`.
 
 ## What belongs in global vs. repo
 

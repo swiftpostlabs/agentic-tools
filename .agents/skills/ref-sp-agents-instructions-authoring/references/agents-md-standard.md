@@ -2,74 +2,61 @@
 
 ## What it is
 
-`AGENTS.md` (see <https://agents.md/>) is a cross-provider convention for a
-single, agent-facing instruction file at the repository root. Think of it as a
-"README for agents": the technical context an AI coding agent needs — build and
-test commands, code style, testing instructions, security notes, PR and commit
-conventions — kept separate from the human-facing `README.md`.
+`AGENTS.md` (<https://agents.md/>) is a plain-Markdown instruction file for coding agents at the
+repository root: the build and test commands, conventions, and safety notes an agent needs, kept
+apart from the human-facing `README.md`. No schema; any headings work. It is stewarded by the
+Agentic AI Foundation under the Linux Foundation and read by most coding agents.
 
-It is plain Markdown with no required schema. Any headings work; the agent just
-parses the text. That makes it a natural fit for the source-of-truth role.
+## Client support
 
-The standard is no longer just an informal convention: it is stewarded by the
-Agentic AI Foundation under the Linux Foundation, is supported by 25+ coding
-agents, and is used by tens of thousands of open-source repositories.
+Verified against provider docs on **2026-09-29**. Re-check before asserting a version or key.
 
-## Why it matters for this skill
+| Client | Reads `AGENTS.md` | Limits and caveats |
+| --- | --- | --- |
+| Claude Code | Natively since v2.1.277 (all session types since v2.1.281). Loads every `AGENTS.md` and `.claude/AGENTS.md` from the working directory up, plus a subdirectory's file when Claude reads a file there. `@path` imports work. | Only when **no** `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` sits in the working directory or above (`~/.claude/CLAUDE.md` and `.claude/rules/` do not count). The user setting **Project instructions** (`/config`) can force both or `CLAUDE.md` only. `InstructionsLoaded` hooks do not fire for it. Nothing under `.agents/` is read, so skills still need `.claude/skills`. Recommended size: under 200 lines per file. |
+| OpenAI Codex | Natively. `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md`, then each directory from the git root down to the working directory, `AGENTS.override.md` before `AGENTS.md`. | Stops adding files at `project_doc_max_bytes`, default 32 KiB across the combined files. Extra names via `project_doc_fallback_filenames`. |
+| GitHub Copilot (CLI, coding agent, VS Code) | Natively. VS Code gates it on `chat.useAgentsMdFile`. | Personal instructions outrank repository ones. |
+| Gemini CLI | Only when configured. Default context file is `GEMINI.md`; set `context.fileName` (for example `["AGENTS.md", "GEMINI.md"]`) in `.gemini/settings.json`. | Inspect with `/memory show`. |
+| Cursor, Jules, Aider, Zed, Warp, Devin, Hermes, others | Natively, per the standard's adopter list. | Hermes truncates each context file at `context_file_max_chars` (default 20,000). |
 
-The provider references in `./providers/` each target one vendor's entry file
-(`.github/copilot-instructions.md`, `GEMINI.md`, `.claude/CLAUDE.md`).
-`AGENTS.md` is the emerging *shared* entry file that many of those same tools now
-read directly — GitHub Copilot, VS Code, Cursor, OpenAI Codex, Google Jules,
-Aider, Zed, Warp, Devin, and others. That changes the source-of-truth calculus.
+The binding constraints on size are Codex's 32 KiB cap and Claude Code's 200-line recommendation.
+Past either, content is cut or adherence drops.
 
-## Choosing AGENTS.md as the source of truth
+## Fallback bridges
 
-- **At the repo level, prefer a root `AGENTS.md` as the default source of
-  truth** over any single vendor file. It is read natively by many agents, so it
-  removes a layer of bridging.
-- Fall back to `.github/copilot-instructions.md` as the source of truth only when
-  the repo is Copilot-centric or already has a mature file established there. In
-  that case, consider still adding a root `AGENTS.md` (or symlinking it) so newer
-  AGENTS.md-aware tools also find the guidance.
-- Either way, keep exactly one authoritative body of guidance and route the rest
-  to it, per `./import-bridge.md`.
-- This repo-level default does **not** extend to the global/home tier: as of
-  today we could not find tool documentation (Copilot, Gemini, and others) for a
-  user-level `AGENTS.md`, so global config keeps using Copilot as its source of
-  truth. See `./global-instructions.md`.
+Use a bridge only when a client or version in real use cannot read `AGENTS.md` and has no setting
+for it (for example Claude Code before v2.1.277, or a user who set Project instructions to
+`claude-md`).
 
-## Bridging to vendor files
+- **Import:** a `CLAUDE.md` whose first line is `@AGENTS.md`, optionally followed by a short
+  client-specific note. Claude Code never loads `AGENTS.md` twice through an import. Prefer this on
+  Windows.
+- **Symlink:** `ln -s AGENTS.md CLAUDE.md`. Identical content, but Claude's Edit tool refuses to
+  write through the link, and Git on Windows checks symlinks out as plain text unless
+  `core.symlinks` is enabled.
+- Never keep a second hand-maintained body. Past about 25 lines a bridge is a second source of
+  truth.
 
-Some agents still read only their own file. Bridge them to `AGENTS.md` the same
-way you would bridge to any source of truth:
+## Removing an old bridge
 
-- **Symlink** the vendor file to `AGENTS.md` when the provider follows symlinks
-  and you want byte-identical content (e.g. `CLAUDE.md -> AGENTS.md`). This is
-  the migration path the standard itself recommends.
-- **Import/route** from the vendor file when it supports imports and you want a
-  small provider-specific note plus a pointer back to `AGENTS.md`.
-
-Claude Code is the notable holdout: its docs state it reads `CLAUDE.md`, not
-`AGENTS.md`, and officially recommend exactly this bridge — a `CLAUDE.md`
-containing `@AGENTS.md` (optionally followed by Claude-specific notes) or a
-`CLAUDE.md -> AGENTS.md` symlink. Prefer the `@AGENTS.md` import on Windows,
-where creating a symlink needs Administrator privileges or Developer Mode.
-
-Avoid maintaining two full instruction bodies — a symlink or a thin bridge keeps
-them from drifting.
+| Existing setup | Action |
+| --- | --- |
+| `CLAUDE.md` or `.claude/CLAUDE.md` containing only `@AGENTS.md` | Delete it; Claude Code then reads `AGENTS.md` directly. Keep it only for clients stuck on old versions. |
+| `CLAUDE.md` telling Claude in prose to read `AGENTS.md` | Delete it. Prose only works if the model decides to open the file. |
+| `CLAUDE.md -> AGENTS.md` symlink | Harmless; delete to simplify. |
+| `CLAUDE.md` with its own body | Merge the body into `AGENTS.md`, then delete. |
+| `GEMINI.md` importing `AGENTS.md` | Replace with `context.fileName` in `.gemini/settings.json`, or delete if Gemini is not used. |
+| `SessionStart` hook that prints `AGENTS.md` | Remove; it now adds a second copy. |
 
 ## Nesting and monorepos
 
-`AGENTS.md` supports nested files: agents read the **nearest** file up the
-directory tree, so the closest one wins. In a monorepo, place a root
-`AGENTS.md` for shared guidance and per-package `AGENTS.md` files for
-package-specific rules. Keep the nested files focused on what actually differs at
-that level rather than restating the root.
+Root `AGENTS.md` for shared rules, nested `AGENTS.md` for what differs in a package. Nested files
+are appended after the root, so closer files read last. Codex treats that as override order; Claude
+Code may follow either side of a conflict. Keep nested files to the differences and avoid conflicts.
 
-## When not to reach for it
+## When not to use it
 
-- If only one agent is in play and it has a first-class native file, a single
-  vendor file may be simpler than adding `AGENTS.md` plus bridges.
-- `AGENTS.md` is repo-scoped. It does not replace user-level/global config — see
-  `./global-instructions.md` for that layer.
+- `AGENTS.md` is repo-scoped. User-level defaults live elsewhere; see `./global-instructions.md`.
+- A repo used by exactly one client with a richer native mechanism (for example Claude Code with
+  path-scoped `.claude/rules/`) may use that mechanism for scoped rules, while keeping `AGENTS.md`
+  as the always-on body.

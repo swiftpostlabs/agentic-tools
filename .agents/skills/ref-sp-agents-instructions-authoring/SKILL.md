@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-instructions-authoring
-description: "Guidance for structuring and maintaining repository instruction files across major agent entry points such as Copilot, Gemini, and Claude. Use when: designing the repo's instruction system, choosing a source of truth, or updating AGENTS.md, GEMINI.md, and .claude/CLAUDE.md together."
+description: "Structure and maintain a repo's agent instruction file: a root AGENTS.md as the one source of truth read natively by Claude Code, Codex, Copilot, and others, what belongs in it versus in skills, size budgets, persona placement, and the narrow cases that still need a CLAUDE.md, GEMINI.md, or Copilot fallback. Use when: designing or trimming AGENTS.md, deciding whether a client needs a bridge file, removing an old bridge, or reviewing whether instruction files still match the repo."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -14,119 +14,100 @@ metadata:
 
 ## Purpose
 
-Provide portable defaults for designing maintainable repository instruction systems across the major agent entry points without duplicating the same workflow, policy, and routing text in every provider file.
+Keep one agent instruction file per repo, a root `AGENTS.md`, small enough that every client loads
+all of it, with domain detail pushed into skills that load on demand.
 
 ## When to use this skill
 
-- Creating or refactoring repo instruction files.
-- Deciding where the source of truth for instructions should live.
-- Adding Gemini or Claude support to a repo that already has Copilot instructions, or the reverse.
-- Reviewing whether top-level instruction files still match the codebase and the skill catalog.
+- Creating, trimming, or reviewing a repo's `AGENTS.md`.
+- Deciding whether a client still needs its own file (`CLAUDE.md`, `GEMINI.md`,
+  `.github/copilot-instructions.md`), or removing one that is no longer needed.
+- Reviewing whether top-level instructions still match the codebase.
 
 ## Scope Boundaries
 
-- Use this skill for the overall instruction architecture across providers.
-- Use `./references/providers/copilot-instructions.md` for what belongs specifically in `.github/copilot-instructions.md`.
-- Use `./references/providers/gemini-instructions.md` for `GEMINI.md` bridge or provider-specific decisions.
-- Use `./references/providers/claude-instructions.md` for `.claude/CLAUDE.md` bridge or provider-specific decisions.
-- Use `./references/global-instructions.md` for user-level/global instruction files (e.g. `~/.copilot/instructions/*.instructions.md`, `~/.claude/CLAUDE.md`) rather than repo-scoped files.
-- Use `./references/agents-md-standard.md` for the cross-provider root `AGENTS.md` file and how it fits the source-of-truth model.
-- Use the repo's agent-persona skill (`ref-sp-agents-mr-wolf-persona` here) when the instruction system needs to preserve or refresh the repo's agent voice, interaction style, or escalation stance.
-- Use the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here) for authoring skills rather than top-level instruction files.
-- Use the guided instruction-maintenance skill (`tool-sp-maintain-agents-instructions` here) when the user wants a guided update workflow instead of just the reference guidance.
-
-## Major Provider References
-
-- GitHub Copilot: `./references/providers/copilot-instructions.md`
-- Google Gemini: `./references/providers/gemini-instructions.md`
-- Anthropic Claude: `./references/providers/claude-instructions.md`
+- Use `./references/agents-md-standard.md` for which clients read `AGENTS.md`, their size limits,
+  nesting, and the fallback bridge when a client cannot read it.
+- Use `./references/global-instructions.md` for user-level files (`~/.claude/CLAUDE.md`,
+  `~/.copilot/instructions/`, `~/.codex/AGENTS.md`), not repo files.
+- Use `./references/providers/copilot-instructions.md` only for a repo that keeps
+  `.github/copilot-instructions.md` as its source of truth.
+- Use the repo's persona skill (`ref-sp-agents-mr-wolf-persona` here) for the persona text itself.
+- Use `tool-sp-setup-agent-repo` to wire clients and skill directories, and
+  `tool-sp-maintain-agents-instructions` for a guided refresh.
 
 ## Defaults
 
-- Choose one source-of-truth instruction file for the repo.
-- Prefer a root `AGENTS.md` as the repo source of truth by default — it is read natively by many agents; see `./references/agents-md-standard.md`. Fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or has a mature file already established there.
-- Use thin provider bridge files for Gemini and Claude by default rather than duplicating the full instruction set.
-- Keep always-on repo rules in the source-of-truth file and move domain-specific detail into skills.
-- Inline the persona core in the source-of-truth file rather than routing to a persona skill — persona is the one category of guidance that must shape *every* turn, and a skill only loads when something triggers it. See "Persona placement" below.
-- Add provider-specific exceptions only when a real platform behavior requires them.
-- Keep cross-project personal defaults in user-level/global config, not duplicated into every repo; see `./references/global-instructions.md`.
-- For the global/home tier, as of today no tool documents an `AGENTS.md` equivalent, so keep Copilot (`~/.copilot/instructions/*.instructions.md`) as the recommended global source of truth; see `./references/global-instructions.md`.
-
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Choose the instruction source of truth | Decide which file owns the actual repo guidance. | Instruction systems drift quickly when several entry files all act authoritative. | When setting up or refactoring multi-provider support. | One file owns the real policy and workflow text. |
-| Design the import bridge | Route other provider entry files back to the source-of-truth file with minimal local text. | Thin bridge files reduce duplication while preserving provider compatibility. | When the repo supports more than one AI entry point. | The provider files stay short and the effective guidance still matches. |
-| Separate always-on rules from on-demand detail | Keep durable repo workflow and safety rules in the top-level instructions and move domain specifics into skills. | Bloated instruction files become harder to maintain and easier to contradict. | When top-level instructions start absorbing framework or language detail. | Instruction files stay durable and the skills remain discoverable. |
+- **One file, no bridges.** A root `AGENTS.md` is read natively by Claude Code (v2.1.277+), Codex,
+  Copilot, Cursor, and most of the ecosystem. Do not add `CLAUDE.md` or `GEMINI.md` stubs by
+  default. For Claude Code a stub is worse than useless: any `CLAUDE.md`, `.claude/CLAUDE.md`, or
+  `CLAUDE.local.md` on the path makes it read that file *instead of* `AGENTS.md`.
+- **Configure, don't bridge,** where a client has a setting for it (Gemini CLI's
+  `context.fileName`, VS Code's `chat.useAgentsMdFile`).
+- **Bridge only as a fallback,** for a client or version that cannot read `AGENTS.md`. Then use an
+  `@AGENTS.md` import or a symlink, never a second body.
+- **No skill catalog in `AGENTS.md`.** Every skills-aware client already lists each skill's name
+  and description. Repeating them doubles the context cost and drifts. Route with the description's
+  `Use when:` clause instead, and mention a skill in `AGENTS.md` only for a rule it must enforce
+  every turn.
+- **Stay inside the smallest budget.** Claude Code recommends under 200 lines per file; Codex stops
+  reading at `project_doc_max_bytes` (32 KiB default); Hermes truncates at 20,000 characters. Aim
+  for roughly 150 lines and 15 KB.
+- **Inline the persona core** (see below). It is the one sanctioned copy of skill text.
 
 ## Core Rules
 
-### Source-of-truth model
+### What belongs in AGENTS.md
 
-- Make one file authoritative.
-- Default to a root `AGENTS.md` as that authoritative file; fall back to `.github/copilot-instructions.md` only when the repo is Copilot-centric or already has a mature file established there (see `./references/agents-md-standard.md`).
-- Avoid parallel hand-maintained instruction bodies across several provider files.
+Only what must shape every turn and cannot be derived from the code:
 
-### Import bridge pattern
+- persona core and always-on safety rules,
+- workflow steps and validation expectations,
+- the commands an agent would otherwise guess wrong,
+- conventions that differ from tool defaults.
 
-- In multi-provider repos, prefer a bridge pattern where the provider-specific entry files import or route back to the source-of-truth file.
-- Keep bridge files minimal and readable.
-- Use repo-root imports when the provider supports them so the bridge does not depend on folder depth.
+Everything else goes to a skill: multi-step procedures, framework or language detail, anything that
+matters for one area of the codebase. Directory layouts, dependency lists, and architecture tours
+the agent can read from the repo are noise; cut them.
+
+Write instructions concretely enough to verify ("run `uv run poe test` before committing", not
+"test your changes"). Contradictions between files are resolved arbitrarily by the model, so remove
+one side rather than adding a tiebreaker.
 
 ### Persona placement
 
-Persona is the deliberate exception to "move detail into skills". Everything else in a skill can
-afford to load on demand; the agent's voice, directness, and escalation stance cannot, because they
-govern how the agent behaves on the very first turn — before any skill has been triggered.
+Persona is the deliberate exception to "move detail into skills". A skill loads on demand; the
+agent's voice and escalation stance must apply from the first turn.
 
-- **Inline the persona core** in the source-of-truth instruction file (`AGENTS.md` or equivalent),
-  where it loads on every task. Do not replace it with a pointer to a persona skill.
-- **Keep the persona skill as the canonical text** the inline copy is refreshed against. The skill
-  is the source; the instruction file is the always-loaded projection of it. When they disagree, the
-  skill wins and the instruction file gets updated — not the reverse.
-- **Inline the core, not the whole skill.** The instruction file carries voice, directness, pushing
-  back, and escalation stance. Worked examples, rationale, and adoption guidance stay in the skill.
-- Accept the duplication. It is real, and it is the correct trade: a persona that loads lazily is a
-  persona that does not apply when it matters most. Treat it as a deliberate sync point, reviewed
-  whenever either side changes.
-- This is the one place a repo should tolerate a hand-maintained copy of skill text in an
-  instruction file. It is not a licence to inline anything else.
+- Inline the persona core in `AGENTS.md`. Do not replace it with a pointer to the persona skill.
+- The persona skill is the canonical text; `AGENTS.md` is its always-loaded projection. When they
+  disagree, update `AGENTS.md`.
+- Inline the core only. Examples, rationale, and adoption guidance stay in the skill.
+- Re-sync the block whenever either side changes. It is not a licence to inline anything else.
 
-**In SwiftPost-opinionated setups**, that persona is `ref-sp-agents-mr-wolf-persona`: the repo's
-`AGENTS.md` carries its Instructions section inline as the Personality block, and the skill remains
-the canonical source it is refreshed against. A repo adopting this instruction architecture without
-the SwiftPost persona applies the same pattern with whatever persona skill it owns.
+In SwiftPost-opinionated setups the persona is `ref-sp-agents-mr-wolf-persona`, carried as the
+Personality block. Another repo applies the same pattern with its own persona skill.
 
-### Provider-specific exceptions
+### Monorepos
 
-- Add provider-specific text only when the platform has a real bootstrap requirement, limitation, or routing constraint.
-- Keep the provider-specific exception narrow and then route back to the shared instructions.
-- Do not duplicate the full workflow, command list, or policy text in the provider bridge file when a reference is enough.
-
-### Maintenance
-
-- Review top-level instructions when quick commands, workflow defaults, safety policy, the persona skill, or the skill catalog changes.
-- When the persona skill changes, re-sync the inline persona block in the source-of-truth file in the same pass. This is the deliberate duplication from "Persona placement", and it only stays correct if it is refreshed deliberately.
-- If the repo adds or removes important skills, update both the skill inventory and the routing hints in the source-of-truth file.
-- Keep instruction files aligned with generated policy files and provider settings when the repo uses them.
+Put shared rules in the root `AGENTS.md` and only the differences in nested `AGENTS.md` files.
+Nested files add to the root rather than replacing it, but clients load them differently: Codex
+reads every `AGENTS.md` from the git root down to the launch directory at startup, while Claude Code
+also picks up a subdirectory's file when it first reads a file there.
 
 ## Validation
 
-- The repo has one clear instruction source of truth.
-- Bridge files stay thin unless a provider-specific exception is genuinely required.
-- Top-level instructions contain durable repo workflow and routing, not duplicated domain detail.
-- The persona core is inline in the source-of-truth file, not merely pointed at, and it still matches the persona skill it is projected from.
-- The instruction files still match the current skills, commands, and policy model.
+- The repo has one instruction body, in `AGENTS.md`, and no `CLAUDE.md`, `.claude/CLAUDE.md`, or
+  `GEMINI.md` unless a documented fallback needs it.
+- `AGENTS.md` is under the budgets above and carries no skill catalog.
+- The persona core is inline and matches the persona skill.
+- Commands, workflow, and safety rules still match the repo.
 
 ## References
 
-- Read `./references/providers/copilot-instructions.md` for Copilot-specific source-of-truth guidance.
-- Read `./references/providers/gemini-instructions.md` for `GEMINI.md` bridge guidance.
-- Read `./references/providers/claude-instructions.md` for `.claude/CLAUDE.md` bridge guidance.
-- Read `./references/global-instructions.md` for user-level/global instruction files and how the bridge pattern applies to personal defaults.
-- Read `./references/agents-md-standard.md` for the root `AGENTS.md` convention, nesting/monorepo behavior, and symlink migration.
-- Read `./references/checklist.md` for a quick multi-provider instruction review pass.
-- Read `./references/import-bridge.md` when choosing between thin stubs, bridge files, and rare split-source patterns.
-- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for instruction-authoring prompts.
-- Review `./evals/evals.json` when validating output quality for source-of-truth and bridge recommendations.
+- `./references/agents-md-standard.md`: client support, size limits, nesting, fallback bridges,
+  and removing old bridges.
+- `./references/global-instructions.md`: user-level instruction files per client.
+- `./references/providers/copilot-instructions.md`: repos that keep `.github/copilot-instructions.md`.
+- `./references/checklist.md`: quick review pass.
+- `./assets/trigger-eval-queries.example.json` and `./evals/evals.json`: trigger and output evals.

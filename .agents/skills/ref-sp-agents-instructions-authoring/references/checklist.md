@@ -1,8 +1,10 @@
 # Review Checklist
 
-- One instruction file is the clear source of truth.
-- Provider entry files stay thin unless a real provider-specific exception is required.
-- The source-of-truth file contains durable repo workflow, routing, and safety guidance rather than framework-level detail.
-- Quick commands, skill inventory, and routing hints still match the current repo.
-- The provider bridge pattern uses stable repo-root references when the platform supports them.
-- The instruction system still agrees with policy-managed files such as `.aiexclude`, `.claude/settings.json`, or `.vscode/settings.json` when those files exist.
+- `AGENTS.md` is the only instruction body; no `CLAUDE.md`, `.claude/CLAUDE.md`, `CLAUDE.local.md`, or `GEMINI.md` exists unless a documented fallback needs it.
+- `AGENTS.md` stays under about 150 lines and well under Codex's 32 KiB cap.
+- It carries no skill catalog; skills route through their own descriptions.
+- It holds always-on rules, workflow, and commands, not framework-level or single-area detail.
+- The persona core is inline and matches the persona skill.
+- Commands and workflow still match the repo.
+- Client settings that replace bridges are in place where needed (Gemini `context.fileName`, VS Code `chat.useAgentsMdFile`).
+- The instructions agree with policy-managed files such as `.aiexclude`, `.claude/settings.json`, or `.vscode/settings.json` when those exist.

@@ -1,10 +1,10 @@
 [
   {
-    "query": "How should we structure AGENTS.md, GEMINI.md, and .claude/CLAUDE.md so they do not drift?",
+    "query": "How should we structure AGENTS.md so Claude Code, Codex, and Copilot all read the same instructions?",
     "should_trigger": true
   },
   {
-    "query": "Set up an instruction source of truth and import bridge for a repo that supports Copilot, Gemini, and Claude.",
+    "query": "Do we still need a CLAUDE.md that imports AGENTS.md?",
     "should_trigger": true
   },
   {
@@ -12,11 +12,11 @@
     "should_trigger": true
   },
   {
-    "query": "Should GEMINI.md stay a thin bridge file or carry its own instructions?",
+    "query": "How do we get Gemini CLI to read our AGENTS.md instead of GEMINI.md?",
     "should_trigger": true
   },
   {
-    "query": "Should .claude/CLAUDE.md stay a thin bridge file or carry its own instructions?",
+    "query": "Our AGENTS.md is 350 lines and lists every skill. What should we cut?",
     "should_trigger": true
   },
   {
