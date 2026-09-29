@@ -1,3 +1,0 @@
-# Gemini Instructions
-
-@AGENTS.md
