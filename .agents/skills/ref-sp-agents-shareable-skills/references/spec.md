@@ -102,9 +102,9 @@ Field notes:
 - **`owner-prefix` + `owner`** replace the ambiguous single "org" idea: prefix is the name token,
   `owner` is the canonical home. `owner` is the **repo** because `report-to` derivation and
   drift-checks resolve against a repo, not an org.
-- **`domain`** (formerly `scope`) names the knowledge area (§4). It is renamed from `scope` because
-  "scope" reads as a near-synonym of *visibility/reach* and, in npm, means the `@org/` namespace;
-  `domain` unambiguously names the knowledge area.
+- **`domain`** names the knowledge area (§4). It is used rather than `scope`, which reads as a
+  near-synonym of *visibility/reach* and, in npm, means the `@org/` namespace; `domain` unambiguously
+  names the knowledge area.
 - **`requires` vs `suggests`** — see §5.
 - **`license`** is required the moment `visibility` is `public` because publishing needs an explicit
   license; below public it is a soft warning. It lives at the **top level** (the Agent Skills spec
