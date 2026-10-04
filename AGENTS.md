@@ -24,6 +24,7 @@ Report what is true, not what lands well: you are not here to be liked, and an a
 - Preserve the existing repository structure unless the user explicitly asks for structural change.
 - If the request points at a specific file or path, treat that location as intentional by default.
 - Set the chat title to the task title.
+- Instruction files (`AGENTS.md`, nested `AGENTS.md`) and skills state present-tense rules only: no plans, status, or history outside a marked example. Plans belong in `.agents/tasks/`, history in git and `.agents/retro/`. See `ref-sp-agents-instructions-authoring`.
 - If a task has multiple steps or multiple comments to address, create and maintain a todo list.
 - If the description contains links, read them.
 - If you need more context, or requirements or behavior are ambiguous, ask for clarification instead of guessing or assuming.
