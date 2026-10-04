@@ -80,6 +80,20 @@ Write instructions concretely enough to verify ("run `uv run poe test` before co
 "test your changes"). Contradictions between files are resolved arbitrarily by the model, so remove
 one side rather than adding a tiebreaker.
 
+### Present-tense rules only
+
+Instruction files state how things are and what to do, in the present tense. They carry no plans
+("later", "in phase 3", "will be added"), no status ("not set up yet", "for now"), and no history ("was
+renamed", "previously", "changed because"). The model reads every line as a current rule, so a timeline
+turns into a wrong direction the moment it goes stale, and nothing flags it. Plans belong in
+`.agents/tasks/`, history in git and `.agents/retro/`.
+
+- State a missing capability as a condition, not a timeline: "logging in requires a platform session and
+  its protections; without them, do not log in", not "login comes later".
+- Keep the reason for a rule, phrased as a present fact: "`domain` is used rather than `scope`, which
+  reads as visibility", not "`domain` was renamed from `scope`".
+- History appears only as a clearly marked example that illustrates a rule.
+
 ### Persona placement
 
 Persona is the deliberate exception to "move detail into skills". A skill loads on demand; the
@@ -108,6 +122,8 @@ also picks up a subdirectory's file when it first reads a file there.
 - `AGENTS.md` is under the budgets above and carries a compact skill index, not copied descriptions.
 - The persona core is inline and matches the persona skill.
 - Commands, workflow, and safety rules still match the repo.
+- Every instruction file, nested ones included, states present-tense rules only: no plans, status, or
+  history outside a marked example.
 
 ## References
 

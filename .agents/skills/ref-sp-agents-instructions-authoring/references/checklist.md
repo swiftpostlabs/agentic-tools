@@ -6,5 +6,6 @@
 - It holds always-on rules, workflow, and commands, not framework-level or single-area detail.
 - The persona core is inline and matches the persona skill.
 - Commands and workflow still match the repo.
+- Every instruction file, nested ones included, states present-tense rules only: no plans ("later", "phase 3"), status ("not yet", "for now"), or history ("was renamed", "previously") outside a marked example.
 - Client settings that replace bridges are in place where needed (Gemini `context.fileName`, VS Code `chat.useAgentsMdFile`).
 - The instructions agree with policy-managed files such as `.aiexclude`, `.claude/settings.json`, or `.vscode/settings.json` when those exist.

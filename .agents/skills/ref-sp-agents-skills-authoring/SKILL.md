@@ -214,6 +214,7 @@ Read `./references/agent-components.md` for the detailed mapping from agent comp
 - **Use templates for constrained output.** Inline small templates; move larger templates to `assets/` and reference them explicitly.
 - **Use checklists for multistep workflows.** They help agents maintain progress and validation order.
 - **Use plan-validate-execute for fragile or destructive work.** Require an intermediate artifact or validation step before action.
+- **Write present-tense rules, not plans or history.** A skill states how things are and what to do. No plans ("later", "will be added"), status ("not yet", "for now"), or history ("was renamed", "previously") about the skill or the repo: they go stale silently and read as current rules. Keep a rule's reason as a present fact; history appears only as a marked example. Dated provenance of a source or measurement ("verified 2026-08-01") is evidence, not history, and stays.
 
 If you are creating a new skill from scratch, start from `./references/template.md` and then prune or extend it to fit the actual workflow.
 
