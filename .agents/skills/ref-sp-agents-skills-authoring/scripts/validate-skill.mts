@@ -31,6 +31,9 @@ type Metadata = Record<string, string>;
 type FrontmatterValue = string | Metadata;
 type Frontmatter = Record<string, FrontmatterValue>;
 
+// Clients list every skill's description in a shared budget (Codex: 2% of context or 8,000
+// characters), so long descriptions crowd out other skills. 1024 is the spec's hard limit.
+const DESCRIPTION_SOFT_LIMIT = 400;
 const ALLOWED_TOP_LEVEL_KEYS = new Set([
   "allowed-tools",
   "argument-hint",
@@ -196,6 +199,11 @@ function validateFrontmatter(skillDir: string, frontmatter: Frontmatter, finding
     add("error", "frontmatter must include non-empty string 'description'");
   } else if (description.length > 1024) {
     add("error", "description must be 1024 characters or less");
+  } else if (description.length > DESCRIPTION_SOFT_LIMIT) {
+    add(
+      "warning",
+      `description is ${description.length} characters; aim for 150-300 and stay under ${DESCRIPTION_SOFT_LIMIT} so the catalog fits client listing budgets`,
+    );
   } else if (description.includes("<") || description.includes(">")) {
     add("error", "description must not contain angle brackets");
   }
@@ -230,14 +238,7 @@ function validateBody(skillDir: string, skillLabel: string, body: string, findin
   const add = (severity: Severity, message: string): void => {
     findings.push({ skill: skillLabel, severity, message });
   };
-  const lowered = body.toLowerCase();
 
-  if (!lowered.includes("## purpose")) {
-    add("warning", "SKILL.md should include a Purpose section");
-  }
-  if (!lowered.includes("## when to use")) {
-    add("warning", "SKILL.md should include a When to use section");
-  }
   if (body.split(/\r?\n/).length > 500) {
     add("warning", "SKILL.md is over 500 lines; consider progressive disclosure");
   }

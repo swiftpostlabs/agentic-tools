@@ -27,6 +27,17 @@
         "The plan uses deterministic scripts for mechanical checks and human review for holistic quality",
         "The plan avoids Claude-only CLI or viewer assumptions unless explicitly scoped to Claude"
       ]
+    },
+    {
+      "id": 3,
+      "prompt": "This skill has Purpose, When to use, Core Rules, a What/Why/When/Expected-outcome table, and a Validation list that repeats the rules. Its description is 700 characters. Simplify it.",
+      "expected_output": "A rewrite with a 150-300 character description, a short orienting intro instead of Purpose and When to use, task-named sections with each rule once, no task-framing table, gotchas kept, and no rule lost.",
+      "assertions": [
+        "The description is under 400 characters and states what the skill covers then when to use it",
+        "The rewrite drops Purpose, When to use, and the task-framing table",
+        "Every rule from the original survives exactly once",
+        "Gotchas stay in SKILL.md"
+      ]
     }
   ]
 }

@@ -14,12 +14,13 @@ If the description is weak:
 
 ## Writing Rules
 
-- Write it as activation guidance: `Use this skill when...`
-- Focus on user intent and job-to-be-done.
-- Mention the kinds of artifacts, workflows, and near-miss phrasings the user may use.
-- Keep it concise but concrete.
-- Do not describe only the internals of the skill.
-- Keep it under the spec limit of 1024 characters.
+- State what the skill covers, then one short `Use when …` clause.
+- Focus on user intent and the words a user would actually type.
+- Keep it to 150–300 characters. Every skill's description shares one listing budget, so long
+  descriptions push others out (Codex: 2% of context or 8,000 characters). The validator warns
+  above 400; the spec limit is 1024.
+- Do not describe only the internals of the skill, and do not restate the first sentence as a
+  trigger list.
 
 ## Good Shape
 
@@ -32,10 +33,8 @@ Example:
 
 ```yaml
 description: >
-  Analyze CSV and tabular data files, compute summary statistics, generate charts,
-  clean messy rows, and add derived columns. Use this skill when the user wants
-  to explore, transform, or visualize spreadsheet-like data, even if they do not
-  explicitly mention CSV or analysis.
+  Analyze CSV and tabular data: summary statistics, charts, cleaning, derived
+  columns. Use when exploring, transforming, or visualizing spreadsheet-like data.
 ```
 
 Weak example:

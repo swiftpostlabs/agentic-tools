@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-skills-authoring
-description: "Reference guidance for creating and maintaining project skills. Use when: designing new skills, updating existing skills, establishing skill standards, evaluating skill quality, organizing skill subfiles, or adapting copied skill content to the repo's actual stack."
+description: "How to write and review agent skills that load when needed and stay short and readable: descriptions, body shape, progressive disclosure, scripts, and evals. Use when creating, rewriting, reviewing, or trimming a skill."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -11,309 +11,133 @@ metadata:
 
 # Skills Authoring
 
-## Purpose
+How to write a skill that an agent loads at the right moment and a person can read in a minute or
+two. Naming grammar, domains, visibility, and dependencies are the sharing spec's job
+(`ref-sp-agents-shareable-skills`); this skill is about quality. To run a guided creation, use
+`tool-sp-create-skill`; for a catalog-wide pass, `tool-sp-maintain-skills`.
 
-Ensure project skills are discoverable, activation-worthy, operationally useful, and maintainable across skills-compatible agents.
+Sources: the [Agent Skills spec](https://agentskills.io/specification),
+[agentskills.io best practices](https://agentskills.io/skill-creation/best-practices), and
+[Anthropic's authoring guide](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices).
 
-## When to use this skill
+## How skills load
 
-- Creating a new skill file.
-- Reviewing or updating an existing skill.
-- Evaluating whether a skill is well-structured.
-- Adapting a copied skill so it matches this repository instead of preserving stale source-project details.
+1. **Listing:** at session start the agent sees only `name` and `description`, in a shared budget
+   (Codex: 2% of context or 8,000 characters; Claude Code: 1% of context, 1,536 characters per
+   entry).
+2. **Activation:** it reads the whole `SKILL.md` when the description matches the task.
+3. **On demand:** it reads `references/`, runs `scripts/`, or uses `assets/` only when `SKILL.md`
+   says to.
 
-## Scope And Relationship To The Sharing Spec
+So the description decides whether the skill is used at all, every line of `SKILL.md` costs
+context on every use, and reference files are free until opened. Agents also skip skills for tasks
+they think are simple, so a repo's `AGENTS.md` should point to the skills that matter most (see
+`ref-sp-agents-instructions-authoring`).
 
-This skill owns **how to make a good skill in general, from the agent's perspective**: boundary,
-description/trigger quality, instruction design, progressive disclosure, structure, and evaluation.
-That guidance applies to any repository that uses skills, not just the one it currently lives in.
+## Description
 
-It does **not** own a sharing spec. If a repo standardizes how a skill is **named** (owner-prefix /
-domain / template / topic grammar), **assigned a domain** (a domain registry and tags), given
-**visibility** (repo-local / organization / public), declares **hard vs soft dependencies**, and is
-**vendored or forked**, that belongs in a separate sharing-spec skill. In this repo that skill is
-`ref-sp-agents-shareable-skills`.
+- Say what the skill covers, then one short "Use when …" clause. Main use case first.
+- Aim for 150–300 characters. The validator warns above 400; the spec's hard limit is 1024.
+- Name the user's intent and the words they would use, not the skill's internals.
+- Do not repeat the first sentence as a list of triggers.
+- No angle brackets.
 
-Skill quality and sharing policy are **complementary but independent**, and neither hard-depends on
-the other. You can author an excellent skill that is deliberately `repo-local` and never touches any
-sharing spec, and you can share a skill whose general quality is reviewed here. Consult the sharing
-spec (a soft dependency) when a skill should also be shared; use this skill for quality regardless.
+```yaml
+# Weak
+description: Helps with commits.
+# Good
+description: "Rules for grouping a diff into focused commits and writing type(scope) commit messages, including when a body is needed. Use when committing, splitting a diff, or writing a commit message."
+```
 
-Their validators are also separate and non-overlapping: this skill's `./scripts/validate-skill.mts`
-checks general well-formedness and quality; sharing-spec rules are validated by a separate validator
-owned by the sharing-spec skill. Both are TypeScript and need Node >= 22 (`node ./scripts/validate-skill.mts <skill-dir>`).
+When triggering is unreliable, test it rather than adding keywords: `./references/description-guide.md`.
+
+## Body shape
+
+Write for an agent that is already smart, in plain prose a person can follow.
+
+```markdown
+# Title
+
+One to three sentences: what this is for, and which neighbouring skill to use instead for
+related work.
+
+## <Task-named section>        e.g. "Title", "Body", "Migrations"
+Rules as short bullets or steps, each with its reason when the reason is not obvious.
+
+## Examples                    real input/output, a command, a snippet
+
+## Gotchas                     facts that defy reasonable assumptions
+
+## Before finishing            only checks that are easy to miss
+```
+
+- Name sections after the task they serve, not abstract categories. Add only the sections the
+  content needs.
+- Do not add "Purpose", "When to use", "Values", or what/why/when/outcome tables. After activation
+  they repeat the description, and the tables restate the rules.
+- One copy of each rule. A "Before finishing" list adds checks; it does not repeat the rules.
+- Use tables for genuine lookups (versions, flags, options to compare), not for prose.
+- Keep `SKILL.md` under about 200 lines; the spec's ceiling is 500 lines or 5,000 tokens. Move
+  detail to `references/` with a load condition ("read the API errors reference when a call
+  returns non-200").
+- For a reference over 100 lines, start it with a short contents list.
+
+## What to write
+
+- **Add what the agent lacks.** Repo facts, non-obvious procedures, exact commands and paths.
+  Cut textbook explanations. Ask of each line: would the agent get this wrong without it?
+- **Defaults, not menus.** "Use X. For Y, use Z instead."
+- **Procedures over answers.** Teach the method that generalises, not one instance.
+- **Match control to fragility.** Fragile or destructive steps get exact commands and a
+  validate-then-act loop; flexible work gets direction and reasons.
+- **Gotchas in `SKILL.md`,** where the agent sees them before it hits the problem. When an agent
+  makes a mistake you have to correct, add it here.
+- **Present tense.** No plans ("later"), status ("not yet"), or history ("was renamed"); they go
+  stale and read as current. Dated provenance of a source ("verified 2026-08-01") is evidence and
+  stays.
+- **Synthetic example names** (`my-feature`, `example.py`) unless the skill documents a real
+  surface. When adapting a skill from another repo, replace its commands, paths, and stack.
+- **Portable.** No client-only features unless the skill is about that client.
+
+## Files and paths
+
+```text
+<skills-root>/<skill-name>/
+├── SKILL.md
+├── references/   read on demand
+├── scripts/      run, not read
+├── assets/       templates and data
+└── evals/        evals.json for important skills
+```
+
+- `name` matches the folder: lowercase letters, digits, single hyphens, at most 64 characters.
+- Prefix `ref-` for guidance and `tool-` for a workflow the user invokes; tool names read as
+  actions (`tool-sp-create-skill`), ref names as subjects.
+- `metadata` is a flat string-to-string map: no lists or nested objects.
+- Link this skill's files as `./references/...` and another skill in the repo by its repo-root
+  path (`.agents/skills/<name>/SKILL.md`), never by parent-directory hops or absolute paths. Keep
+  references one level deep from `SKILL.md`.
+- Scripts are non-interactive, have `--help`, print data to stdout and diagnostics to stderr, and
+  offer `--dry-run` when destructive. Details: `./references/scripts-and-resources.md`.
+
+## Evaluating
+
+Test the two things that can fail: does the description trigger on realistic prompts, and does the
+skill make the output better than no skill or the previous version? Read
+`./references/evaluation-guide.md` before building evals; starter files are in `./assets/`.
+
+## Before finishing
+
+- `node ./scripts/validate-skill.mts <skill-dir>` passes (in this repo, `yarn validate`, which also
+  runs the sharing-spec check).
+- Every reference file has a load condition, and every referenced file exists.
+- Run `./references/checklist.md` for a review or consolidation pass.
 
 ## References
 
-Use these as the source of truth when authoring or revising a skill:
-
-- <https://agentskills.io/specification>
-- <https://agentskills.io/skill-creation/quickstart>
-- <https://agentskills.io/skill-creation/best-practices>
-- <https://agentskills.io/skill-creation/optimizing-descriptions>
-- <https://agentskills.io/skill-creation/evaluating-skills>
-- <https://agentskills.io/skill-creation/using-scripts>
-- <https://agentskills.io/client-implementation/adding-skills-support>
-- <https://www.ibm.com/think/topics/components-of-ai-agents>
-- <https://www.ibm.com/think/topics/agentic-workflows>
-- <https://www.ibm.com/think/topics/tool-calling>
-
-Core local references for this skill:
-
-- `./references/checklist.md` for quick review or refactor passes.
-- `./references/template.md` for creating a new skill skeleton.
-- `./references/playbook.md` for the full authoring workflow.
-- `./references/description-guide.md` when drafting or fixing the `description` field.
-- `./references/evaluation-guide.md` when testing trigger quality or output quality.
-- `./references/quality-evaluation.md` when a skill needs a rigorous human-plus-quantitative review loop.
-- `./references/consolidation-checklist.md` when moving, deduplicating, or rehoming guidance across skills.
-- `./references/scripts-and-resources.md` when deciding what belongs in `references/`, `scripts/`, or `assets/`.
-- `./references/task-framing.md` when a skill needs commands or actions framed by what, why, when, and expected outcome.
-- `./references/agent-components.md` when a skill feels conceptually correct but still does not improve agent behavior.
-- `./references/source-traceability.md` when you need to verify which rules are direct, synthesized, or local.
-- `./references/local-conventions.md` when you need to understand the conventions a specific repo layers on top of the portable references.
-
-## Values
-
-- Prefer real expertise over generic best-practice filler.
-- Prefer concise, high-signal instructions over exhaustive prose.
-- Prefer reusable procedures over task-specific answers.
-- Prefer deterministic defaults over menus of equal options.
-- Keep skill guidance easy to find, activate, execute, and audit.
-
-## Skill Lifecycle Model
-
-Author skills around the way compatible agents actually load them:
-
-1. Discovery: Agents see only `name` and `description` at session start.
-2. Activation: Agents load the full `SKILL.md` only when the description matches the task.
-3. Execution: Agents load `references/`, `scripts/`, and `assets/` only when the skill tells them to.
-
-That means:
-
-- The `description` field is a trigger, not marketing copy.
-- `SKILL.md` must contain the core instructions the agent needs on every activation.
-- Supporting files must be explicitly referenced with clear load conditions.
-
-## Core Workflow
-
-1. Start from real repo or domain expertise, not generic filler.
-2. Define one coherent skill boundary.
-3. Write the `description` as an activation trigger.
-4. Put only the always-needed workflow in `SKILL.md`.
-5. Move long, situational, or mechanical detail into support files.
-6. Evaluate both triggering and execution quality.
-7. Promote repeated corrections into defaults, gotchas, validation rules, or scripts.
-
-Read `./references/playbook.md` for the detailed workflow and decision rules.
-
-## Skill File Rules
-
-- **Location:** Project skills live in a per-skill folder as `<skills-root>/<skill-name>/SKILL.md`. The skills root is whatever directory the repo has chosen for skills; in this repo it is `.agents/skills/`.
-- **Folder structure:** A skill folder may include supporting subfiles when they keep the main skill focused.
-
-```text
-.agents/skills/<skill-name>/
-├── SKILL.md
-├── references/
-├── scripts/
-├── assets/
-└── evals/
-```
-
-- **Open format:** Skills should remain compatible with the Agent Skills format rather than depending on one client's private conventions.
-- **Supporting files are allowed:** Put long checklists, detailed examples, templates, or helper scripts in subfolders instead of cramming everything into `SKILL.md`.
-- **Use relative paths only within the same skill:** Link this skill's own resources from `SKILL.md` with `./references/...`, `./scripts/...`, `./assets/...`, or `./evals/...` paths.
-- **Use repo-root-relative paths for other skills in the same repo:** If one skill must point to another skill's `SKILL.md` or files in the same repository, use an explicit repo-root-relative path (for example `<skills-root>/<other-skill-name>/SKILL.md`) so clones, exports, and local folder renames do not break the reference.
-- **Reserve absolute paths for outside-the-repo targets:** Use absolute filesystem paths only when the target is genuinely outside the current repository or when the client cannot resolve repo-root-relative paths reliably.
-- **Keep loading progressive:** Keep `SKILL.md` concise and move large supporting material into subfiles. Prefer one-level-deep references from `SKILL.md` and tell the agent when to load each file.
-- **One responsibility per skill.** A skill about code conventions should not also cover deployment.
-- **Frontmatter required:** Every skill must have `name` and `description` in YAML frontmatter.
-- **Follow the spec for `name`:** 1-64 chars, lowercase letters/numbers/hyphens only, no leading or trailing hyphen, no consecutive hyphens, and it must match the folder name.
-- **Choose the skill prefix by role when the repo uses a role prefix:** When a repo distinguishes reference from action skills by prefix (this repo uses `ref-` and `tool-`), use the reference prefix when a skill mainly informs the agent about a domain, workflow, convention, or repository surface, and the tool prefix when a skill mainly tells the agent to carry out an action-oriented workflow the user may invoke directly.
-- **Name action skills as actions:** An action (`tool-`) skill should read like an action connected to its purpose, such as `tool-<owner>-create-skill` or `tool-<owner>-maintain-skills`, not like a passive topic label. Keep the verb specific and the object self-contained: a name like `tool-<owner>-adopt-these-skills` fails because "these" only resolves if you already know which repo you are reading from.
-- **Name reference skills as stable subjects:** A reference (`ref-`) skill should name the subject area it explains, such as agent persona, code conventions, project setup, agent security, or local feature tracking.
-- **Do not use the action prefix for passive guidance:** If the skill mostly teaches the agent how to understand or review something rather than execute a user-invoked workflow, it should stay a reference skill.
-- **Keep `description` under 1024 chars:** It must describe both what the skill does and when to use it.
-- **Use optional fields only when they add execution value:** `compatibility` is for environment requirements, `license` for licensing, `metadata` for extra client metadata, and `allowed-tools` only when the client supports it.
-- **Domain metadata is governed by the sharing spec:** when a repo runs a sharing spec, each skill carries a domain in metadata owned by that spec (in this repo, the `metadata.shareable-skills.domain` field and domain registry defined by `ref-sp-agents-shareable-skills`). Do not redefine the vocabulary here.
-- **Name must match folder:** The `name` field must match the skill folder name.
-- **"When to use" section:** Include a clear section so the AI can determine relevance.
-- **Concrete examples:** Provide small examples, templates, or commands where they reduce ambiguity.
-- **Use synthetic example names by default:** In generic examples, templates, and starter snippets, prefer obviously made-up folder, file, feature, and script names. Do not reuse real folder or script names from this repo or another repo unless the skill is intentionally documenting that exact concrete surface.
-- **Provider-agnostic:** No provider-specific features or assumptions. Skills must work with Copilot, Claude, Gemini, and others.
-- **Adapt to the real repo:** When a skill is copied or derived from another project, update its commands, libraries, file names, folder layout, and examples to match this repository before keeping it.
-- **Do not preserve stale stack details:** Remove or replace inherited references to the wrong package manager, framework, language conventions, file extensions, or UI library when they do not match the current repo.
-- **Do not leak foreign repo artifacts into generic examples:** If you copied a template or skill from another repo, replace example paths like feature folders, excluded files, and sample script names with synthetic placeholders unless the skill explicitly says it is documenting the source repo itself.
-- **Naming grammar, namespace, and portability live in the sharing spec:** the owner-prefix/domain/topic grammar, and whether a skill is `repo-local`, `organization`, or `public`, are governed by the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` here). Portability is recorded in metadata (this repo uses `metadata.shareable-skills.visibility`), not encoded in the name. Keep a skill's `name` focused on what it does so discovery and trigger quality stay intact.
-- **Make values explicit:** When a skill depends on values like simplicity, clarity, or maintainability, state them directly in the purpose or rules instead of leaving them implicit.
-- **Prefer modern defaults:** When a skill gives coding guidance, prefer modern, intention-revealing language and platform APIs over older sentinel-style patterns when both are supported by the project's runtime targets.
-- **Prefer operational labels:** When naming workflow steps or guidance sections, prefer labels that describe the actual review/update action. Favor concrete labels like `Reflect` or `Capture Lessons` over vaguer labels like `Learn` when the step includes reviewing outcomes, correcting guidance, and updating the source of truth.
-
-## Sharing, Domain, And Dependency Metadata
-
-Naming grammar, domain, visibility, dependency declarations, and vendoring are the
-**sharing spec**, owned by the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` in this
-repo). Do not restate or redefine those rules here — consult that skill (and its `references/spec.md`)
-when a skill needs to be assigned a domain, shared, or exported.
-
-What this skill still asserts, because it is general skill quality rather than sharing policy:
-
-- When the repo runs a sharing spec, every skill carries a single domain in metadata (here,
-  `metadata.shareable-skills.domain`); pick the domain, not the repository namespace, and prefer an
-  existing domain over inventing one. The vocabulary itself is owned by the sharing spec's domain
-  registry.
-- Track portability, dependencies, and namespace through `metadata`, never through the `name`; keep
-  the `name` focused on what the skill does so discovery and trigger quality stay intact.
-- The Agent Skills spec treats `metadata` as a string-to-string mapping, so do not use YAML lists
-  or nested objects in any metadata field.
-
-## Description Rules
-
-The description is the discovery surface. Treat it as the most important trigger field in the skill.
-
-- Use imperative phrasing such as `Use this skill when...`.
-- Describe user intent, not internal implementation details.
-- Include relevant near-miss contexts so the agent activates the skill even when the user does not use your preferred jargon.
-- Be specific enough to avoid false positives.
-- Err slightly toward being pushy rather than too timid, but do not claim adjacent tasks the skill does not actually handle.
-- Revise the description with trigger evals when activation is flaky.
-
-Read `./references/description-guide.md` when you need the full trigger-writing and trigger-eval workflow.
-
-Bad pattern:
-
-- `description: Helps with PDFs.`
-
-Better pattern:
-
-- `description: Extract text and tables from PDFs, fill PDF forms, and merge documents. Use this skill when the user is working with PDF files, form fields, scanned documents, or document extraction workflows.`
-
-## Instruction Design Rules
-
-Make the skill improve actual agent behavior:
-
-- Tell the agent what to inspect first.
-- Give it an execution order for multistep work.
-- Preserve durable facts and gotchas.
-- Explain decision rules when the task is fragile.
-- Name exact tools, commands, scripts, and artifacts.
-- Specify output shape and escalation behavior.
-- Refine the skill from real failures and traces.
-
-Read `./references/agent-components.md` for the detailed mapping from agent components to skill content.
-
-## Content Calibration
-
-- **Add what the agent lacks, omit what it already knows.** Do not waste context on textbook explanations.
-- **Aim for moderate detail.** Too little leaves the agent guessing; too much causes it to chase irrelevant branches.
-- **Prefer defaults over menus.** Pick the default library, command, or approach and mention alternatives only as escape hatches.
-- **Favor procedures over declarations.** Teach the method, not just a single instance answer.
-- **Frame important tasks explicitly.** For command-heavy or workflow-heavy skills, describe each important action in terms of what it does, why it exists, when to use it, and the expected outcome.
-- **Keep critical gotchas in `SKILL.md`.** If the agent must know something before it can recognize the failure mode, do not hide it only in a reference file.
-- **Use templates for constrained output.** Inline small templates; move larger templates to `assets/` and reference them explicitly.
-- **Use checklists for multistep workflows.** They help agents maintain progress and validation order.
-- **Use plan-validate-execute for fragile or destructive work.** Require an intermediate artifact or validation step before action.
-- **Write present-tense rules, not plans or history.** A skill states how things are and what to do. No plans ("later", "will be added"), status ("not yet", "for now"), or history ("was renamed", "previously") about the skill or the repo: they go stale silently and read as current rules. Keep a rule's reason as a present fact; history appears only as a marked example. Dated provenance of a source or measurement ("verified 2026-08-01") is evidence, not history, and stays.
-
-If you are creating a new skill from scratch, start from `./references/template.md` and then prune or extend it to fit the actual workflow.
-
-Read `./references/task-framing.md` when the skill includes multiple commands, scripts, or operational actions that need clearer task selection and success criteria.
-
-## Progressive Disclosure Rules
-
-- Keep the main `SKILL.md` under roughly 500 lines and under roughly 5,000 tokens unless there is a strong reason not to.
-- Put detailed references in focused files rather than one giant appendix.
-- When pointing to a support file, explain the trigger condition.
-- Use relative paths for files inside the current skill and repo-root-relative paths for files that live in a different skill in this repo.
-
-## Tool And Script Rules
-
-Use scripts when they make the workflow more reliable or when the agent keeps reinventing the same logic.
-
-- Bundle repeated, testable logic under `scripts/`.
-- Keep scripts self-contained where possible.
-- Prefer pinned, reproducible commands for one-off external tools.
-- State environment prerequisites in the skill when they matter.
-- Use relative paths from the skill root.
-- Do not require interactive prompts.
-- Provide `--help` output with concise usage and examples.
-- Emit structured data on stdout and diagnostics on stderr when possible.
-- Use clear error messages, meaningful exit codes, and safe defaults.
-- Add `--dry-run` or equivalent safeguards for destructive operations.
-- Keep output size predictable or support writing results to files.
-
-When a script is Python and meant to be portable, prefer a self-contained `uv run` flow or inline metadata approach rather than hidden environment assumptions.
-
-Read `./references/scripts-and-resources.md` when deciding whether content belongs in `SKILL.md`, `references/`, `scripts/`, or `assets/`.
-
-## Validation And Evaluation
-
-This covers **general skill-quality** validation only. Conformance to a sharing spec (naming
-grammar, domain registry, visibility, deps, vendoring) is validated separately by the repo's
-sharing-spec skill (`ref-sp-agents-shareable-skills` here). Run both when a skill should be good
-*and* shareable.
-
-Every meaningful skill should be tested in two dimensions:
-
-1. **Trigger quality:** Does the description activate the skill on the right prompts?
-2. **Execution quality:** Does the skill produce better outputs than no skill or than the previous version?
-
-Use these practices:
-
-- Create realistic should-trigger and should-not-trigger queries for description evaluation.
-- Run trigger checks multiple times because model behavior is nondeterministic.
-- Use train and validation query splits to avoid overfitting the description.
-- Create a small `evals/evals.json` set for output-quality evaluation when the skill is important enough to justify it.
-- Compare `with_skill` against `without_skill` or against the previous version.
-- Add objective assertions after the first round of outputs shows what good looks like.
-- Use scripts for mechanical checks and human review for broader quality.
-- Read execution traces, not just final outputs.
-- Remove instructions that waste tokens or cause repeated dead-end behavior.
-
-If a correction keeps recurring in review or execution traces, promote it into the skill as a default, a gotcha, a validation rule, or a bundled script.
-
-Use `./references/evaluation-guide.md` for the detailed evaluation loop. Example starter files live at:
-
-- `./assets/trigger-eval-queries.example.json`
-- `./assets/evals.example.json`
-
-Portable helper scripts live at:
-
-- `./scripts/validate-skill.mts` (TypeScript, Node >= 22) to validate one skill or a whole skills directory against Agent Skills structure and the repo's local quality rules. Run it as `node ./scripts/validate-skill.mts <skill-dir>` or point it at the skills root with `--all` (in this repo, `node ./scripts/validate-skill.mts .agents/skills --all`). A repo may also wrap this in a package-manager script; this repo exposes `yarn validate:skills` for the whole catalog and `yarn validate` to run both validators.
-- `./scripts/aggregate_eval_results.py` to summarize `grading.json` files from output-quality eval runs.
-
-Use `./evals/evals.json` as the maintained evaluation set for this skill itself.
-
-## Cross-Platform Parity
-
-When a repo keeps multiple provider instruction files, keep them consistent by choosing one source of truth and letting the others route back to it:
-
-| File | Platform |
-|------|----------|
-| `AGENTS.md` | Cross-provider source of truth (read natively by Copilot and others) |
-| `.github/copilot-instructions.md` | GitHub Copilot (only when a repo keeps a dedicated Copilot file) |
-| `GEMINI.md` | Google Gemini |
-| `.claude/CLAUDE.md` | Anthropic Claude |
-
-A common layout — and the one this repo uses — makes the root `AGENTS.md` the source of truth (Copilot reads it natively, so there is no dedicated Copilot file) and keeps `GEMINI.md` plus `.claude/CLAUDE.md` as thin routing stubs.
-
-For detailed guidance on writing and maintaining these instruction files, use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here) and its provider-specific reference subfiles instead of expanding this skill further.
-
-## Communication Guidelines
-
-- Provide direct, unfiltered feedback. The user prefers honesty over comfort.
-- Do not sugarcoat technical debt or architectural flaws.
-- If a request is suboptimal, explain why immediately and suggest the correct path.
-
-## Review Heuristics
-
-When reviewing a skill, ask these questions:
-
-- Will the description trigger on realistic prompts, including indirect wording?
-- Does the body tell the agent what to inspect, what to do, what to validate, and what to output?
-- Are critical gotchas placed where the agent will actually see them in time?
-- Are scripts and references referenced with clear conditions instead of vague mentions?
-- Does the skill reduce agent uncertainty, or is it mostly repeating generic knowledge?
-- Does the skill teach a reusable workflow instead of hardcoding one answer?
-- Is the skill likely to compose cleanly with neighboring skills?
+- `./references/template.md`: starting point for a new skill.
+- `./references/checklist.md`: review, refactor, and consolidation checklist.
+- `./references/description-guide.md`: writing and trigger-testing descriptions.
+- `./references/evaluation-guide.md`: trigger and output evals, baselines, grading.
+- `./references/scripts-and-resources.md`: what goes in `references/`, `scripts/`, `assets/`, `evals/`.
+- `./scripts/aggregate_eval_results.py`: summarise `grading.json` files from eval runs.

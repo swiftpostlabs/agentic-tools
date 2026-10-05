@@ -52,7 +52,9 @@ If outputs are flaky, missing steps, or using the wrong command at the wrong tim
 
 See `../assets/evals.example.json` for a starter structure.
 
-For rigorous review loops, read `./quality-evaluation.md` before running evals. It records the portable parts of the Claude skill-creator workflow without inheriting Claude-only execution assumptions.
+Before writing evals, capture what the skill should make the agent better at, which prompts should trigger it, what a good output looks like, and whether that is objectively checkable. Take answers from past corrections and transcripts before asking the user.
+
+When counting triggers, count only actual skill loads (a Skill tool call, or a read of `SKILL.md` confirmed by the tool call's input). A path that merely appears in the output, for example in `git status`, is not a load.
 
 ## Baselines
 

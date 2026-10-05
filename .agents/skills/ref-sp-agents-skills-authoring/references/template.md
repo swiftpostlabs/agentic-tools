@@ -1,85 +1,57 @@
 # Skill Starter Template
 
+Copy, then delete every section the skill does not need.
+
 ~~~markdown
 ---
-name: ref-sp-agents-my-skill
-description: "Brief description. Use when: trigger condition 1, trigger condition 2."
+name: ref-sp-example-topic
+description: "What the skill covers, main use case first. Use when <the situations a user would describe>."
+license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
-  shareable-skills.owner: "swiftpostlabs/agentic-tools"
-  shareable-skills.domain: "agents"
-  shareable-skills.visibility: "organization"
-argument-hint: "Optional slash-command hint"
+  shareable-skills.owner: "<org>/<repo>"
+  shareable-skills.domain: "<registered domain>"
+  shareable-skills.visibility: "repo-local"
 ---
 
-# Skill Title
+# Example Topic
 
-## Purpose
+One to three sentences on what this skill is for. For <related work>, use `<other-skill>` instead.
 
-One-sentence description of the capability or workflow this skill gives the agent.
+## <First task>
 
-## When to use this skill
+- Default approach, with the reason when it is not obvious.
+- Exception: when X, do Y instead.
 
-- Trigger condition 1.
-- Trigger condition 2.
+## <Second task>
 
-## Core Workflow
-
-1. First inspect the relevant inputs.
-2. Follow the default procedure.
-3. Validate the result before finalizing.
-
-## Defaults
-
-- Preferred tool, command, library, or approach.
-- Fallback only when the default does not apply.
-
-## Task Framing
-
-Use this table when the skill includes important commands or operational steps:
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| `./scripts/example.py --input data.json` | Briefly state what the step does. | Explain why the step matters. | State when to use it. | State what success looks like. |
-
-## Gotchas
-
-- Non-obvious repo or domain fact the agent will likely miss.
-- Important constraint or failure mode.
-
-## Validation
-
-- Required checks, scripts, or references to run before concluding.
-
-## References
-
-- Read `./references/example.md` when a specific condition is true.
-- Read `.agents/skills/ref-example/SKILL.md` only when you intentionally need to hand off to another skill in this repo.
-
-## Scripts
-
-- `./scripts/example.py` does X. Run it when Y is needed.
+1. Inspect <input>.
+2. Run `./scripts/example.py --input data.json`.
+3. If it reports errors, fix them and run it again.
 
 ## Examples
 
-```md
-<!-- Concrete example -->
+```text
+<a real input and the output it should produce>
 ```
+
+## Gotchas
+
+- <A fact about this repo or domain that the agent would otherwise get wrong.>
+
+## Before finishing
+
+- <A check that is easy to miss.>
+
+## References
+
+- Read `./references/example.md` when <condition>.
 ~~~
 
-Adapt the template to the real repo before keeping it:
+Before keeping it:
 
-- Choose `ref-...` when the skill mainly informs the agent and `tool-...` when the skill mainly drives an action-oriented workflow.
-- Add `metadata.shareable-skills.domain` as one registered domain. Read `.agents/skills/ref-sp-agents-shareable-skills/references/registry.json` (and the sharing spec) before inventing a new domain.
-- If you use `tool-...`, make the name read like an action rather than a passive topic (and drop `domain` — tools carry only `owner-prefix`).
-- Set `metadata.shareable-skills.visibility` to `public` (portable, add a top-level `license`), `organization` (org-wide), or `repo-local` (depends on this repo's concrete layout, policies, or wrappers).
-- If the skill has hard dependencies on other skills, add `metadata.shareable-skills.requires` as a comma-separated list of skill names.
-- If the skill is `repo-local` for a non-obvious reason, add `metadata.shareable-skills.reason` with a short explanation.
-- Replace placeholder names, commands, and file paths.
-- Keep placeholders synthetic. Do not turn generic examples into copies of real folder or script names from another repo unless the skill is intentionally documenting that concrete repo.
-- Rewrite the `description` so it triggers on realistic user intent.
-- Remove sections that do not add value for the skill's actual responsibility.
-- Keep critical gotchas in `SKILL.md` and move bulky detail into `references/`, `assets/`, or `scripts/`.
-- Use relative paths for this skill's own files and repo-root-relative paths for other skills in this repo.
-- If the skill includes commands or task steps, frame them with what, why, when, and expected outcome.
-- If the workflow is fragile or multistep, add an explicit plan-validate-execute loop.
+- Pick `ref-` for guidance and `tool-` for a user-invoked workflow.
+- Set the sharing metadata from the sharing spec (`ref-sp-agents-shareable-skills`); tool skills
+  carry no `domain`. Add `shareable-skills.requires` for hard skill dependencies.
+- Replace every placeholder with real repo commands and paths, or with obviously synthetic names.
+- Keep the description to 150–300 characters.

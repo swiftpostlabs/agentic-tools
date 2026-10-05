@@ -1,6 +1,6 @@
 ---
 name: ref-sp-dev-git-commits
-description: "Reference guidance for grouping changes into focused commits and writing clear commit messages. Use when: deciding how to split changes into commits, writing a commit title or body, deciding whether a commit needs a long description, or documenting an automated command for reproducibility."
+description: "Rules for grouping a diff into focused commits and writing type(scope) commit messages, including when a body is needed and recording the command behind automated changes. Use when committing, splitting a diff, or writing a commit message."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,72 +12,37 @@ metadata:
 
 # Git Commits
 
-## Purpose
+How to group changes into commits and write their messages. To actually split and commit a working
+diff, use `tool-sp-commit`, which applies these rules. Release bumps from commit types belong to
+`ref-sp-py-commitizen` and `ref-sp-dev-semantic-versioning`.
 
-Define how a repository groups changes into focused commits and how commit messages should be written. The defaults below are portable; the concrete scopes and examples are this repo's instantiation.
+## Grouping
 
-## When to use this skill
+- One logical change per commit, so each can be reviewed and reverted alone.
+- Run the focused check for the touched slice before committing.
+- Leave the user's unrelated changes unstaged.
+- Commit non-interactively.
 
-- The user asks how changes should be committed.
-- You need to write a commit title or body.
-- You need to decide whether one change set should become one commit or several.
-- The work came from an automated command and the commit message needs reproducibility details.
-
-## Scope boundaries
-
-This skill owns the **rules**: how changes are grouped into commits, and how a commit title and body
-are written.
-
-- `tool-sp-commit` — applying those rules to a real working diff. Read this skill for the rules;
-  invoke that one to group and write the actual commits.
-- `ref-sp-py-commitizen` — the release tooling that consumes conventional-commit types: `cz bump`,
-  version providers, generated changelogs.
-- `ref-sp-dev-semantic-versioning` — what a bump level means. A commit's type feeds a future bump;
-  choosing the bump is not this skill's job.
-- `ref-sp-dev-docs-authoring` — project documentation. A commit body explains one change to a
-  reviewer; it is not a doc.
-
-## Core Rules
-
-- Keep each commit focused on one logical change.
-- Validate the relevant slice before committing whenever a focused check exists.
-- Use non-interactive commit flows.
-- Keep unrelated user changes out of your commit.
-
-## Commit Title Format
-
-Use this default title format:
+## Title
 
 ```text
 type(scope): Short description of the commit
 ```
 
-Defaults:
+- `type` is one of `feat`, `fix`, `docs`, `chore`. Skill files count as docs, so a skill-only
+  change is `docs(...)`.
+- `scope` names the main surface: `skills`, `policy`, `scripts`, `docs`, `commits`. Changes to the
+  commit skills themselves use `commit-skills`.
+- Describe the outcome, not the implementation steps.
 
-- Use one of `feat`, `fix`, `docs`, or `chore` as the `type`.
-- Treat skill files as documentation. When a commit only changes skill guidance or other docs-only content, prefer `docs(...)` over `feat(...)` or `chore(...)`.
-- Always include a short scope that names the main surface, such as `skills`, `policy`, `scripts`, `docs`, or `commits`.
-- For changes to commit-related skill docs such as `ref-sp-dev-git-commits` or `tool-sp-commit`, prefer the scope `commit-skills`, for example `docs(commit-skills): Short description of the commit`.
-- Keep the short description concise, specific, and easy to scan in `git log`.
-- Prefer one clear outcome over a list of implementation details.
+## Body
 
-## Commit Body Rules
+Add a body unless the commit is trivial, such as a plain lint fix. Separate it from the title with
+a blank line and explain what matters and why, without restating the title.
 
-- Add a long description when the commit is not trivial.
-- Use the body to explain the key details and why the change exists, not to restate the title.
-- Separate the title and body with a blank line.
-- Record change provenance in the body when the change came from something other than hand-editing. This is most relevant for automated changes such as a codemod, link fixer, formatter, or generator: include the command that produced the change so another engineer can rerun or audit it.
-- Redact personal or private details from a recorded command before committing it. Replace absolute home paths with a repo-relative or generic path, drop the username, and never include tokens, secrets, or machine-specific identifiers. Record the reproducible command shape, not your local environment.
-- Very mundane commits such as a straightforward lint fix do not need a long description.
-
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Choose commit boundaries | Decide which changed files belong together. | Focused commits are easier to review, revert, and explain. | Before staging or writing the message. | Each commit has one coherent purpose. |
-| Write the title | Summarize the change in `type(scope): Short description of the commit` form. | The title is the main line readers see in history and reviews. | For every commit. | The title makes the commit easy to categorize and skim. |
-| Add a body | Explain the key details and why. | Non-trivial commits need context that the title cannot carry alone. | When the commit changes behavior, introduces structure, or would be unclear from the title alone. | The commit explains the important reasoning without becoming a changelog dump. |
-| Record change provenance | Include the command that produced the change, with personal or private details redacted. | Reproducibility matters when the work came from automation, and the body should not leak local paths or credentials. | When a codemod, link fixer, generator, migration command, formatter, or bulk rewrite produced the changes. | Another engineer can rerun or audit the automation without seeing machine-specific or private data. |
+When a tool produced the change (codemod, link fixer, formatter, generator), record the command so
+someone can rerun or audit it. Redact it first: repo-relative paths instead of `/home/<user>/...`,
+no usernames, no tokens or machine-specific values.
 
 ## Examples
 
@@ -86,14 +51,9 @@ docs(skills): Add tool-sp-create-skill guidance
 
 - add a guided intake flow for creating new skills
 - route naming decisions through ref-sp-agents-skills-authoring
-- keep the initial scaffold narrow to fit progressive disclosure
 
 Why:
 - reduce repeated manual setup when adding new skills
-```
-
-```text
-docs(commit-skills): Clarify commit message defaults for skill docs
 ```
 
 ```text
@@ -101,24 +61,15 @@ chore(commits): Record codemod-generated import cleanup
 
 - normalize import ordering across the new ref-skill package names
 
-Why:
-- keep the rename follow-up deterministic and reproducible
-
 Command:
 - uv run python -m scripts.some_codemod --rewrite-imports ./src
 ```
-
-The `Command:` line records the reproducible command shape. Redact private
-details first: use a repo-relative path such as `./src` rather than an absolute
-`/home/<user>/...` path, drop the username, and never include tokens or secrets.
 
 ```text
 chore(formatting): Fix lint formatting
 ```
 
-## Validation
+## Before committing
 
-- Confirm the title fits the default `type(scope): Short description of the commit` format.
-- Confirm the body exists when the commit would otherwise be unclear.
-- Confirm automated changes include the generating command with private details redacted.
-- Confirm the message matches the actual staged diff, not the whole working tree.
+- The message describes the staged diff, not the whole working tree.
+- Automated changes carry their redacted command.
