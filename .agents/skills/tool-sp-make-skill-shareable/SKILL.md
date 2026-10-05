@@ -1,6 +1,6 @@
 ---
 name: tool-sp-make-skill-shareable
-description: "Review an existing skill, decide whether it can be made shareable, and update its shareability metadata through a guided workflow. Use when: a skill lacks shareable-skills metadata, a user wants to export or symlink a skill, the current portability is unclear, or a repo-local skill might need to be split into a shared core."
+description: "Decide how far one existing skill can be shared (public, organization, or repo-local), split it if needed, and set its sharing metadata. Use when a skill lacks sharing metadata or someone wants to export or reuse it."
 argument-hint: "Existing skill name or file path and whether the goal is to export it, link it globally, or just review portability"
 license: "MIT"
 metadata:
@@ -13,73 +13,30 @@ metadata:
 
 # Make Skill Shareable
 
-## Purpose
+Walks one existing skill through the sharing spec in `ref-sp-agents-shareable-skills` (read it
+first). New skills set visibility in `tool-sp-create-skill`; re-scoping many skills is a
+`tool-sp-maintain-skills` pass. Actually shipping the skill belongs to
+`ref-sp-agents-plugin-marketplaces` and `ref-sp-agents-skills-management`.
 
-Guide the agent through reviewing an existing skill, deciding whether it should be shareable (`organization`/`public`) or `repo-local`, and updating the metadata or structure needed to support that decision.
+## Steps
 
-## When to use this skill
+1. Read the skill's frontmatter, body, and support files.
+2. Decide visibility:
+   - `public` or `organization` when it moves to another repo with light adaptation and no hidden
+     repo-only helpers (`public` also needs a top-level `license`);
+   - `repo-local` when it depends on this repo's layout, adoption flow, or wrappers. Record why in
+     `shareable-skills.reason` if that would surprise a reader.
+3. If only part is reusable, split it into a shared core plus a repo-local layer rather than
+   marking the whole skill local.
+4. List only hard dependencies in `shareable-skills.requires`; optional ones go in `suggests`.
+5. Update the metadata, then run `yarn validate` and the sharing spec's `references/checklist.md`.
+6. If a linker exists, dry-run it: `uv run agentic-tools skills link <name> --global --dry-run`.
 
-- A skill is missing `shareable-skills.visibility` or `shareable-skills.requires`.
-- The user wants to export, symlink, or otherwise reuse an existing skill outside this repo.
-- The portability of a current skill is unclear.
-- A repo-local skill might need to be split into a shared core plus a local layer.
-
-## Scope boundaries
-
-This tool answers one question about **one existing skill**: how far can it travel, and does it need
-splitting to get there. It sets `visibility`, `requires`/`suggests`, and the split decision.
-
-- `tool-sp-create-skill` — a new skill sets its own visibility at creation. Come here only to revisit
-  or backfill an existing one.
-- `tool-sp-maintain-skills` — catalog-wide drift, duplication, and ownership. If several skills need
-  re-scoping at once, that is a maintenance pass, not a repeat of this one.
-- `ref-sp-agents-shareable-skills` — the spec this tool applies: naming grammar, domain registry,
-  visibility tiers, dependency semantics, vendoring. Read it for the rules; use this tool to walk a
-  skill through them.
-- `ref-sp-agents-plugin-marketplaces` and `ref-sp-agents-skills-management` — actually *moving* a
-  skill once it is cleared to travel. This tool only decides whether it may.
-
-## First Step
-
-Read the repo's sharing-spec skill (`ref-sp-agents-shareable-skills` here) and its skill-authoring skill (`ref-sp-agents-skills-authoring` here) — both `requires` dependencies — before deciding whether the target skill can be exported cleanly.
-
-## Core Workflow
-
-1. Inspect the target skill's frontmatter, body, and support files.
-2. Ask only the missing questions needed to classify the skill's `visibility` as `repo-local`, `organization`, or `public`.
-3. Identify only the hard skill dependencies.
-4. Decide whether the skill should stay whole, be marked repo-local, or be split into shared and local pieces.
-5. Update the skill metadata and structure accordingly.
-6. Validate the result with the shareable-skill checklist and linker dry-run when available.
-
-## Defaults
-
-- Prefer `organization`/`public` only when the skill can move with light adaptation and without hidden repo-only helpers.
-- Prefer `repo-local` when the skill depends on this repo's adoption flow, private layout, or special wrappers.
-- Prefer splitting a mixed skill over forcing the whole skill to stay repo-local when the core guidance is reusable.
-- Keep `shareable-skills.requires` minimal and explicit.
-
-## Wizard Questions
-
-Ask only the questions that are still unanswered after reading the target skill.
-
-| Question area | What to ask | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Portability boundary | Can this skill move to another repo with only light adaptation, or does it rely on repo-only assumptions? | This decides whether the skill should be `organization`/`public` or `repo-local`. | Always, unless the answer is already obvious from the skill. | The visibility decision is grounded in actual constraints. |
-| Hard dependencies | Which other skills are required for this skill to work correctly? | The linker and export workflow need a minimal dependency chain. | When the skill points to other skills or borrows their required workflow. | `shareable-skills.requires` stays accurate and small. |
-| Split decision | If only part of the skill is reusable, should we split the reusable core from the repo-local layer? | Splitting is often better than marking a broadly useful skill repo-local. | When the skill mixes reusable guidance with local implementation detail. | The skill structure matches the portability boundary. |
-| Repo-local reason | If the skill must stay local, what concise reason should be recorded? | Future reviews are faster when the blocker is explicit. | When `repo-local` would otherwise be surprising. | `shareable-skills.reason` explains the local-only boundary. |
+Ask the user only what the skill itself doesn't answer: whether it really works elsewhere, which
+dependencies are required, and whether to split.
 
 ## Gotchas
 
-- Do not add optional related skills to `shareable-skills.requires`.
-- Do not mark a skill `organization` or `public` if one of its hard dependencies is `repo-local`.
-- Do not encode shareability in the skill name.
-- If the skill would need major surgery to export cleanly, say so directly instead of pretending the metadata alone fixes it.
-
-## Validation
-
-- Review the result against the sharing-spec skill's checklist (`ref-sp-agents-shareable-skills`; in this repo, its `references/checklist.md`).
-- Confirm the metadata keys stay within the spec's string-to-string model.
-- Confirm every dependency in `shareable-skills.requires` exists and is itself shareable.
-- Run the repo's skill-linker dry-run once its linker CLI exists (in this repo, `uv run agentic-tools skills link <name> --global --dry-run`).
+- A skill can't be `organization` or `public` if a hard dependency is `repo-local`.
+- Shareability goes in metadata, never in the name.
+- If exporting needs major surgery, say so; metadata alone won't fix it.

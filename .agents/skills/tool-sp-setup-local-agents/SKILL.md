@@ -1,6 +1,6 @@
 ---
 name: tool-sp-setup-local-agents
-description: "Audit this machine's local-model setup against the local-setup baseline, then wire up what is missing: accelerator memory and the harness class it can serve, the Ollama server's real configuration, whether an installed model can actually do the job, network exposure, and which client is connected. Use when: setting up a local model for a coding agent on a machine, asking whether this machine's local setup is correct or fast enough, checking why a local agent is slow, silent, or not calling tools, reviewing Ollama's context, keep-alive, KV cache, or host binding, choosing between an agent, an Aider-style assistant, and inline autocomplete for the hardware, or wiring pi, Hermes, or another client to a local endpoint."
+description: "Audit one machine's local-model setup (accelerator, Ollama config, models, network exposure, client) and fix what is missing. Use when setting up a local model for an agent, or when a local agent is slow, silent, or never calls tools."
 argument-hint: "Optional: the harness class to target (agent, edit-format, fim)"
 license: MIT
 metadata:
@@ -14,29 +14,12 @@ metadata:
 
 # Setup Local Agents
 
-## Purpose
+Audits one machine's inference stack and fixes it in a safe order. The rules behind each check (fit
+arithmetic, harness classes, per-runtime and per-client detail, the model table) live in
+`ref-sp-agents-local-setup`. Wiring a repository to agent clients is `tool-sp-setup-agent-repo`.
 
-Turn "is my local setup any good?" into a measured answer and a short list of fixes. The audit reads
-the machine and the running server rather than asking the user what they configured, because the
-common failure is a setting that was never read by the server at all.
-
-## When to use this skill
-
-- Setting up a local model for an agent on a specific machine.
-- "Is this machine's setup right?" or "why is my local agent so slow?"
-- A local agent is silent for minutes, never calls tools, or truncates mid-session.
-- Reviewing an existing Ollama configuration that someone set up a while ago.
-- Deciding which class of tool this hardware should run.
-
-## Scope boundaries
-
-This tool audits and fixes **one machine's** setup. It owns the check IDs and the remediation order.
-
-- `ref-sp-agents-local-setup` (hard dependency) owns the **rules**: the fit arithmetic, the harness
-  classes, the per-runtime and per-client detail, and the model table. Read it for *why* a check
-  exists; use this tool to run the checks against a real machine.
-- `tool-sp-setup-agent-repo` wires a *repository* to agent clients. Different subject: that one is
-  about files in a repo, this one is about a host's inference stack.
+The audit reads the machine and the running server instead of asking what was configured, because
+the usual failure is a setting the server never read.
 
 ## First step
 
@@ -75,7 +58,7 @@ slow path the script replaces, and hand-reading misses the variable that is set 
 
 Per-check fix procedures are in `./references/remediation.md`. Load it when acting on a finding.
 
-## Core workflow
+## Steps
 
 1. **Audit.** Run the script. Note every non-`pass` check.
 2. **Settle the harness class first** (`H2`). It changes what every later check means: a context of
@@ -131,7 +114,7 @@ Then prove the harness class actually works:
 - **Do not tune constants to one machine.** If a prediction is off, report the gap rather than
   editing the estimate to match a single observation.
 
-## Validation
+## Before finishing
 
 - Re-run `audit_local_setup.py`; every check is `pass`, `info`, or an explicitly accepted exception.
 - `ollama ps` shows the intended context and `100% GPU` for the chosen model.
