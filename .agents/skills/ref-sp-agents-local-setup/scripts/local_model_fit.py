@@ -46,8 +46,7 @@ REFERENCE_KV_GB_AT_64K = 3.0
 # ../references/hardware.md; keep the two in step.
 VERDICTS: tuple[tuple[float, str], ...] = (
     (6.0, "FIM completion only (inline autocomplete, commit messages). Not an agent."),
-    (12.0, "FIM, or an edit-format assistant on bounded single-file work."),
-    (24.0, "Edit-format assistant, or short agent runs at 64K."),
+    (24.0, "FIM completion; at most short, supervised agent runs."),
     (48.0, "Tool-calling agent: 27B to 35B class coding at long context."),
     (math.inf, "Tool-calling agent: long-horizon sessions, or several models loaded."),
 )

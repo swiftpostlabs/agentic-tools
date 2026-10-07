@@ -38,20 +38,17 @@ from dataclasses import dataclass, field
 from typing import Any, Literal
 
 Status = Literal["pass", "warn", "fail", "info"]
-HarnessClass = Literal["agent", "edit-format", "fim"]
+HarnessClass = Literal["agent", "fim"]
 
 OLLAMA_URL = "http://localhost:11434"
 
 # Context floor per harness class. The agent floor is Ollama's own guidance for
-# agents and coding tools; the others need far less because they do not resend
-# tool schemas every turn.
-CONTEXT_FLOOR: dict[str, int] = {"agent": 65536, "edit-format": 16384, "fim": 4096}
+# agents and coding tools; FIM needs far less because it only sends a window
+# around the cursor.
+CONTEXT_FLOOR: dict[str, int] = {"agent": 65536, "fim": 4096}
 
 # Accelerator memory in GB -> the richest harness class that budget can serve.
-CLASS_FLOOR_GB: tuple[tuple[float, HarnessClass], ...] = (
-    (12.0, "fim"),
-    (24.0, "edit-format"),
-)
+CLASS_FLOOR_GB: tuple[tuple[float, HarnessClass], ...] = ((24.0, "fim"),)
 
 # Environment variables Ollama documents. Anything else in the service config is
 # reported so a stale or invented setting does not look authoritative.
@@ -79,7 +76,6 @@ SECRET_HINTS: tuple[str, ...] = ("KEY", "TOKEN", "SECRET", "PASSWORD", "CREDENTI
 CLIENTS: dict[str, str] = {
     "pi": "pi (coding agent)",
     "hermes": "Hermes Agent",
-    "aider": "Aider",
     "llama-server": "llama.cpp server",
     "opencode": "OpenCode",
     "claude": "Claude Code",
@@ -497,7 +493,7 @@ def main() -> int:
     parser.add_argument(
         "--class",
         dest="target",
-        choices=["agent", "edit-format", "fim"],
+        choices=["agent", "fim"],
         help="harness class to audit against (default: what the hardware can serve)",
     )
     parser.add_argument("--json", action="store_true", help="emit JSON")

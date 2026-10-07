@@ -1,7 +1,7 @@
 ---
 name: tool-sp-setup-local-agents
 description: "Audit one machine's local-model setup (accelerator, Ollama config, models, network exposure, client) and fix what is missing. Use when setting up a local model for an agent, or when a local agent is slow, silent, or never calls tools."
-argument-hint: "Optional: the harness class to target (agent, edit-format, fim)"
+argument-hint: "Optional: the harness class to target (agent, fim)"
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -30,7 +30,7 @@ uv run <skill-dir>/scripts/audit_local_setup.py
 ```
 
 It is read-only, prints one line per check plus the server configuration it saw, and exits non-zero
-when a check failed. Flags: `--class agent|edit-format|fim` to audit against a target rather than
+when a check failed. Flags: `--class agent|fim` to audit against a target rather than
 what the hardware can afford, `--json` when the output feeds another step, `--only H2,S2` to re-run
 a subset after a fix. Use `uv run`, not the system `python3`: the script is stdlib-only and
 declares its Python version in PEP 723 metadata, so uv fetches a matching interpreter.
@@ -93,7 +93,6 @@ Then prove the harness class actually works:
 
 - **agent**: ask it to read a named file, and confirm a tool is invoked rather than described. Text
   that narrates a tool call is a failure.
-- **edit-format**: ask for a one-line edit and confirm the edit block applies cleanly.
 - **fim**: type in an editor and confirm a completion appears within a few hundred milliseconds.
 
 ## Gotchas

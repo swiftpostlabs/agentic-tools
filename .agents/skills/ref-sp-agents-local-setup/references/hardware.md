@@ -145,14 +145,13 @@ Accelerator memory actually available to the model, after the desktop takes its 
 | Available | Harness class | Verdict |
 | --- | --- | --- |
 | < 6 GB | FIM completion | Utility models only. Inline autocomplete, commit messages, summaries. Not an agent. |
-| 6 to 12 GB | FIM, or edit-format assistant | One small model, bounded single-file work, supervised. |
-| 12 to 24 GB | Edit-format assistant, short agent runs | Mid-size model, real assistance at 64K. |
+| 6 to 24 GB | FIM completion | Autocomplete runs well; at most short, supervised agent runs. |
 | 24 to 48 GB | Tool-calling agent | 27B to 35B class agentic coding at long context. The first tier that is genuinely comfortable. |
 | 48 GB+ | Tool-calling agent | Long-horizon sessions, larger models, or several loaded at once. |
 
 The harness class column matters more than the verdict column. A machine in the top two rows is not
-too small for local models; it is too small for *agents*, and should be pointed at a completion or
-edit-format harness instead. The skill's Step 3 covers that choice.
+too small for local models; it is too small for *agents*, and should be pointed at FIM completion
+instead. The skill's Step 3 covers that choice.
 
 CPU-only is a real configuration for batch and overnight work, and a bad one for interactive agent
 loops. Order of magnitude on an 8-core CPU: around 10 tokens/second for a 9B model, 2 to 5

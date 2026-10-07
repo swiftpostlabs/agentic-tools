@@ -20,7 +20,7 @@ Verified against provider docs on **2026-10-07**. Re-check before asserting a ve
 | VS Code (Local agent) | Needs `chat.useAgentsMdFile`. | Needs `chat.useNestedAgentsMdFiles` (experimental, off by default); VS Code lists nested paths and the agent picks which to read. | Instruction sources are additive; VS Code warns against relying on precedence. |
 | Cursor | Native. | Applied when working on files in that folder, combined with parents; more specific wins. | |
 | Gemini CLI | Only when configured: set `context.fileName` (for example `["AGENTS.md"]`) in `.gemini/settings.json`. | With that setting, ancestors to the project root plus a scan of subdirectories below the working directory (respects `.gitignore`, `.geminiignore`). | Inspect with `/memory show`, rescan with `/memory refresh`. |
-| Jules, Aider, Zed, Warp, Devin, Junie, Windsurf, Hermes, others | Listed as adopters on <https://agents.md/>. | Not uniformly documented. | Hermes truncates each context file at `context_file_max_chars` (default 20,000). |
+| Jules, Zed, Warp, Devin, Junie, Windsurf, Hermes, others | Listed as adopters on <https://agents.md/>. | Not uniformly documented. | Hermes truncates each context file at `context_file_max_chars` (default 20,000). |
 
 The binding constraints on size are Codex's 32 KiB cap and Claude Code's 200-line recommendation.
 Past either, content is cut or adherence drops.

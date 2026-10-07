@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-local-setup
-description: "Run a coding agent on a local model: size the machine, check that weights plus context fit, pick the harness class (agent, Aider-style, or autocomplete) and a current model, serve it with Ollama, and wire pi or Hermes. Use when setting up or debugging a local LLM."
+description: "Run a coding agent on a local model: size the machine, check that weights plus context fit, choose between an agent and FIM autocomplete, pick a current model, serve it with Ollama, and wire pi or Hermes. Use when setting up or debugging a local LLM."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -75,8 +75,7 @@ model, after the desktop and other processes take their share:
 | Accelerator memory | Harness class it can serve | What is honestly achievable |
 | --- | --- | --- |
 | < 6 GB | FIM completion | Inline autocomplete, commit messages, summarization. Not an agent. |
-| 6 to 12 GB | FIM, or edit-format assistant | A small model doing bounded, single-file, closely supervised edits. |
-| 12 to 24 GB | Edit-format assistant, short agent runs | A capable mid-size model. Real assistance. |
+| 6 to 24 GB | FIM completion | Fast autocomplete; at most short, closely supervised agent runs. |
 | 24 to 48 GB | Tool-calling agent | Agentic coding with a 27B to 35B class model at long context. |
 | 48 GB+ | Tool-calling agent | Long-horizon autonomous sessions, or several models loaded at once. |
 
@@ -138,29 +137,25 @@ loss stops being worth it.
 
 ## Step 3: choose the harness class
 
-**Do not assume the answer is an agent.** Three classes of tooling drive a local model, they ask
-very different things of it, and picking the wrong class is the most common way a viable machine
-gets written off as too small.
+**Do not assume the answer is an agent.** Two classes of tooling drive a local model, they ask very
+different things of it, and picking the wrong one is the most common way a viable machine gets
+written off as too small.
 
 | Class | What the model must do | Realistic floor | Examples |
 | --- | --- | --- | --- |
 | **Tool-calling agent** | Emit valid tool calls across dozens of turns under a large system prompt | ~24 GB | pi, Hermes, Claude Code, OpenCode |
-| **Text-edit-format assistant** | Emit a well-formed edit block as plain text | ~8 GB | Aider |
 | **FIM completion** | Fill in the middle of a span, fast | ~2 GB | `llama.vscode`, `llama.vim` |
 
-**The gate moves with the class.** Tool calling is mandatory for the first class and irrelevant to
-the other two. An edit-format assistant asks the model for structured *text*, so models without a
-`tools` capability are usable. A FIM engine asks for a completion, so it needs a base model trained
-with fill-in-the-middle tokens, which most instruct-tuned chat models are not.
+**The gate moves with the class.** An agent needs tool calling. A FIM engine doesn't; it needs a
+base model trained with fill-in-the-middle tokens, which most instruct-tuned chat models are not.
 
-**Prefill cost falls with the class too.** An agent harness re-sends its tool schemas every turn,
-which is exactly what hurts on slow hardware. An edit-format assistant sends a repo map and the
-files you named. A FIM engine sends a window around the cursor. On a machine running partly on CPU,
+**Prefill cost differs too.** An agent harness re-sends its tool schemas every turn, which is
+exactly what hurts on slow hardware. A FIM engine sends a window around the cursor. On a machine running partly on CPU,
 this difference dominates the felt experience more than model quality does.
 
 **On a machine below the agent floor, recommend FIM completion first**: it runs entirely on the
-GPU and is what will actually get used daily. Read `./references/harness-classes.md` when the choice
-is Aider or FIM: Aider's limits and maintenance state, and the llama.cpp FIM presets.
+GPU and is what will actually get used daily. Read `./references/fim-completion.md` when setting it
+up: the llama.cpp presets and which models are trained for it.
 
 ## Step 4: pick a model
 
@@ -169,10 +164,8 @@ Three filters, applied in this order.
 1. **Meet the harness class's capability gate.** For a tool-calling agent that means a `tools`
    capability, and it is a hard gate: an agent that cannot call tools cannot read a file or run a
    command. This is the single most common reason a local agent "works" in chat and does nothing in
-   a repo. For an edit-format assistant the gate is instruction-following, not tools. For FIM it is
-   fill-in-the-middle training.
-2. **It must fit at the class's context**, by step 2. 64K for an agent; an edit-format assistant and
-   a FIM engine need far less.
+   a repo. For FIM it is fill-in-the-middle training.
+2. **It must fit at the class's context**, by step 2. 64K for an agent; a FIM engine needs far less.
 3. **It must be current.** Model turnover is measured in weeks. Do not answer from memory.
 
 For what exists right now, read `./references/model-cache.md`. That file is a **dated snapshot**, not
@@ -279,10 +272,9 @@ cannot edit a file. Naming the constraint costs one sentence; hiding it costs an
 stopping at the refusal:
 
 - The machine can run FIM completion well, and that is worth setting up today.
-- It can run an edit-format assistant marginally, with slow turns and some malformed edits.
 - Agentic work on this hardware needs a hosted model, or different hardware.
 
-Refusing the agent while naming the two things that do work is a useful answer. Refusing outright
+Refusing the agent while naming what does work is a useful answer. Refusing outright
 is not.
 
 The same honesty applies to speed. "It works" and "it is usable interactively" are different claims.
@@ -294,7 +286,7 @@ Load these when the situation calls for them, not preemptively.
 
 | File | Load when |
 | --- | --- |
-| `./references/harness-classes.md` | Recommending Aider or FIM completion instead of an agent. |
+| `./references/fim-completion.md` | Setting up FIM autocomplete instead of an agent. |
 | `./references/hardware.md` | Measuring a machine, per-OS commands, driver and GPU support floors, fit math in detail. |
 | `./references/ollama.md` | Installing, configuring, or tuning Ollama; environment variables; Modelfile parameters; MLX on Apple Silicon; troubleshooting. |
 | `./references/model-discovery.md` | Finding what models exist now, on ollama.com or Hugging Face, and refreshing the cache table. |

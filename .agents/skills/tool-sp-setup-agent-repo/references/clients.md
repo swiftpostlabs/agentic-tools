@@ -24,7 +24,7 @@ on the path makes Claude Code read it instead of `AGENTS.md`.
 | Cursor | Native. | Applied when working on files in that folder; combined with parents, more specific wins. |
 | Gemini CLI | Only with `context.fileName` set to include `AGENTS.md`. | With that setting, ancestors plus a scan of subdirectories below the working directory (respects `.gitignore` and `.geminiignore`). |
 | Hermes | Native; truncated at `context_file_max_chars` (default 20,000). | Not documented. |
-| Others in the ecosystem (Jules, Aider, Zed, Warp, Devin, Junie, Windsurf, …) | Listed as adopters on <https://agents.md/>. | The standard says the nearest file wins; verify per client if it matters. |
+| Others in the ecosystem (Jules, Zed, Warp, Devin, Junie, Windsurf, …) | Listed as adopters on <https://agents.md/>. | The standard says the nearest file wins; verify per client if it matters. |
 
 What this means for a repo with nested files:
 

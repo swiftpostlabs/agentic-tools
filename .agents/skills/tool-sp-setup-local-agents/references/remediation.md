@@ -64,8 +64,7 @@ remote host.
 **`S1` server unreachable.** Check it is running (`systemctl status ollama`, or the menu bar app),
 then that it is on the expected port. A non-default `OLLAMA_HOST` moves it.
 
-**`S2` context below the class floor.** Floors: 65536 for an agent, 16384 for an edit-format
-assistant, 4096 for FIM. Set `OLLAMA_CONTEXT_LENGTH` to the floor for the class, then confirm with
+**`S2` context below the class floor.** Floors: 65536 for an agent, 4096 for FIM. Set `OLLAMA_CONTEXT_LENGTH` to the floor for the class, then confirm with
 `ollama ps` that `CONTEXT` reports the new value.
 
 When only one model needs a larger window, bake it into a derived model instead of raising the
