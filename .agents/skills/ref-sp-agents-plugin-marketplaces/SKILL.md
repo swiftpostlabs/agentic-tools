@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-plugin-marketplaces
-description: "Publish a repo's skills and MCP servers as an agent plugin distributed through a plugin marketplace, installable from Claude Code, OpenAI Codex, GitHub Copilot CLI, and VS Code: choosing between the Claude-format manifest and the portable Agent Plugins 1.0 schema, plugin.json and marketplace.json layout, manifest detection order per client, source types, the skills-path and caching rules, how visibility tiers map onto public/private/local hosting, and how releases and updates actually reach users. Use when: packaging skills as a plugin, creating or hosting a marketplace.json catalog, deciding which skills may be published, targeting Codex, Copilot CLI, or VS Code users, submitting a Claude plugin to OpenAI, cutting or versioning a plugin release, or debugging why an installed plugin is missing skills or not updating."
+description: "Publish a repo's skills (and MCP servers) as an agent plugin through a marketplace for Claude Code, Codex, Copilot CLI, and VS Code: manifest format, publish set, install cache, and releases. Use when packaging, publishing, or debugging an installed plugin."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,53 +13,19 @@ metadata:
 
 # Plugin Marketplaces
 
-## Purpose
+Turns a repo that already holds skills into an agent plugin published through a marketplace,
+without leaking skills that were never meant to leave. Claude Code, Codex, Copilot CLI, and VS Code
+all install plugins and read the same `SKILL.md` standard, but they don't share one manifest, and
+the manifest format decides whether you can publish a subset at all. What is easy to get wrong:
+**which directories get published, how paths survive the install cache, and how a release reaches
+existing users.**
 
-Turn a repo that already holds skills into an **agent plugin** published through a **plugin
-marketplace**, without leaking skills that were never meant to leave it.
-
-A plugin is a **cross-client format**, not a Claude-only one. Claude Code, OpenAI Codex, GitHub
-Copilot CLI, and VS Code all install plugins and all consume the same `SKILL.md` standard. What they
-do **not** share is one manifest: there are two formats, and the choice between them determines
-whether you can publish a subset of your skills at all. Start at
-[Choose the manifest format](#choose-the-manifest-format).
-
-This skill is scoped to **distributing skills and MCP servers**, which are the two component types
-the portable standard actually covers. Hooks, commands, agents, rules, and LSP servers are plugin
-components too, but Agent Plugins 1.0 excludes them as too client-specific, so they ship as
-client-specific configuration rather than portable components; for authoring them see the repo's
-hooks skill (`.agents/skills/ref-sp-agents-hooks/SKILL.md`). What this skill owns is the part that is
-genuinely easy to get wrong: **which directories get published, how paths survive the install cache,
-and how a release reaches an existing user.**
-
-## When to use this skill
-
-- Packaging an existing skills directory as a plugin.
-- Creating a `marketplace.json` catalog, or choosing where to host it.
-- Deciding which skills are allowed into a published plugin.
-- Making one published plugin installable from Claude Code, Copilot CLI, and VS Code.
-- Cutting a release, or choosing between pinned and rolling versioning.
-- Debugging an installed plugin that is missing skills, or that will not update.
-
-## Scope boundaries
-
-This skill owns **publishing** — the format choice, the manifests, the publish set, the install
-cache, the release. It is one of two ways skills leave a repo; pick by how the consumer gets them.
-
-- `ref-sp-agents-skills-management` — the other way out: linking and syncing skills into a consuming
-  repo from a source it already has. Use that when the consumer is a repo you control; use this when
-  the consumer *installs* the skills from a marketplace.
-- `ref-sp-agents-shareable-skills` — owns the visibility tiers this skill's manifest must respect,
-  and the validator that enforces the two against each other. It decides what *may* be published;
-  this skill decides how.
-- `ref-sp-dev-semantic-versioning` and `ref-sp-dev-package-management` — what a version number means
-  and how it stays in sync across manifests. This skill only owns why a stale plugin version freezes
-  users.
-- `ref-sp-agents-hooks` — owns authoring hooks themselves, including the Codex platform and the
-  repo-level versus plugin-bundled distinction. This skill owns only how a plugin carries one.
-- **Skills and MCP servers** are the two component types Agent Plugins 1.0 standardizes, so they are
-  in scope here. LSP servers, agents, commands, and rules are excluded from v1 as too client-specific
-  and ship as `extensions` data; consult the upstream client references for their schemas.
+In scope: skills and MCP servers, the two component types Agent Plugins 1.0 standardizes. Hooks,
+commands, agents, rules, and LSP servers ship as client-specific configuration (authoring hooks:
+`ref-sp-agents-hooks`). Linking skills into a repo you control, instead of publishing them, is
+`ref-sp-agents-skills-management`. Which skills *may* be published is the sharing spec
+(`ref-sp-agents-shareable-skills`); version numbering is `ref-sp-dev-semantic-versioning` and
+`ref-sp-dev-package-management`.
 
 ## The mental model
 
@@ -240,14 +206,9 @@ Four clients install plugins, and **no single manifest reaches all four**:
 | VS Code | Agent Plugins root `plugin.json` → Copilot-format `plugin.json` → `.claude-plugin/plugin.json` → `.plugin/plugin.json` |
 | Codex / ChatGPT | Root `plugin.json` (Agent Plugins). `.codex-plugin/plugin.json` is a compatibility fallback |
 
-**A repo laid out for Claude Code is installable from Copilot CLI and VS Code**, because
-`.claude-plugin/` is last in both of their orders. Shipping a second `.github/plugin/` copy is
-duplication, not compatibility. Third-party posts recommending both are working from the wrong
-detection order.
-
-**Codex is the exception**, and reaching it takes a deliberate second step: a root `plugin.json`
-carrying the Agent Plugins `$schema`, or an archive submitted through the OpenAI portal, which
-accepts `.claude-plugin/plugin.json` and converts it to `.codex-plugin/plugin.json`.
+Shipping a second `.github/plugin/` copy for Copilot is duplication, not compatibility: the
+Claude-format manifest is already in its search order. Third-party posts recommending both are
+working from the wrong detection order.
 
 The **catalog** is better behaved than the manifest. `.claude-plugin/marketplace.json` is read by all
 four, so keep one catalog there regardless of which plugin manifests you ship.
@@ -318,31 +279,19 @@ be consumed both as plain skills and as plugin skills with no rename.
 
 ## Releasing
 
-**There is no build artifact.** For the git-based source types, the client clones the repo and copies
-the plugin directory into its cache. Nothing is compiled, bundled, or uploaded. "Releasing" is
-therefore purely a versioning decision:
+There is no build artifact: for git sources the client clones the repo and copies the plugin
+directory into its cache. Releasing is a versioning decision:
 
-| Model | How | When to choose it |
-| --- | --- | --- |
-| **Rolling** | Omit `version` entirely; every commit to the tracked ref is a new version, keyed by commit SHA. | Internal or actively-developed plugins. Release == merge. |
-| **Pinned** | `plugin.json.version` is bumped on every release. | The repo already has real releases — a version file, a changelog, a conventional-commit bump tool. The plugin manifest becomes **one more manifest in the existing version-sync set**, and the release flow is the one the repo already has. |
+- **Rolling:** omit `version`; every commit to the tracked ref is a new version (by SHA). For
+  internal or actively developed plugins.
+- **Pinned:** bump `plugin.json.version` each release. Choose this whenever the repo already
+  versions itself, and make the plugin manifest one more file in the existing bump.
 
-Pick **pinned** whenever the repo already versions itself; wire the plugin version into the existing
-bump rather than maintaining a second, divergent version. Users then receive the release on their next
-marketplace update or background auto-update.
-
-One subtlety with `"source": "./"`: the content served is whatever the marketplace clone's ref holds,
-so a *fresh* install between releases serves newer default-branch content under the older version
-label. Existing users correctly stay cached until the version bumps, so this is a label skew, not a
-correctness bug. For a hard-pinned channel, give the plugin entry an explicit git source with a
-`ref` on a release tag instead of `"./"`, at the cost of bumping that ref every release.
-
-Stable/latest channels are built the same way: two marketplaces pointing at different refs of the same
-repo. **Each channel must resolve to a different version**, or the client treats them as identical and
-skips the update.
-
-Full detail — version resolution, auto-update tokens, channels, cache lifetime:
-[`./references/releasing.md`](./references/releasing.md).
+With `"source": "./"` a fresh install between releases serves newer content under the old version
+label (existing users correctly stay cached). For a hard-pinned channel, use a git source with a
+`ref` on a release tag. Stable and latest channels are two marketplaces on different refs, and each
+must resolve to a different version or the client skips the update. Details, auto-update tokens,
+and cache lifetime: `./references/releasing.md`.
 
 ## Visibility mapping
 
@@ -404,20 +353,12 @@ credentials, `extraKnownMarketplaces`, air-gapped sources, and the public market
 - **A project-level skill of the same name shadows the plugin's.** Copilot CLI and VS Code resolve
   skills and agents first-found, with project-level components winning over plugin ones.
 
-## Validation
+## Before announcing
 
-Before announcing a marketplace:
-
-- The format matches the clients being claimed, and each claimed client's detection order actually
-  finds the manifest you ship.
-- The publish set matches the repo's visibility policy — no local-only skill is enumerated under the
-  Claude format, and none is present in a staged `skills/` directory.
-- The manifests are generated, committed, and covered by a drift check in CI.
-- `version` appears in exactly one place, and the release flow bumps it.
-- A real install from the hosted marketplace produces the expected skill count, in **each client the
-  marketplace claims to support**.
-- Skills still validate against the repo's own skill and sharing validators — publishing changes
-  packaging, not authoring standards.
+- The publish set is generated, committed, drift-checked in CI, and passes
+  `validate-sharing.mts --all`.
+- `version` appears in exactly one place and the release flow bumps it.
+- A real install produces the expected skill count in every client the marketplace claims.
 
 ## References
 
