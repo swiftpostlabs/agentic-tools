@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-policy
-description: "Repository-specific guidance for the agents-policy feature, .agents/config.json policy section, and generated AI restriction outputs in this repo. Use when: working on the agents-policy feature, updating policy docs, or debugging Copilot, Claude Code, or Gemini policy generation here."
+description: "This repo's agents-policy feature: the policy section of .agents/config.json, the agentic-tools policy commands, and the files they generate for Gemini, Claude Code, and Copilot. Use when changing or debugging policy sync here."
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
@@ -11,100 +11,57 @@ metadata:
 
 # Swiftpost Agents Policy
 
-## Purpose
+How the agent file-access policy is implemented in this repo. The portable model (protected vs
+excluded files, per-client enforcement) is `ref-sp-agents-security`. The other consumer of
+`.agents/config.json` is `ref-sp-agents-skills-management`.
 
-Document this repository's concrete AI policy implementation: the canonical policy file, the grouped `agentic-tools policy` CLI surface, the generated client outputs, and the service-selection model that decides which vendors receive managed files.
+It lives in the `agents-policy` feature of the `agentic-tools` package (Python, with a legacy Node
+port). Find it by feature name. The only entrypoint is the `agentic-tools` CLI; there are no
+standalone policy bins.
 
-## When to use this skill
+## Commands
 
-- Working on the agents-policy feature or its generator logic.
-- Updating policy docs, CI enforcement, or command references in this repo.
-- Debugging why `.aiexclude`, `.claude/settings.json`, or `.vscode/settings.json` did or did not change.
-- Explaining how the `policy` section in `.agents/config.json` should be authored in this repo.
+- `uv run agentic-tools policy sync`: finds the nearest `.agents/config.json` with a `policy`
+  object (falling back to `.agents/policy.json`, then legacy `.ai-policy.json`), validates
+  `services`, writes the enabled outputs, and cleans managed sections of disabled ones.
+- `uv run agentic-tools policy check`: same resolution, compares without writing, and exits non-zero
+  on drift, telling the user to run `sync` or `import-vscode`. CI runs it.
+- `uv run agentic-tools policy import-vscode`: copies the current VS Code approval maps into the
+  policy, writes `.agents/config.json`, then syncs.
 
-## Scope boundaries
+## Policy fields
 
-This skill is the **repo-local layer**: how the `agents-policy` feature is actually built here — the
-`.agents/config.json` policy section, the sync command, and the generated vendor outputs.
+- `services`: which outputs to generate (`gemini`, `claude`, `copilot`). Omitted means all.
+- `protectedFiles`: sensitive patterns to block or deter.
+- `excludedFiles`: noisy or generated patterns kept out of Gemini's context.
+- `terminalAutoApprove`, `editAutoApprove`: managed VS Code approval maps.
 
-- `ref-sp-agents-security` — the portable model behind it: protected vs excluded files, the
-  multi-client enforcement story, and why the policy exists. Read that for the *why*, this for the
-  *how it is wired here*.
-- `ref-sp-agents-skills-management` — the other consumer of `.agents/config.json`. The two features
-  share a config file, not a subject.
-- `ref-sp-dev-repo-conventions` — where the feature's code belongs in this repo's layout.
+## Generated outputs
 
-## Stable Surface
-
-- Canonical policy file: `.agents/config.json` with a top-level `policy` object
-- Canonical commands:
-  - `uv run agentic-tools policy sync`
-  - `uv run agentic-tools policy check`
-  - `uv run agentic-tools policy import-vscode`
-- Implemented as the `agents-policy` feature of the `agentic-tools` package (Python primary, with a legacy Node port); locate it by feature name rather than a fixed path while the package is being restructured.
-- Packaged CLI entrypoint: `agentic-tools`; standalone policy bins are not exported.
-
-## Policy Model
-
-The source-of-truth file is JSON. Its top-level `policy` object currently supports these main fields:
-
-- `services` — list of enabled client outputs, such as `gemini`, `claude`, and `copilot`
-- `protectedFiles` — sensitive patterns that should be blocked or deterred
-- `excludedFiles` — noisy or generated patterns that should stay out of Gemini/native exclusion when enabled
-- `terminalAutoApprove` — managed VS Code terminal approval map for Copilot-related tooling
-- `editAutoApprove` — managed VS Code edit approval map
-
-If `services` is omitted, the implementation defaults to all supported services.
-
-## Generated Outputs
-
-| Service | Output | Behavior |
+| Service | File | What sync manages |
 | --- | --- | --- |
-| `gemini` | `.aiexclude` | Generated from `protectedFiles` and `excludedFiles`. If Gemini is disabled, the managed file is removed. |
-| `claude` | `.claude/settings.json` | Managed `permissions.deny` `Read(...)` rules track `protectedFiles`. If Claude is disabled, managed read rules are cleaned. |
-| `copilot` | `.vscode/settings.json` | Managed file associations, Copilot language disablement, and approval maps track the policy. If Copilot is disabled, the managed sections are cleaned. |
+| `gemini` | `.aiexclude` | Built from `protectedFiles` and `excludedFiles`; removed when Gemini is disabled. |
+| `claude` | `.claude/settings.json` | `permissions.deny` `Read(...)` rules for `protectedFiles`; cleaned when disabled. |
+| `copilot` | `.vscode/settings.json` | File associations, Copilot language disablement, approval maps; cleaned when disabled. |
 
-## Command Behavior
+## Rules
 
-### `uv run agentic-tools policy sync`
+- `.agents/config.json` is the source of truth. Control vendors with `services`, never by
+  hand-editing generated files.
+- `.claude/settings.json` and `.vscode/settings.json` are only partly managed: edit the parts sync
+  doesn't own, never the policy-owned sections.
+- `.aiexclude` stays at the repo root; don't invent a Gemini-only ignore file.
+- Docs and CI use the `agentic-tools policy` commands only.
 
-- Finds the nearest `.agents/config.json` with a `policy` object, with `.agents/policy.json` and legacy `.ai-policy.json` fallback.
-- Loads the policy file, validates `services`, and syncs the enabled outputs.
-- Cleans managed sections for disabled outputs so stale vendor files do not linger.
+## Before finishing
 
-### `uv run agentic-tools policy check`
-
-- Resolves the same policy and generated output paths as the normal sync flow.
-- Compares the current managed files to the generated contents without rewriting them.
-- Exits with an error when drift exists and tells the user to run either `uv run agentic-tools policy sync` or `uv run agentic-tools policy import-vscode`.
-
-### `uv run agentic-tools policy import-vscode`
-
-- Imports current VS Code approval maps into the policy section first.
-- Writes the updated policy back to `.agents/config.json` when using unified config.
-- Runs the same sync flow afterward.
-
-## Decision Rules
-
-- Use `.agents/config.json` as the source of truth for new work.
-- Prefer `services` to control vendor coverage instead of hand-editing generated files.
-- Keep `.aiexclude` at the repo root; do not replace it with a made-up Gemini-only ignore file.
-- Treat `.claude/settings.json` and `.vscode/settings.json` as partially managed outputs, not primary authoring surfaces for policy-owned sections.
-- Keep docs and CI on the canonical `agentic-tools policy` command family; do not add standalone policy entrypoints.
-
-## Validation
-
-- Run `uv run agentic-tools policy sync` after changing `.agents/config.json` or the sync implementation.
-- Run `uv run agentic-tools policy check` in CI or before commit flows that should reject policy drift without mutating files.
-- Run the agents-policy unit tests with `uv run poe test` (or target the feature's collocated `*_test.py`) when changing policy logic.
-- Check CI drift enforcement in `.github/workflows/ci.yaml` if output file names or command names change.
-- Keep `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` aligned with the current policy file.
+- `uv run agentic-tools policy sync`, then `policy check`, pass after any policy or generator change.
+- `uv run poe test` (or the feature's `*_test.py`) when policy logic changed.
+- If an output file or command name changed, update `.github/workflows/ci.yaml`.
 
 ## References
 
-- Read `./references/checklist.md` for a quick maintenance or debugging pass.
-- Read `./references/config-shape.md` for the current `.agents/config.json` policy contract.
-- Read `./references/copilot.md`, `./references/claude-code.md`, and `./references/gemini.md` for vendor-specific output details.
-- Read `.agents/skills/ref-sp-agents-security/SKILL.md` for the portable concepts that sit above this repo's concrete implementation.
-- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for policy-tooling prompts.
-- Review `./evals/evals.json` when validating output quality for policy implementation explanations.
+- `./references/config-shape.md`: the full `policy` contract, when editing `.agents/config.json`.
+- `./references/copilot.md`, `./references/claude-code.md`, `./references/gemini.md`: per-vendor
+  output detail, when debugging one vendor's file.
+- `./references/checklist.md`: quick debugging pass.

@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-skills-management
-description: "Repository-specific guidance for the skills-management CLI and .agents/config.json skills workflow in this repo. Use when: working on the skills-management CLI, updating skills-management docs, or debugging skill linking and sync behavior in a consuming repo."
+description: "This repo's agentic-tools skills CLI (list, link, sync, unlink) and the skills section of .agents/config.json that consuming repos use. Use when changing the CLI or debugging why a skill won't link or sync."
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
@@ -11,78 +11,43 @@ metadata:
 
 # Swiftpost Skills Management
 
-## Purpose
+The `agentic-tools skills` CLI that links shared skills into other repos. Which skills may travel is
+the sharing spec (`ref-sp-agents-shareable-skills`); writing skills is
+`ref-sp-agents-skills-authoring`.
 
-Document the stable behavior of this repository's grouped `agentic-tools skills` CLI surface, its category and shareability metadata, and the `.agents/config.json` skills sync model used to materialize shared skills into another repository.
-
-## When to use this skill
-
-- Working on the skills-management CLI or its sync logic.
-- Updating README or repo guidance for skill linking and syncing.
-- Debugging why a skill cannot be linked, synced, or unlinked.
-- Explaining how a consuming repo should configure the `skills` section in `.agents/config.json`.
-
-## Scope Boundaries
-
-- Use this skill for the actual `agentic-tools` package and the `skills-management` behavior implemented in this repo.
-- Use `.agents/skills/ref-sp-agents-shareable-skills/SKILL.md` when the main question is about portability rules, shareability decisions, or dependency metadata rather than this CLI's behavior.
-- Use `.agents/skills/ref-sp-agents-skills-authoring/SKILL.md` when the main question is about writing or maintaining a skill itself.
-
-## Stable Surface
-
-- Distribution name: `agentic-tools`
-- Canonical entry points: `uv run agentic-tools skills ...` and the Node package command `agentic-tools skills ...`
-- Implemented as the `skills-management` feature of the `agentic-tools` package (Python primary, with a legacy Node port); locate it by feature name rather than a fixed path while the package is being restructured.
-- Packaged CLI entrypoint: `agentic-tools`; standalone skills-management bins are not exported.
-- Default global destination: `~/.agents/skills`
+It lives in the `skills-management` feature of the `agentic-tools` package (Python, with a legacy
+Node port). Find it by feature name. Run it as `uv run agentic-tools skills ...` (or the Node
+`agentic-tools skills ...`); there are no standalone bins. The global destination is
+`~/.agents/skills`.
 
 ## Commands
 
-### `list`
+- **`list`**: the skills a source exposes, with scope, visibility, dependencies, and reason.
+  Source defaults to the current directory; `--from` takes a repo root or a `.agents/skills` path.
+- **`link`**: links chosen skills into a repo or, with `--global`, into `~/.agents/skills`.
+  Pulls in `requires` dependencies recursively.
+- **`sync`**: links every skill a config declares. Config defaults to
+  `<destination>/.agents/config.json` (its `skills` section), falling back to
+  `.agents/skills.json`; `--global` requires `--config`. It reports missing names per source before
+  changing anything, removes dead links in the destination first, and rejects a skill name declared
+  by two sources.
+- **`unlink`**: removes linked skills, checking they point at the expected source so an unrelated
+  directory is never removed.
 
-- Lists the discovered skills from a source repo.
-- Default source is the current working directory.
-- Accepts either a repo root or a direct `.agents/skills` path via `--from`.
-- Reports each skill's `scope`, `visibility`, dependencies, and optional reason.
+`link`, `sync`, and `unlink` take `--dry-run`; `link` and `sync` take `--force` to replace a link
+that points elsewhere.
 
-### `link`
+Use `link` for one-off picks and `sync` for a repo that declares its shared skills. In a uv repo
+with Poe, add a task (`sync-skills = "uv run agentic-tools skills sync"`) rather than a wrapper
+script.
 
-- Links one or more selected shareable skills from a source repo into a destination repo or the global skills directory.
-- Resolves hard dependencies declared in `requires` automatically.
-- Refuses to link skills that are missing shareability metadata, marked `repo-local`, or depend on non-shareable or unknown skills.
-- Supports `--dry-run` for planning and `--force` for replacing an existing link that points somewhere else.
-- Supports `--global` to target `~/.agents/skills` instead of a repo-local `.agents/skills` directory.
+## What may be linked
 
-### `sync`
+Only skills with `visibility` `public` or `organization`. `repo-local` skills, skills without
+sharing metadata, and skills whose `requires` include a non-shareable or unknown skill are refused.
+Missing metadata points the user to `tool-sp-make-skill-shareable`.
 
-- Reads a JSON config and links all declared skills into the destination repo.
-- Default config path is `<destination>/.agents/config.json` when it contains a `skills` section, with `<destination>/.agents/skills.json` fallback.
-- With `--global`, `--config` is required because there is no repo root from which to infer a default config file.
-- Each configured source declares a `from` location and a list of `skills` to materialize.
-- Reports missing configured skill names grouped by source before changing the destination.
-- Removes dead skill links already present in the destination `.agents/skills` directory before relinking the configured set.
-- Rejects duplicate skill names across configured sync sources.
-- Supports `--dry-run` and `--force` with the same semantics as `link`.
-
-### `unlink`
-
-- Removes linked skills from a destination repo or the global skills directory.
-- Validates the expected source target so it does not silently remove an unrelated directory.
-- Supports `--dry-run` for planning.
-
-## Shareability Enforcement
-
-- The CLI only links skills that have explicit shareability metadata.
-- `visibility` must be one of `public`, `organization`, or `repo-local`.
-- Only `public` and `organization` visibility skills can be linked; `repo-local` skills are rejected.
-- Dependencies listed in `requires` are resolved recursively and must themselves be shareable (public or organization).
-- Missing metadata triggers a recommendation to use `tool-sp-make-skill-shareable`.
-
-## Sync Config Model
-
-- The sync file is JSON, not YAML.
-- The expected repo-local location is `.agents/config.json`.
-- The top-level shape is:
+## Sync config
 
 ```json
 {
@@ -97,46 +62,24 @@ Document the stable behavior of this repository's grouped `agentic-tools skills`
 }
 ```
 
-- `from` supports two durable source forms:
-  - relative or absolute filesystem paths
-  - `package:<name>` package references
-- Relative paths resolve from the target repo root when the config lives under `.agents/config.json` or `.agents/skills.json`.
-- Package sources are resolved by locating the installed package and walking upward until a repo root with `.agents/skills` is found.
-- A `package:<name>` source therefore reads the **installed** copy, at whatever revision the consumer's lockfile pins. It does not read a local checkout of the source repo, even when one is sitting next to it.
+`from` is a filesystem path (relative paths resolve from the target repo root) or
+`package:<name>`. Prefer `package:` when the source is an installed dependency, a relative path
+when two repos are cloned side by side. Full contract: `./references/config-shape.md`.
 
-### Debugging a missing skill from a package source
+## Gotchas
 
-When `sync` reports configured skills as missing and the names look correct, suspect a stale pin before suspecting the config. A skill that exists only in unpushed commits, or in commits newer than the pinned revision, is invisible to the consumer.
+- **`package:<name>` reads the installed copy** at the revision the consumer's lockfile pins, never
+  a local checkout next to it. A skill that exists only in unpushed or newer commits shows up as
+  missing. Fix in order: push the source, re-pin in the consumer, reinstall, sync. Skipping the
+  re-pin reproduces the error.
+- A renamed skill fails like a missing one, so a rename is a breaking change for every consumer
+  that hasn't re-pinned.
+- On Windows, if a directory symlink fails with `WinError 1314`, the CLI creates a directory
+  junction instead; both count as supported links.
 
-Resolve it in order: push the source repo, re-pin the dependency in the consumer, reinstall, then sync. Skipping the re-pin silently leaves the consumer on the old revision and reproduces the same error. A renamed skill fails the same way as a new one, so a rename in the source repo is a breaking change for every consumer that has not re-pinned.
+## Before finishing
 
-## Windows Behavior
-
-- The tool prefers real directory symlinks.
-- On Windows, if directory symlink creation fails with privilege error `WinError 1314`, the CLI falls back to creating a directory junction.
-- Existing supported directory links include both symlinks and Windows directory junctions.
-
-## Decision Rules
-
-- Use `list` when validating metadata or checking what a repo exposes.
-- Use `link` for one-off selection and manual linking.
-- Use `sync` for target repos that want a declarative shared-skill setup.
-- Prefer `package:<name>` sources when the source repo is being consumed as an installed package instead of a sibling checkout.
-- Prefer repo-relative filesystem sources when two repos are cloned side by side locally.
-- In `uv`-managed consuming repos that already use Poe, prefer a task like `sync-skills = "uv run agentic-tools skills sync"` instead of creating a local wrapper script just to call the installed CLI.
-
-## Validation
-
-- Use `uv run agentic-tools skills list` to validate discovery and metadata parsing.
-- Use `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging a target repo.
-- Exercise the skills-management unit tests when changing source resolution, dependency handling, or Windows link behavior.
-- Keep README examples aligned with the CLI behavior and config contract.
-
-## References
-
-- Read `./references/checklist.md` for a quick maintenance or debugging pass.
-- Read `./references/config-shape.md` for the `.agents/config.json` skills contract and source-resolution rules.
-- Read `README.md` for the repo's user-facing examples.
-- Inspect the `skills-management` feature's implementation and its collocated tests for the exact source-resolution and Windows-link behavior.
-- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for CLI and sync prompts.
-- Review `./evals/evals.json` when validating output quality for CLI behavior explanations.
+- `uv run agentic-tools skills list` parses the metadata.
+- `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging.
+- The feature's tests pass when source resolution, dependencies, or link handling changed, and the
+  README examples still match.
