@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-shareable-skills
-description: "Normative spec for how a repo names, describes, scopes, shares, and vendors skills: owner-prefix naming grammar, the domain registry, visibility tiers, dependency semantics, vendoring vs forking, and the sharing-spec validator. Use when: naming or renaming a skill, setting owner/domain/visibility/tags, recording hard vs soft skill dependencies, vendoring or forking a skill from another repo, or validating a skill for export."
+description: "The sharing spec for skills: owner-prefix naming, domain registry, visibility tiers, hard vs soft dependencies, vendoring vs forking, and its validator. Use when naming a skill, setting its sharing metadata, or vendoring one from another repo."
 license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -11,54 +11,16 @@ metadata:
 
 # Shareable Skills (Sharing Spec)
 
-## Purpose
+How a repo names, scopes, shares, and vendors its skills: the metadata layer. The mechanism is
+portable; the values shown (owner prefix, owner, domain registry) are this repo's. Whether a skill
+is any *good* is `ref-sp-agents-skills-authoring`; moving it is `ref-sp-agents-skills-management`
+(linking) or `ref-sp-agents-plugin-marketplaces` (publishing); walking one skill through these
+rules is `tool-sp-make-skill-shareable`.
 
-Define the single normative spec for how a repo **names**, **describes in frontmatter**, **scopes**,
-**shares**, **vendors**, and **validates for export** its skills. This is the source of truth for
-that standardization; other skills point here instead of restating it. The mechanism is portable —
-any repo can adopt it — while the concrete values it fills in (owner prefix, owner, domain registry)
-are that repo's own. The values shown throughout are this repo's instantiation.
+The full normative spec is `./references/spec.md`. Read it when you need exact rules, examples, or
+`belongs-when` questions for a domain; the sections below are the always-needed summary.
 
-This skill owns the **sharing-spec** rules. It does **not** own general skill-quality rules
-(trigger quality, structure, progressive disclosure) — those belong to the repo's skill-authoring
-skill (`ref-sp-agents-skills-authoring` here). The two are complementary and independent; neither
-hard-depends on the other (see the spec's "Relationship" section).
-
-> **Schema status (this repo):** the migration is complete here. Every skill is owner-prefix renamed,
-> all portability fields live under the `metadata.shareable-skills.*` namespace, and the validator
-> runs at Phase 3 (hard-fail). A repo adopting this spec fresh starts at whatever phase it sets in
-> its registry. `./references/spec.md` §9 keeps this repo's migration history.
-
-## When to use this skill
-
-- Naming or renaming a skill (owner-prefix / domain / template / topic grammar).
-- Setting `shareable-skills.owner`, `shareable-skills.domain`, `shareable-skills.tags`,
-  `shareable-skills.visibility`, or the top-level `license`.
-- Recording hard (`requires`) vs soft (`suggests`) skill dependencies.
-- Deciding `repo-local` vs `organization` vs `public`.
-- Vendoring or forking a skill from another repo, including provenance and read-only handling.
-- Validating a skill against the sharing spec before linking, exporting, or publishing.
-
-## Scope boundaries
-
-This skill owns **how a skill is named, scoped, shared, and vendored** — the metadata layer. It owns
-nothing about whether the skill is any good, and nothing about the machinery that moves it.
-
-- `ref-sp-agents-skills-authoring` — skill *quality*: structure, triggers, description wording,
-  progressive disclosure. Complementary and independent; neither hard-depends on the other.
-- `ref-sp-agents-skills-management` — the CLI that links and syncs skills into a consuming repo.
-  This skill decides *whether* a skill may travel; that one moves it.
-- `ref-sp-agents-plugin-marketplaces` — publishing skills as an installable plugin. This skill owns
-  the visibility tiers; that one owns the manifest that must respect them.
-- `tool-sp-make-skill-shareable` — the guided workflow for applying this spec to one skill.
-  Read this skill for the rules; invoke that one to walk a skill through them.
-
-## Read this first
-
-**`./references/spec.md` is the full normative spec.** Load it whenever you need the exact rules.
-The sections below are the always-needed summary; the spec has the detail and examples.
-
-## Canonical schema (summary)
+## Canonical schema
 
 Every portability field nests under the `metadata.shareable-skills.` namespace as a **string** (the
 Agent Skills spec treats `metadata` as a string→string map — no YAML lists or nested objects; the
@@ -79,7 +41,7 @@ metadata:
   # forks only: shareable-skills.forked-from
 ```
 
-## Naming grammar (summary)
+## Naming grammar
 
 - refs: `ref-<owner-prefix>-<domain>-<topic>[-template]`
 - tools: `tool-<owner-prefix>-<verb>[-<topic>]` (first topic segment is an action verb)
@@ -88,8 +50,9 @@ metadata:
   `shareable-skills.domain`; mismatch is a failure.
 - The owner prefix is on every skill for collision avoidance, which is what lets vendoring be a
   pure copy with no rename. Read `./references/spec.md` §2.
+- Never encode shareability, namespace, or vendoring status in the name; that is metadata.
 
-## Domain and tags (summary)
+## Domain and tags
 
 - `shareable-skills.domain` is one token naming the skill's **primary subject**, drawn from the
   growing domain registry (`./references/registry.json`). Unknown domain => hard fail, with a
@@ -103,7 +66,7 @@ metadata:
   questions and the full list.
 - `tags` are advisory: any tag passes, unknown tags get a soft nudge only.
 
-## Dependencies (summary)
+## Dependencies
 
 - `shareable-skills.requires` = hard deps the skill genuinely needs; validator fails if missing;
   reference them from the body via `$SKILLS_FOLDER/<name>`. Keep the list short or split the skill.
@@ -113,7 +76,12 @@ metadata:
   `organization` or `public`; `repo-local` may require anything. This keeps every hard dependency at
   least as portable as the skill that needs it.
 
-## Visibility (summary)
+## Visibility
+
+Prefer `organization` or `public` when the skill moves to another repo with light adaptation and no
+repo-only wrappers; `repo-local` when it depends on this repo's scripts, policies, layout, or
+adoption workflow. Rather than marking a broadly useful skill `repo-local` because one section is
+repo-tied, split it.
 
 - `repo-local` — this repo only; the linker rejects export.
 - `organization` — org-wide; symlink from `~/.claude/skills` into projects, or a **privately hosted**
@@ -127,7 +95,7 @@ metadata:
   `shareable-skills.visibility` and drift-checking it. The packaging, hosting, and release mechanics
   are owned by `ref-sp-agents-plugin-marketplaces`; do not restate them here.
 
-## Vendoring vs forking (summary)
+## Vendoring vs forking
 
 - **Symlink** = the skill is the source; no provenance metadata.
 - **Vendor** = copy that respects upstream: `shareable-skills.owner` stays upstream, add
@@ -137,42 +105,20 @@ metadata:
 - **Fork** = you take ownership: a new skill with your own owner-prefix and name, plus optional
   `shareable-skills.forked-from`. Read `./references/spec.md` §7–§8.
 
-## Defaults
-
-- Prefer `organization`/`public` when the skill moves to another repo with light adaptation and
-  without dragging repo-only wrappers. Prefer `repo-local` when it depends on this repo's specific
-  scripts, policies, layout, or adoption workflow.
-- Keep `shareable-skills.requires` short. Prefer splitting a mixed skill over marking a broadly
-  useful core `repo-local` because one section is repo-tied.
-- Do not encode shareability, namespace, or vendoring status in the name — those live in metadata.
-
-## Validation (sharing-spec validator only)
-
-Run `./scripts/validate-sharing.mts` (TypeScript, needs Node >= 22). It reads the domain registry
-from `./references/registry.json` and the `phase` there controls strictness (now Phase 3, hard-fail):
+## Validation
 
 ```sh
 node ./scripts/validate-sharing.mts <skill-dir>
-# point it at the skills root with --all (in this repo, .agents/skills):
-node ./scripts/validate-sharing.mts .agents/skills --all
-# a repo may wrap it in a package-manager script; this repo exposes:
-yarn validate:sharing        # or `yarn validate` to run both validators
+node ./scripts/validate-sharing.mts .agents/skills --all   # this repo: yarn validate:sharing
 ```
 
-This validator checks the **sharing spec** and is separate from the general skill-quality validator
-owned by the repo's skill-authoring skill (`ref-sp-agents-skills-authoring` here, `validate-skill.mts`).
-Run both when a skill should be good *and* shareable.
+It enforces everything above: the name grammar, a registered domain, resolvable `requires` at
+least as visible as the skill, `license` on `public` skills, and upstream ownership plus a
+read-only banner on vendored copies. Strictness comes from the `phase` in
+`./references/registry.json`. It is separate from the skill-quality validator; `yarn validate`
+runs both.
 
-- `name` matches `type + owner-prefix + domain (+ template) + topic` and equals the folder name.
-- `shareable-skills.domain` exists in the registry (else hard fail); unknown `shareable-skills.tags`
-  warn only.
-- Every `shareable-skills.requires` entry resolves to an existing skill; no skill hard-depends on a
-  lower-visibility skill (`repo-local` < `organization` < `public`).
-- `shareable-skills.visibility: public` carries a top-level `license`.
-- Vendored copies keep `shareable-skills.owner` upstream and carry a read-only body banner.
-- Legacy keys are no longer accepted (Phase 3). Full rules in `./references/spec.md` §10.
-
-### Plugin-manifest check (`--all` runs only)
+### Plugin manifest check (`--all` only)
 
 If the repo publishes a plugin (`.claude-plugin/plugin.json`), the validator also checks that
 manifest against the catalog. This matters because **the manifest's `skills` list is where the
@@ -193,13 +139,9 @@ A repo with no `.claude-plugin/plugin.json` is unaffected. The manifest's semant
 
 ## References
 
-- `./references/spec.md` — the full normative spec (load for exact rules, examples, migration).
-- `./references/checklist.md` — quick pass before finalizing sharing metadata on a skill.
-- `./scripts/validate-sharing.mts` — the sharing-spec validator (TypeScript, Node >= 22).
-- `./scripts/check-vendored-drift.mts` — flags vendored copies that were edited or whose upstream advanced.
-- `./references/registry.json` — the domains/tags/aliases registry and validator `phase`.
-- `ref-sp-agents-skills-authoring` — general skill-quality authoring (complementary).
-- `ref-sp-agents-plugin-marketplaces` — publishing skills as an agent plugin via a marketplace;
-  the mechanics behind the marketplace export destination named under Visibility.
-- `tool-sp-make-skill-shareable` — guided shareability decision for a skill.
-- `.agents/tasks/skill-standardization-spec/README.md` — decision log and rationale (local, may be absent).
+- `./references/spec.md`: the full spec, when the summary above isn't enough.
+- `./references/registry.json`: domains, tags, aliases, and the validator phase, when choosing a
+  domain.
+- `./references/checklist.md`: a pass before finalising a skill's sharing metadata.
+- `./scripts/check-vendored-drift.mts`: flags vendored copies that were edited or whose upstream
+  moved.
