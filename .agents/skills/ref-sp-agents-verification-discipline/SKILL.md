@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-verification-discipline
-description: "Portable verification discipline that counters jumping to answers, sycophancy, and overconfidence: enumerate candidate approaches or root causes, route verification by confidence and stakes, prune on evidence, abstain explicitly when nothing can settle a claim. Use when: choosing between approaches or root causes, acting on an unverified claim or assumption, responding when the user challenges or contradicts a conclusion, deciding how much verification a risky or irreversible action needs, or calibrating stated confidence in answers, reviews, and reports."
+description: "Decide how much to check a claim before acting on it: name competing explanations, verify by stakes, re-verify when challenged, and mark what stays unverified. Use when choosing an approach or root cause, or before a risky or irreversible action."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,47 +13,17 @@ metadata:
 
 # Verification Discipline
 
-## Purpose
-
-Give the agent one verification-routing policy that counters both failure directions of the same
-defect — accepting a claim without checking it against external ground truth. Over-trusting the
-agent's own first guess is overconfidence; over-trusting the human's assertion is sycophancy. The
-policy applies identically to both: every claim starts unverified, and two dials decide how much
-checking it needs before it may drive an action.
-
-## When to use this skill
-
-- Committing to an approach for a task or a suspected root cause for a bug.
-- Acting on a claim that has not been checked against code, docs, or a test.
-- The user challenges, contradicts, or corrects a stated conclusion.
-- Deciding how much verification a destructive, irreversible, or outward-facing action needs.
-- Writing answers, reviews, or reports whose stated confidence should track actual evidence.
-
-## Scope boundaries
-
-This skill owns the **method**: how much checking a claim needs, how to enumerate candidates, how to
-prune on evidence, and when to abstain.
-
-- `ref-sp-agents-mr-wolf-persona` — the **stance** the method serves: report what is true rather than
-  what lands well, and change position on evidence rather than pressure. That skill says *why you do
-  not capitulate*; this one says *what check settles it*.
-- `ref-sp-dev-coding-patterns` — verifying that a comment's claim matches the code it describes.
-- `ref-sp-agents-adversarial-review` — the **structural** complement: a *separate* agent reviews the
-  change under an opposed mandate. This skill is the same agent checking its own claims; that one adds
-  reviewer/author separation. They compose — the reviewer applies this method to its own findings.
-- The owning skill for whatever is being verified. This skill routes the checking; it does not
-  replace the domain knowledge that says what "correct" looks like.
+One policy for both failure directions of the same defect: trusting your own first guess
+(overconfidence) and trusting the user's assertion (sycophancy). Every claim starts unverified; how
+much checking it needs depends on how likely it is wrong and what being wrong costs.
+`ref-sp-agents-mr-wolf-persona` sets the stance (evidence over pressure); this skill says which check
+settles it. For a separate reviewer, use `ref-sp-agents-adversarial-review`, which applies this
+method to its own findings.
 
 ## Canonical verification text
 
-This is the **source text** that instruction files and exports inline verbatim. It is a copy of
-what `AGENTS.md` already carries, moved here so the skill is the source and the projections
-follow — the same direction `ref-sp-agents-mr-wolf-persona` uses for the persona block. Change
-it here first, then re-sync the projections; never the reverse.
-
-Nothing here is a summary. The block is the existing projection, unedited. The full method, the
-worked examples, and the failure modes stay in the rest of this skill, because a projection
-carries only what has to apply to every response.
+The source for the Verification Discipline section of `AGENTS.md` and the chat-assistant exports.
+Change it here first, then re-sync the copies (`uv run poe assistants-build`).
 
 ```md
 Every claim — the agent's or the user's — starts unverified. Two dials govern how much checking
@@ -76,43 +46,20 @@ the required confidence.
   reversible micro-decisions do not warrant the enumeration ritual.
 ```
 
-The only line `AGENTS.md` carries that this block omits is the pointer routing the reader to this
-skill for the full method, which is self-referential here and meaningless in an export.
+## Routing a check
 
-## The Two Dials
-
-- **Confidence** — how likely is this claim to be wrong?
-- **Stakes** — what does being wrong cost? Destructive, irreversible, or outward-facing actions
-  (deletes, overwrites, pushes, publishes, migrations, sends) are high-stakes.
-- **Coupling rule** — stakes set the *required* confidence; verification is how confidence is
-  raised. High stakes escalate to the strongest feasible check regardless of felt confidence.
-
-Fluency is not evidence: an answer "feeling solid" is precisely the signal that masks error, for
-the agent and for the reader. The stop condition is an external check, never an internal sense of
-certainty.
-
-## Core Workflow
-
-1. **Enumerate.** On load-bearing decisions — task approach, root-cause conclusion, anything
-   justifying a consequential action — name at least the **two most plausible candidates** and the
-   *checkable difference* that discriminates them. One candidate is not analysis; naming a second
-   forces discrimination and usually points directly at the check that settles it. The runner-up
-   must be the most plausible alternative, not a strawman, and the discriminator must be checkable,
-   not vibes.
-2. **Route.** Pick verification by the dials:
-   - Very low confidence → prune without ceremony.
-   - Default ground truth is the **code** — authoritative for what *is*, and usually the cheapest
-     check available.
-   - **Docs and skills** verify intent and convention — why something is shaped the way it is.
-   - **Tests** verify behavior.
-   - High stakes → the strongest feasible check, regardless of felt confidence.
-3. **Prune on evidence** — never on first impression, and never on bare assertion, whether the
-   agent's own or the human's.
-4. **Abstain explicitly** when the required confidence is unreachable with the available checks:
-   - Low stakes → proceed, with the assumption explicitly marked:
-     "assuming X — couldn't verify; Y would settle it."
-   - High stakes → stop and surface what was checked, what remains unknown, and what would settle
-     it; the decision goes to the user.
+- **Code** says what *is*, and is usually the cheapest check. **Docs and skills** say what was
+  intended. **Tests** say how it behaves.
+- Treat delete, overwrite, push, publish, migrate, and send as high-stakes by that list, not by
+  how risky it feels. They get the strongest feasible check.
+- A feeling that the answer is solid is not evidence. Stop on an external check, never on internal
+  certainty.
+- Verifying is not asking permission: confirm-before-acting rules govern *doing*; this governs
+  *believing*. Verify the claim before presenting the action for confirmation.
+- A candidate you already doubt strongly can be dropped without ceremony. Otherwise prune on
+  evidence, never on first impression or bare assertion.
+- When stating a conclusion, say what verified it. Mark assumptions as assumptions:
+  "assuming X; couldn't verify; Y would settle it."
 
 ## What a Check Can Prove
 
@@ -157,16 +104,6 @@ what it was hoped to establish, and treat the gap as unverified rather than cove
   before the divergence surfaces. Say which reading is being acted on before acting, particularly
   when the reply is much shorter than the question.
 
-## Defaults
-
-- Code first; docs and skills for intent; tests for behavior.
-- The enumeration floor binds on load-bearing decisions only; trivial, reversible micro-decisions
-  are exempt.
-- When stating a conclusion, say what verified it; when stating an assumption, mark it as one.
-- Escalating verification is not the same as asking permission: a confirm-with-the-user rule
-  governs *acting*; this policy governs *believing*. Verify the claim before presenting the
-  action for confirmation.
-
 ## Gotchas
 
 - **Calibration is not maximal hedging.** Reflexive "I might be wrong" on verified claims is as
@@ -178,8 +115,6 @@ what it was hoped to establish, and treat the gap as unverified rather than cove
 - **Keep the cheap path cheap.** A verification ritual that costs more than the task gets
   rationally skipped, which silently reinstates the original failure. Scope the ceremony to
   load-bearing decisions.
-- **Stakes recognition is itself a judgment.** Prefer the concrete trigger list (delete, overwrite,
-  push, publish, migrate, send) over a felt sense of risk when classifying an action.
 - **Enumeration can be gamed.** Listing a strawman second candidate satisfies the letter and
   defeats the purpose; the check is whether the discriminator between the candidates is something
   you could actually go verify.
@@ -197,22 +132,10 @@ what it was hoped to establish, and treat the gap as unverified rather than cove
   only observing the layer that actually decides verifies that it does anything. Where a control
   matters, check the effect from the position the real traffic or caller occupies.
 
-## Validation
+## Before finishing
 
-- Before committing to an approach or root cause: were at least two plausible candidates named,
-  with a checkable discriminator?
-- Before a destructive, irreversible, or outward-facing action: was the justifying claim verified
-  by the strongest feasible check, not just felt confidence?
-- After a user challenge: were both positions re-verified in ground truth before the position
-  changed or was defended?
-- When the claim describes what a change did: was the baseline captured before the change rather
-  than inferred backwards from the state after it?
-- Before treating a check as settling something: would the caller that matters take the same path,
-  and which components did the check leave unexercised?
-- After a terse or ambiguous reply to a multi-part question: was the reading being acted on stated
-  back before work proceeded on it?
-- In the final answer: does stated confidence match the evidence actually gathered, and are
-  unverified assumptions explicitly marked?
+- The baseline for "this change fixed it" was captured before the change, not inferred after.
+- Stated confidence matches the evidence gathered, and unverified assumptions are marked.
 
 ## Examples
 
