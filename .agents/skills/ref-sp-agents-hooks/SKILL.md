@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-hooks
-description: "Author agent lifecycle hooks that run deterministic shell commands at session, prompt, tool, and stop events across Claude Code, OpenAI Codex, GitHub Copilot CLI, VS Code, and Gemini CLI. Use when: creating or editing a hook, choosing a lifecycle event, writing a hook script that reads stdin JSON and returns an allow/deny/context decision, making a hook portable across agents, bundling a hook inside an agent plugin, or debugging why a hook does not fire or block."
+description: "Write agent lifecycle hooks (shell commands at session, prompt, tool, and stop events) for Claude Code, Codex, Copilot CLI, VS Code, and Gemini CLI. Use when creating a hook, making one portable, bundling one in a plugin, or debugging why a hook doesn't fire or block."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,150 +12,103 @@ metadata:
 
 # Agent Hooks
 
-## Purpose
+A hook is **(event, matcher, command)**: at a lifecycle event the agent runs your command, passes a
+JSON payload on stdin, and reads the exit code and stdout as a decision. Unlike asking the model to
+remember something, a hook always fires. This skill covers `command` hooks, the type every platform
+supports; other types are noted in the platform references. Hooks configured at repo or user scope
+and hooks bundled in a plugin share the same contract; only the config location differs (plugin
+packaging: `ref-sp-agents-plugin-marketplaces`). Hooks that guard secrets: `ref-sp-agents-security`.
 
-Give the agent portable defaults for authoring lifecycle hooks -- shell commands that run automatically at agent events -- so the shared input/output contract lives in one place and only the per-service specifics (event names, config location, field names) are looked up per platform.
+## The contract
 
-## When to use this skill
+- **Input:** JSON on stdin.
+- **stdout:** JSON only, or nothing. A stray `echo` corrupts the decision; Gemini CLI treats invalid
+  stdout as "allow".
+- **stderr:** every log, progress, and error line.
 
-- Creating or editing a hook for any agent CLI or IDE.
-- Deciding which lifecycle event a behavior should attach to.
-- Writing a hook script that reads a JSON event on stdin and returns a decision.
-- Making one hook work across more than one agent platform.
-- Debugging why a hook does not fire, does not block, or breaks output parsing.
+| Exit code | Effect |
+| --- | --- |
+| `0` | Success; stdout is parsed as a decision or context object (empty = no-op). |
+| `2` | Block where the event supports it; stderr becomes the reason shown to the agent. |
+| anything else | Non-blocking warning; the run continues. |
 
-## Scope Boundaries
+**Exit `1` does not block.** Use exit `2` or the platform's JSON deny decision. This is the most
+common hook mistake.
 
-- This skill centers on `command` (shell) hooks, the one type every platform supports. Non-command types (`http`, `mcp_tool`, `prompt`, `agent`) are noted per platform in the references.
-- For the config location, event vocabulary, and payload field names of one platform, read that platform's reference file.
-- This skill is not about MCP servers, skills, or subagents themselves.
-- A hook can be configured **at repo or user scope** (the config files below) or **bundled inside a plugin**. This skill owns both, because the event vocabulary and the stdin/stdout contract are identical either way; only the config location changes. Agent Plugins 1.0 does not standardize hooks, so a plugin-bundled hook is always client-specific configuration living in that client's extension namespace. For how a plugin is packaged and which namespace each client reads, use the repo's plugin-distribution skill (`.agents/skills/ref-sp-agents-plugin-marketplaces/SKILL.md`).
-- For the repo instruction file (`AGENTS.md`), use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here).
-- When a hook reads or guards protected/secret files, use the repo's agent-security skill (`ref-sp-agents-security` here).
+## Lifecycle moments
 
-## Mental Model
+Pick the moment first, then look up each platform's event name in `./references/platform-matrix.md`.
 
-A hook is a triple: **(event, matcher, command)**. At a lifecycle event, the agent runs your command, passes a JSON event payload on stdin, and interprets the command's exit code plus stdout as a decision. Hooks are deterministic: unlike asking the model to "remember to run the linter," a hook always fires.
-
-The one contract that holds on every platform here:
-
-- **Input:** the event payload arrives as JSON on **stdin**.
-- **Diagnostics:** human/debug text goes to **stderr**, never stdout.
-- **Decision:** carried by the **exit code** plus **JSON on stdout**.
-
-## The Exit-Code Contract
-
-This is identical enough across platforms to memorize once:
-
-| Exit code | Meaning | Effect |
+| Moment | Use it to | Common names |
 | --- | --- | --- |
-| `0` | Success | stdout is parsed as a JSON decision/context object (empty stdout = no-op) |
-| `2` | Block / deny | Action is blocked where the event supports it; **stderr becomes the reason** shown to the agent |
-| other non-zero | Non-blocking error | Logged as a warning; the run continues |
+| Session start | Inject context, validate setup | `SessionStart` |
+| Prompt submitted | Audit, add context, block | `UserPromptSubmit`; Gemini `BeforeAgent` |
+| Before tool use | Allow, deny, or rewrite a call | `PreToolUse`; Gemini `BeforeTool` |
+| After tool use | Format, lint, log, add context | `PostToolUse`; Gemini `AfterTool` |
+| Turn ends | Force another turn, report | `Stop`; Gemini `AfterAgent` |
+| Before compaction | Save context | `PreCompact`; Gemini `PreCompress` |
 
-Critical corollary: **exit `1` does not block.** To stop a tool call or a turn you must use exit `2` (or the platform's JSON deny decision), not `1`. This is the single most common hook mistake.
+Most real hooks are `PreToolUse` gates and `PostToolUse` formatters. Codex alone has `PostCompact`
+and `Interrupt`; hooks on those won't port.
 
-Platform caveat: Copilot CLI `preToolUse` **fails closed** (a crash/non-zero exit denies the tool call) but **fails open on timeout**. See `./references/platforms/copilot-cli-hooks.md`.
+## Writing one
 
-## The stdout Rule
+1. Pick the moment and whether you observe, add context, or block.
+2. Resolve the event name for each target platform.
+3. Start from `./assets/portable-hook.sh`: read stdin, branch, exit with a code and JSON.
+4. Scope it with a matcher, and **also re-check inside the script**: VS Code ignores matchers, so
+   every configured hook fires there.
+5. Put the config in each platform's file (platform references below).
+6. Dry-run: pipe a sample payload into the script and check exit code and stdout.
+7. Trigger the real event and confirm it allows or denies as intended.
 
-stdout is a structured channel. Print **only** JSON (or nothing) to it. Any stray `echo`/`print` on stdout can corrupt parsing -- Gemini CLI explicitly falls back to "allow" when stdout is not valid JSON, and the others may mis-handle it. Send every log line, progress note, and error message to stderr.
+## Making it portable
 
-## Shared Lifecycle
-
-Map behavior to a lifecycle moment first, then look up the event name per platform in `./references/platform-matrix.md`. The moments that exist almost everywhere:
-
-| Moment | What you can do here | Common names |
-| --- | --- | --- |
-| Session start | Inject context, validate setup | `SessionStart` (Claude/Codex/VS Code/Copilot/Gemini) |
-| Prompt submitted | Audit, add context, block prompt | `UserPromptSubmit` / `BeforeAgent` (Gemini) |
-| Before tool use | Allow / deny / rewrite a tool call | `PreToolUse` / `BeforeTool` (Gemini) |
-| After tool use | Format, lint, log, inject follow-up context | `PostToolUse` / `AfterTool` (Gemini) |
-| Turn ends (stop) | Force another turn, run reports | `Stop` / `AfterAgent` (Gemini) |
-| Before compaction | Save/export context | `PreCompact` / `PreCompress` (Gemini) |
-
-`PreToolUse` and `PostToolUse` are where most real hooks live: gate dangerous commands, and format/validate after edits.
-
-Two moments exist on only one platform, so reach for them knowing the hook will not port: Codex `PostCompact` (after compaction finishes) and Codex `Interrupt` (the user stopped the run).
-
-## Core Authoring Workflow
-
-1. **Pick the moment and the decision.** What lifecycle point, and do you need to observe, add context, or block/modify?
-2. **Resolve the event name per target platform** from `./references/platform-matrix.md`.
-3. **Choose the hook type.** Default to `command`. Reach for `http`/`prompt`/`agent`/`mcp_tool` only when the platform supports it and the job needs it.
-4. **Write the script to the portable contract** (read stdin JSON, branch, emit exit code + JSON on stdout). Start from `./assets/portable-hook.sh`.
-5. **Scope it with a matcher** on the tool/event, but also guard inside the script (VS Code ignores matchers -- every hook fires).
-6. **Place the config** in the correct file for each platform (see each platform reference).
-7. **Dry-run**: pipe a sample payload into the script and confirm exit code + stdout before wiring it up.
-8. **Validate blocking**: trigger the real event and confirm it actually allows/denies as intended.
-
-## Portability Rules
-
-When one hook must serve multiple agents:
-
-- **Read fields defensively.** Payload keys differ: snake_case (`tool_name`, `tool_input`) on Claude/Gemini/VS Code vs camelCase (`toolName`, `toolArgs`) on Copilot CLI's native form. Copilot and VS Code also accept the Claude PascalCase form. Probe both spellings.
-- **Do not key on one tool name.** The same action has different tool names per platform (Claude `Write`/`Edit` vs VS Code `create_file`/`replace_string_in_file`). Match on intent, or match broadly and re-check inside the script.
-- **`timeout` units differ.** Seconds on Claude, Codex, Copilot, and VS Code; **milliseconds** on Gemini CLI.
-- **`timeout` defaults differ far more than the units.** Codex defaults to **600 seconds** where the others sit in the tens. Set an explicit timeout rather than inheriting whichever default the target platform happens to use.
-- **Matchers are not uniform.** Regex is anchored as `^(?:PATTERN)$`; VS Code ignores matchers entirely, so filter in-script.
-- **Project-root env vars differ.** `CLAUDE_PROJECT_DIR` (Claude), `GEMINI_PROJECT_DIR` (Gemini, plus a `CLAUDE_PROJECT_DIR` compatibility alias). Resolve a root with a fallback rather than hardcoding paths.
-- **Config shape differs.** Claude, Codex, and Gemini nest `{ "matcher", "hooks": [ ... ] }`; Copilot CLI and VS Code use flat hook entries. See the references.
-- **Reuse across Claude-family tools.** Codex, Copilot CLI, and VS Code all read Claude-format PascalCase events and the Claude nesting (VS Code even reads `.claude/settings.json`), so one config often covers four platforms once it is copied to each one's config path. Gemini uses a distinct vocabulary (`BeforeTool`/`AfterTool`/`BeforeAgent`) and needs its own.
-- **Config format is not always JSON.** Codex additionally accepts `[hooks]` tables in `.codex/config.toml`. Write the JSON form when a hook must travel; it is the one shape every platform reads.
+- **Field names differ:** `tool_name`, `tool_input` (Claude, Gemini, VS Code) vs `toolName`,
+  `toolArgs` (Copilot CLI native). Copilot and VS Code also accept Claude's form. Read both.
+- **Tool names differ:** Claude `Write`/`Edit`, VS Code `create_file`/`replace_string_in_file`.
+  Match on intent and re-check in the script.
+- **Timeouts differ:** seconds everywhere except Gemini CLI (milliseconds). Codex defaults to 600
+  seconds, so a hung hook stalls a session for ten minutes; its `SessionEnd` and `Interrupt` allow
+  only 1 second (max 3), so slow teardown belongs in a detached process. Always set an explicit
+  timeout.
+- **Matchers** are regexes anchored as `^(?:PATTERN)$`, except in VS Code, which ignores them.
+- **Project root:** `CLAUDE_PROJECT_DIR` (Claude), `GEMINI_PROJECT_DIR` (Gemini, which also sets
+  the Claude name). Resolve with a fallback.
+- **Config shape:** Claude, Codex, and Gemini nest `{ "matcher", "hooks": [...] }`; Copilot CLI and
+  VS Code use flat entries. Codex, Copilot CLI, and VS Code all read Claude-format events and
+  nesting (VS Code even reads `.claude/settings.json`), so one config often serves four platforms.
+  Gemini needs its own. Codex also reads `[hooks]` in `.codex/config.toml`; use JSON when a hook
+  must travel.
 
 ## Security
 
-Hooks run arbitrary shell with your full user permissions, automatically, without a confirmation each time. Treat every hook as production code.
+Hooks run arbitrary shell with your permissions, automatically, without confirmation.
 
-- **Never trust `tool_input` as shell.** Quote it, avoid `eval`, and match against allowlists rather than interpolating raw values into commands.
-- **Never echo or persist secrets.** Do not inline tokens in config; use the platform's `env`/`allowedEnvVars` to pass them, and keep them off stdout/stderr and logs.
-- **Use project-rooted, validated paths.** Guard against path traversal before reading or writing.
-- **Fail safe.** Prefer explicit deny (exit `2` / `permissionDecision: deny`) over silent pass when a check errors -- but know each event's fail-open vs fail-closed default.
-- **Be fast and idempotent.** Hooks run inline with the agent; slow hooks stall it and can hit the timeout.
-- **Review shared hooks before enabling.** Repo-committed and plugin hooks execute on your machine; read them first.
-
-## Task Framing
-
-| Action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Choose the lifecycle moment | Map the behavior to a shared moment before picking a name | Names differ per platform; the moment is stable | At the start of every hook | The hook attaches to the right event on each target |
-| Write to the exit-code contract | Emit exit `0`/`2` + JSON stdout, diagnostics to stderr | Wrong exit code (e.g. `1`) silently fails to block | Whenever the hook must gate or modify | Blocking and context injection behave as intended |
-| Guard inside the script | Re-check tool/args in-script, not only via matcher | VS Code ignores matchers; payloads vary | Any cross-platform or gating hook | The hook only acts on the cases it should |
-| Dry-run with a sample payload | Pipe fixture JSON to the script and inspect output | Catches parsing/exit-code bugs before they hit a session | Before committing or enabling a hook | Verified exit code and JSON shape |
+- Never treat `tool_input` as shell: quote it, no `eval`, match against allowlists.
+- Never inline or print secrets; pass them through the platform's `env` or `allowedEnvVars`.
+- Validate paths against the project root before reading or writing.
+- Prefer an explicit deny when a check errors, and know each event's fail-open or fail-closed
+  default.
+- Keep hooks fast and idempotent; they run inline.
+- Read repo-committed and plugin hooks before enabling them: they execute on your machine.
 
 ## Gotchas
 
-- **Exit `1` is not a block.** Use exit `2` (or a JSON deny) to stop an action.
-- **stdout must be JSON-only.** Route logs to stderr or you corrupt the decision parse (Gemini defaults to allow on invalid stdout).
-- **VS Code ignores matchers** -- every configured hook fires; filter in the script.
-- **Gemini `timeout` is milliseconds**, unlike the second-based platforms.
-- **Copilot `preToolUse` fails closed on crash, open on timeout** -- a slow hook silently lets the call through.
-- **Codex's default timeout is 600 seconds**, so a hanging hook stalls the session for ten minutes instead of failing fast. Its `SessionEnd` and `Interrupt` invert this at 1 second, capped at 3, so teardown work that cannot finish in three seconds belongs in a detached process.
-- **Payload casing varies** (snake_case vs camelCase) and **tool names vary** across platforms.
-- **No controlling terminal.** Claude hooks cannot use `/dev/tty`; for desktop alerts use the platform's notification mechanism, not an interactive prompt.
+- Copilot CLI `preToolUse` fails **closed** on a crash but **open** on a timeout: a slow gate
+  silently lets the call through.
+- Claude hooks have no controlling terminal (`/dev/tty`); use the platform's notifications, not an
+  interactive prompt.
 
 ## References
 
-- Read `./references/platform-matrix.md` first to translate a lifecycle moment into the event name and config shape for each platform.
-- Read `./references/platforms/claude-code-hooks.md` for Claude Code (`.claude/settings.json`, nested config, hook types, JSON decision fields).
-- Read `./references/platforms/codex-hooks.md` for OpenAI Codex (`.codex/hooks.json` or `.codex/config.toml`, Claude-format events plus `PostCompact` and `Interrupt`, the 600-second default timeout).
-- Read `./references/platforms/copilot-cli-hooks.md` for GitHub Copilot CLI (`.github/hooks/*.json`, camel/Pascal duality, fail-closed preToolUse).
-- Read `./references/platforms/vscode-hooks.md` for VS Code agent hooks (ignored matchers, OS-specific command overrides, Claude-format compatibility).
-- Read `./references/platforms/gemini-cli-hooks.md` for Gemini CLI (`.gemini/settings.json`, distinct event vocabulary, millisecond timeouts).
-- Read `./references/checklist.md` for a quick review pass before committing a hook.
-- Read the repo's agent-security skill (`ref-sp-agents-security` here) when a hook touches protected files, secrets, or exclusion rules.
-
-## Assets
-
-- `./assets/portable-hook.sh` is a starter `command` hook that reads stdin JSON, reads a field under both snake_case and camelCase spellings, and returns an allow/deny decision. Adapt it per platform.
-- `./assets/git-identity-guard.sh` is a worked `PreToolUse` example: it blocks a `git commit` when the repo's configured author identity does not match the account its `origin` remote points at -- the common multi-identity failure where an unset local `user.email` silently commits under the global identity. Edit its rules table to your own accounts.
-- `./assets/trigger-eval-queries.example.json` holds should-trigger / should-not-trigger prompts for checking this skill's activation.
-
-## Validation
-
-- Confirm the event name is valid for each target platform (`./references/platform-matrix.md`).
-- Confirm stdout emits only JSON and all diagnostics go to stderr.
-- Confirm blocking uses exit `2` or the platform's deny decision, never exit `1`.
-- Confirm the config sits in the right file/shape for each platform.
-- Dry-run the script against a sample payload before enabling it.
-- Review `./evals/evals.json` when checking this skill's own output quality.
+- `./references/platform-matrix.md`: event names and config shapes per platform. Read first.
+- Per platform, when configuring for it:
+  - `./references/platforms/claude-code-hooks.md`: `.claude/settings.json`, hook types, decision fields.
+  - `./references/platforms/codex-hooks.md`: `.codex/hooks.json` or `config.toml`, extra events.
+  - `./references/platforms/copilot-cli-hooks.md`: `.github/hooks/*.json`, camel/Pascal forms.
+  - `./references/platforms/vscode-hooks.md`: ignored matchers, OS-specific command overrides.
+  - `./references/platforms/gemini-cli-hooks.md`: `.gemini/settings.json`, its own vocabulary.
+- `./references/checklist.md`: review pass before committing a hook.
+- `./assets/git-identity-guard.sh`: worked `PreToolUse` example that blocks `git commit` when the
+  author identity doesn't match the account `origin` points at. Edit its rules table.
