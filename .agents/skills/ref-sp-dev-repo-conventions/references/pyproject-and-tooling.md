@@ -76,7 +76,7 @@ All commands run through `uv run` in the managed environment.
 | Installed command wiring | `[project.scripts]` | Entry points belong in packaging config |
 | Dev workflow command | `[tool.poe.tasks]` | Task wrappers live in Poe, not shipped entrypoints |
 | Skill guidance | `.agents/skills/<skill>/` | Agent-facing guidance stays in the skills tree |
-| Provider routing stub | `GEMINI.md` / `.claude/CLAUDE.md` | Thin, point back to the main instructions |
+| Agent instructions | `AGENTS.md` | The only instruction file; no `CLAUDE.md` or `GEMINI.md` bridges |
 
 For portable boundary calls (feature vs shared utility, product vs maintenance), defer to `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md`.
 

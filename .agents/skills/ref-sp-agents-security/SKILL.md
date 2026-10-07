@@ -115,8 +115,8 @@ unstated boundary reads as a boundary that exists.
 
 | Agent | File-Level Restriction | Behavioral Instruction |
 |-------|----------------------|----------------------|
-| **Gemini** | Generated exclusion file containing protected and excluded patterns when Gemini output is enabled | `GEMINI.md` routes to the shared top-level instructions |
-| **Claude Code** | `.claude/settings.json` `permissions.deny` with protected `Read()` patterns when Claude output is enabled | `.claude/CLAUDE.md` routes to the shared top-level instructions |
+| **Gemini** | Generated exclusion file containing protected and excluded patterns when Gemini output is enabled | the root `AGENTS.md`, once `context.fileName` points Gemini at it |
+| **Claude Code** | `.claude/settings.json` `permissions.deny` with protected `Read()` patterns when Claude output is enabled | the root `AGENTS.md`, read natively by Claude Code |
 | **GitHub Copilot** | `.vscode/settings.json` protected file deterrent plus command/edit guardrails when Copilot output is enabled | shared top-level instructions (the root `AGENTS.md`, which Copilot reads natively) carry the security directive |
 
 ### Copilot Limitation

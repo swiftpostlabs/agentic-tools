@@ -48,7 +48,7 @@ Use this skill for the concrete package name, folder placement, `pyproject.toml`
 ## Top-level repo layout
 
 ```text
-AGENTS.md                          # source-of-truth agent guidance (Copilot reads it natively)
+AGENTS.md                          # the only agent instruction file, read natively; no CLAUDE.md or GEMINI.md
 .agents/skills/<skill>/SKILL.md    # agent workflow skills (+ references/ assets/ evals/ scripts/)
 .agents/config.json                # policy + skills config
 .agents/playground/                # local scratch space for temporary helper files (gitignored)
@@ -57,7 +57,6 @@ src/agentic_tools/                 # shipped Python package (feature-first, see 
 src/agentic_tools_old/             # legacy Node port (boundary; do not extend unless asked)
 scripts/                           # repo maintenance/automation, not shipped product
 pyproject.toml                     # single configuration hub for all tools
-GEMINI.md, .claude/CLAUDE.md       # thin provider routing stubs -> AGENTS.md
 ```
 
 ## Package layout (feature-first)

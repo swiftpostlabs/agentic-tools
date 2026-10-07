@@ -30,7 +30,7 @@ Give the agent portable defaults for authoring lifecycle hooks -- shell commands
 - For the config location, event vocabulary, and payload field names of one platform, read that platform's reference file.
 - This skill is not about MCP servers, skills, or subagents themselves.
 - A hook can be configured **at repo or user scope** (the config files below) or **bundled inside a plugin**. This skill owns both, because the event vocabulary and the stdin/stdout contract are identical either way; only the config location changes. Agent Plugins 1.0 does not standardize hooks, so a plugin-bundled hook is always client-specific configuration living in that client's extension namespace. For how a plugin is packaged and which namespace each client reads, use the repo's plugin-distribution skill (`.agents/skills/ref-sp-agents-plugin-marketplaces/SKILL.md`).
-- For repo instruction files (`AGENTS.md`, `GEMINI.md`, `.claude/CLAUDE.md`), use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here).
+- For the repo instruction file (`AGENTS.md`), use the repo's instruction-authoring skill (`ref-sp-agents-instructions-authoring` here).
 - When a hook reads or guards protected/secret files, use the repo's agent-security skill (`ref-sp-agents-security` here).
 
 ## Mental Model

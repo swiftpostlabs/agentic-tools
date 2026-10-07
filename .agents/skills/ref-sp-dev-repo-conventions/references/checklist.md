@@ -18,7 +18,7 @@ Use before finalizing a placement, scaffold, or `pyproject.toml` change.
 - Is `[tool.hatch.build.targets.wheel].packages` aligned with the actual packaged source tree?
 - Do repo-local helper scripts stay in `scripts/` unless they are genuinely part of the shipped product?
 - Do skill support files live beside their `SKILL.md` under `references/`, `assets/`, `evals/`, or `scripts/`?
-- Do thin provider stubs (`GEMINI.md`, `.claude/CLAUDE.md`) route back to the main instructions instead of duplicating rules?
+- Is `AGENTS.md` the only instruction file, with no `CLAUDE.md` or `GEMINI.md` beside it?
 
 ## Translations and boundary
 
