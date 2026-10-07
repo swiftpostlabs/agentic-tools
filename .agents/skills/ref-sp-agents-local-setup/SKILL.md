@@ -372,6 +372,6 @@ It runs these checks against a real host and maps each finding to a fix.
 `./assets/AGENTS.lean.md` is a copy-and-fill instruction-file template for repos driven by a small
 local model.
 
-`./scripts/local_model_fit.py` reports what the current machine can run and which locally installed
-models fit at a given context. Run it before advising on hardware, so the advice is measured rather
+`uv run ./scripts/local_model_fit.py` reports what the current machine can run and which locally
+installed models fit at a given context. Run it before advising on hardware, so the advice is measured rather
 than assumed.

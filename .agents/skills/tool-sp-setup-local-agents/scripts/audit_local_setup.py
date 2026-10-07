@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.14"
 # dependencies = []
 # ///
 """Audit this machine's local-model setup against the local-setup baseline.
@@ -15,10 +15,10 @@ anything. It also never prints the value of an environment variable whose name
 suggests a credential.
 
 Usage:
-    python3 audit_local_setup.py
-    python3 audit_local_setup.py --json
-    python3 audit_local_setup.py --only S2,S3
-    python3 audit_local_setup.py --class agent
+    uv run audit_local_setup.py
+    uv run audit_local_setup.py --json
+    uv run audit_local_setup.py --only S2,S3
+    uv run audit_local_setup.py --class agent
 
 Exit status: 0 when no check failed, 1 when at least one check failed, 2 on a
 usage or environment error. Warnings alone do not change the exit status.

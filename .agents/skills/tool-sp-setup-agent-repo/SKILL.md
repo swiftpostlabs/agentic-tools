@@ -24,11 +24,13 @@ formats belong to `ref-sp-agents-local-tasks` and `ref-sp-agents-retro`.
 Run the audit before reading anything else or touching a file:
 
 ```bash
-python3 <skill-dir>/scripts/audit_agent_repo.py --repo <repo>
+uv run <skill-dir>/scripts/audit_agent_repo.py --repo <repo>
 ```
 
 It is read-only, prints one line per check with details, and exits non-zero when a check failed.
 `--json` for machine output, `--only I2,I3` to re-run a subset. Don't re-derive it by hand.
+Use `uv run`, not the system `python3`: the script declares its Python version in PEP 723
+metadata and uv fetches a matching interpreter.
 
 ## The baseline
 
@@ -114,8 +116,6 @@ installing a long tail; an unused skill costs context for nothing.
   symlink gives them no project skills.
 - Client traces (`C1`) aren't proof the user uses that client. Ask before wiring one.
 - Vendoring and syncing the same skill causes silent drift. Pick one mode.
-- `audit_agent_repo.py` declares Python 3.9 or later: keep `except (A, B):` parenthesised even if a
-  3.14-targeted formatter strips it.
 
 ## Before finishing
 

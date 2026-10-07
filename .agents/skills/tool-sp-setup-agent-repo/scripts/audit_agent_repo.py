@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.14"
 # dependencies = []
 # ///
 """Audit a repository against the shared agent baseline in one pass.
@@ -14,8 +14,7 @@ check IDs so the calling skill can map each one to a fix.
 Detection only: this script never writes to the audited repo.
 
 Usage:
-    python3 audit_agent_repo.py [--repo PATH] [--json] [--only ID[,ID...]]
-    uv run audit_agent_repo.py --repo ../some-repo
+    uv run audit_agent_repo.py [--repo PATH] [--json] [--only ID[,ID...]]
 
 Exit status: 0 when no check failed, 1 when at least one check failed, 2 on a
 usage or environment error. Warnings alone do not change the exit status.
@@ -200,7 +199,7 @@ def is_ignored(repo: Path, relative: str, has_git: bool) -> bool | None:
             )
         # Parenthesized on purpose: PEP 758's bare form is 3.14+, and this script
         # targets whatever python3 the audited repo's machine happens to have.
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             return None
         if result.returncode in (0, 1):
             return result.returncode == 0
@@ -231,7 +230,7 @@ def tracked_paths(repo: Path, relative: str, has_git: bool) -> list[str]:
             timeout=10,
             check=False,
         )
-    except (OSError, subprocess.SubprocessError):
+    except OSError, subprocess.SubprocessError:
         return []
     if result.returncode != 0:
         return []
@@ -256,7 +255,7 @@ def repo_files_named(repo: Path, names: Iterable[str], has_git: bool) -> list[st
                 timeout=20,
                 check=False,
             )
-        except (OSError, subprocess.SubprocessError):
+        except OSError, subprocess.SubprocessError:
             result = None
         if result is not None and result.returncode == 0:
             return sorted(

@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.14"
 # dependencies = []
 # ///
 """Report what local models the current machine can actually run.
@@ -13,9 +13,9 @@ model cache table in the sibling reference folder.
 Detection only: this script never pulls, loads, or modifies a model.
 
 Usage:
-    python3 local_model_fit.py [--context 65536] [--kv-bytes 2]
-    python3 local_model_fit.py --config path/to/config.json
-    python3 local_model_fit.py --json
+    uv run local_model_fit.py [--context 65536] [--kv-bytes 2]
+    uv run local_model_fit.py --config path/to/config.json
+    uv run local_model_fit.py --json
 
 Exit status: 0 always, unless arguments are unusable (2). The verdict is in the
 output, not the exit code, because "this machine is too small" is a finding

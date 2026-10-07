@@ -26,14 +26,14 @@ the usual failure is a setting the server never read.
 Run the audit before reading anything else or changing a setting:
 
 ```bash
-python3 <skill-dir>/scripts/audit_local_setup.py
+uv run <skill-dir>/scripts/audit_local_setup.py
 ```
 
 It is read-only, prints one line per check plus the server configuration it saw, and exits non-zero
 when a check failed. Flags: `--class agent|edit-format|fim` to audit against a target rather than
 what the hardware can afford, `--json` when the output feeds another step, `--only H2,S2` to re-run
-a subset after a fix. `uv run <skill-dir>/scripts/audit_local_setup.py` works too; the script is
-stdlib-only with PEP 723 metadata.
+a subset after a fix. Use `uv run`, not the system `python3`: the script is stdlib-only and
+declares its Python version in PEP 723 metadata, so uv fetches a matching interpreter.
 
 Do not re-derive this by hand with `systemctl cat`, `nvidia-smi`, and `ollama list`. That is the
 slow path the script replaces, and hand-reading misses the variable that is set but undocumented.

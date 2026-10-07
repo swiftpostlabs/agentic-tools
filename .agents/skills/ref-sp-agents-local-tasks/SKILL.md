@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-local-tasks
-description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace: a lightweight `TODO.md` notes list plus date-prefixed tracked task folders that move through the `10-new/`, `20-open/`, and `90-closed/` lifecycle subfolders, each carrying `status`, `created`, `updated`, and (once closed) a prose `outcome` in frontmatter. Use when: reading or updating `.agents/tasks/TODO.md`, creating or moving a tracked task folder between `10-new/`, `20-open/`, and `90-closed/`, setting a task's frontmatter `status` or `outcome`, naming a task folder, writing a task brief and deciding how much of a proposed solution belongs in it, or checking whether local agent task notes still match the active work."
+description: "Reference guidance for using `.agents/tasks/` as a gitignored local workspace: a lightweight `TODO.md` notes list plus date-prefixed tracked task folders that move through the `10-new/`, `20-open/`, and `90-closed/` lifecycle subfolders, each carrying `status`, `created`, `updated`, and (once closed) a prose `outcome` in frontmatter. Use when: reading or updating `.agents/tasks/TODO.md`, creating or moving a tracked task folder between `10-new/`, `20-open/`, and `90-closed/`, setting a task's frontmatter `status` or `outcome`, naming a task folder, writing a task brief and deciding how much of a proposed solution belongs in it, writing or refreshing a task's `HANDOFF.md` for a resuming or parallel agent, scoping how deeply to process a large batch of material, or checking whether local agent task notes still match the active work."
 license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -61,6 +61,7 @@ lifecycle subfolders, folder naming, `TODO.md` syntax, and the frontmatter field
 | `.agents/tasks/20-open/<date>-<task-name>/` | Tracked task being worked (`status: in-progress \| in-review \| blocked`). |
 | `.agents/tasks/90-closed/<date>-<task-name>/` | Finished tracked task (`status: done \| cancelled`). |
 | `.agents/tasks/<lifecycle>/<date>-<task-name>/README.md` | Living brief with frontmatter, plan, and context. |
+| `.agents/tasks/<lifecycle>/<date>-<task-name>/HANDOFF.md` | Optional single resume point for a long or multi-agent task; see [Task handoff](#task-handoff). |
 | `.agents/tasks/<lifecycle>/<date>-<task-name>/pr-description.md` | Temporary draft content for a PR or summary. |
 | `.agents/tasks/<lifecycle>/<date>-<task-name>/notes.md`, `validation.md`, `plan.md` | Scratch notes, validation results, or a focused local plan. |
 | `.agents/playground/` | Scratch space for temporary helper scripts or generated local artifacts that should be created with edit tools instead of terminal file-writing commands. |
@@ -178,6 +179,21 @@ function or flag names that nothing has validated. Those read like findings and 
 A task whose brief explicitly asks for a prescriptive plan overrides this default. Say so in the task
 rather than leaving the next reader to infer it.
 
+### Task handoff
+
+A long task, or one that another agent reads while it runs, may carry a `HANDOFF.md`: a short resume
+point saying where things are, what was decided, and where to start, pointing into the `README.md` for
+detail rather than repeating it.
+
+- Keep **one** handoff per task. When the picture changes, replace or edit that file; never add a
+  second handoff beside it, because two handoffs that disagree are worse than none.
+- Update it in the **same step** as the facts it records change (a date, the file to start from, what is
+  done), not at the end of the session. A stale handoff is read as current.
+- When several agents share a task, one agent owns the handoff; the others report corrections to the
+  owner or the user instead of editing it in parallel.
+- On close, mark the handoff closed. Moving the folder to `90-closed/` changes its path, so search for
+  references to the old path (skills, other tasks) and update them in the same step.
+
 ## TODO.md Syntax
 
 `TODO.md` holds quick notes and small tasks only; anything substantial becomes a tracked task folder. Unfinished items in `.agents/tasks/TODO.md` may use any of these forms:
@@ -223,6 +239,11 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 - Write `outcome` as prose when closing a task, and say plainly what was left undone rather than rounding a partial result up to `done`.
 - Default a task `README.md` body to describing the problem, its context, and why it matters; keep solution material as clearly labelled options, notes, or examples, and record only what was explicitly settled as settled.
 - If a task is simple and well-defined, execute it directly instead of forcing a planning ritual first.
+- When a task means processing a large batch of material (reading and noting sources, transcribing,
+  reviewing many files), propose the depth per item up front with a rough cost for each option, for
+  example full notes against an outline of headings and pages, and record the user's choice in the
+  `README.md` as decided. Discovering halfway that the chosen depth is too costly wastes the work already
+  done at that depth.
 - Treat mundane chores such as creating a branch, running a simple command, or applying a narrow typo fix as simple unless they reveal broader decisions or blockers.
 - Treat feature development, broad refactors, multi-file skill or workflow changes, cross-repo updates, and tasks with meaningful tradeoffs as complex.
 - If a task is broad, ambiguous, or underdefined, ask the missing questions first and treat that clarification as part of the task rather than guessing; keep its `status: new` until it is refined to `ready`.
@@ -246,6 +267,8 @@ When a helper script needs to find the next open task, treat plain bullets, empt
 - Broad task text is not authorization to improvise missing requirements; refine it first when the scope is unclear.
 - A task `README.md` that prescribes an implementation freezes a judgment made on the day it was filed; whoever works it weeks later inherits the conclusion without the evidence, and against a repo that has since moved.
 - A broken premise in a task should be corrected, not silently worked around.
+- A `HANDOFF.md` that was not updated when the facts changed, or a second handoff written beside an old
+  one, sends the next agent to the wrong date, file, or next step with full confidence.
 
 ## Example Next-Todo Readers
 

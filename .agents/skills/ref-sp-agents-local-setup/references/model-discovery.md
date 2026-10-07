@@ -129,7 +129,7 @@ a model not listed, or before giving a recommendation that a person will spend m
    `o=newest` ordering. Keep models with local (non-cloud) tags; note which are cloud-only.
 2. **Get sizes, contexts, and capabilities** from each model page.
 3. **Find the upstream Hugging Face repo** for each and read `config.json` for architecture.
-4. **Compute KV cache at 64K** with the layer-type correction. `./../scripts/local_model_fit.py`
+4. **Compute KV cache at 64K** with the layer-type correction. `uv run scripts/local_model_fit.py` (in this skill)
    does this arithmetic; the formula is in `./hardware.md`.
 5. **Rewrite the table**, update the `Verified` date, and note anything that was dropped and why.
 6. **Do not silently keep a row you did not re-verify.** Delete it or mark it unverified. A stale
