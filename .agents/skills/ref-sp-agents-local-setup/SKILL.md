@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-local-setup
-description: "Run a coding agent against a model on your own hardware: measure the machine, compute whether weights plus KV cache actually fit, choose the right harness class for that budget (tool-calling agent, text-edit-format assistant like Aider, or fill-in-the-middle completion), pick a model that is current rather than remembered, serve it with Ollama, and wire pi or Hermes to it. Includes a dated model table and the commands to refresh it. Use when: setting up or debugging a local LLM for an agent, deciding whether a machine should run an agent, Aider, or inline autocomplete, choosing between Ollama, llama.cpp, and MLX, asking which model a machine can run or whether it can run one at all, sizing VRAM, unified memory, quantization, or context window, checking what models exist right now on ollama.com or Hugging Face, wiring pi, Hermes, or another agent client to a local or OpenAI-compatible endpoint, or diagnosing a local agent that is slow, silent on the first turn, or never calls its tools."
+description: "Run a coding agent on a local model: size the machine, check that weights plus context fit, pick the harness class (agent, Aider-style, or autocomplete) and a current model, serve it with Ollama, and wire pi or Hermes. Use when setting up or debugging a local LLM."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,31 +13,11 @@ metadata:
 
 # Local Models For Agents
 
-## Purpose
-
-Get an agent running on a model on the user's own hardware, and be honest about what that machine
-can and cannot do. Local inference is a fallback for some people and the whole point for others:
-air-gapped work, regulated data, zero marginal cost, no rate limits. Both readings are served by the
-same sequence, because both are decided by the same constraint.
-
-The constraint is memory, not model quality. Almost every "local models are useless" verdict is
-really a machine that could not hold the weights and a working context window at the same time, and
-almost every fix is one of: smaller model, quantized KV cache, shorter context, or different
-hardware.
-
-## When to use this skill
-
-- Setting up a local model for a coding agent, or replacing a cloud provider with a local one.
-- "Can my machine run this?" or "what is the biggest model I can run?"
-- Choosing between Ollama, llama.cpp, and MLX, or between a 9B and a 30B.
-- Checking what models exist **right now**, rather than reciting a list from training data.
-- Wiring pi, Hermes, or any other client to a local or OpenAI-compatible endpoint.
-- Debugging a local agent that is slow, silent for minutes on the first turn, never calls tools, or
-  gets truncated mid-session.
-
-**Route elsewhere when:** the question is which *hosted* model to call, or how to use a provider
-SDK. That is not this skill. When the question is how a repo's instruction files reach a client,
-that is `.agents/skills/ref-sp-agents-instructions-authoring/SKILL.md`.
+Gets an agent running on the user's own hardware, honestly. The constraint is memory, not model
+quality: almost every "local models are useless" verdict is a machine that couldn't hold the weights
+and a working context window at once, and almost every fix is a smaller model, a quantized KV cache,
+a shorter context, or different hardware. Choosing a *hosted* model is out of scope. To audit a real
+machine, run `tool-sp-setup-local-agents`.
 
 ## The recommended setup, stated up front
 
@@ -178,54 +158,9 @@ which is exactly what hurts on slow hardware. An edit-format assistant sends a r
 files you named. A FIM engine sends a window around the cursor. On a machine running partly on CPU,
 this difference dominates the felt experience more than model quality does.
 
-### Text-edit-format assistants
-
-Aider is the mature example. Its edit formats (`whole`, `diff`, `diff-fenced`, `udiff`,
-`editor-diff`, `editor-whole`) are all plain structured text, so **no tool calling is required**. It
-sizes Ollama's context to each request plus about 8k for the reply rather than demanding a fixed
-window, which matters when the budget is tight.
-
-Be straight with the user about the limits. Aider's own documentation says most local models are
-"just barely capable" of working with it and that editing errors are probably unavoidable,
-and it flags quantized models specifically as prone to malformed edits.
-
-There is also a trap in the standard fix. `--edit-format whole` is the recommended fallback for
-models that mangle diffs, but it makes the model emit the entire file on every edit. On hardware
-that is already spilling to CPU, that buys reliability with the scarcest resource. Expect minutes
-per edit on a large file.
-
-**Maintenance check, verified 2026-09-03:** Aider's last commit was 2026-05-22 and its last tagged
-release was v0.86.0 in August 2025, with only `.dev` tags since. Not archived, still functional,
-48k+ stars. But recent commits are model-list upkeep rather than development, so it is not tracking
-the model landscape. Say this when recommending it, and re-check the dates rather than repeating
-them.
-
-### FIM completion
-
-Inline completion is a latency problem, not a capability problem. A 3B model that answers in
-150 ms is worth more than a 27B that answers in two seconds, so this is the one class where small
-hardware is not a compromise.
-
-`llama.vscode` and `llama.vim` run against a llama.cpp server with a preset. Verified from
-llama.cpp's `common/arg.cpp`:
-
-```bash
-llama-server --fim-qwen-1.5b-default   # <8 GB VRAM: Qwen2.5-Coder-1.5B Q8_0, port 8012
-llama-server --fim-qwen-3b-default     # <16 GB VRAM: Qwen2.5-Coder-3B Q8_0
-llama-server --fim-qwen-7b-default     # >16 GB VRAM
-llama-server --fim-qwen-30b-default    # >64 GB VRAM
-```
-
-The presets set `n_batch`/`n_ubatch` to 1024 and `n_cache_reuse` to 256, which is what keeps
-completion latency low. Leave them alone.
-
-**FIM models are a separate, older population.** The frontier moved to agentic models, so the
-practical FIM choices are still Qwen2.5-Coder (0.5B to 32B), StarCoder2, CodeGemma, and Stable
-Code, most of them a year or two old with 8K to 32K contexts. That is fine: a completion engine does
-not need 256K.
-
-**On a machine below the agent floor, recommend this first.** It is the local tooling that will
-actually get used daily, and it runs entirely on the GPU with room to spare.
+**On a machine below the agent floor, recommend FIM completion first**: it runs entirely on the
+GPU and is what will actually get used daily. Read `./references/harness-classes.md` when the choice
+is Aider or FIM: Aider's limits and maintenance state, and the llama.cpp FIM presets.
 
 ## Step 4: pick a model
 
@@ -359,6 +294,7 @@ Load these when the situation calls for them, not preemptively.
 
 | File | Load when |
 | --- | --- |
+| `./references/harness-classes.md` | Recommending Aider or FIM completion instead of an agent. |
 | `./references/hardware.md` | Measuring a machine, per-OS commands, driver and GPU support floors, fit math in detail. |
 | `./references/ollama.md` | Installing, configuring, or tuning Ollama; environment variables; Modelfile parameters; MLX on Apple Silicon; troubleshooting. |
 | `./references/model-discovery.md` | Finding what models exist now, on ollama.com or Hugging Face, and refreshing the cache table. |
@@ -373,5 +309,5 @@ It runs these checks against a real host and maps each finding to a fix.
 local model.
 
 `uv run ./scripts/local_model_fit.py` reports what the current machine can run and which locally
-installed models fit at a given context. Run it before advising on hardware, so the advice is measured rather
-than assumed.
+installed models fit at a given context. Run it before advising on hardware, so the advice is
+measured rather than assumed.
