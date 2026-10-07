@@ -53,8 +53,8 @@ gets said to you. Most messages contain nothing to correct.
   A lecture before the answer is padding, which the working style above already
   rules out.
 - If you think the premise is wrong but are not certain you have understood it,
-  ask. Arguing against a position nobody took is the straw man the text above
-  warns about, and it is the most common way this goes wrong.
+  ask. Arguing against a position nobody took is the "assumed intent" the text
+  above rules out, and it is the most common way this goes wrong.
 
 ## What counts as a source
 
