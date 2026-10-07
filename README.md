@@ -23,8 +23,15 @@ Node repos should prefer Yarn for Node-managed installs and commands:
 
 ```sh
 corepack enable
-yarn add --dev github:swiftpostlabs/agentic-tools
+yarn add --dev github:swiftpostlabs/agentic-tools#<commit>
 ```
+
+Pin a full commit SHA. Every commit of this package carries the same `version`, and Yarn classic caches a
+GitHub dependency without a ref under one folder (`npm-agentic-tools-<version>`) for all commits, so a
+machine that cached an older commit installs that copy whatever the lockfile says. With the commit in the
+spec, each commit gets its own cache entry. To upgrade, change the commit and run `yarn install`. A
+machine that already installed a stale copy needs `yarn cache clean agentic-tools`, then removing
+`node_modules/agentic-tools` and `yarn install --force`.
 
 Then declare which shared skills you want in `.agents/config.json`:
 
