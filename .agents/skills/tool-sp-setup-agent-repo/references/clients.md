@@ -3,34 +3,38 @@
 How each agent client reaches the repo's `AGENTS.md`, and what extra wiring it needs. Only wire
 clients the repo shows traces of, or that the user names.
 
-**Verification status.** The paths and settings keys below were checked against provider docs on
-**2026-08-02**. Client surfaces move. Before asserting a key or path to the user, re-check it if the
-row says so, or if the repo's client is on a much newer version than the audit assumes.
+**Verification status.** Checked against provider docs on **2026-10-07**. Client surfaces move.
+Before asserting a key or path to the user, re-check it if the repo's client is on a much newer
+version than this table assumes.
 
 ---
 
-## Reads `AGENTS.md` natively
+## AGENTS.md support
 
-These need no bridge file. Do not create one.
+Every client below reads `AGENTS.md`. None needs a bridge file. Do not create one: a `CLAUDE.md`
+on the path makes Claude Code read it instead of `AGENTS.md`.
 
-| Client | Notes |
-| --- | --- |
-| GitHub Copilot (CLI, coding agent, VS Code) | Reads root `AGENTS.md`. In VS Code it is gated on a setting — see below. |
-| Cursor | Root `AGENTS.md` is documented as an alternative to `.cursor/rules`; nested files supported. |
-| OpenAI Codex | Reads `AGENTS.md`, including a user-level `~/.codex/AGENTS.md`. |
-| Others in the ecosystem (Jules, Aider, Zed, Warp, Devin, …) | The standard is stewarded by the Agentic AI Foundation with 25+ agents supporting it. Assume support, verify if it matters. |
-
-## Needs a bridge
-
-| Client | File | Bridge |
+| Client | Root `AGENTS.md` | Nested `AGENTS.md` |
 | --- | --- | --- |
-| Claude Code | `CLAUDE.md` or `.claude/CLAUDE.md` | `@AGENTS.md` import, or a `CLAUDE.md -> AGENTS.md` symlink. Claude's own docs recommend exactly this. Prefer the import on Windows. |
-| Google Gemini CLI | `GEMINI.md` | Thin file importing `AGENTS.md`. Gemini concatenates its hierarchical context (global → project → component); the filename is configurable, so a repo that changed it needs the bridge under the configured name. |
-| Cursor (rules-based repos) | `.cursor/rules/*.mdc` | Only if the repo already invested in `.mdc` rules. Otherwise use `AGENTS.md` and skip the rules directory. |
+| Claude Code (v2.1.277+) | Native, when no `CLAUDE.md` / `.claude/CLAUDE.md` / `CLAUDE.local.md` is on the path. | Ancestors of the working directory at start; a subdirectory's file when Claude first reads a file there (unless that folder has a `CLAUDE.md`). |
+| OpenAI Codex | Native. | Only the chain from the git root down to the working directory, one file per folder, 32 KiB combined. Deeper files are not loaded. |
+| GitHub Copilot CLI | Native. | Only the chain from the working directory up to the git root. Recursive discovery is an open request (github/copilot-cli#3051). |
+| Copilot cloud agent and code review | Native; "the nearest `AGENTS.md` in the directory tree takes precedence". | Yes, anywhere in the repo. |
+| VS Code (Local agent) | Needs `chat.useAgentsMdFile`. | Needs `chat.useNestedAgentsMdFiles` (experimental, off by default). VS Code lists the nested paths and the agent decides which to read; sources are additive, with no precedence. |
+| Cursor | Native. | Applied when working on files in that folder; combined with parents, more specific wins. |
+| Gemini CLI | Only with `context.fileName` set to include `AGENTS.md`. | With that setting, ancestors plus a scan of subdirectories below the working directory (respects `.gitignore` and `.geminiignore`). |
+| Hermes | Native; truncated at `context_file_max_chars` (default 20,000). | Not documented. |
+| Others in the ecosystem (Jules, Aider, Zed, Warp, Devin, Junie, Windsurf, …) | Listed as adopters on <https://agents.md/>. | The standard says the nearest file wins; verify per client if it matters. |
 
-`.claude/CLAUDE.md` and root `CLAUDE.md` are both read; a repo needs one, not both. Root is the
-simpler default. When the repo already has one in `.claude/`, leave it there and bridge with
-`@../AGENTS.md`.
+What this means for a repo with nested files:
+
+- The root file must point to each nested file, because Codex and Copilot CLI sessions started at
+  the root never load deeper files.
+- Each root-to-leaf chain must stay under 32 KiB.
+- Nested files add to the root and must not contradict it: VS Code applies no precedence and Claude
+  Code may follow either side.
+
+`I3` in `./remediation.md` turns these into steps.
 
 ## Per-client extra wiring
 
@@ -59,22 +63,23 @@ simpler default. When the repo already has one in `.claude/`, leave it there and
 
 ### GitHub Copilot / VS Code
 
-Copilot reads `AGENTS.md` natively, so `.github/copilot-instructions.md` should be a bridge or
-absent — never a parallel body.
+Copilot reads `AGENTS.md` natively, so `.github/copilot-instructions.md` should be absent. Fold
+any content it has into `AGENTS.md` (`I2`).
 
-VS Code gates the feature on settings (verified 2026-08-02):
+VS Code gates the feature on settings (verified 2026-10-07):
 
 | Setting | Effect |
 | --- | --- |
-| `chat.useAgentsMdFile` | Enables root `AGENTS.md`. This is `C3`. |
-| `chat.useNestedAgentsMdFiles` | Enables per-subfolder `AGENTS.md` (experimental); useful in monorepos. |
-| `chat.useClaudeMdFile` | Enables `CLAUDE.md` detection. Leave off when the bridge already routes to `AGENTS.md` — enabling both loads the same guidance twice. |
+| `chat.useAgentsMdFile` | Enables root `AGENTS.md`. Checked by `C3`. |
+| `chat.useNestedAgentsMdFiles` | Enables nested `AGENTS.md` (experimental, off by default). Checked by `C3` when the repo has nested files. |
+| `chat.useClaudeMdFile` | Enables `CLAUDE.md` detection. Irrelevant once the repo has no `CLAUDE.md`. |
 | `chat.instructionsFilesLocations` | Where `.instructions.md` files are discovered. |
 
 ```jsonc
 // <repo>/.vscode/settings.json
 {
-  "chat.useAgentsMdFile": true
+  "chat.useAgentsMdFile": true,
+  "chat.useNestedAgentsMdFiles": true  // only when the repo has nested AGENTS.md files
 }
 ```
 
@@ -84,22 +89,27 @@ being ignored.
 
 ### Google Gemini CLI
 
-`GEMINI.md` is the bridge. The context filename is configurable in Gemini's settings, and the
-effective context can be inspected with `/memory show` and reloaded with `/memory reload` — the
-fastest way to prove the bridge actually loaded.
+Gemini CLI loads `GEMINI.md` by default. Point it at `AGENTS.md` with a setting instead of a
+bridge file:
 
-Gemini also honours `.aiexclude` for file exclusions. That is policy, not instructions; keep it out
-of the bridge.
+```jsonc
+// <repo>/.gemini/settings.json
+{
+  "context": { "fileName": ["AGENTS.md"] }
+}
+```
+
+Prove it loaded with `/memory show`; reload with `/memory refresh`. Gemini also honours
+`.aiexclude` for file exclusions; that is policy, not instructions.
 
 ### Hermes (Nous)
 
-No repo-level bridge file to create. Hermes auto-injects `.hermes.md`, `AGENTS.md`, `CLAUDE.md`, and
+Nothing to wire. Hermes auto-injects `.hermes.md`, `AGENTS.md`, `CLAUDE.md`, and
 `.cursorrules` when present, each truncated to `context_file_max_chars` (default 20,000). So a
 repo's existing `AGENTS.md` already reaches Hermes.
 
 Two consequences: a very long `AGENTS.md` gets silently cut, and the user-level surface is
-`~/.hermes/SOUL.md` — an identity file, so durable personal voice goes there rather than into a
-one-line bridge.
+`~/.hermes/SOUL.md`, an identity file, so durable personal voice goes there.
 
 ### OpenClaw
 
@@ -128,6 +138,6 @@ Do not guess a path. Guessing produces a file no agent reads, and the user finds
    is nothing to wire.
 3. Otherwise read the client's current docs for its instruction file and, separately, its skills
    directory. They are usually different mechanisms.
-4. Apply the same shape as every row above: **one body in `AGENTS.md`, a thin bridge in the vendor
-   file, a symlink for the skills directory.**
+4. Apply the same shape as every row above: **one body in `AGENTS.md`, a client setting rather than
+   a vendor file where the client needs one, a symlink for the skills directory.**
 5. Record what was verified and the date, so the next pass knows whether to re-check.

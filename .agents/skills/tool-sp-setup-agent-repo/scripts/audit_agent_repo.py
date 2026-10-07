@@ -6,7 +6,8 @@
 """Audit a repository against the shared agent baseline in one pass.
 
 Detects the local agent workspaces, the skills root and how it is materialized,
-the instruction files and their bridges, which agent clients the repo shows
+the instruction files (root and nested AGENTS.md, leftover bridge files), which
+agent clients the repo shows
 traces of, and which stack markers imply extra skills. Reports findings as
 check IDs so the calling skill can map each one to a fix.
 
@@ -73,20 +74,34 @@ CLIENT_TRACES: dict[str, tuple[str, ...]] = {
     "openclaw": (".openclaw", "openclaw.json"),
 }
 
-# Instruction files that should bridge back to AGENTS.md rather than carry a
-# second body of guidance.
-BRIDGE_FILES: tuple[str, ...] = (
+# Client-specific instruction files that should not exist next to AGENTS.md.
+# Claude Code reads AGENTS.md natively but only when no CLAUDE.md, .claude/CLAUDE.md,
+# or CLAUDE.local.md is on the path, so these suppress AGENTS.md rather than bridge
+# to it. Matched by file name at any depth.
+BRIDGE_NAMES: tuple[str, ...] = (
     "CLAUDE.md",
-    ".claude/CLAUDE.md",
+    "CLAUDE.local.md",
     "GEMINI.md",
-    ".github/copilot-instructions.md",
-    ".cursorrules",
     "AGENT.md",
+    ".cursorrules",
+    "copilot-instructions.md",
 )
 
-# A bridge is thin when it is small and points at AGENTS.md. Bodies larger than
-# this are treated as a second source of truth even when they mention AGENTS.md.
+# A leftover file this small that only points at AGENTS.md is a bridge to delete;
+# anything larger carries its own guidance that must be merged first.
 BRIDGE_MAX_LINES = 25
+
+# Codex stops reading AGENTS.md files once their combined size from the git root
+# down to the working directory reaches project_doc_max_bytes (32 KiB default).
+CODEX_MAX_BYTES = 32 * 1024
+
+# Claude Code recommends under 200 lines per instruction file.
+AGENTS_MD_MAX_LINES = 200
+
+# Directories never worth scanning for instruction files.
+SCAN_SKIP_DIRS: frozenset[str] = frozenset(
+    {".git", "node_modules", ".venv", "venv", "dist", "build", ".next", "__pycache__"}
+)
 
 # path marker -> stack label. The calling skill maps labels to skills.
 STACK_MARKERS: tuple[tuple[str, str], ...] = (
@@ -221,6 +236,43 @@ def tracked_paths(repo: Path, relative: str, has_git: bool) -> list[str]:
     if result.returncode != 0:
         return []
     return [line for line in result.stdout.splitlines() if line.strip()]
+
+
+def repo_files_named(repo: Path, names: Iterable[str], has_git: bool) -> list[str]:
+    """Repo-relative paths whose file name is one of names, at any depth.
+
+    Uses git's tracked and untracked-but-not-ignored files when available, so
+    ignored local files (a personal CLAUDE.local.md) are only reported when
+    git is absent.
+    """
+    wanted = set(names)
+    if has_git:
+        try:
+            result = subprocess.run(
+                ["git", "ls-files", "--cached", "--others", "--exclude-standard"],
+                cwd=repo,
+                capture_output=True,
+                text=True,
+                timeout=20,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError):
+            result = None
+        if result is not None and result.returncode == 0:
+            return sorted(
+                {
+                    line
+                    for line in result.stdout.splitlines()
+                    if line.rsplit("/", 1)[-1] in wanted
+                }
+            )
+    found: list[str] = []
+    for dirpath, dirnames, filenames in os.walk(repo):
+        dirnames[:] = [d for d in dirnames if d not in SCAN_SKIP_DIRS]
+        for filename in filenames:
+            if filename in wanted:
+                found.append(Path(dirpath, filename).relative_to(repo).as_posix())
+    return sorted(found)
 
 
 def list_skills(root: Path) -> list[str]:
@@ -382,14 +434,16 @@ def check_distribution(repo: Path, skills: Iterable[str]) -> list[Finding]:
     return [Finding("S4", "info", "skill distribution", modes)]
 
 
-def check_instructions(repo: Path) -> list[Finding]:
+def check_instructions(repo: Path, has_git: bool) -> list[Finding]:
     findings: list[Finding] = []
     agents_md = repo / "AGENTS.md"
+    root_body = ""
     if not agents_md.is_file():
         findings.append(Finding("I1", "fail", "no root AGENTS.md"))
     else:
-        body = read_text(agents_md)
-        lines = len([line for line in body.splitlines() if line.strip()])
+        root_body = read_text(agents_md)
+        lines = len([line for line in root_body.splitlines() if line.strip()])
+        size = len(root_body.encode("utf-8"))
         gaps: list[str] = []
         if lines < 20:
             gaps.append(f"only {lines} non-empty lines")
@@ -397,47 +451,111 @@ def check_instructions(repo: Path) -> list[Finding]:
             (r"^#+ .*person", "no personality/voice section"),
             (r"^#+ .*(rule|polic)", "no always-on rules section"),
             (r"^#+ .*(workflow|command)", "no workflow or commands section"),
-            (r"^#+ .*skill", "no skill catalog or routing section"),
+            (r"^#+ .*skill", "no skill routing section"),
         ):
-            if not re.search(heading, body, re.IGNORECASE | re.MULTILINE):
+            if not re.search(heading, root_body, re.IGNORECASE | re.MULTILINE):
                 gaps.append(label)
+        if size > CODEX_MAX_BYTES:
+            findings.append(
+                Finding(
+                    "I1",
+                    "fail",
+                    "AGENTS.md exceeds the Codex size cap",
+                    [f"{size} bytes > {CODEX_MAX_BYTES}; Codex drops the rest"],
+                )
+            )
+        elif lines > AGENTS_MD_MAX_LINES:
+            gaps.append(
+                f"{lines} lines; Claude Code recommends under {AGENTS_MD_MAX_LINES}"
+            )
         if gaps:
-            findings.append(Finding("I1", "warn", "AGENTS.md is thin", gaps))
-        else:
+            findings.append(Finding("I1", "warn", "AGENTS.md needs work", gaps))
+        elif size <= CODEX_MAX_BYTES:
             findings.append(
                 Finding("I1", "pass", "AGENTS.md covers the baseline sections")
             )
 
-    thin: list[str] = []
-    heavy: list[str] = []
-    for name in BRIDGE_FILES:
+    bridges: list[str] = []
+    bodies: list[str] = []
+    for name in repo_files_named(repo, BRIDGE_NAMES, has_git):
         path = repo / name
-        if not path.exists():
+        if (
+            name.endswith("copilot-instructions.md")
+            and name != ".github/copilot-instructions.md"
+        ):
             continue
         target = link_target(path)
         if target is not None:
-            thin.append(f"{name} -> {target}")
+            bridges.append(f"{name} -> {target}")
             continue
         body = read_text(path)
         lines = len([line for line in body.splitlines() if line.strip()])
-        points_at_agents = "AGENTS.md" in body
-        if points_at_agents and lines <= BRIDGE_MAX_LINES:
-            thin.append(f"{name} ({lines} lines, points at AGENTS.md)")
+        if "AGENTS.md" in body and lines <= BRIDGE_MAX_LINES:
+            bridges.append(f"{name} ({lines} lines, points at AGENTS.md): delete")
         else:
-            reason = (
-                "carries its own body"
-                if not points_at_agents
-                else "too long to be a bridge"
+            bodies.append(
+                f"{name} ({lines} lines): merge into the AGENTS.md in its folder, then delete"
             )
-            heavy.append(f"{name} ({lines} lines, {reason})")
-    if heavy:
+    if bodies:
         findings.append(
-            Finding("I2", "fail", "instruction files duplicate AGENTS.md", heavy)
+            Finding(
+                "I2", "fail", "instruction files outside AGENTS.md", bodies + bridges
+            )
         )
-    elif thin:
-        findings.append(Finding("I2", "pass", "provider files are thin bridges", thin))
+    elif bridges:
+        findings.append(
+            Finding(
+                "I2",
+                "warn",
+                "leftover bridge files; a CLAUDE.md stops Claude Code reading AGENTS.md",
+                bridges,
+            )
+        )
     else:
-        findings.append(Finding("I2", "info", "no provider bridge files present"))
+        findings.append(
+            Finding("I2", "pass", "no bridge or client-specific instruction files")
+        )
+
+    nested = [
+        path
+        for path in repo_files_named(repo, ("AGENTS.md", "AGENTS.override.md"), has_git)
+        if path != "AGENTS.md"
+    ]
+    if not nested:
+        findings.append(Finding("I3", "info", "no nested AGENTS.md files"))
+        return findings
+    problems: list[str] = []
+    listed: list[str] = []
+    for path in nested:
+        if path.endswith("AGENTS.override.md"):
+            problems.append(
+                f"{path}: override files are Codex-only; fold into AGENTS.md"
+            )
+            continue
+        folder = path.rsplit("/", 1)[0]
+        listed.append(path)
+        if folder not in root_body:
+            problems.append(
+                f"{path}: root AGENTS.md does not mention {folder}/; agents launched at the "
+                "root in Codex or Copilot CLI never load it"
+            )
+        chain = [repo / "AGENTS.md"]
+        parts = folder.split("/")
+        for depth in range(1, len(parts) + 1):
+            chain.append(repo / "/".join(parts[:depth]) / "AGENTS.md")
+        total = sum(
+            len(read_text(item).encode("utf-8")) for item in chain if item.is_file()
+        )
+        if total > CODEX_MAX_BYTES:
+            problems.append(
+                f"{path}: {total} bytes with its parents > {CODEX_MAX_BYTES}; Codex truncates"
+            )
+    if problems:
+        findings.append(Finding("I3", "warn", "nested AGENTS.md issues", problems))
+    else:
+        findings.append(
+            Finding("I3", "pass", "nested AGENTS.md files are reachable", listed)
+        )
     return findings
 
 
@@ -496,19 +614,30 @@ def check_clients(repo: Path) -> list[Finding]:
 
     vscode_settings = repo / ".vscode/settings.json"
     copilot_in_use = any((repo / trace).exists() for trace in CLIENT_TRACES["copilot"])
+    has_nested = any(
+        path != "AGENTS.md"
+        for path in repo_files_named(repo, ("AGENTS.md",), (repo / ".git").exists())
+    )
     if vscode_settings.is_file():
         body = read_text(vscode_settings)
-        if "chat.useAgentsMdFile" in body:
-            findings.append(Finding("C3", "pass", "VS Code AGENTS.md setting present"))
-        else:
+        missing: list[str] = []
+        if "chat.useAgentsMdFile" not in body:
+            missing.append("chat.useAgentsMdFile is unset")
+        if has_nested and "chat.useNestedAgentsMdFiles" not in body:
+            missing.append(
+                "chat.useNestedAgentsMdFiles is unset; VS Code ignores nested AGENTS.md by default"
+            )
+        if missing:
             findings.append(
                 Finding(
                     "C3",
                     "warn",
-                    "VS Code settings do not enable AGENTS.md",
-                    ["chat.useAgentsMdFile is unset"],
+                    "VS Code settings do not fully enable AGENTS.md",
+                    missing,
                 )
             )
+        else:
+            findings.append(Finding("C3", "pass", "VS Code AGENTS.md settings present"))
     elif copilot_in_use:
         findings.append(
             Finding(
@@ -589,7 +718,7 @@ def main(argv: list[str] | None = None) -> int:
     skill_findings, skills = check_skills(repo)
     findings += skill_findings
     findings += check_distribution(repo, skills)
-    findings += check_instructions(repo)
+    findings += check_instructions(repo, has_git)
     findings += check_clients(repo)
     findings += check_stack(repo)
 

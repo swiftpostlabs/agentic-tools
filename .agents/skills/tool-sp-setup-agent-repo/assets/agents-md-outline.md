@@ -1,6 +1,6 @@
 # AGENTS.md Outline
 
-Skeleton for a repo's source-of-truth instruction file. Replace every `<placeholder>` with the
+Skeleton for a repo's only instruction file. Replace every `<placeholder>` with the
 repo's real values, and delete sections the repo genuinely does not need. An outline kept for
 completeness, with commands nobody runs, teaches the agent to run commands nobody runs.
 
@@ -14,8 +14,8 @@ Order matters: personality and always-on rules load first because they shape eve
 Use this file for always-on repository rules and routing. Keep domain-specific detail in the skills
 under `.agents/skills/`.
 
-This root `AGENTS.md` is the source of truth for repo guidance. `<other provider files>` are thin
-reference stubs that route back here.
+This root `AGENTS.md` is the only repo instruction file; agents read it natively. Do not add a
+`CLAUDE.md`: Claude Code reads that instead of this file.
 
 ## Personality
 
@@ -72,17 +72,17 @@ checking it needs.
 - When nothing can settle a claim: mark it an explicit assumption at low stakes; at high stakes,
   stop and state what was checked, what is unknown, and what would settle it.
 
-## Project Skills
+## Skills
 
-All project skills live in `.agents/skills/`. Each entry carries its own routing — read the
-`Use when` line to pick the skill for the problem at hand.
+Project skills live in `.agents/skills/`. Check this index after exploring the task and before
+editing, and open the matching skill or nested `AGENTS.md`:
 
-**`<skill-name>`** — <one-line subject>
+| Area | Read |
+| --- | --- |
+| <main repo area, e.g. `packages/api/`> | `packages/api/AGENTS.md`, `<skill-name>` |
+| <another area> | `<skill-name>` |
 
-- Use when: <the concrete situations that should activate it>
-
-<...one entry per skill. Keep this list synchronized with the actual skill folders; a stale catalog
-routes the agent to guidance that no longer exists.>
+For anything else, match the task against the skill descriptions.
 
 ## Workflow
 
@@ -107,11 +107,13 @@ Run steps 3–5 as a loop, not a phase: one item at a time — edit, validate, c
 
 - **Commands must be real.** Copy them from the repo's task runner, `package.json` scripts, or
   `Makefile`. Verify at least the validation commands actually run before writing them down.
-- **The skill catalog is routing, not documentation.** One line of subject plus one `Use when:` line
-  per skill. Detail belongs in the skill.
+- **The index is routing, not a catalog.** One row per main repo area. Clients already list every
+  skill's description; copying them doubles the cost. Agents often skip skills unless pointed at
+  them, which is why the index exists.
 - **Keep domain detail out.** Framework, language, and feature specifics belong in the owning skill.
   If a section here starts growing examples, that is the signal to move it.
-- **Monorepos**: put shared guidance in the root file and per-package `AGENTS.md` files for what
-  actually differs. The nearest file up the tree wins.
-- **Length**: some clients truncate injected context (Hermes defaults to 20,000 characters). A file
-  that runs long loses its tail silently.
+- **Monorepos**: shared guidance in the root file, per-package `AGENTS.md` files for what differs,
+  and a row in the index for each one, because Codex and Copilot CLI sessions started at the root
+  never load them otherwise. See `I3` in this skill's `references/remediation.md`.
+- **Length**: under 200 lines (Claude Code), and the root-to-deepest chain under 32 KiB (Codex).
+  Hermes truncates each file at 20,000 characters. A file that runs long loses its tail silently.

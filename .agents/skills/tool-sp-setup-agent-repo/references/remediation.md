@@ -66,7 +66,7 @@ The five core skills, and why each is core:
 | Skill | Role |
 | --- | --- |
 | `ref-sp-agents-skills-authoring` | How to write and maintain a skill at all. |
-| `ref-sp-agents-instructions-authoring` | The source-of-truth and bridge model this whole baseline rests on. |
+| `ref-sp-agents-instructions-authoring` | The single-`AGENTS.md` model this whole baseline rests on. |
 | `tool-sp-maintain-skills` | The maintenance pass that keeps the catalog from rotting. |
 | `ref-sp-agents-retro` | The reflection loop that feeds improvements back into skills. |
 | `ref-sp-agents-local-tasks` | The `.agents/tasks/` workspace contract. |
@@ -140,44 +140,52 @@ say so in the report rather than flagging them missing.
 
 `ref-sp-agents-plugin-marketplaces` owns the publishing side and the cache/symlink rules.
 
-## I1 — `AGENTS.md` missing or thin
+## I1 — `AGENTS.md` missing, thin, or too large
 
-Use this skill's `./assets/agents-md-outline.md`. Fill it from the repo's real commands and structure — an
-`AGENTS.md` listing commands that do not exist is worse than none, because the agent will run them.
+Use this skill's `./assets/agents-md-outline.md`. Fill it from the repo's real commands and
+structure: an `AGENTS.md` listing commands that do not exist is worse than none, because the agent
+will run them.
 
-Order of work: personality block, always-on rules, verification stance, workflow, quick commands,
-skill catalog with one routing line per skill.
+Over 32 KiB is a failure: Codex stops reading there. Over 200 lines is a warning: Claude Code
+recommends less. Cut what the agent can read from the code, and move area-specific detail into a
+skill or a nested `AGENTS.md`.
 
-## I2 — provider files duplicating `AGENTS.md`
+## I2 — bridge or client-specific instruction files
 
-For each flagged file: merge, bridge, verify. The merge is the part that needs judgement — the
-provider file usually holds a mix of guidance that belongs in `AGENTS.md`, detail that belongs in a
-skill, and stale text that belongs nowhere.
+Claude Code, Codex, Copilot, and Cursor read `AGENTS.md` natively. A `CLAUDE.md`,
+`.claude/CLAUDE.md`, or `CLAUDE.local.md` anywhere on the path makes Claude Code read it **instead
+of** `AGENTS.md`, so a leftover bridge now hides the instructions it was meant to route to.
 
-Bridge forms:
+- A thin bridge (a few lines pointing at `AGENTS.md`, or a symlink): delete it.
+- A file with its own guidance: merge it into the `AGENTS.md` in the same folder, keeping only what
+  belongs there (repo-wide rules) and moving area detail into a skill, then delete it. Confirm with
+  the user first: this rewrites guidance someone wrote.
+- `GEMINI.md`: delete it and point Gemini CLI at `AGENTS.md` instead (see `./clients.md`).
 
-```markdown
-# Claude Instructions
+Keep a bridge only for a client that is in real use and cannot read `AGENTS.md` (for example
+Claude Code before v2.1.277), and record why in `AGENTS.md`.
 
-@AGENTS.md
-```
+## I3 — nested `AGENTS.md` files
 
-```bash
-ln -s AGENTS.md <repo>/CLAUDE.md     # symlink alternative, POSIX
-```
+Clients disagree on nested files, so they only work if the repo meets the strictest of them:
 
-Prefer the stub. The symlink is POSIX-only in practice: Windows needs Administrator or Developer
-Mode for a *file* symlink, and the junction fallback that rescues directory links does not apply to
-files. A hard link works unprivileged but is not worth it — git stores it as an ordinary duplicate
-file, so it does not survive a clone and silently drifts into a second source of truth. The stub is
-one committed file that behaves identically on every platform.
-
-A bridge stays under ~25 lines. Past that it is a second source of truth wearing a pointer.
+1. **Point to them from the root.** Codex and Copilot CLI load only the files from the git root
+   down to the directory they were launched in. A session started at the root never reads
+   `packages/api/AGENTS.md`. Add a line to the root file's skill/area index:
+   "Before editing `packages/api/`, read `packages/api/AGENTS.md`."
+2. **Keep the chain under 32 KiB.** Codex concatenates root to working directory and stops at
+   `project_doc_max_bytes`. The audit adds up each chain.
+3. **Add, don't contradict.** A nested file holds only what differs in that folder. Codex treats
+   later files as overriding; VS Code treats all sources as additive with no precedence; Claude
+   Code may follow either side. Contradictions are resolved arbitrarily.
+4. **No `AGENTS.override.md`.** It is Codex-only; other clients ignore it.
+5. **No `CLAUDE.md` beside a nested `AGENTS.md`.** Claude Code then reads that instead (see I2).
+6. **Enable VS Code nested support** with `chat.useNestedAgentsMdFiles` (`C3`).
 
 ## C1 / C2 / C3 — client wiring
 
-See `./clients.md`. `C2` (the `.claude/skills` symlink) and `C3` (`chat.useAgentsMdFile`) are
-documented there with the rest of the per-client matrix.
+See `./clients.md`. `C2` (the `.claude/skills` symlink) and `C3` (`chat.useAgentsMdFile`, plus
+`chat.useNestedAgentsMdFiles` when nested files exist) are documented there with the rest of the per-client matrix.
 
 ## R1 — stack markers
 
