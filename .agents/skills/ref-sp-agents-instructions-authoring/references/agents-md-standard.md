@@ -9,15 +9,18 @@ Agentic AI Foundation under the Linux Foundation and read by most coding agents.
 
 ## Client support
 
-Verified against provider docs on **2026-09-29**. Re-check before asserting a version or key.
+Verified against provider docs on **2026-10-07**. Re-check before asserting a version or key.
 
-| Client | Reads `AGENTS.md` | Limits and caveats |
-| --- | --- | --- |
-| Claude Code | Natively since v2.1.277 (all session types since v2.1.281). Loads every `AGENTS.md` and `.claude/AGENTS.md` from the working directory up, plus a subdirectory's file when Claude reads a file there. `@path` imports work. | Only when **no** `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` sits in the working directory or above (`~/.claude/CLAUDE.md` and `.claude/rules/` do not count). The user setting **Project instructions** (`/config`) can force both or `CLAUDE.md` only. `InstructionsLoaded` hooks do not fire for it. Nothing under `.agents/` is read, so skills still need `.claude/skills`. Recommended size: under 200 lines per file. |
-| OpenAI Codex | Natively. `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md`, then each directory from the git root down to the working directory, `AGENTS.override.md` before `AGENTS.md`. | Stops adding files at `project_doc_max_bytes`, default 32 KiB across the combined files. Extra names via `project_doc_fallback_filenames`. |
-| GitHub Copilot (CLI, coding agent, VS Code) | Natively. VS Code gates it on `chat.useAgentsMdFile`. | Personal instructions outrank repository ones. |
-| Gemini CLI | Only when configured. Default context file is `GEMINI.md`; set `context.fileName` (for example `["AGENTS.md", "GEMINI.md"]`) in `.gemini/settings.json`. | Inspect with `/memory show`. |
-| Cursor, Jules, Aider, Zed, Warp, Devin, Hermes, others | Natively, per the standard's adopter list. | Hermes truncates each context file at `context_file_max_chars` (default 20,000). |
+| Client | Root `AGENTS.md` | Nested `AGENTS.md` | Limits and caveats |
+| --- | --- | --- | --- |
+| Claude Code | Native since v2.1.277 (all session types since v2.1.281). `@path` imports work. | Every `AGENTS.md` and `.claude/AGENTS.md` from the working directory up at start; a subdirectory's file when Claude first reads a file there. | Only when **no** `CLAUDE.md`, `.claude/CLAUDE.md`, or `CLAUDE.local.md` is in that directory or above (`~/.claude/CLAUDE.md` and `.claude/rules/` do not count). The user setting **Project instructions** (`/config`) can force both or `CLAUDE.md` only. `InstructionsLoaded` hooks do not fire for it. Nothing under `.agents/` is read, so skills still need `.claude/skills`. Under 200 lines per file recommended. |
+| OpenAI Codex | Native; `~/.codex/AGENTS.override.md` or `~/.codex/AGENTS.md` first. | Only the chain from the git root down to the working directory, one file per folder (`AGENTS.override.md` before `AGENTS.md`). Deeper files are not loaded. | Stops at `project_doc_max_bytes`, 32 KiB combined by default. Extra names via `project_doc_fallback_filenames`. Check with `codex --ask-for-approval never "Summarize the current instructions."` |
+| GitHub Copilot CLI | Native. | Only the chain from the working directory up to the git root (recursive discovery requested in github/copilot-cli#3051). | Personal instructions outrank repository ones. |
+| Copilot cloud agent, code review | Native. | Anywhere in the repo; "the nearest `AGENTS.md` in the directory tree will take precedence". | Also accepts a root `CLAUDE.md` or `GEMINI.md`, which a repo should not keep. |
+| VS Code (Local agent) | Needs `chat.useAgentsMdFile`. | Needs `chat.useNestedAgentsMdFiles` (experimental, off by default); VS Code lists nested paths and the agent picks which to read. | Instruction sources are additive; VS Code warns against relying on precedence. |
+| Cursor | Native. | Applied when working on files in that folder, combined with parents; more specific wins. | |
+| Gemini CLI | Only when configured: set `context.fileName` (for example `["AGENTS.md"]`) in `.gemini/settings.json`. | With that setting, ancestors to the project root plus a scan of subdirectories below the working directory (respects `.gitignore`, `.geminiignore`). | Inspect with `/memory show`, rescan with `/memory refresh`. |
+| Jules, Aider, Zed, Warp, Devin, Junie, Windsurf, Hermes, others | Listed as adopters on <https://agents.md/>. | Not uniformly documented. | Hermes truncates each context file at `context_file_max_chars` (default 20,000). |
 
 The binding constraints on size are Codex's 32 KiB cap and Claude Code's 200-line recommendation.
 Past either, content is cut or adherence drops.
@@ -50,9 +53,22 @@ for it (for example Claude Code before v2.1.277, or a user who set Project instr
 
 ## Nesting and monorepos
 
-Root `AGENTS.md` for shared rules, nested `AGENTS.md` for what differs in a package. Nested files
-are appended after the root, so closer files read last. Codex treats that as override order; Claude
-Code may follow either side of a conflict. Keep nested files to the differences and avoid conflicts.
+The standard (<https://agents.md/>): place an `AGENTS.md` in each package; "the closest
+`AGENTS.md` to the edited file wins; explicit user chat prompts override everything."
+
+Because clients implement nesting differently (table above), a repo with nested files must:
+
+1. **Point to each nested file from the root `AGENTS.md`**, for example a row in the area index:
+   "`packages/api/`: read `packages/api/AGENTS.md` before editing". Codex and Copilot CLI sessions
+   started at the root load nothing deeper.
+2. **Keep each root-to-leaf chain under 32 KiB**, Codex's combined cap.
+3. **Write nested files as additions to the root, never contradictions.** Codex applies later
+   files over earlier ones, VS Code applies no precedence, and Claude Code may follow either side.
+4. **Use only `AGENTS.md`**: no `AGENTS.override.md` (Codex-only) and no `CLAUDE.md` in the same
+   folder (Claude Code reads that instead).
+5. **Turn on `chat.useNestedAgentsMdFiles`** in `.vscode/settings.json` when the team uses VS Code.
+
+`tool-sp-setup-agent-repo`'s audit checks points 1, 2, and 4 (`I3`, `I2`) and point 5 (`C3`).
 
 ## When not to use it
 

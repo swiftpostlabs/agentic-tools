@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-instructions-authoring
-description: "Structure and maintain a repo's agent instruction file: a root AGENTS.md as the one source of truth read natively by Claude Code, Codex, Copilot, and others, what belongs in it versus in skills, size budgets, persona placement, and the narrow cases that still need a CLAUDE.md, GEMINI.md, or Copilot fallback. Use when: designing or trimming AGENTS.md, deciding whether a client needs a bridge file, removing an old bridge, or reviewing whether instruction files still match the repo."
+description: "How to write a repo's AGENTS.md as its only instruction file: what belongs in it, size limits, persona, nested files in monorepos, and removing old CLAUDE.md or GEMINI.md bridges. Use when writing, trimming, or reviewing AGENTS.md."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -108,12 +108,21 @@ agent's voice and escalation stance must apply from the first turn.
 In SwiftPost-opinionated setups the persona is `ref-sp-agents-mr-wolf-persona`, carried as the
 Personality block. Another repo applies the same pattern with its own persona skill.
 
-### Monorepos
+### Nested files (monorepos)
 
-Put shared rules in the root `AGENTS.md` and only the differences in nested `AGENTS.md` files.
-Nested files add to the root rather than replacing it, but clients load them differently: Codex
-reads every `AGENTS.md` from the git root down to the launch directory at startup, while Claude Code
-also picks up a subdirectory's file when it first reads a file there.
+The standard says the `AGENTS.md` closest to the edited file wins. Clients implement that
+unevenly, so a nested file only works if the repo meets the strictest of them:
+
+- **Point to it from the root.** Codex and Copilot CLI load only the chain from the git root to the
+  launch directory; a session started at the root never sees `packages/api/AGENTS.md`. Give each
+  nested file a row in the root's area index.
+- **Keep each root-to-leaf chain under 32 KiB** (Codex's combined cap).
+- **Add, never contradict.** Codex treats later files as overriding, VS Code treats sources as
+  additive with no precedence, and Claude Code may follow either side of a conflict.
+- **No `AGENTS.override.md`** (Codex-only) and no `CLAUDE.md` beside a nested file.
+- **VS Code needs `chat.useNestedAgentsMdFiles`** (experimental, off by default).
+
+The per-client detail is in `./references/agents-md-standard.md`.
 
 ## Validation
 
