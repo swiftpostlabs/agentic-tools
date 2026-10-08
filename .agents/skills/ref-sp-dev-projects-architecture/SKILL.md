@@ -1,6 +1,6 @@
 ---
 name: ref-sp-dev-projects-architecture
-description: "Portable architecture guidance for feature folders, boundaries, shared utilities, and separating product code from maintenance scripts. Use when: deciding where code should live, splitting features, or reviewing repository structure."
+description: "Where code should live: feature-first folders, when to share a utility, keeping product code out of scripts/, mixed Python and Node layouts, and numbered folder names. Use when placing new code, splitting a feature, or reviewing repo structure."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -11,154 +11,74 @@ metadata:
 
 # Projects Architecture
 
-## Purpose
+Portable structure defaults. A specific repo's top-level folders and wiring live in its conventions
+skill (here, `ref-sp-dev-repo-conventions`); language-specific shapes in `ref-sp-py-python`,
+`ref-sp-js-javascript`, `ref-sp-js-typescript`; browser-only tools in
+`ref-sp-js-web-standalone-template`.
 
-Provide portable repository and feature-structure defaults that keep codebases modular, discoverable, and resistant to accidental coupling.
+## Features
 
-## When to use this skill
+- Organize by feature, not by type. Keep code, tests, and assets that change together in one
+  folder or slice, with tests next to the code they cover.
+- Give each real feature folder a short `README.md`: what it owns, its entrypoints, how to validate
+  it.
+- A feature never reaches into another feature's internals.
+- When a file gets hard to scan, split it by responsibility inside the feature first. Extract pure
+  helpers before stateful orchestration.
 
-- Designing the folder layout for a new feature or tool.
-- Deciding whether code belongs in product source or in maintenance scripts.
-- Reviewing whether a feature has grown beyond one file or one folder.
-- Choosing when shared utilities are justified.
-- Refactoring a repository that has started to blur boundaries.
+## Shared code
 
-## Scope Boundaries
+- Extract a shared utility only once reuse is real and stable; duplicating tiny stable code beats a
+  premature shared abstraction.
+- No global `utils` or `helpers` bucket without clear internal categories.
 
-- Use this skill for portable structure decisions such as feature boundaries, shared-utility thresholds, and product-versus-maintenance separation.
-- Use a repo-local conventions skill (in this repo, `ref-sp-dev-repo-conventions`) when the question is about a specific repository's exact top-level folders, `pyproject.toml`, or agent wiring.
-- Use `ref-sp-py-python`, `ref-sp-js-javascript`, or `ref-sp-js-typescript` when the question is about language-specific folder shapes.
-- Use `ref-sp-js-web-standalone-template` when the structure question is specific to a browser-only local app or mini-tool.
+## Product code vs scripts
 
-## Defaults
+- User-facing behaviour of the product or package lives under the main source tree.
+- `scripts/` holds repo maintenance: migrations, scaffolding, dev automation, one-off jobs.
+- An installed CLI keeps its implementation in its feature under `src/`; `scripts/` holds at most
+  the smallest shim that calls it.
+- Move product behaviour out of `scripts/` once it stops being a prototype.
 
-- Prefer feature-first organization over type-based dumping grounds.
-- Keep product code under the main source tree.
-- Keep maintenance and repo automation separate from product features.
-- Keep tests near the code they explain when the project layout allows it.
-- Add a short `README.md` at the root of each real feature folder so the feature's purpose and entrypoints are obvious without reading code first.
-- Extract shared utilities only after real reuse appears.
-- In mixed Python and Node repositories, keep Python package features under `src/<package>/<feature>/` and keep Node or TypeScript package features in the matching feature slice instead of inventing a parallel top-level tree.
-- In mixed Python and Node repositories, use `scripts/` for thin runtime entrypoint shims, dev automation, migrations, or one-off maintenance, not for the owning implementation of installed commands.
+## Mixed Python and Node repos
 
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Define feature boundaries | Decide what belongs inside one feature slice and what should stay outside it. | Clear ownership reduces coupling and makes refactors cheaper. | When creating a new feature or splitting a large one. | The owning folder is obvious and internal details stay internal. |
-| Promote product code out of maintenance paths | Move shipped or user-facing behavior under the main source tree instead of leaving it in `scripts/`. | Prototype placement often lingers long after the code becomes part of the product. | When a script becomes a real feature or installed command. | Product code is discoverable and tested like the rest of the source tree. |
-| Decide whether to share a utility | Judge whether repeated logic is stable enough to extract or still cheap to duplicate locally. | Premature sharing creates invisible dependencies and vague utility buckets. | When two or more features start to reuse similar helpers. | Shared code exists for real reuse and has a clear home. |
-
-## Core Rules
-
-### Feature boundaries
-
-- Give each feature a folder or slice that is easy to find and reason about.
-- Keep the code, tests, and local assets that change together close together.
-- When a feature has its own folder, add a short `README.md` there that explains what the feature owns, where the main entrypoints live, and how to validate it.
-- Avoid letting one feature depend directly on another feature's internals.
-
-### Shared code
-
-- Create shared utilities only when reuse is real and stable.
-- Do not create a global `utils` or `helpers` bucket unless it has clear internal categories.
-- Prefer duplication of tiny stable code over premature shared abstractions that create coupling.
-
-### Product code vs maintenance scripts
-
-- If code is a user-facing feature of the product or package, keep it under the main source tree.
-- If code is repo maintenance, migration, scaffolding, or one-off automation, keep it in `scripts/` or the equivalent maintenance area.
-- If an installed CLI needs a runtime entry file, keep the implementation under the owning feature in `src/` and let `scripts/` hold only the smallest executable shim that calls into that feature.
-- Do not leave product behavior buried in maintenance scripts just because it started as a prototype.
-
-### Mixed Python and JavaScript or TypeScript setup
-
-- When a repo ships both Python and Node surfaces, let each language keep its normal packaging and config entrypoints while sharing the same feature names and folder ownership.
-- Prefer colocated `main.py` and `main_test.py` for Python plus the matching Node files for the same feature when both runtimes expose that surface.
-- For no-build npm packages or Git-installed CLIs that run from `node_modules`, prefer `.mjs` plus JSDoc, such as `main.mjs` and `main.test.mjs`, so the package does not rely on TypeScript runtime stripping.
-- When TypeScript is the selected Node surface and it is not shipped as directly executed package runtime, use `main.ts` and `main.test.ts` for the same feature.
-- Keep Python packaging in `pyproject.toml`, keep Node packaging in `package.json`, and split language-specific config such as `tsconfig` files by runtime surface instead of forcing one config file to describe everything.
-- Keep shared cross-runtime helpers narrow and explicit so a feature does not quietly depend on another language surface's internals.
-
-### Naming and discoverability
-
-- Choose folder names that match the domain or workflow they contain.
-- Keep file names descriptive enough that a reader can predict the contents before opening them.
-- Avoid over-generic folder names when a narrower domain name exists.
-- When sibling directories or files form a sequence rather than independent peers, prefix each name with a fixed-width number so the natural sort matches the intended order — `10-new/`, `20-open/`, `90-closed/`.
-
-**Where the numeric-prefix convention comes from.** It is the Linux `.d`-directory pattern, inherited
-from SysV init (`/etc/rc3.d/S20apache2`) and formalised by systemd's drop-in configuration
-directories. `man 5 sysctl.d` states the rule: configuration files are "sorted by their filename in
-lexicographic order," and it "is recommended to prefix all filenames with a two-digit number and a
-dash." The number is not metadata — nothing parses it — it exists only so that string sorting yields
-the intended order. That mechanism dictates the practices: pad to a fixed width, because `9-` sorts
-*after* `10-` under string comparison; leave gaps (step 10) so a later insertion never forces a
-renumber; and reserve the top of the range for local overrides, the near-universal `99-` idiom. Apply
-it only where order changes meaning — `/etc/modprobe.d` and `/etc/cron.d` are deliberately unnumbered
-because their entries are independent. One caveat when borrowing it: `.d` numbers encode *priority
-among simultaneous entries*, while a lifecycle encodes a *sequence*. The sorting trick is shared, the
-semantics are not, so do not import priority idioms such as a `50-` neutral centre into a sequence.
-
-### Growth path
-
-- Start small, but keep a path open for splitting files as complexity grows.
-- Extract pure helpers before extracting stateful orchestration.
-- If a file is hard to scan, split by responsibility inside the same feature before introducing repo-wide infrastructure.
-
-## Example Layouts
-
-### Python package with feature-first layout
+- Both languages share feature names and folder ownership: Python under
+  `src/<package>/<feature>/`, the Node surface in the same feature slice, not a parallel tree.
+- Colocate `main.py` and `main_test.py`, plus the matching Node files when both runtimes expose
+  the feature.
+- No-build npm packages or Git-installed CLIs that run from `node_modules` use `.mjs` with JSDoc
+  (`main.mjs`, `main.test.mjs`), so nothing depends on TypeScript stripping at runtime. Use
+  `main.ts` / `main.test.ts` only where TypeScript isn't executed directly as shipped code.
+- Each language keeps its own packaging (`pyproject.toml`, `package.json`); split configs such as
+  `tsconfig` by runtime surface. Keep cross-runtime helpers narrow and explicit.
 
 ```text
-scripts/ (only for devs, not installed with the package)
-  data-migration.py
-  generate-docs.py
+scripts/                    dev-only, not installed
+  billing-cli.mjs           thin shim
 src/package_name/
   billing/
-    main.py
-    main_test.py
-    service.py
-    service_test.py
-```
-
-### Mixed Python and no-build Node package
-
-```text
-scripts/
-  billing-cli.mjs
-src/package_name/
-  billing/
+    README.md
     main.py
     main_test.py
     main.mjs
     main.test.mjs
-  utils/
-    common.mjs
 ```
 
-### Standalone browser tool with local assets
+## Naming
 
-```text
-scripts/ (only for devs, not installed with the package)
-  data-migration.mjs/mts
-  generate-docs.mjs/mts
-src/features/billing/
-  index.html
-  app.js
-  styles.css
-```
+- Folder and file names say what is inside; prefer a domain name over a generic one.
+- When siblings form a **sequence**, prefix them with a fixed-width number so a plain sort matches
+  the order: `10-new/`, `20-open/`, `90-closed/`.
 
-## Validation
-
-- A new engineer can find the owning feature quickly.
-- Product code is not hidden inside maintenance paths.
-- Shared utilities exist because of real reuse, not prediction.
-- Feature boundaries are explicit and avoid backdoor dependencies.
-- Tests live close enough to their source that maintenance stays cheap.
-- Ordered sibling names use a fixed-width numeric prefix, so a plain lexicographic listing shows them in their real order.
+The numbered-prefix pattern is Linux's `.d` directories (SysV init's `/etc/rc3.d/S20apache2`,
+systemd drop-ins). `man 5 sysctl.d`: files are "sorted by their filename in lexicographic order",
+and it "is recommended to prefix all filenames with a two-digit number and a dash." Nothing parses
+the number; it only drives the sort. Hence: pad to fixed width (`9-` sorts after `10-`), leave gaps
+of 10 so inserts never renumber, and keep the top of the range (`99-`) for overrides. Use it only
+where order changes meaning (`/etc/cron.d` stays unnumbered). `.d` numbers encode *priority* among
+simultaneous entries, while a lifecycle is a *sequence*, so don't import priority idioms like a
+`50-` neutral centre.
 
 ## References
 
-- Read `./references/checklist.md` for a quick repository-structure review pass.
-- Read `./assets/trigger-eval-queries.example.json` when testing whether architecture requests activate this skill cleanly.
+- `./references/checklist.md`: quick structure review pass.
