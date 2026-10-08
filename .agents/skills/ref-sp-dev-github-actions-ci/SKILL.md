@@ -1,6 +1,6 @@
 ---
 name: ref-sp-dev-github-actions-ci
-description: "Portable GitHub Actions CI guidance for workflow triggers, job design, permissions, matrix strategy, concurrency, caching, and workflow hardening. Use when: creating or reviewing .github/workflows/*.yml files, setting up CI or reusable workflows, or securing workflow tokens, actions, and runner choices."
+description: "Writing and hardening GitHub Actions workflows: triggers, job graphs, matrices, concurrency, least-privilege tokens, action pinning, untrusted PRs, caching, and OIDC package publishing. Use when creating or reviewing .github/workflows files."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,56 +12,12 @@ metadata:
 
 # GitHub Actions CI
 
-## Purpose
+Defaults for `.github/workflows/*.yml`. The Dependabot config that opens dependency PRs is
+`ref-sp-dev-github-dependabot`; what a release should contain is `ref-sp-dev-package-management` and
+`ref-sp-dev-semantic-versioning`. Agent file-access policy is a different surface
+(`ref-sp-agents-security`).
 
-Provide portable defaults for building maintainable and secure GitHub Actions CI workflows without turning every repository into a pile of ad hoc YAML.
-
-## When to use this skill
-
-- Creating or reviewing `.github/workflows/*.yml` files.
-- Designing CI triggers, job graphs, or matrix coverage.
-- Choosing runner types, action pinning, or token permissions.
-- Hardening workflows that process pull requests, forks, or deployment credentials.
-- Designing release workflows that publish packages with OIDC trusted publishing, npm provenance, or npm staged publishing.
-
-## Scope boundaries
-
-This skill owns **workflows** — `.github/workflows/*.yml`: triggers, jobs, permissions, matrices,
-concurrency, caching, and hardening.
-
-- `ref-sp-dev-github-dependabot` — `.github/dependabot.yml`. Same folder, different job: that config
-  opens dependency PRs, while this skill owns the workflows that run *on* them.
-- `ref-sp-dev-package-management` and `ref-sp-dev-semantic-versioning` — what a release job should
-  do and what the version means. This skill owns the workflow that runs it.
-- `ref-sp-agents-security` — which files an agent may read. Workflow token scope and runner trust are
-  a separate attack surface, owned here.
-
-## Defaults
-
-- Keep workflows in `.github/workflows` with clear names and narrow triggers.
-- Prefer `push` plus `pull_request` for CI, and add `workflow_dispatch` only when manual execution is genuinely useful.
-- Prefer path and branch filters that reflect repository boundaries, but avoid over-filtering required checks.
-- Set `permissions` deliberately and keep `GITHUB_TOKEN` least-privileged by default.
-- Use workflow-level `concurrency` for branch-scoped CI so stale runs are cancelled rather than piling up.
-- Prefer small jobs with explicit `needs` over one giant job that hides failure boundaries.
-- Prefer GitHub-hosted runners unless a self-hosted runner solves a concrete need that justifies its security and maintenance cost.
-- Prefer pinning third-party actions and reusable workflows to full commit SHAs; use version tags only when the trust and drift tradeoff is intentional.
-- Prefer first-party setup actions with built-in dependency caching when available, and use `actions/cache` only with explicit keys and paths.
-- For release publishing, prefer registry trusted publishing through OIDC over stored publish tokens, and grant `id-token: write` only to the publish job.
-- For npm release jobs, keep provenance enabled when supported and consider `npm stage publish` when a maintainer approval step is required before the package goes live.
-
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Define workflow triggers | Choose `on`, branch filters, path filters, schedules, and manual inputs deliberately. | CI becomes noisy or fragile when workflows fire on every event without boundaries. | When adding or reviewing a workflow entry point. | The workflow runs when the repo needs it and stays quiet otherwise. |
-| Design the job graph | Split jobs, matrices, `needs`, and outputs around real failure and reuse boundaries. | CI is easier to debug when each job owns one concern and reports failures clearly. | When a workflow mixes validation, packaging, and deployment behavior. | Workflow runs stay understandable and parallelism is intentional. |
-| Harden workflow execution | Set token permissions, action pinning, secret flow, runner choice, and PR trust boundaries. | Most Actions incidents come from over-privileged tokens, unpinned dependencies, or untrusted PR execution. | When the workflow touches secrets, comments, deployments, or third-party actions. | The workflow can do its job without quietly expanding the attack surface. |
-| Configure package publishing | Wire release jobs to trusted publishers, provenance, staging, and environment protections. | Package publishing is a high-impact write path and should not depend on reusable long-lived secrets. | When a workflow publishes to PyPI, npm, or another package registry. | Releases use short-lived credentials and the human approval boundary is explicit. |
-
-## Core Rules
-
-### Triggers and filters
+## Triggers and filters
 
 - Use `push` and `pull_request` as the default CI triggers.
 - Add `workflow_dispatch` only when operators need a manual entry point.
@@ -69,7 +25,7 @@ concurrency, caching, and hardening.
 - Remember that skipped workflows can leave required checks pending; do not overfit path filters on required status checks.
 - Use `schedule` for recurring maintenance or verification jobs, not as a substitute for ordinary CI triggers.
 
-### Jobs, matrices, and concurrency
+## Jobs, matrices, and concurrency
 
 - Keep jobs focused enough that a failed job points directly at the broken concern.
 - Use `needs` to make ordering explicit instead of relying on naming or YAML position.
@@ -78,7 +34,7 @@ concurrency, caching, and hardening.
 - Use workflow-level or job-level `concurrency` to cancel stale runs on the same branch or environment.
 - Prefer `cancel-in-progress: true` for ordinary branch CI and queueing only for workflows where first-in-first-out ordering matters.
 
-### Permissions, tokens, and secrets
+## Permissions, tokens, and secrets
 
 - Set `permissions` explicitly instead of relying on broad defaults.
 - Prefer workflow-level `permissions: read-all` or a minimal explicit map, then elevate specific jobs only when needed.
@@ -86,17 +42,20 @@ concurrency, caching, and hardening.
 - Prefer OIDC or other short-lived credentials over long-lived cloud secrets when the platform supports it.
 - Use environment protections and required reviewers for sensitive deployment secrets.
 - Never assume secrets are available on forked pull requests or Dependabot-triggered workflow runs.
-- For trusted publisher release jobs, configure `id-token: write` only where the registry token is minted, not across the whole workflow by default.
+- Prefer registry trusted publishing through OIDC over stored publish tokens, and grant
+  `id-token: write` only to the job that mints the registry token.
+- For npm, keep provenance on where supported, and use `npm stage publish` when a maintainer must
+  approve the package before it goes live.
 - Match the registry's trusted-publisher rule exactly: repository, workflow filename, environment name when used, and supported runner type all matter.
 
-### Third-party actions and reusable workflows
+## Third-party actions and reusable workflows
 
-- Pin third-party actions to a full commit SHA by default.
+- Pin third-party actions and reusable workflows to a full commit SHA by default.
 - Audit third-party actions and reusable workflows before granting them access to secrets or write permissions.
 - Treat tag pins as a convenience tradeoff, not as an immutable security boundary.
 - Keep local actions and reusable workflows in the repository only when the reuse boundary is real; otherwise keep the workflow simple.
 
-### Untrusted input and pull requests
+## Untrusted input and pull requests
 
 - Avoid `pull_request_target` for untrusted PR code unless the workflow is intentionally limited to metadata-only operations and never checks out or executes attacker-controlled code.
 - Prefer `pull_request` for normal validation of contributor changes.
@@ -105,12 +64,13 @@ concurrency, caching, and hardening.
 - Treat `workflow_run` as privileged when it is used after an untrusted validation workflow; it can access secrets and write tokens even when the triggering workflow could not. Do not download or execute untrusted artifacts without validation.
 - When a workflow auto-merges Dependabot (or other) PRs, put the `gh pr merge` step in its own job gated by `needs:` on the build/test job, and grant `contents: write` + `pull-requests: write` on that job alone. The build/test job executes untrusted dependency code and must stay read-only; do not raise the whole workflow's permissions just to reach the merge step.
 
-### Runners and caching
+## Runners and caching
 
 - Prefer GitHub-hosted runners for general CI because they provide cleaner isolation by default.
 - Use self-hosted runners only when the hardware, network, or toolchain need is concrete and the trust boundary is controlled.
 - Avoid self-hosted runners for public-repo workflows that execute untrusted PR code.
-- Cache dependency installs intentionally and with stable keys; do not cache the whole workspace blindly.
+- Prefer first-party setup actions with built-in dependency caching; otherwise use `actions/cache`
+  with explicit keys and paths, never the whole workspace.
 - For release publishing jobs, keep caching conservative and follow registry-specific requirements; npm trusted publishing and provenance require supported cloud CI and runner combinations.
 - Keep `defaults.run.shell` and `defaults.run.working-directory` explicit when they materially improve consistency.
 
@@ -125,16 +85,11 @@ concurrency, caching, and hardening.
 - npm trusted publishing requires a recent npm CLI and supported Node version; staged publishing requires an even newer npm CLI and cannot stage a package that has never been published before.
 - npm trusted publishing can generate provenance automatically for supported public package/public repository publishes, but private repository and unsupported provider cases need an explicit decision.
 
-## Validation
+## Before finishing
 
-- Workflow triggers match the repo boundary without leaving required checks accidentally pending.
-- Jobs and matrices reflect real verification or release boundaries.
-- Token permissions and secret access are least-privileged.
-- Third-party actions are pinned and reviewed appropriately.
-- Pull request workflows do not mix untrusted code execution with write tokens or secrets.
-- Any auto-merge or other write step runs in a dedicated `needs`-gated job with job-scoped write permissions, never in a job that also executes untrusted PR code.
-- Release jobs use OIDC/trusted publishing where available, with exact registry trust rules and minimal job-level permissions.
-- npm workflows state whether they publish directly, publish with provenance, or stage the package for 2FA approval.
+- Any write step in a PR workflow (such as auto-merge) runs in its own `needs`-gated job with job-scoped write
+  permissions, never in a job that runs untrusted PR code.
+- npm workflows state whether they publish directly, with provenance, or staged for 2FA approval.
 
 ## References
 
@@ -143,5 +98,3 @@ concurrency, caching, and hardening.
 - GitHub Actions Secure Use Reference: <https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions>
 - Read `./references/checklist.md` for a quick workflow review pass.
 - Read `./references/security-and-structure.md` when the workflow touches permissions, forks, self-hosted runners, or third-party actions.
-- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for CI workflow prompts.
-- Review `./evals/evals.json` when validating output quality for workflow design and hardening guidance.
