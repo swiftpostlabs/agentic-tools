@@ -3,7 +3,7 @@
 Every dated or numeric claim in this skill, mapped to where it came from, when it was checked, and
 what would make it wrong.
 
-**Claim tiers** (same scheme as `.agents/skills/ref-sp-ux-design/references/sources.md`):
+**Claim tiers** (same scheme as the `references/sources.md` of `ref-sp-ux-design`):
 
 1. **Perceptual/cognitive research** — durable, cite the primary.
 2. **Normative standard** — binding, versioned, checkable.
@@ -85,7 +85,7 @@ Claims made in `./semantic-structure.md` about what semantic HTML does *not* buy
 | trafilatura benchmark: 0.914 precision / 0.904 recall / 0.909 F1 on 750 docs (2022-05-18) | 3 | <https://trafilatura.readthedocs.io/en/latest/evaluation.html> | 2026-08-02 | Vendor's own benchmark; treat the ordering as more reliable than the absolute numbers |
 
 Full working notes, including what these findings do and do not license, live in
-`.agents/skills/ref-sp-web-seo-ai/references/extraction.md`.
+`ref-sp-web-seo-ai` (its `references/extraction.md`).
 
 ## Known gaps
 

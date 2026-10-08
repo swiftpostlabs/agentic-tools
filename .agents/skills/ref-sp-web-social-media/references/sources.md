@@ -12,7 +12,7 @@ assertion). Cite the tier, not just the claim.
 1. **Re-fetch the platform's own newsroom/help pages** — they are the only tier-1 sources here, and
    they change without notice. There is no changelog; check them directly.
 2. **Read the content, not the status code.** These pages are client-rendered; a `curl` can return an
-   empty shell with HTTP 200. Use a real browser (`.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`)
+   empty shell with HTTP 200. Use a real browser (`ref-sp-dev-playwright-cli`)
    when a fetch comes back empty.
 3. **Treat every non-platform number as dated and interested.** Reach-penalty percentages and
    "algorithm 2026" figures come from agencies selling social services; corroborate or downgrade.
@@ -49,7 +49,7 @@ value matters, attribution is lost either way — does not depend on the dispute
 | Claim in SKILL.md | Tier | Source | Verified | Notes |
 | --- | --- | --- | --- | --- |
 | Search Console **platform properties** connect Instagram/TikTok/X/YouTube accounts and report clicks, impressions, CTR, position for content **in Google Search/Discover/News only** — not native platform engagement; gradual rollout; ownership periodically re-checked | **documented** (first-party) | [About platform properties in Search Console](https://support.google.com/webmasters/answer/17148418); [Search Central blog, July 2026](https://developers.google.com/search/blog/2026/07/search-console-social-video-platforms) | 2026-07-13 | Metrics, surface coverage, or availability change. The blog post is a JS shell — read the support doc, or the blog in a browser. |
-| Dark social breaks attribution; a bio-link tap lands in Direct; self-reported attribution is the recovery | **researched** | Owned by `.agents/skills/ref-sp-web-marketing/references/sources.md` (SparkToro controlled experiment). **Do not duplicate** — route there. | 2026-07-13 | — |
+| Dark social breaks attribution; a bio-link tap lands in Direct; self-reported attribution is the recovery | **researched** | Owned by `ref-sp-web-marketing`, its `references/sources.md` (SparkToro controlled experiment). **Do not duplicate** — route there. | 2026-07-13 | — |
 
 ## What does not rot
 

@@ -1,6 +1,6 @@
 ---
 name: ref-sp-ux-design
-description: "Design what a human sees and operates from evidence rather than taste: Gestalt grouping, visual hierarchy, spacing, typographic scale and measure, emphasis, palette construction in perceptually uniform colour, long-form readability, and mobile-first layout — with every claim labelled as research, standard, convention, or folklore. Use when: designing or reviewing a UI, page, screen, or component; asked why a layout feels off, cluttered, or unbalanced; choosing spacing, margins, padding, or a grid; picking font sizes, line height, or line length; deciding where bold, italic, or capitals belong; building or fixing a colour palette; turning a wall of text into a readable article or blog post; designing mobile-first or choosing breakpoints; or judging a design claim, trend, or 'law of UX' against what the research actually supports."
+description: "Interface design from evidence: grouping, hierarchy, spacing, type scale, line length, emphasis, colour palettes, walls of text, mobile-first, each claim labelled research, standard, convention, or folklore. Use when a UI feels cluttered or off, or when designing or reviewing one."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,35 +13,12 @@ metadata:
 
 # UX Design
 
-## Purpose
-
-Make design decisions defensible. Separate what perceptual research actually establishes from what
-is standard, what is merely a house convention, and what is folklore repeated until it sounded true.
-
-Trends rot; mechanisms do not. Everything in this skill is organised around **why** something works,
-so it survives the next redesign cycle.
-
-## When to use this skill
-
-- Designing or reviewing a UI, page, screen, or component.
-- "This feels off / cluttered / unbalanced / cheap" — and nobody can say why.
-- Choosing spacing, margins, padding, or a layout grid.
-- Picking type sizes, line height, or line length; deciding where bold, italic, or caps belong.
-- Building or repairing a colour palette.
-- Turning a wall of text into something people will actually read.
-- Mobile-first layout and breakpoint decisions.
-- Someone cites a "law of UX", a trend, or a design-system rule as if it settled the argument.
-
-**Route elsewhere when:** the question is whether something *passes* — contrast ratio, target size,
-reflow, focus visibility, any WCAG threshold. That is
-`.agents/skills/ref-sp-ux-accessibility/SKILL.md`, which owns every normative number. This skill
-tells you how to build a palette; that one tells you whether the pair is legal.
-
-**The ownership rule, stated so it can be checked:** this skill names WCAG success criteria by
-number (SC 1.4.1, SC 2.5.8) and never states their threshold *values*. One deliberate exception is
-recorded in `./references/typography.md` — the 80-character cap, because that number is the object
-of a correction rather than a lookup. If you find yourself writing a ratio, a pixel count, or a
-percentage from WCAG anywhere else in this skill, it belongs in the accessibility skill instead.
+Making design decisions defensible by separating what perceptual research establishes from what is
+standard, house convention, or folklore. Trends rot; mechanisms don't, so everything here is
+organised around *why* it works. Whether something *passes* (contrast, target size, reflow, focus,
+any WCAG threshold) is `ref-sp-ux-accessibility`, which owns every normative number: this skill
+names criteria by number (SC 1.4.1, SC 2.5.8) and never their values, except the 80-character cap
+recorded in `./references/typography.md`.
 
 ## The rule that makes this skill different: label the claim
 
@@ -148,8 +125,8 @@ loading.
   you add a dark theme.
 - **Never encode meaning in hue alone.** Red–green deficiency affects roughly 8% of males in
   Northern European populations (nearer 4.5% pooled globally). Pair hue with text, icon, shape, or
-  position. The normative form of this rule is WCAG 1.4.1, Level A — see the accessibility skill.
-- **Contrast thresholds live in `.agents/skills/ref-sp-ux-accessibility/SKILL.md`.** Do not restate
+  position. The normative form of this rule is WCAG 1.4.1, Level A — see `ref-sp-ux-accessibility`.
+- **Contrast thresholds live in `ref-sp-ux-accessibility`.** Do not restate
   them here. And if
   someone proposes APCA: it is a candidate method, not a standard, and it was removed from the
   WCAG 3 draft in 2023.
@@ -214,7 +191,7 @@ Load `./references/responsive.md` for breakpoint strategy, touch vs pointer inpu
    claiming it is research is not.
 3. Does grouping survive: would a stranger draw the same boxes around your content that you would?
 4. Does it survive the narrow-viewport and text-zoom checks (WCAG SC 1.4.10 and 1.4.4)? Values and
-   procedure: `.agents/skills/ref-sp-ux-accessibility/references/testing.md`.
+   procedure: `ref-sp-ux-accessibility` (its `references/testing.md`).
 5. Is any information carried by colour alone?
 6. Have you deleted anything? Conciseness measured better than every formatting change.
 

@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-wordpress
-description: "Build on WordPress correctly: the sanitize-input / check-capability / escape-output security model that prevents most WordPress vulnerabilities, hooks as the extension mechanism instead of editing core, safe database access with prepared statements, child themes, and the REST API for headless frontends. Use when: writing or reviewing a WordPress plugin or theme, handling form or request data in PHP, adding an admin action or AJAX/REST endpoint, querying the WordPress database, deciding how to extend WordPress without modifying core, auditing a WordPress site's security or update posture, or building a headless WordPress backend."
+description: "Building and auditing WordPress safely: capability checks, nonces, sanitize and escape, prepared queries, hooks instead of editing core, small plugin surface, headless REST. Use when writing a plugin or theme, an admin, AJAX, or REST endpoint, querying the DB, or auditing a WP site."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,26 +13,11 @@ metadata:
 
 # WordPress
 
-## Purpose
-
-Build and audit WordPress the way WordPress documents it: extend through hooks rather than editing
-core, and treat every request as hostile until it has passed the three security gates. Most WordPress
-vulnerabilities are not exotic — they are a missing capability check or an unescaped output in a
-plugin, and they are entirely preventable with documented APIs.
-
-## When to use this skill
-
-- Writing or reviewing a WordPress **plugin or theme**.
-- Handling form, query-string, or request data in PHP.
-- Adding an admin action, an AJAX handler, or a REST endpoint.
-- Querying the database directly.
-- Deciding how to change behaviour without editing core or a parent theme.
-- Auditing a WordPress site's security or update posture.
-- Building a **headless** WordPress backend.
-
-**Route elsewhere when:** the question is **SEO** — sitemaps, canonicals, archives, or headless
-WordPress + Next.js metadata. That is owned by `.agents/skills/ref-sp-web-seo/SKILL.md` and its
-`references/frameworks.md`, which carries the headless canonical trap. Do not duplicate it here.
+WordPress the way WordPress documents it: extend through hooks, never core, and treat every request
+as hostile until it passes the three security gates. Most WordPress vulnerabilities are a missing
+capability check or an unescaped output, preventable with documented APIs. WordPress **SEO**
+(sitemaps, canonicals, headless + Next.js metadata) is `ref-sp-web-seo` and its
+`references/frameworks.md`; don't duplicate it here.
 
 ## The security model — three gates, all three required
 
@@ -120,7 +105,7 @@ $rows = $wpdb->get_results(
 - Prefer the high-level APIs first — `WP_Query`, `get_posts()`, `get_option()`, the metadata APIs.
   Dropping to `$wpdb` should be a deliberate choice, not a default.
 
-For the general principles behind this, see `.agents/skills/ref-sp-db-security/SKILL.md`.
+For the general principles behind this, see `ref-sp-db-security`.
 
 ## Hooks: the extension mechanism
 
@@ -148,26 +133,17 @@ changes.
   frontend is a full-site duplicate and an expanded attack surface.
 
 **Headless SEO is not covered here** — canonicals, sitemaps, and Yoast's same-domain assumption live in
-`.agents/skills/ref-sp-web-seo/references/frameworks.md`. Read it before shipping a headless build; the
+`ref-sp-web-seo` (its `references/frameworks.md`). Read it before shipping a headless build; the
 default configuration tells Google your CMS is the canonical site.
 
 ## Defaults
 
-- **Extend with hooks; never patch core or a parent theme.**
-- **Use the WordPress API rather than hand-rolling** sanitization, escaping, or SQL escaping.
-- **Prefer validation over sanitization** — reject bad input instead of cleaning it.
-- **Prefer `WP_Query` and the core APIs over raw `$wpdb`.**
 - **Keep the plugin surface small.** Every plugin is code you did not write running with full
   privileges; the plugin layer is the dominant WordPress attack surface. Justify each one.
 - **Keep core, themes, and plugins updated.** Most compromises exploit known, patched vulnerabilities.
 
 ## Gotchas
 
-- **A nonce is not a permission check.** The single most common WordPress security bug is an endpoint
-  that verifies a nonce and forgets `current_user_can()`. The nonce proves the *request* is genuine, not
-  that the *user* is allowed.
-- **Nonces are not one-time and expire on a clock.** They do not stop replay.
-- **A filter callback that forgets to `return` silently nukes the value.** WordPress will not warn you.
 - **`admin_init` and `wp_ajax_*` run for any logged-in user** — including a subscriber. Registering an
   action there is not a permission check.
 - **`wp_ajax_nopriv_*` is reachable by anyone, unauthenticated.** Be certain that is what you meant.
@@ -176,7 +152,7 @@ default configuration tells Google your CMS is the canonical site.
 - **Editing theme files through the admin editor** is a code-execution vector and defeats version
   control. Disable it (`DISALLOW_FILE_EDIT`).
 
-## Validation
+## Before finishing
 
 Before shipping WordPress code, confirm:
 
@@ -191,7 +167,7 @@ Before shipping WordPress code, confirm:
 
 - `./references/sources.md` — provenance for every claim above, with the exact WordPress handbook page.
   Read it before asserting a specific; the function set and the coding standards do change.
-- `.agents/skills/ref-sp-web-seo/references/frameworks.md` — WordPress **SEO**: core sitemaps, the
+- `ref-sp-web-seo` (its `references/frameworks.md`) — WordPress **SEO**: core sitemaps, the
   archive/thin-content problem, and the headless canonical trap.
-- `.agents/skills/ref-sp-db-security/SKILL.md` — the general database-security principles behind
+- `ref-sp-db-security` — the general database-security principles behind
   `$wpdb->prepare()` and least-privilege access.

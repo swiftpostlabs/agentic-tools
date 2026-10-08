@@ -1,7 +1,7 @@
 # Colour: spaces, ramps, roles, themes
 
 Load when building or repairing a palette. **Contrast thresholds are not here** — they live in
-`.agents/skills/ref-sp-ux-accessibility/SKILL.md`, which owns every normative number.
+`ref-sp-ux-accessibility`, which owns every normative number.
 
 ## Work in a perceptually uniform space
 

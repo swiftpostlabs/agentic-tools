@@ -62,7 +62,7 @@ rare that a layout needs to respond to available height.
 ## Touch, pointer, and reach
 
 **Target size is normative and this skill does not own the number.** WCAG SC 2.5.8 (AA) and 2.5.5
-(AAA) set it; read the values in `.agents/skills/ref-sp-ux-accessibility/references/thresholds.md`.
+(AAA) set it; read the values in `ref-sp-ux-accessibility` (its `references/thresholds.md`).
 What belongs here is the design consequence: Apple's 44 pt and Material's 48 dp are vendor
 conventions that happen to sit near the AAA criterion, and neither is independent evidence.
 
@@ -107,7 +107,7 @@ the year and the n whenever you use this.
 
 The narrow-viewport and zoom checks are accessibility conformance tests, and the procedure — with
 the exact widths, zoom levels, and `playwright-cli` commands — lives in
-`.agents/skills/ref-sp-ux-accessibility/references/testing.md`. Run it from there rather than
+`ref-sp-ux-accessibility` (its `references/testing.md`). Run it from there rather than
 keeping a second copy in sync here.
 
 Two design checks that are *not* conformance tests, and so do belong here:

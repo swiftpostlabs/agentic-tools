@@ -77,11 +77,11 @@ Do not present them as documented WordPress guidance:
 
 ## Deliberately not covered
 
-- **SEO** — owned by `.agents/skills/ref-sp-web-seo/references/frameworks.md` (core sitemaps, archive
+- **SEO** — owned by `ref-sp-web-seo` and its `references/frameworks.md` (core sitemaps, archive
   thin content, and the headless Yoast canonical trap). Do not duplicate.
 - **Performance/caching specifics, hosting, and plugin recommendations** — a large folklore surface with
   strong vendor interests. Left out rather than sourced badly. If it is needed, source it from primaries
-  and tier it, per `.agents/skills/ref-sp-web-seo/SKILL.md`'s claim-tiering rule.
+  and tier it, per `ref-sp-web-seo`'s claim-tiering rule.
 - **Block editor / block theme development** — real and documented
   (<https://developer.wordpress.org/block-editor/>), but a large surface of its own. A candidate for a
   future expansion rather than a thin section here.

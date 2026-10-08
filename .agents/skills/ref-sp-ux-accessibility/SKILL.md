@@ -1,6 +1,6 @@
 ---
 name: ref-sp-ux-accessibility
-description: "Make an interface usable by people the design did not assume — using WCAG 2.2 as the normative floor rather than a vibe. Owns every accessibility threshold this repo states: contrast ratios, target sizes, reflow, text spacing, focus visibility, and motion. Use when: checking or fixing accessibility; asked whether a colour pair, tap target, focus ring, or font size passes; auditing a page or component against WCAG 2.2 A/AA/AAA; deciding whether to use APCA or WCAG 2 contrast; adding ARIA, roles, labels, or alt text; choosing between a div and a semantic element, adding landmarks, or fixing heading order; keyboard navigation, focus order, or screen-reader behaviour; handling reduced motion; making content reflow at 320px or survive user text-spacing overrides; or judging an accessibility claim, overlay product, or automated-checker score."
+description: "WCAG 2.2 as the floor: contrast, text, target, and focus thresholds, keyboard and screen-reader use, alt text, ARIA, semantic markup, motion, APCA, overlays. Owns every accessibility number in this repo. Use when checking or fixing accessibility or a specific value."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,33 +13,14 @@ metadata:
 
 # UX Accessibility
 
-## Purpose
-
-Hold the normative floor. Every accessibility number this repo states lives here, versioned and
-sourced, so that no other skill invents a threshold and no two skills disagree.
-
-## When to use this skill
-
-- Asked whether something "is accessible", or asked to audit a page, component, or design against
-  WCAG.
-- Checking a specific value: contrast ratio, tap target size, font size, focus indicator, line
-  height, reflow width.
-- Adding or reviewing ARIA, roles, labels, or alt text.
-- Choosing between a `<div>` and a real element, adding landmarks, or fixing heading structure —
-  including when the question arrives as "does semantic HTML help SEO or AI?"
-- Keyboard navigation, focus order, focus visibility, or skip links.
-- Reduced motion, autoplay, or interaction-triggered animation.
-- Someone proposes APCA, an accessibility overlay, or an automated score as proof of conformance.
-
-**Route elsewhere when:** the question is how something should *look* — spacing rhythm, palette
-construction, type scale, hierarchy, readability of prose — that is
-`.agents/skills/ref-sp-ux-design/SKILL.md`.
-
-**The ownership rule, stated so it can be checked:** every WCAG threshold value in this repo lives
-here, in `./references/thresholds.md`. `ref-sp-ux-design` cites criterion numbers and never their
-values, with one recorded exception (the 80-character measure cap, because it is the object of a
-correction there). If a threshold value appears in a third place, this skill is no longer the single
-source of truth and the copy should be removed rather than kept in sync.
+The normative accessibility floor. Every accessibility number in this repo lives here, versioned and
+sourced, in `./references/thresholds.md`, so no other skill invents a threshold and no two disagree.
+How something should *look* (spacing, palette, type scale, hierarchy, readable prose) is
+`ref-sp-ux-design`, which cites criterion numbers but never their values, with one recorded
+exception
+(the 80-character measure cap, repeated there because it is the subject of a correction). If a
+threshold value appears in a third place,
+remove that copy rather than keeping it in sync.
 
 ## The version matters — say it out loud
 
@@ -82,7 +63,8 @@ exact normative wording.
 | 1.4.12 Text Spacing | AA | Nothing breaks when the **user** sets line height 1.5×, paragraph spacing 2×, letter spacing 0.12×, word spacing 0.16× |
 | 1.4.8 Visual Presentation | AAA | Line length ≤ **80 characters** (40 CJK) |
 
-**Read 1.4.12 in the right direction.** It does not tell you to ship `line-height: 1.5`. It tells you
+**Read 1.4.12 in the right direction.** It does not tell you to ship `line-height: 1.5`. It tells
+you
 that when a user forces those values, your layout must not clip, overlap, or hide anything. Design
 guidance that cites 1.4.12 as "WCAG requires 1.5 line height" is misreading it.
 
@@ -148,7 +130,8 @@ missing `alt`, missing labels, missing lang, duplicate IDs, and invalid ARIA. Th
 whether alt text is *meaningful*, whether focus order is *logical*, whether an error message is
 *understandable*, or whether a custom widget actually works with a screen reader.
 
-A clean axe run is a floor, not a pass. Report it as "no automated violations", never as "accessible".
+A clean axe run is a floor, not a pass. Report it as "no automated violations", never as
+"accessible".
 
 **Overlay products** (one-line scripts promising conformance) do not deliver it, are widely rejected
 by the accessibility community, and have been the subject of enforcement action. Do not recommend

@@ -91,7 +91,7 @@ July 2023 WCAG 3 working draft**. The current draft says the contrast algorithm 
 determined". WCAG 3 is not expected before ~2030.
 
 **Say instead:** conform to WCAG 2.2. APCA is a reasonable supplementary check, not a standard. Full
-treatment in `.agents/skills/ref-sp-ux-accessibility/SKILL.md`.
+treatment in `ref-sp-ux-accessibility`.
 
 ## "The golden ratio in typography and layout"
 
@@ -141,7 +141,7 @@ gaps, not in the total amount. See `spacing-and-layout.md`.
 **Reality:** it does not, it is widely rejected by the accessibility community, and it has attracted
 enforcement action.
 
-**Say instead:** fix the markup. See `.agents/skills/ref-sp-ux-accessibility/SKILL.md`.
+**Say instead:** fix the markup. See `ref-sp-ux-accessibility`.
 
 ## How to handle a claim not on this list
 

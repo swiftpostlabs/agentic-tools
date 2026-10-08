@@ -67,7 +67,7 @@ reader, since they get no landmark navigation.
 
 Headings are the primary navigation mechanism inside a page for screen-reader users — the equivalent
 of the layer-cake scanning pattern that sighted readers use (see
-`.agents/skills/ref-sp-ux-design/references/content-readability.md`).
+the `references/content-readability.md` of `ref-sp-ux-design`).
 
 - **Do not skip levels going down.** `h2` → `h4` leaves a gap that reads as missing content. Going
   back up any distance is fine.
@@ -91,7 +91,7 @@ Be straight about this, because the SEO folklore is thick:
   and `<main>` no bonus at all and weights class/id names and link density far more heavily. The one
   real tag effect is that `<aside>` and `<footer>` get stripped — which is an argument for not
   hiding content in them, not an argument for `<main>`. Full treatment in
-  `.agents/skills/ref-sp-web-seo-ai/references/extraction.md`.
+  `ref-sp-web-seo-ai` (its `references/extraction.md`).
 
 **The honest case for semantic HTML is accessibility and maintainability.** Both are sufficient. It
 does not need a fake SEO justification, and offering one damages the real argument when someone

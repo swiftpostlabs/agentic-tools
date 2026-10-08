@@ -80,7 +80,7 @@ content crowds them — they can be difficult for people to tell apart."
 WCAG SC 2.5.8 encodes the same idea from the other direction, through its spacing exception: an
 undersized target can still conform when it is far enough from its neighbours. **Space substitutes
 for size.** The threshold and the exact exception wording are owned by
-`.agents/skills/ref-sp-ux-accessibility/references/thresholds.md`.
+`ref-sp-ux-accessibility` (its `references/thresholds.md`).
 
 Practical: destructive actions get extra separation from the action next to them. That is a Fitts
 argument (see `foundations.md`) and it is one of the legitimate ones.
@@ -106,7 +106,7 @@ fight with images, embeds, and variable content and rarely survive contact.
 
 The part that *is* worth keeping: **paragraph spacing should be larger than line spacing**, or
 paragraphs stop reading as units. WCAG SC 1.4.8 (AAA) puts a normative floor under this — the value
-is in `.agents/skills/ref-sp-ux-accessibility/references/thresholds.md`.
+is in `ref-sp-ux-accessibility` (its `references/thresholds.md`).
 
 ## Layout containers
 

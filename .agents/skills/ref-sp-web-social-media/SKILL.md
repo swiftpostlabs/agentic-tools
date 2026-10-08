@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-social-media
-description: "Decide whether and how a site or brand should invest in social and video platforms (TikTok, YouTube, Instagram, LinkedIn, X) for organic discovery — separating what the platforms and independent research actually document from the large layer of agency folklore, and measuring it honestly inside walled-garden analytics. Use when: asked whether to be on TikTok/YouTube/Instagram for reach, how discovery or in-app search works on a platform, whether outbound links hurt reach, how younger audiences find things, how social content shows up in Google, or judging a social-strategy claim or agency deck."
+description: "Organic discovery on TikTok, YouTube, Instagram, LinkedIn, and X, separating documented and researched facts from folklore: in-app search, outbound links, audience fit, measurement. Use when asked whether to use social platforms for reach, or judging a social-strategy claim."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,13 +13,11 @@ metadata:
 
 # Social and Video Platforms
 
-## Purpose
-
-Give honest guidance on social and video platforms as discovery surfaces: what the platforms
-themselves document, what independent research actually shows, and — the part most sources get wrong —
-how much of the prevailing "social strategy" advice is unvalidated folklore that should not be shipped
-as a recommendation. This is the counterpart to `.agents/skills/ref-sp-web-seo/SKILL.md` for the
-platforms Google does not own.
+Social and video platforms as *organic* discovery surfaces, with each claim labelled by evidence:
+much prevailing "social strategy" is unvalidated folklore. It is the counterpart of `ref-sp-web-seo`
+for platforms Google doesn't own. Attribution and "which channel converts" (Direct, dark social,
+self-reported attribution) are `ref-sp-web-marketing`; AI answers are `ref-sp-web-seo-ai`; the
+site's own SEO is `ref-sp-web-seo`.
 
 ## Verify before you assert — this rots as fast as SEO
 
@@ -28,22 +26,7 @@ constantly, and almost none of it is versioned the way Google's docs are. Every 
 in `./references/sources.md` with its source, its tier, and what would invalidate it. Re-fetch the
 platform's own newsroom/help pages before asserting a specific — and read the content, not the status
 code (these pages are client-rendered; a `curl` may return an empty shell, so use a real browser via
-`.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`).
-
-## When to use this skill
-
-- Asked whether a brand "should be on TikTok / YouTube / Instagram" for reach.
-- Asked how discovery, the feed, or **in-app search** works on a platform.
-- Asked whether posting outbound links hurts reach ("zero-click content").
-- Asked how a younger audience finds products, places, or how-tos.
-- Asked how social or video content shows up in Google.
-- Sanity-checking a social-strategy claim, an agency deck, or a "platform algorithm 2026" article.
-
-**Route elsewhere when:** the question is attribution or "which channel converts"
-(`.agents/skills/ref-sp-web-marketing/SKILL.md` — it owns Direct, dark social, and self-reported
-attribution; do not restate it here); visibility in AI answers / chatbots
-(`.agents/skills/ref-sp-web-seo-ai/SKILL.md`); or ordinary SEO of the site itself
-(`.agents/skills/ref-sp-web-seo/SKILL.md`).
+`ref-sp-dev-playwright-cli`).
 
 ## The honest position, stated first
 
@@ -62,7 +45,7 @@ Three things are true at once, and most advice collapses them:
 3. **Almost every tactic layered on top is folklore.** Precise reach-penalty percentages, "semantic
    chunking" of video for LLMs, "transcribe everything," "creator ads always beat display" — these are
    agency assertions, often from vendors selling the service. Apply the claim-tiering rule from
-   `.agents/skills/ref-sp-web-seo/SKILL.md`: documented → independently researched → inferred → vendor
+   `ref-sp-web-seo`: documented → independently researched → inferred → vendor
    assertion. Say which tier you are in, every time.
 
 So the deliverable is: **name the audience and intent, check whether platform presence is actually
@@ -113,7 +96,7 @@ driving a click. Handle it with calibrated confidence, because the evidence is g
   suggests it — but present any specific percentage as "reported by X," tier-2 at best, not a law.
 - **"Zero-click" is a reach tactic, not a measurement excuse.** If you keep users on-platform, you
   also give up the referrer — which lands the visit in Direct. That is a measurement problem owned by
-  `.agents/skills/ref-sp-web-marketing/SKILL.md`; hand the attribution half there.
+  `ref-sp-web-marketing`; hand the attribution half there.
 
 ## Measuring it: two walled gardens
 
@@ -125,7 +108,7 @@ Social measurement fails in two independent ways, and conflating them produces n
    metrics.
 2. **Off-platform, attribution is broken.** A tap from a bio link arrives without a referrer and lands
    in Direct. This is the dark-social problem — measured, and owned by
-   `.agents/skills/ref-sp-web-marketing/SKILL.md` (self-reported attribution is the recovery). Do not
+   `ref-sp-web-marketing` (self-reported attribution is the recovery). Do not
    restate it; route there.
 
 **The one first-party cross-surface measurement that exists** is Google's Search Console **platform
@@ -133,18 +116,14 @@ properties**: connect an Instagram, TikTok, X, or YouTube account and see clicks
 and average position for how *that content performs in Google Search, Discover, and News*. Its limit
 is the whole point — it measures the **Google surface only**, not native platform engagement (a
 TikTok video's TikTok views are invisible to it). Useful, and narrow. See
-`.agents/skills/ref-sp-web-seo/SKILL.md` for how that Google surface behaves.
+`ref-sp-web-seo` for how that Google surface behaves.
 
 ## Defaults
 
-- **Lead with the tier.** State whether each claim is platform-documented, independently researched,
-  inferred, or vendor-asserted — the audience is drowning in confident folklore.
 - **Prefer a small test to a strategy deck.** One platform, one intent, a fixed window, self-reported
   attribution. Learn whether the audience is there before committing budget.
 - **Do the documented things first:** use the platform's own search-insight tool, publish native
   value, verify current creator guidance. Skip the reverse-engineered feed hacks.
-- **Re-verify before asserting.** Platform tools and statements change monthly; a claim more than a
-  few months old is suspect.
 
 ## Gotchas
 
@@ -156,7 +135,7 @@ TikTok video's TikTok views are invisible to it). Useful, and narrow. See
   optimising against a black box.
 - **Do not confuse native reach with business outcome.** A million views that you cannot attribute and
   that drove no action is a vanity metric — the sample-size and signal-vs-noise discipline in
-  `.agents/skills/ref-sp-web-marketing/SKILL.md` applies here too.
+  `ref-sp-web-marketing` applies here too.
 
 ## Scope
 
@@ -169,9 +148,9 @@ conflates the two; "boost it" is not the same decision as "should we be here."
 
 - `./references/sources.md` — provenance by section, with each claim's evidence tier and what would
   invalidate it. Read it before asserting any dated specific.
-- `.agents/skills/ref-sp-web-marketing/SKILL.md` — attribution, dark social, and whether a difference
+- `ref-sp-web-marketing` — attribution, dark social, and whether a difference
   is signal or noise. It owns measurement; this skill routes there rather than restating it.
-- `.agents/skills/ref-sp-web-seo/SKILL.md` — how content performs on the Google surface, and the
+- `ref-sp-web-seo` — how content performs on the Google surface, and the
   claim-tiering rule this skill applies.
-- `.agents/skills/ref-sp-web-seo-ai/SKILL.md` — visibility in AI answers, the neighbouring
+- `ref-sp-web-seo-ai` — visibility in AI answers, the neighbouring
   "new discovery surface" concern.

@@ -76,7 +76,7 @@ For blocks of text, a mechanism is available to achieve all of:
 
 The ≤80-character measure is the only *normative* line-length number in WCAG. Everything else about
 measure is practitioner research — see
-`.agents/skills/ref-sp-ux-design/references/typography.md`.
+`ref-sp-ux-design` (its `references/typography.md`).
 
 ## Targets
 
