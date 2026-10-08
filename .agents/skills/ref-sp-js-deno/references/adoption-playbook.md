@@ -124,9 +124,12 @@ Do not replace the installation step with a task such as `"sample-tool": "deno r
 - Prefer named permission sets in `deno.json` over repeating long flag lists.
 - Use `-P` or `--permission-set=<name>` when the repo defines them.
 - Use `--env-file` when the CLI should load environment files before startup.
-- Use `@std/dotenv` when the program itself should read `.env` content.
+- Use `@std/dotenv` when the program itself should read `.env` content. Both still need explicit
+  environment and file permissions.
 - Use `DENO_TRACE_PERMISSIONS=1` to capture permission stack traces and `DENO_AUDIT_PERMISSIONS=<path>` to write a JSONL audit log.
-- Avoid broad `--allow-run` and `--allow-ffi`; both weaken the sandbox substantially.
+- Avoid broad `--allow-run` and `--allow-ffi`; both weaken the sandbox substantially. Avoid
+  `--allow-run=deno` unless full trust is intended: it can spawn an unrestricted Deno.
+- `-A` is acceptable for trusted tooling, never as the default for application code.
 
 ## 8. Troubleshooting checklist
 
@@ -137,7 +140,8 @@ Do not replace the installation step with a task such as `"sample-tool": "deno r
 - `deno run --inspect-brk ...` when you need a debugger before short-lived code executes.
 - `deno run --inspect-brk --log-level=debug ...` when inspector or module-resolution setup is failing.
 - `deno run --strace-ops ...` when the process hangs or stalls in runtime operations.
-- `deno run --cpu-prof --cpu-prof-flamegraph ...` when the real problem is performance.
+- `deno run --cpu-prof --cpu-prof-flamegraph ...` (or `--cpu-prof-md`) when the real problem is performance.
+- Remember `deno run` skips type checking by default, so a passing run proves nothing about `deno check`.
 - `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` when dependency fetches or network calls behave differently across environments.
 
 ## 9. Deno 2 migration notes worth remembering
