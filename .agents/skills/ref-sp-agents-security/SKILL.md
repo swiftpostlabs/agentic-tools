@@ -11,8 +11,9 @@ metadata:
 
 # Agents Security
 
-The portable model for agent file access. This repo's implementation (`.agents/config.json`, the
-`agentic-tools policy` commands) is `ref-sp-agents-policy`. Gating a *command* rather than a path is
+The portable model for agent file access. If the repo has a concrete policy-implementation skill,
+it owns the actual file, commands, and outputs (in this repo, `ref-sp-agents-policy`). Gating a
+*command* rather than a path is
 a `PreToolUse` hook (`ref-sp-agents-hooks`). Unrelated despite the names: database protection is
 `ref-sp-db-security`, CI token hardening `ref-sp-dev-github-actions-ci`.
 
@@ -29,10 +30,13 @@ AGENTS.md                       behavioural rule, read by every client
 
 - `protectedFiles`: secrets and credentials. Must not be read or modified.
 - `excludedFiles`: generated output and noise. Kept out of context, not secret.
+- The policy also declares which clients get generated outputs, where the implementation supports
+  it; treat that choice as part of the trust model.
 
 ## Changing the policy
 
 1. Edit the policy source file only; generated files are outputs, never authoring surfaces.
+   Change approval maps or enabled clients only when the intended trust policy changed.
 2. Run the sync. To turn interactive editor approvals into policy, import them first, then sync.
 3. Read the generated diff for each client: security changes are high-risk if accepted unread.
 4. Commit the source and generated files together.
@@ -56,7 +60,8 @@ fetch the same data over a network is outside it: `psql`, `bq`, `snowsql`, an OR
 kernel, a cloud CLI (`gcloud`, `aws`), dbt. Blocking the obvious database CLIs while the project's
 main tool stays open is a false boundary: `dbt show --inline "<sql>"` previews arbitrary query
 results (`--output json` for machines), and `dbt run-operation --sql "<sql>"` runs arbitrary SQL
-without a macro (dbt Core v1.12).
+without a macro (as of dbt Core v1.12). List these channels per repo; don't assume they are
+only the usual database CLIs.
 
 Two responses, strongest first:
 

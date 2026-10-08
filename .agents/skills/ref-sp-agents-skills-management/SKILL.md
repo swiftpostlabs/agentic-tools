@@ -31,7 +31,8 @@ Node port). Find it by feature name. Run it as `uv run agentic-tools skills ...`
   `.agents/skills.json`; `--global` requires `--config`. It reports missing names per source before
   changing anything, removes dead links in the destination first, and rejects a skill name declared
   by two sources.
-- **`unlink`**: removes linked skills, checking they point at the expected source so an unrelated
+- **`unlink`**: removes linked skills from a repo or, with `--global`, from `~/.agents/skills`,
+  checking they point at the expected source so an unrelated
   directory is never removed.
 
 `link`, `sync`, and `unlink` take `--dry-run`; `link` and `sync` take `--force` to replace a link
@@ -82,4 +83,5 @@ when two repos are cloned side by side. Full contract: `./references/config-shap
 - `uv run agentic-tools skills list` parses the metadata.
 - `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging.
 - The feature's tests pass when source resolution, dependencies, or link handling changed, and the
-  README examples still match.
+  README examples still match. The implementation and its tests are the authority on exact
+  behaviour; check them when this summary isn't enough.

@@ -55,7 +55,9 @@ and `Interrupt`; hooks on those won't port.
 
 1. Pick the moment and whether you observe, add context, or block.
 2. Resolve the event name for each target platform.
-3. Start from `./assets/portable-hook.sh`: read stdin, branch, exit with a code and JSON.
+3. Use a `command` hook unless the platform supports another type (`http`, `prompt`, `agent`,
+   `mcp_tool`) and the job needs it. Start from `./assets/portable-hook.sh`: read stdin, branch,
+   exit with a code and JSON.
 4. Scope it with a matcher, and **also re-check inside the script**: VS Code ignores matchers, so
    every configured hook fires there.
 5. Put the config in each platform's file (platform references below).
