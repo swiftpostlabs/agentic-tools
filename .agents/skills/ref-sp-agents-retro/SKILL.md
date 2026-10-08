@@ -15,8 +15,9 @@ metadata:
 A retro is a short note written after a substantial task: what went well, what went wrong and how
 each problem was solved or worked around, what was learned about the repo or tools, and hypotheses
 for next time. It lives in `.agents/retro/`, which is gitignored like `.agents/tasks/` (active work,
-`ref-sp-agents-local-tasks`) and `.agents/playground/` (scratch). Turning a lesson into a skill is
-`ref-sp-agents-skills-authoring`.
+`ref-sp-agents-local-tasks`) and `.agents/playground/` (scratch). That workspace set is the default
+unless the repo documents a different convention. Turning a lesson into a skill is `ref-sp-agents-skills-authoring`. The
+user's cross-session agent memory is a separate thing: don't write retros there.
 
 ## Descriptive, not prescriptive
 
@@ -26,9 +27,11 @@ A retro is evidence for a future agent to weigh, not a rule to follow.
   the Node version".
 - State improvements as hypotheses: "a lighter path might be Y", not "do Y".
 - One task is one data point; say how sure you are.
-- When an observation really is a durable, general rule, **promote** it into the owning skill or
-  `AGENTS.md` and note in the retro where it went. Expect this often: retros are where lessons get
-  noticed, and "does this belong in a skill?" is the default question at triage.
+- Anchor every observation to a concrete command, file, decision, or fix; drop vague "do better".
+- When an observation really is a durable, general rule, **promote** it into a task, the owning
+  skill, or the repo's instructions, and note in the retro where it went. Expect this often:
+  retros are where lessons get noticed, and "does this belong in a skill?" is the default question
+  at triage.
 
 ## When to write one
 

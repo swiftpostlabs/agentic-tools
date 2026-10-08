@@ -1,8 +1,8 @@
 # Adversarial Review Dimensions
 
 Depth for each selectable dimension: what the separated reviewer checks, the oracle its verdict rests
-on, what a good result looks like, and the common failure modes. The always-needed summary is in
-`../SKILL.md`; load this when running or designing a specific dimension.
+on, what a good result looks like, and the common failure modes. Load this when running or designing
+a specific dimension; the skill's `SKILL.md` covers the method common to all of them.
 
 ## Skills consistency
 

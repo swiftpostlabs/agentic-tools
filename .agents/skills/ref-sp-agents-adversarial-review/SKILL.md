@@ -47,9 +47,11 @@ reviewers.
 | security | dependency advisories, secret scanners, static analysis, design review | weak, judgment-heavy |
 | end-to-end | the app's real behaviour when run | strong where the app runs |
 
-Name each dimension's oracle before trusting its verdict. With a weak oracle, report "no issues
-found by these checks", never "secure" or "correct". What each dimension checks and how it fails:
-`./references/dimensions.md`.
+Name each dimension's oracle before trusting its verdict. With a weak oracle, lower the confidence
+and label the verdict as judgment: "no issues found by these checks", never "secure" or
+"correct". The skills dimension judges against the bars set by `ref-sp-agents-skills-authoring`
+and `ref-sp-agents-shareable-skills`; it doesn't redefine them. What each dimension checks and how
+it fails: `./references/dimensions.md`.
 
 ## Provider support
 
@@ -67,8 +69,9 @@ Separation works everywhere; only the automation on top is Claude-specific.
 
 Passive review (static and design review, dependency and secret scanning) is always in scope.
 Active testing (exploits, fuzzing, pentesting a live target) only against systems the operator owns
-or is explicitly authorized to test, with that authorization recorded. Without it, stop, report the
-passive findings, and name the active test that would settle the question.
+or is explicitly authorized to test, with that authorization recorded; never against third-party
+services, shared staging, or production without it. When authorization is missing or unclear, stop,
+report the passive findings, and name the active test that would settle the question.
 
 ## Gotchas
 

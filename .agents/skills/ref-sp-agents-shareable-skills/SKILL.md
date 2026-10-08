@@ -22,10 +22,8 @@ The full normative spec is `./references/spec.md`. Read it when you need exact r
 
 ## Canonical schema
 
-Every portability field nests under the `metadata.shareable-skills.` namespace as a **string** (the
-Agent Skills spec treats `metadata` as a string→string map — no YAML lists or nested objects; the
-dot is part of the flat key name, not YAML nesting). Conceptual lists are comma-delimited. `license`
-is the **only** exception — it uses the spec's top-level `license` field, not `metadata`.
+Every field is a flat `metadata.shareable-skills.*` string (the dot is part of the key, not YAML
+nesting); lists are comma-separated. Only `license` is top-level.
 
 ```yaml
 license: "MIT"                                           # top-level; required iff public
@@ -93,7 +91,7 @@ repo-tied, split it.
   No client has a notion of skill-level visibility — a plugin publishes exactly what its manifest
   enumerates — so the tier is only enforced by generating that list from
   `shareable-skills.visibility` and drift-checking it. The packaging, hosting, and release mechanics
-  are owned by `ref-sp-agents-plugin-marketplaces`; do not restate them here.
+  are owned by `ref-sp-agents-plugin-marketplaces`.
 
 ## Vendoring vs forking
 
@@ -106,6 +104,8 @@ repo-tied, split it.
   `shareable-skills.forked-from`. Read `./references/spec.md` §7–§8.
 
 ## Validation
+
+Needs Node >= 22; an older Node fails with confusing errors.
 
 ```sh
 node ./scripts/validate-sharing.mts <skill-dir>
