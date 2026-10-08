@@ -1,6 +1,6 @@
 ---
 name: ref-sp-db-security
-description: "Portable database-security guidance for threats, access control, views, auditing, encryption, integrity, and secure recovery. Use when: protecting database-backed systems, designing authorization models, reviewing confidentiality, integrity, or availability risks, or securing backups, logs, and administrative access."
+description: "Protecting a database beyond SQL permissions: threat model, least-privilege roles, views and masking, integrity, encryption and keys, auditing, and securing backups, logs, replicas, and break-glass access. Use when designing or reviewing database security."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,71 +12,46 @@ metadata:
 
 # Database Security
 
-## Purpose
-
-Provide portable defaults for protecting databases as socio-technical systems where confidentiality, integrity, availability, and privacy depend on more than SQL permissions alone.
-
-## When to use this skill
-
-- Designing or reviewing database access-control models, roles, and privileges.
-- Protecting sensitive datasets, regulated data, or administrative interfaces.
-- Deciding how to use views, auditing, encryption, integrity controls, or secure recovery workflows.
-- Reviewing how backups, logs, replicas, exports, and operational tooling expose database data.
-- Building a database threat model that includes accidental damage as well as malicious misuse.
-
-## Scope boundaries
-
-This skill owns **protecting a database**: threats, privileges, exposure, auditing, encryption, and
-secure recovery.
-
-- `ref-sp-agents-security` — despite the similar name, an unrelated subject: which files an *agent*
-  may read in a repo. Nothing to do with database access control.
-- `ref-sp-db-schema-design` — constraints that keep data *correct*. This skill uses constraints and
-  views to keep data *protected*; the two overlap in mechanism, not in purpose.
-- `ref-sp-db-operations` — how backup, restore, and migration work. This skill owns keeping those
-  artifacts and paths from becoming an attack surface.
-- `ref-sp-db-distributed` — where replicas and cross-site links live. This skill owns securing them.
+Database security as confidentiality, integrity, availability, and privacy, which depend on the host,
+network, procedures, and people as much as on SQL grants. Agent file access is the unrelated
+`ref-sp-agents-security`; constraints for *correctness* are `ref-sp-db-schema-design`; how backup,
+restore, and migration work is `ref-sp-db-operations`; where replicas live is `ref-sp-db-distributed`.
 
 ## Defaults
 
-- Treat database security as a combination of confidentiality, integrity, availability, and privacy, not as authentication alone.
-- Assume the DBMS is only as secure as the surrounding operating system, network, procedures, and human controls.
-- Grant the narrowest privileges that still let each user, service, or operator do its job.
-- Prefer role separation and controlled access paths over broad direct table access.
-- Treat backups, logs, replicas, exports, and recovery artifacts as sensitive data, not as harmless copies.
-- Pair preventive controls with detection, auditability, and tested recovery paths.
+- Treat backups, logs, replicas, exports, and recovery artifacts as sensitive data, not harmless
+  copies.
+- Pair preventive controls with detection, auditability, and tested recovery.
 
-## Core Rules
-
-### Start from threats and risk, not from vendor features
+## Start from threats and risk, not from vendor features
 
 - Identify both intentional and accidental threats, including theft, fraud, misuse, privacy loss, corruption, hardware failure, and loss of availability.
 - Decide which datasets require confidentiality, integrity, availability, or privacy most strongly.
 - Include insiders, operators, applications, infrastructure failures, and physical media exposure in the threat model.
 - Match controls to realistic business damage rather than applying every feature uniformly.
 
-### Control access explicitly
+## Control access explicitly
 
 - Grant and revoke privileges deliberately instead of relying on default broad access.
 - Separate application roles, read-only users, administrators, and auditors so each path has only the permissions it needs.
 - Use discretionary access control when object owners can safely manage sharing, and mandatory access control when centrally enforced classification rules are required.
 - Restrict privileged utilities and direct administrative access as tightly as ordinary data access.
 
-### Reduce exposure with views, boundaries, and integrity controls
+## Reduce exposure with views, boundaries, and integrity controls
 
 - Use views, stored interfaces, masking, or row and column restrictions to minimize direct exposure of underlying tables.
 - Enforce integrity rules in the database so unauthorized or malformed changes cannot silently corrupt trusted data.
 - Encrypt sensitive data at rest and in transit, and keep key management separated from routine application access.
 - Treat redundancy technologies such as RAID as availability controls, not as substitutes for confidentiality or authorization.
 
-### Audit and recover securely
+## Audit and recover securely
 
 - Log meaningful access, schema changes, privileged actions, and failed authorization attempts when the workload needs accountability.
 - Protect audit logs from tampering and uncontrolled retention.
 - Keep backup copies, log files, and restore media in secure locations with controlled access.
 - Recovery plans should restore the latest consistent state without bypassing the normal protection model.
 
-### Treat procedures and people as part of the design
+## Treat procedures and people as part of the design
 
 - Define onboarding, offboarding, credential rotation, incident response, and emergency access procedures.
 - Limit direct production access and make break-glass paths explicit, monitored, and reviewable.
@@ -91,13 +66,10 @@ secure recovery.
 - Views reduce exposure but do not replace least privilege or auditing.
 - Security designs that ignore operations, people, or the surrounding host environment are brittle.
 
-## Validation
+## Before finishing
 
-- The design names the major confidentiality, integrity, availability, and privacy risks for the database.
-- Roles, privileges, and administrative paths are explicit enough to verify least privilege.
-- Views, auditing, encryption, and integrity controls match the sensitivity of the stored data.
-- Backups, logs, replicas, and exports receive the same security attention as primary tables.
-- Incident response and restore procedures preserve both availability and access control expectations.
+- The major confidentiality, integrity, availability, and privacy risks are named, and roles are
+  explicit enough to verify least privilege.
 
 ## References
 

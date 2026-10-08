@@ -7,7 +7,7 @@ not make sense under web assumptions, or when deciding how far a web pattern can
 
 React Native runs the same React. Reconciliation, hooks, context, suspense, and component
 composition behave as they do on the web, which is why
-`.agents/skills/ref-sp-js-react/SKILL.md` remains the base guidance.
+`ref-sp-js-react` remains the base guidance.
 
 What does not transfer is everything below React: the host elements, the style system, the layout
 engine, the event model, and the threading model. React Native does not render to a DOM — it renders

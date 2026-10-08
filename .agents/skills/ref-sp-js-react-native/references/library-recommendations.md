@@ -7,7 +7,7 @@ committing to a package.
 
 ## Dependency rule
 
-The rule from `.agents/skills/ref-sp-js-react/SKILL.md` applies unchanged: add a dependency only when
+The rule from `ref-sp-js-react` applies unchanged: add a dependency only when
 it deletes code, removes a recurring failure mode, or provides something the platform does not.
 
 Native adds one more test. **A dependency with native code is heavier than a JavaScript-only one.**
@@ -48,7 +48,7 @@ ship in an over-the-air update. Prefer a JavaScript-only package when both would
 ## Navigation
 
 - The established navigation library is the default for a bare React Native app; file-based routing
-  is the default in an Expo app. See `.agents/skills/ref-sp-js-expo/SKILL.md`.
+  is the default in an Expo app. See `ref-sp-js-expo`.
 - Prefer native-backed stack navigators over JavaScript-reimplemented ones so transitions and
   gestures run on the UI thread.
 
@@ -92,9 +92,9 @@ Async key-value storage is **unencrypted plaintext** on device. It is not a cred
 ## Testing
 
 - Unit and component tests: the React Native testing library with the appropriate Jest preset. Jest
-  stays the runner, consistent with `.agents/skills/ref-sp-js-typescript/SKILL.md`.
+  stays the runner, consistent with `ref-sp-js-typescript`.
 - End-to-end: a native e2e runner driving a simulator or device. Playwright and
-  `.agents/skills/ref-sp-dev-playwright-cli/SKILL.md` are browser tools and do not apply to a native
+  `ref-sp-dev-playwright-cli` are browser tools and do not apply to a native
   build.
 - Performance work must be validated on a **release build on a low-end physical device**. A debug
   build on a flagship simulator hides the regressions you are hunting.

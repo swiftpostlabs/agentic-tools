@@ -13,7 +13,7 @@
 - Every interactive element declares `accessibilityRole` and `accessibilityLabel`; state-bearing
   controls declare `accessibilityState`.
 - Related content is grouped into one screen-reader node where that is the sensible unit.
-- Numeric thresholds were checked against `.agents/skills/ref-sp-ux-accessibility/SKILL.md` rather
+- Numeric thresholds were checked against `ref-sp-ux-accessibility` rather
   than guessed or restated from memory.
 
 ## Styling
