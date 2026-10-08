@@ -1,6 +1,6 @@
 ---
 name: ref-sp-js-react
-description: "Portable React guidance for components, hooks, client-side state, and React-friendly library choices. Use when: creating or reviewing React components, choosing React libraries, deciding where UI or async state should live, or refactoring a React feature that is getting hard to read."
+description: "React components and hooks that stay readable: one-pass render flow, the narrowest state owner, effects only for sync, and few deliberate libraries (MUI, zod, TanStack Query). Use when building, refactoring, or reviewing React, or choosing a React library."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,75 +12,46 @@ metadata:
 
 # React
 
-## Purpose
-
-Provide portable defaults for readable React code, disciplined hook boundaries, and dependency choices that solve real UI complexity without growing a stack by accident.
-
-## When to use this skill
-
-- Creating or refactoring React components or hooks.
-- Deciding where local UI state, derived state, and async server state should live.
-- Choosing React libraries for UI, validation, caching, or date handling.
-- Reviewing whether a React feature is too coupled, too stateful, or carrying unnecessary dependencies.
-
-## Scope Boundaries
-
-- Use this skill for React component design, hook conventions, and React-focused library choices.
-- Use `ref-sp-js-next` when the main question is about App Router, routing, client or server component boundaries, metadata, or other Next.js-specific integrations.
-- Use `ref-sp-js-typescript` when the main question is about strict type modeling, runtime trust boundaries, or `tsconfig` design rather than React behavior.
-- Use `ref-sp-js-javascript` when the code intentionally stays plain JavaScript with JSDoc and the main question is not React-specific.
-- Use `ref-sp-js-next-template` when the user is planning or reviewing a whole React and Next app rather than one React feature.
-- Use `ref-sp-js-web-standalone-template` for no-build browser apps that should stay framework-free by default.
-- Use `ref-sp-js-react-native` when the target is a native mobile app. This skill stays the base for React itself, but several rules below do not transfer: there is no DOM to keep semantic, MUI does not run on native, and the styling and list guidance differs.
-- Use `ref-sp-js-expo` for the mobile toolchain — app config, builds, and over-the-air updates.
+React itself. Next.js specifics are `ref-sp-js-next` and whole-app planning `ref-sp-js-next-template`;
+type modeling is `ref-sp-js-typescript`; framework-free browser apps are
+`ref-sp-js-web-standalone-template`. For native mobile, `ref-sp-js-react-native` builds on this skill,
+but there is no DOM, MUI doesn't run, and styling and lists work differently; Expo tooling is `ref-sp-js-expo`.
 
 ## Defaults
 
-- Keep components focused enough that the render flow is easy to scan in one pass.
-- Prefer local state for local UI concerns and derive values during render instead of mirroring props into state.
-- Prefer extracted custom hooks when effects, subscriptions, or async coordination repeat across components.
-- Prefer one coherent UI system when a component library is justified.
-- Prefer runtime validation and async caching libraries only when the feature actually crosses those boundaries.
-- Prefer native `Date` and `Intl` first, and use `date-fns` only when date logic becomes genuinely complex.
-- For closed component variant maps, label tables, and route or status dictionaries, prefer const literals as the source of truth and derive unions from them instead of maintaining a second parallel type.
-- Prefer inferred return types for components, hooks, and local helpers; annotate returns only for exported API contracts, framework callbacks, reusable hooks with non-obvious contracts, or cases where inference would widen the type incorrectly.
-- For Node-based React projects, prefer Yarn for dependency management and script execution unless the repo is intentionally Deno-owned.
+- Native `Date` and `Intl` first; `date-fns` only when date logic gets genuinely complex.
+- Infer return types for components, hooks, and helpers; annotate exported contracts, framework
+  callbacks, reusable hooks with non-obvious contracts, or where inference widens wrongly.
+- Yarn for installs and scripts in Node-based projects, unless the repo is Deno-owned.
 
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Review component boundaries | Separate rendering, async work, and state orchestration into components or hooks that can be read in one pass. | React becomes fragile when one file owns layout, effects, mutations, and validation all at once. | When a component is growing or mixing concerns. | The feature is easier to reason about and test. |
-| Choose the state owner | Decide whether state stays local, becomes derived, moves into context, or becomes query-managed. | React code stays simpler when each state value lives at the narrowest level that actually needs it. | When adding filters, forms, dialogs, or remote data. | State placement matches who reads and updates it. |
-| Choose dependencies deliberately | Add a library only if it removes real complexity, with one default per problem type. | React stacks bloat quickly when every concern gets a new helper package. | When evaluating UI, validation, async caching, or date handling. | The feature uses the smallest justified dependency set. |
-
-## Core Rules
-
-### Component structure
+## Component structure
 
 - Keep render logic obvious from top to bottom.
 - Split components when one file heavily mixes layout, data loading, mutations, and event choreography.
 - Prefer composition and explicit props over deep wrapper stacks or implicit children contracts.
+- Extract a hook or child component only when it makes the code easier to read; don't hide simple
+  logic behind one.
 - Preserve semantic HTML even when a component library provides generic wrappers. A native element
   carries role, focusability, and keyboard behaviour that a styled `<div>` does not, and every
-  capability you drop has to be rebuilt in ARIA and kept correct — see
-  `.agents/skills/ref-sp-ux-accessibility/references/semantic-structure.md`. This rule is web-only:
+  capability you drop has to be rebuilt in ARIA and kept correct (see `ref-sp-ux-accessibility`,
+  its `references/semantic-structure.md`). This rule is web-only:
   React Native has no semantic elements, so the equivalent discipline there is declaring
   `accessibilityRole` and friends explicitly. See `ref-sp-js-react-native`.
 - When a component relies on a closed set of variants or labels, keep the canonical list in a const object or tuple and derive the prop or state union from that value.
 - In JSDoc-backed React files, import external types with `/** @import { SomeType } from './somewhere.js' */` instead of duplicating typedefs locally.
 
-### Hooks and state
+## Hooks and state
 
 - Keep state local if one component owns it.
 - Lift state only when multiple consumers truly need to coordinate on the same value.
 - Use derived values during render instead of copying props or query results into extra state.
 - Treat effects as synchronization with external systems, not as a fallback place for ordinary calculations.
+- Extract a custom hook when effects, subscriptions, or async coordination repeat across
+  components.
 - Prefer `useEffectEvent`, `startTransition`, and `useDeferredValue` when they clarify event or effect boundaries or keep interactions responsive.
 - Do not add `useMemo` or `useCallback` by default unless profiling or an established repo convention shows that they earn their keep.
-- Avoid hand-maintained variant unions that duplicate a const dictionary used for rendering badges, tabs, labels, or route metadata; derive those types from the value instead.
 
-### Library recommendations
+## Library recommendations
 
 - Keep library additions rare and intentional.
 - For component-heavy React apps that need a ready-made system, prefer MUI with `@emotion/react` and `@emotion/styled`; if that stack needs icons, prefer `@mui/icons-material`.
@@ -89,12 +60,10 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - Instantiate an app-wide client such as a TanStack `QueryClient` at the composition root, not at the top of an imported module. In a purely client-side app a single module-level instance is acceptable; when the code can also run on the server, create it inside the component with `useState(() => new QueryClient())` so it is not shared across requests. See `ref-sp-dev-coding-patterns` for the general import-side-effect rule.
 - Avoid mixing styling systems casually; if an app already uses a component and theme system such as MUI, do not add Tailwind or a second styling stack without a repo-wide reason.
 
-## Validation
+## Before finishing
 
-- Components have a clear owner for local UI state, derived values, async state, and validation.
-- Effects synchronize with external systems rather than duplicating render-time derivations.
-- Library choices match concrete needs and avoid mixed-stack sprawl.
-- Extracted hooks or child components improve readability instead of hiding simple logic.
+- Every piece of state has a clear owner (local, derived, or async server state), and input crossing a
+  boundary is validated.
 
 ## References
 
@@ -105,5 +74,3 @@ Provide portable defaults for readable React code, disciplined hook boundaries, 
 - date-fns Documentation: <https://date-fns.org/>
 - Read `./references/checklist.md` for a quick React review pass.
 - Read `./references/library-recommendations.md` when choosing React dependencies or checking whether a library addition is justified.
-- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for component, hooks, and React-library prompts.
-- Review `./evals/evals.json` when validating output quality for React conventions and dependency guidance.

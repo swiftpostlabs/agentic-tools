@@ -1,6 +1,6 @@
 ---
 name: ref-sp-js-next
-description: "Portable Next.js guidance for App Router structure, client and server boundaries, framework integrations, and Next-friendly library choices. Use when: creating or reviewing Next routes and layouts, deciding where 'use client' belongs, configuring Next.js, or choosing framework-specific integrations like next-intl."
+description: "Next.js App Router apps: thin route files, Server Components by default with narrow 'use client', per-request clients, and official integrations such as MUI and next-intl. Use when building or reviewing Next routes, layouts, rendering boundaries, or config."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,70 +12,38 @@ metadata:
 
 # Next.js
 
-## Purpose
-
-Provide portable defaults for maintainable Next.js apps, especially around App Router structure, client and server boundaries, and framework-specific integrations that behave differently from plain React.
-
-## When to use this skill
-
-- Creating or reviewing App Router routes, layouts, and metadata.
-- Deciding whether a component or feature belongs on the server or client side.
-- Configuring Next.js or framework-sensitive integrations.
-- Choosing Next-specific libraries such as internationalization solutions.
-
-## Scope Boundaries
-
-- Use this skill for Next.js framework rules, routing structure, rendering boundaries, and framework-specific integrations.
-- Use `ref-sp-js-react` for general React component structure, hooks, local UI state, and React dependency choices that are not specific to Next.js.
-- Use `ref-sp-js-next-template` when the user is planning or reviewing a whole React and Next app rather than one framework concern.
-- Use `ref-sp-js-typescript` when the question is primarily about strict type modeling or TypeScript configuration.
-- Use `ref-sp-js-web-standalone-template` when the requirement is a browser-only app that should stay framework-free and no-build by default.
-- Use `ref-sp-js-expo` when the app is a native mobile app. Expo Router is also file-based, but Server Components, `'use client'`, and Next's metadata and data-fetching APIs are Next concepts that do not transfer to it.
+Next.js framework rules. React itself is `ref-sp-js-react`; planning a whole app is
+`ref-sp-js-next-template`; strict types are `ref-sp-js-typescript`; framework-free apps are
+`ref-sp-js-web-standalone-template`. Expo Router is also file-based, but Server Components,
+`'use client'`, and Next's metadata and data APIs don't transfer to it (`ref-sp-js-expo`).
 
 ## Defaults
 
-- Prefer App Router for new Next.js work.
-- Prefer Server Components by default and add `'use client'` only where interactivity or browser-only APIs require it.
-- Prefer thin route files that delegate reusable UI and logic into feature code.
-- Prefer strict TypeScript for Next apps unless the repo already made a different deliberate choice.
-- Prefer Yarn for dependency management and script execution in Node-based Next projects.
-- Prefer official framework integrations when a library needs special Next.js wiring.
-- Prefer `next-intl` when a Next app genuinely needs internationalization.
+- App Router for new work; strict TypeScript unless the repo chose otherwise; Yarn by default.
+- Prefer official framework integrations when a library needs Next wiring; treating it like a
+  plain React package often fails in subtle ways.
 
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Choose the rendering boundary | Decide whether the route, layout, or component stays on the server or crosses into `'use client'`. | Next.js stays simpler when client code is introduced deliberately instead of spreading everywhere. | When adding interactivity, browser APIs, or async data. | Server and client responsibilities are explicit. |
-| Keep route files thin | Move reusable UI and feature logic out of route entry points. | Route files become hard to maintain when they own layout, data, and component orchestration at once. | When a route or layout starts growing. | App Router files stay readable and framework-focused. |
-| Choose framework integrations | Use the official integration path for UI or i18n libraries that need framework wiring. | Next-specific integrations often fail in subtle ways when treated like plain React packages. | When adding MUI, i18n, or other framework-aware tooling. | The integration matches documented Next behavior. |
-
-## Core Rules
-
-### Routes and layouts
+## Routes and layouts
 
 - Keep route entry points focused on routing, metadata, and high-level composition.
 - Prefer colocating feature components outside the route file once the UI grows beyond a small route shell.
 - Keep layout and page composition readable from top to bottom.
 
-### Client and server boundaries
+## Client and server boundaries
 
 - Default to Server Components when the code does not need browser state, DOM APIs, or event handlers.
 - Add `'use client'` at the narrowest practical boundary.
 - Do not move entire route trees to the client just because one leaf needs interactivity.
 - Do not construct request-scoped state at module scope: a module-level `new QueryClient()` (or a similar client) is shared across requests on the server and can leak data between users. Create such clients per request inside a client component with `useState(() => new QueryClient())` instead. See `ref-sp-dev-coding-patterns` for the general import-side-effect rule.
 
-### Integrations and libraries
+## Integrations and libraries
 
 - If the app uses MUI, prefer the official MUI and Next.js integration path instead of ad hoc SSR wiring.
 - Prefer `next-intl` when localization is required in App Router projects.
 - Keep package manager usage consistent; do not mix Yarn with another Node package manager without a repo-wide reason.
 
-## Validation
+## Before finishing
 
-- Route and layout files stay thin and framework-focused.
-- Client boundaries are narrow and justified.
-- Framework-specific libraries use the official Next integration path.
 - Internationalization is added only when the app actually needs it.
 
 ## References
@@ -85,5 +53,3 @@ Provide portable defaults for maintainable Next.js apps, especially around App R
 - MUI Next.js Integration: <https://mui.com/material-ui/integrations/nextjs/>
 - next-intl App Router Guide: <https://next-intl.dev/docs/getting-started/app-router>
 - Read `./references/checklist.md` for a quick Next.js review pass.
-- Read `./assets/trigger-eval-queries.example.json` when testing trigger quality for routes, rendering boundaries, and Next-specific library prompts.
-- Review `./evals/evals.json` when validating output quality for Next framework guidance.
