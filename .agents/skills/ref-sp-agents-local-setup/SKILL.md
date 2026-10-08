@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-local-setup
-description: "Run a coding agent on a local model: size the machine, check that weights plus context fit, choose between an agent and FIM autocomplete, pick a current model, serve it with Ollama, and wire pi or Hermes. Use when setting up or debugging a local LLM."
+description: "Run a coding agent on a local model: size the machine, check weights plus context fit, choose agent or FIM autocomplete, pick a current model, serve it with Ollama, wire pi or Hermes. Use when setting up a local LLM, or when one is slow, silent, or never calls tools."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -28,7 +28,7 @@ That is the default because Ollama handles model download, memory placement, and
 with no per-machine build step, and because pi and Ollama already know about each other:
 `ollama launch pi` wires the client to the local server in one command. Hermes is the alternative
 worth knowing, and it is the better choice when the user wants a managed runtime with a GUI or is
-already inside the Nous ecosystem. Both are documented here; neither is a compromise.
+already inside the Nous ecosystem.
 
 Deviate from the default when there is a reason: llama.cpp directly when you need per-model context
 presets, quantized KV cache, or router-managed multi-model serving, and pi drives it natively.
@@ -37,17 +37,8 @@ presets, quantized KV cache, or router-managed multi-model serving, and pi drive
 is the floor. Below it, the right answer is a different class of tool rather than a worse agent, and
 Step 3 makes that call before any model is chosen.
 
-## Order of operations
-
-Do these in order. Skipping step 1 or 2 is how people end up blaming a model for a memory problem.
-
-1. **Measure the machine.** Accelerator memory first, then system RAM, then CPU.
-2. **Compute the budget.** Weights + KV cache at the target context must fit in accelerator memory.
-3. **Choose the harness class** the budget can actually serve. This decides what the model needs.
-4. **Pick a model** that fits, meets the class's requirements, and is current.
-5. **Serve it**, with context and keep-alive set deliberately rather than defaulted.
-6. **Wire the client** and confirm it can actually see the model.
-7. **Verify** with real work and a look at the GPU/CPU split.
+Work through the steps in order: skipping 1 or 2 is how people end up blaming a model for a memory
+problem.
 
 ## Step 1: measure the machine
 
@@ -89,51 +80,22 @@ minutes of silence during prefill.
 
 ## Step 2: compute the budget
 
-Two things occupy accelerator memory, and people only ever count the first.
-
 ```
 footprint  ~=  weights  +  KV cache(context)  +  ~1 GB runtime overhead
 ```
 
-Weights are the download size, which is already quantized (Ollama's default builds are roughly
-4-bit). The KV cache is the part that surprises people, because it scales linearly with context and
-context is exactly what an agent needs a lot of.
+Weights are the (already quantized) download size. The KV cache is what people forget: it grows
+linearly with context, which is exactly what an agent needs. The formula, why it badly overestimates
+sliding-window models like Gemma 4, and a measured example are in `./references/hardware.md`;
+`./references/model-cache.md` has per-model figures. Predict, then confirm with `ollama ps`.
 
-For a model with global attention on every layer:
+**Context floor: 64K.** Ollama's documentation says agents and coding tools need at least 64000
+tokens, and Hermes enforces 64K for local models. Below that, the system prompt and tool schemas
+crowd out the work: a model that only fits at 8K hasn't been made to fit, it has been made useless.
 
-```
-KV bytes  =  2 (K and V)  x  layers  x  kv_heads  x  head_dim  x  context  x  bytes_per_element
-```
-
-`bytes_per_element` is 2 at f16, 1 at `q8_0`, 0.5 at `q4_0`.
-
-**This formula is an upper bound, and for some models a wildly loose one.** Models with sliding
-window or hybrid attention (Gemma 4, Muse Glimmer) only keep a full-length cache on their global
-layers, and some also share KV across layers. Computing them as if every layer were global
-overestimates Gemma 4 31B by roughly 5x. `./references/model-cache.md` carries per-model figures
-that already account for this.
-
-**Measured example, so the numbers are not theoretical.** On a GTX 1650 (4 GB VRAM) with 16 GB
-system RAM, `qwen3.5:4b` (3.4 GB download):
-
-| Context | Reported footprint | GPU/CPU split |
-| --- | --- | --- |
-| 4K | 3.7 GB | 58% GPU |
-| 64K | 5.4 GB | 41% GPU |
-
-Raising context alone cost 1.7 GB and pushed the majority of the model onto the CPU. The formula
-predicted 2.0 GB for that delta, which is the right order and slightly conservative. Predict with
-the formula, then confirm with `ollama ps`.
-
-**Context floor: 64K.** Ollama's own documentation says tasks like agents and coding tools should be
-set to at least 64000 tokens, and Hermes enforces 64K as a minimum for its local models. Below that,
-an agent's system prompt and tool schemas crowd out the actual work. Treat 64K as a requirement, not
-a preference: a model that only fits at 8K has not been made to fit, it has been made useless.
-
-**When it does not fit,** in order of preference: quantize the KV cache to `q8_0` (roughly half the
-cache, quality impact usually not noticeable), then drop to a smaller model at the same
-quantization, then take a smaller weight quantization. Do not go below 4-bit weights; the quality
-loss stops being worth it.
+**When it doesn't fit,** in order: quantize the KV cache to `q8_0` (about half the cache, usually
+no noticeable quality loss), then a smaller model at the same quantization, then a smaller weight
+quantization. Don't go below 4-bit weights; past that the quality loss stops being worth it.
 
 ## Step 3: choose the harness class
 
@@ -150,8 +112,8 @@ written off as too small.
 base model trained with fill-in-the-middle tokens, which most instruct-tuned chat models are not.
 
 **Prefill cost differs too.** An agent harness re-sends its tool schemas every turn, which is
-exactly what hurts on slow hardware. A FIM engine sends a window around the cursor. On a machine running partly on CPU,
-this difference dominates the felt experience more than model quality does.
+exactly what hurts on slow hardware. A FIM engine sends a window around the cursor. On a machine
+running partly on CPU, this difference dominates the felt experience more than model quality does.
 
 **On a machine below the agent floor, recommend FIM completion first**: it runs entirely on the
 GPU and is what will actually get used daily. Read `./references/fim-completion.md` when setting it
@@ -178,7 +140,8 @@ to load whenever the question is "what is available", on ollama.com or on Huggin
 - **Agentic / long-running sessions.** Needs tool calling that survives dozens of turns, long
   context, and stable instruction-following under a large system prompt. Realistically 27B class and
   up, or a 30B-A3B mixture-of-experts.
-- **Assist.** Bounded single-file edits, tests, review, explanation, with a human in the loop.
+- **Assist.** A tool-calling agent on bounded single-file edits, tests, review, or explanation,
+  with a human watching each step; this is what short, supervised agent runs below the floor mean.
   9B to 14B class is genuinely useful here.
 - **Completion / utility.** Commit messages, renames, summaries, classification. 2B to 4B is fine
   and fast.

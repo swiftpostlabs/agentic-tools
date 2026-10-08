@@ -175,11 +175,9 @@ alongside `plugin.json.version` is correct, not a conflict. The two look identic
 `"version"` across `.claude-plugin/`, which is a good way to talk yourself into "fixing" a manifest
 that was already right — check which object the field sits in before touching it.
 
-Wire the version into the release tool rather than bumping it by hand. In this repo, Commitizen's
-`version_files` in `pyproject.toml` rewrites `.claude-plugin/plugin.json:version` and
-`.claude-plugin/marketplace.json:version` alongside `package.json` and `VERSION`, so one `cz bump`
-keeps every manifest on the same number. A version a human has to remember to bump is a version that
-silently freezes users.
+Wire the version into the release tool rather than bumping it by hand, for example Commitizen's
+`version_files` rewriting both `.claude-plugin/*.json` versions alongside the repo's other
+manifests. A version a human has to remember to bump is a version that silently freezes users.
 
 ### Enforce the publish set mechanically, do not trust it
 
@@ -307,7 +305,7 @@ substitute the equivalent tiers of whatever policy the repo runs.
 
 The tier is enforced by **what the artifact contains**: the enumerated paths under the Claude format,
 the staged `skills/` directory under Agent Plugins. No client has a notion of skill-level
-visibility — each publishes whatever the manifest lists. That makes the generator in step 4 the actual
+visibility — each publishes whatever the manifest lists. That makes the generator in step 5 the actual
 enforcement point, and the CI drift check the thing that keeps it honest.
 
 See [`./references/visibility-and-hosting.md`](./references/visibility-and-hosting.md) for private-repo
@@ -334,15 +332,6 @@ credentials, `extraKnownMarketplaces`, air-gapped sources, and the public market
 - **Relative `source` paths break in URL-distributed marketplaces.** If users add the marketplace by a
   direct URL to `marketplace.json`, only that file is fetched, so `"./…"` cannot resolve. Use a git or
   npm source for URL-based distribution.
-- **Components inside `.claude-plugin/` are not found.** Only `plugin.json` goes there.
-- **An unknown top-level field is fatal under Agent Plugins, harmless under the Claude format.** The
-  portable schema is closed, so a stray `skills` or `hooks` key makes the manifest invalid rather than
-  ignored. Client-specific data belongs under `extensions.<reverse domain>`.
-- **A root `plugin.json` changes which semantics Copilot and VS Code use.** It wins their search
-  order, so adding one to reach Codex silently switches those two off the enumeration-based publish
-  set and onto wholesale `skills/` discovery.
-- **Codex needs a new session after install.** Bundled skills do not appear in the session that
-  installed the plugin, which reads as a broken install if you do not expect it.
 - **Codex has no plugin support in the IDE extension**, only the CLI and the ChatGPT apps.
 - **The OpenAI portal rejects Claude-isms.** Live artifacts and `user_config` expansion do not
   transfer, local MCP servers must be redeployed behind public HTTPS, and skill text wants
@@ -358,7 +347,11 @@ credentials, `extraKnownMarketplaces`, air-gapped sources, and the public market
 - The publish set is generated, committed, drift-checked in CI, and passes
   `validate-sharing.mts --all`.
 - `version` appears in exactly one place and the release flow bumps it.
-- A real install produces the expected skill count in every client the marketplace claims.
+- A real install produces the expected skill count in every client the marketplace claims, and
+  each claimed client's detection order finds the manifest you ship.
+- Under Agent Plugins, the staged `skills/` directory holds no non-public skill (the sharing
+  validator checks the manifest, not a staged copy).
+- The skills still pass the repo's own validators.
 
 ## References
 

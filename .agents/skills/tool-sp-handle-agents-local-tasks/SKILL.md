@@ -24,7 +24,8 @@ whichever skill owns that area, and commits go through `tool-sp-commit`.
 2. Pick the next item: an open task in `20-open/`, then a `ready` task in `10-new/`, then quick
    `TODO.md` items. Skip `blocked` ones unless the blocker can now be resolved.
 3. Triage. Do simple, well-defined items directly. For broad or ambiguous ones, clarify with the
-   user and write the breakdown into a task folder (`10-new/<YYYY-MM-DD>-<name>/README.md`,
+   user (and if it still can't be executed cleanly, break it down together) and write the
+   breakdown into a task folder (`10-new/<YYYY-MM-DD>-<name>/README.md`,
    `status: new` until it is `ready`).
 4. Starting a tracked task: move it to `20-open/`, set `status: in-progress`, bump `updated`.
 5. Do one slice at a time: anchor on the file or symbol the task names, edit, validate.
@@ -34,7 +35,8 @@ whichever skill owns that area, and commits go through `tool-sp-commit`.
    the user.
 
 Track a task in a folder when it is a feature, a broad refactor, a multi-file skill change, a
-cross-repo change, or has real trade-offs. Branches, one-off commands, and typo fixes are simple.
+cross-repo change, or has real trade-offs. Branches, one-off commands, and typo fixes are simple,
+unless they turn up broader decisions or blockers.
 
 ## Closing out
 

@@ -15,7 +15,8 @@ metadata:
 How the local, gitignored `.agents/tasks/` workspace is laid out. Quick items go in `TODO.md`;
 anything substantial gets its own dated folder that moves through lifecycle subfolders. Working the
 backlog (picking, triaging, closing out) is `tool-sp-handle-agents-local-tasks`; reflecting after a
-task is `ref-sp-agents-retro`. Scratch files go in `.agents/playground/`.
+task is `ref-sp-agents-retro`. Scratch files go in `.agents/playground/`. These are the defaults
+unless the repo documents a different convention.
 
 ## Layout
 
@@ -74,6 +75,9 @@ inside the folder: a folder's own `mtime` changes only when children are added o
 
 ## README body
 
+Keep the brief current as the task changes: objective, status, blockers, assumptions, and next
+steps, bumping `updated` in the same edit.
+
 Default to **describing the problem, not prescribing the fix.** A task is often worked weeks later
 in a changed repo; a prescribed implementation hands over a conclusion without its evidence.
 
@@ -120,3 +124,5 @@ points to copy into `.agents/playground/`.
   and brief still describe the work being done.
 - A broken premise in a task gets corrected with the user, not silently worked around.
 - Keep notes scoped to their task; don't overwrite other task folders when focus changes.
+- On close, delete or refresh scratch files that no longer reflect the work, so the folder doesn't
+  become a graveyard.
