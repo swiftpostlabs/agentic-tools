@@ -16,7 +16,8 @@ Use when creating, reviewing, refactoring, or consolidating skills.
 - No plans, status, or history; dated sources are fine.
 - Examples use real repo surfaces or obviously synthetic names; nothing copied from another repo.
 - `SKILL.md` under about 200 lines; references one level deep, each with a load condition.
-- Same-skill links are `./...`; other skills are `.agents/skills/<name>/...`.
+- Same-skill links are `./...`; other skills by name, or `$SKILLS_FOLDER/<name>/...` for a hard
+  dependency's files.
 - `metadata` is a flat string map; sharing fields follow the sharing spec.
 - Scripts are non-interactive with `--help`.
 - `yarn validate` passes.

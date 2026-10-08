@@ -114,9 +114,12 @@ Rules as short bullets or steps, each with its reason when the reason is not obv
 - Prefix `ref-` for guidance and `tool-` for a workflow the user invokes; tool names read as
   actions (`tool-sp-create-skill`), ref names as subjects.
 - `metadata` is a flat string-to-string map: no lists or nested objects.
-- Link this skill's files as `./references/...` and another skill in the repo by its repo-root
-  path (`.agents/skills/<name>/SKILL.md`), never by parent-directory hops or absolute paths. Keep
-  references one level deep from `SKILL.md`.
+- Link this skill's files as `./references/...`, one level deep from `SKILL.md`. Refer to another
+  skill by its name; when a hard dependency's files must be opened, use `$SKILLS_FOLDER/<name>/...`
+  as the sharing spec defines (the skills root differs between repos and plugin installs). Never
+  use parent-directory hops or absolute paths.
+- `evals/` and trigger-eval files under `assets/` are for whoever maintains the skill, not for the
+  agent using it, so `SKILL.md` doesn't need to reference them.
 - Scripts are non-interactive, have `--help`, print data to stdout and diagnostics to stderr, and
   offer `--dry-run` when destructive. Details: `./references/scripts-and-resources.md`.
 
