@@ -22,7 +22,7 @@ method to its own findings.
 
 ## Canonical verification text
 
-The source for the Verification Discipline section of `AGENTS.md` and the chat-assistant exports.
+The source for the Verification Discipline section of `AGENTS.md` and the Gemini gem exports.
 Change it here first, then re-sync the copies (`uv run poe assistants-build`).
 
 ```md
@@ -56,16 +56,19 @@ the required confidence.
   certainty.
 - Verifying is not asking permission: confirm-before-acting rules govern *doing*; this governs
   *believing*. Verify the claim before presenting the action for confirmation.
+- One candidate is not analysis: naming a second usually points straight at the check that settles
+  it.
+- When a high-stakes claim can't be settled, the decision goes to the user.
 - A candidate you already doubt strongly can be dropped without ceremony. Otherwise prune on
   evidence, never on first impression or bare assertion.
 - When stating a conclusion, say what verified it. Mark assumptions as assumptions:
   "assuming X; couldn't verify; Y would settle it."
 
-## What a Check Can Prove
+## What a check can prove
 
 A check that runs cleanly and returns a clear result can still be silently ambiguous about the thing
 it was run to settle. Three failure shapes recur, and all three produce *evidence* — which is what
-makes them dangerous, since step 3 of the workflow says to prune on evidence.
+makes them dangerous, since the method is to prune on evidence.
 
 - **The observer's position decides what the check exercises.** A check performed from inside the
   boundary being tested may travel a different path than the real caller, be answered by a different
@@ -86,7 +89,7 @@ makes them dangerous, since step 3 of the workflow says to prune on evidence.
 The common repair is the same in all three: state what the check *did* establish, separately from
 what it was hoped to establish, and treat the gap as unverified rather than covered.
 
-## Human Claims
+## Human claims
 
 - A human interaction is **high-stakes by default** — it steers everything downstream. When the
   user asserts or challenges something, re-verify **both** the user's claim and the agent's own
@@ -132,11 +135,6 @@ what it was hoped to establish, and treat the gap as unverified rather than cove
   only observing the layer that actually decides verifies that it does anything. Where a control
   matters, check the effect from the position the real traffic or caller occupies.
 
-## Before finishing
-
-- The baseline for "this change fixed it" was captured before the change, not inferred after.
-- Stated confidence matches the evidence gathered, and unverified assumptions are marked.
-
 ## Examples
 
 Task-approach framing:
@@ -166,3 +164,8 @@ here. Low-stakes path: proceeding with idempotent handling, marked as an assumpt
 High-stakes path (if retries could double-charge): stopping — checked the vendor docs and
 SDK source; retry policy remains unknown; a sandbox test against their API would settle it.
 ```
+
+## Before finishing
+
+- The baseline for "this change fixed it" was captured before the change, not inferred after.
+- Stated confidence matches the evidence gathered, and unverified assumptions are marked.

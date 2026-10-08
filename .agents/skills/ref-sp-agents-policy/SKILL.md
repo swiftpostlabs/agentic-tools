@@ -25,9 +25,10 @@ standalone policy bins.
   object (falling back to `.agents/policy.json`, then legacy `.ai-policy.json`), validates
   `services`, writes the enabled outputs, and cleans managed sections of disabled ones.
 - `uv run agentic-tools policy check`: same resolution, compares without writing, and exits non-zero
-  on drift, telling the user to run `sync` or `import-vscode`. CI runs it.
+  on drift, telling the user to run `sync` or `import-vscode`. CI runs it; use it in any commit
+  flow that should reject drift without changing files.
 - `uv run agentic-tools policy import-vscode`: copies the current VS Code approval maps into the
-  policy, writes `.agents/config.json`, then syncs.
+  policy, writes it back to the file it was loaded from, then syncs.
 
 ## Policy fields
 
