@@ -19,7 +19,7 @@ skill (here, `ref-sp-dev-repo-conventions`); language-specific shapes in `ref-sp
 ## Features
 
 - Organize by feature, not by type. Keep code, tests, and assets that change together in one
-  folder or slice, with tests next to the code they cover.
+  folder or slice, with tests next to the code they cover when the layout allows it.
 - Give each real feature folder a short `README.md`: what it owns, its entrypoints, how to validate
   it.
 - A feature never reaches into another feature's internals.
@@ -35,10 +35,12 @@ skill (here, `ref-sp-dev-repo-conventions`); language-specific shapes in `ref-sp
 ## Product code vs scripts
 
 - User-facing behaviour of the product or package lives under the main source tree.
-- `scripts/` holds repo maintenance: migrations, scaffolding, dev automation, one-off jobs.
+- `scripts/` (or the repo's equivalent maintenance area) holds migrations, scaffolding, dev
+  automation, one-off jobs, and thin runtime shims for installed commands.
 - An installed CLI keeps its implementation in its feature under `src/`; `scripts/` holds at most
-  the smallest shim that calls it.
-- Move product behaviour out of `scripts/` once it stops being a prototype.
+  the smallest shim that calls it. A Node `bin` shim ships with the package, so include it in
+  `files`; a Python CLI needs no shim, just `[project.scripts]`.
+- Don't leave product behaviour in `scripts/` just because it started there as a prototype.
 
 ## Mixed Python and Node repos
 
@@ -53,8 +55,9 @@ skill (here, `ref-sp-dev-repo-conventions`); language-specific shapes in `ref-sp
   `tsconfig` by runtime surface. Keep cross-runtime helpers narrow and explicit.
 
 ```text
-scripts/                    dev-only, not installed
-  billing-cli.mjs           thin shim
+scripts/
+  billing-cli.mjs           thin shim for the installed CLI (ships)
+  data-migration.py         dev-only
 src/package_name/
   billing/
     README.md

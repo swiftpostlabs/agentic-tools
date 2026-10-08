@@ -25,8 +25,11 @@ Documentation for **people**. Instructions for agents are `ref-sp-agents-instruc
   when that matters.
 - Stay on orientation and getting started; move long reference material into linked docs once the
   entry document gets heavy.
+- Internal feature docs start from whoever consumes the feature, developer or agent, even inside
+  the repo.
 - Concrete beats abstract: the exact first command, a valid minimal config (not just field lists),
-  a workflow with its order and expected result. One small working example over several fragments.
+  a workflow with its order and expected result. One small working example over several fragments,
+  realistic but short: not a second manual.
 
 ## Audience first
 
@@ -41,7 +44,8 @@ Order sections by the reader's job, not the code's internals.
 ## GitHub Markdown
 
 - Real headings, not bold labels, so the outline and section links work.
-- Relative links to repo files (`[Feature docs](src/example/README.md)`), kept on one line.
+- Relative links to repo files (`[Feature docs](src/example/README.md)`), kept on one line, so
+  clones and branch views keep working.
 - Fenced blocks with a language: `sh`, `json`, `yaml`.
 - Tables and alerts only where they genuinely help scanning or flag a real risk.
 
@@ -63,6 +67,5 @@ example-tool sync --config .agents/example.json
 
 ## Before finishing
 
-- The first screen tells the intended reader what this is, and their first action comes before
-  maintainer-only detail.
-- Deeper detail is linked, not dumped into the entry document.
+- Headings are specific enough that GitHub's outline is useful.
+- No absolute links to files in the same repo.

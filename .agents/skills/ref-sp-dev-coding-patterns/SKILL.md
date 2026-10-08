@@ -20,7 +20,8 @@ conventions skill (here, `ref-sp-dev-repo-conventions`).
 
 - Type public APIs, exported helpers, and shared data structures. Use strict mode where the
   language has one.
-- Treat external input as untrusted until it is narrowed or validated; prefer type guards,
+- Make I/O edges explicit rather than relying on clever inference. Treat external input as
+  untrusted until it is narrowed or validated; prefer type guards,
   validation helpers, and discriminated unions over unchecked casts.
 - Avoid `any`, untyped containers, and stringly-typed state when the language offers better.
 
@@ -55,7 +56,8 @@ import order changes behaviour, something works at import time.
 
 - Verb subcommands for multi-action tools; long flags with short aliases for the common ones;
   predictable pairs like `--from` / `--to`.
-- Default to the current directory when that is unsurprising.
+- Safe defaults: default to the current directory when that is unsurprising, and make the riskiest
+  behaviour opt-in.
 - `--dry-run` for destructive or high-impact actions; `--help` with real examples.
 
 ## Tests
