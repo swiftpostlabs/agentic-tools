@@ -1,6 +1,6 @@
 ---
 name: ref-sp-baas-supabase
-description: "Portable Supabase guidance for CLI workflows, migrations, supabase-js CRUD usage, Edge Functions, and ORM boundaries. Use when: initializing Supabase, evolving schema, designing CRUD paths, writing Edge Functions, or deciding how ORMs fit with Supabase."
+description: "Building on Supabase: CLI-driven local stack and migrations, generated types, supabase-js CRUD ordering and keys, RLS, Edge Functions, migration drift repair, and ORM boundaries (Drizzle). Use when setting up, changing schema, writing data access, or deploying functions on Supabase."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,65 +12,24 @@ metadata:
 
 # Supabase
 
-## Purpose
+Supabase the product. It is Postgres underneath: design the schema in `ref-sp-db-schema-design`, then
+ship it through Supabase migrations. Whether the authorization model is sound is `ref-sp-db-security`
+(this skill covers how Supabase expresses it); migration safety as a database concern is
+`ref-sp-db-operations`; the calling frontend is `ref-sp-js-next` / `ref-sp-js-react`.
 
-Provide portable defaults for working with Supabase across local development, remote project management, client usage, Edge Functions, and database evolution.
-
-## When to use this skill
-
-- Initializing or linking a Supabase project.
-- Working on local stack, migrations, or database workflows.
-- Writing or deploying Supabase Edge Functions.
-- Using `@supabase/supabase-js` in browser or trusted server contexts.
-- Deciding how an ORM should coexist with Supabase.
-
-## Scope boundaries
-
-This skill owns **Supabase the product**: the CLI, migrations, `supabase-js` CRUD, Edge Functions,
-RLS as Supabase applies it, and where an ORM does or does not fit.
-
-- `ref-sp-db-schema-design` — relational modeling, keys, constraints, normalization. Supabase is
-  Postgres underneath: the schema is designed there, then shipped through Supabase's migrations.
-- `ref-sp-db-security` — the authorization *model* (least privilege, exposure, auditing). This skill
-  owns how Supabase expresses it; that one owns whether the model is sound.
-- `ref-sp-db-operations` — transactions, indexing, and migration safety as database concerns.
-- `ref-sp-js-next` and `ref-sp-js-react` — the frontend that calls Supabase.
-
-## Defaults
-
-- Use the Supabase CLI as the operational backbone for local and remote workflows, migration history, and function deployment.
-- Keep the `supabase/` directory, config, migrations, functions, and tests explicit and versioned.
-- Generate database types after schema changes and feed them into typed clients.
-- Use publishable keys in browser or other unprivileged clients, and keep secret or service-role keys only in trusted server code or Edge Functions.
-- Treat `supabase-js` calls as deliberate PostgREST or Data API requests: place `select()` before filters on reads, place modifiers after filters, and add `.select()` to mutations when you need modified rows back.
-- Keep privileged logic in trusted server code or Edge Functions, not in browser clients.
-- Treat Edge Functions as small Deno-based integration points, not as a monolith.
-- If the team wants an ORM and has not already chosen one, prefer Drizzle as the default Supabase pairing.
-- In Deno-owned repos, prefer a `deno task` that invokes `./node_modules/supabase/bin/supabase` with `nodeModulesDir: "auto"` and `allowScripts.allow: ["npm:supabase"]` when the direct `deno run npm:supabase` path is brittle.
-
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Initialize local workflow | Use `supabase init`, `start`, `stop`, and `status` to own the local stack deliberately. | Local development is much easier when the CLI, config, and containers stay aligned. | When starting or reviewing a Supabase project. | The local stack is reproducible and observable. |
-| Evolve schema safely | Use migrations, diffs, resets, generated types, and drift repair as one workflow. | Schema drift and stale generated types are common causes of runtime bugs. | Whenever tables, policies, or RPCs change. | Migration history, local schema, generated types, and remote promotion stay aligned. |
-| Design CRUD API | Use typed `supabase-js` reads, mutations, and `rpc()` with filters, modifiers, pagination, and explicit key choice. | Many app bugs come from wrong chaining order, unbounded selects, or privileged keys in the wrong place. | When building browser, server, or Edge Function data access. | CRUD flows stay typed, bounded, and RLS-aware. |
-| Build Edge Functions | Create, serve, deploy, and secure functions through the CLI and secrets workflow. | Edge Functions mix privileged logic, external integrations, and deployment concerns. | When adding webhooks, privileged endpoints, or background integrations. | Functions stay small, testable, and safe to deploy. |
-| Recover migration drift | Use `migration list`, `migration repair`, and a deliberate `db pull` or `db push` path to reconcile history. | History drift tempts teams into manual fixes that make later deploys worse. | When local and remote migration history disagree. | Migration history becomes explicit and safe to continue from. |
-| Decide ORM boundary | Choose whether `supabase-js` is enough or whether an ORM adds real value. | Split-brain schema ownership is one of the easiest ways to make Supabase projects brittle. | When introducing Drizzle, Prisma, or another ORM. | One clear schema authority owns migrations and platform boundaries stay intact. |
-
-## Core Rules
-
-### CLI and local workflow
+## CLI and local workflow
 
 - Start with `supabase init` to create the local project structure.
 - Use `supabase start`, `supabase stop`, and `supabase status` for local stack control.
 - Use `supabase db lint`, `supabase test db`, and targeted `supabase inspect db ...` commands when validating SQL or debugging locks, bloat, vacuum, or long-running queries.
 - Link explicitly with `supabase link` before remote workflows like `db pull`, `db push`, or project-level management.
 - Use `supabase gen types` after schema changes so application code can stay type-safe.
-- In Deno-owned repos, wrap the CLI in a `deno task` and call the installed binary path when needed; this is a practical workaround for Supabase package postinstall behavior that may not play well with direct `deno run npm:supabase` execution.
+- In Deno-owned repos, `deno run npm:supabase` is unreliable because the package depends on
+  postinstall behaviour. Set `nodeModulesDir: "auto"` and `allowScripts.allow: ["npm:supabase"]`,
+  then run `./node_modules/supabase/bin/supabase` from a `deno task` (general npm-CLI guidance: `ref-sp-js-deno`).
+- Keep the `supabase/` directory (config, migrations, functions, tests) explicit and versioned.
 
-### Database and migration flow
+## Database and migration flow
 
 - Treat migrations as a source of truth, not as disposable artifacts.
 - Prefer a local-first schema loop: create or capture a migration with `migration new` or `db diff -f`, replay it with `db reset`, and then regenerate types.
@@ -80,12 +39,13 @@ RLS as Supabase applies it, and where an ORM does or does not fit.
 - Remember that `migration squash` only preserves schema structure. Data mutations, cron jobs, storage buckets, and vault secrets need manual follow-up.
 - Keep schema, seed, and test concerns separate enough that resets remain predictable.
 
-### Client architecture and CRUD API
+## Client architecture and CRUD API
 
 - Before exposing Data API access to client roles, enable RLS, add the required policies, and expose only the tables and functions the client must reach.
 - Use `createClient(url, publishableKey)` for browser or unprivileged clients.
 - For trusted server-side clients, disable browser session behaviors that do not apply, such as automatic refresh or URL session detection.
-- Do not leak service-role or secret keys into browser code.
+- Never put service-role or secret keys in browser code; privileged logic lives in trusted server
+  code or Edge Functions.
 - In read query chains, call `select()` before row filters.
 - `insert()`, `update()`, `upsert()`, and `delete()` do not return modified rows unless you chain `.select()`.
 - `update()` and `delete()` should always be combined with filters, and `delete()` under RLS only removes rows that are visible to a `SELECT` or `ALL` policy.
@@ -94,7 +54,7 @@ RLS as Supabase applies it, and where an ORM does or does not fit.
 - Use `rpc()` for database functions. If the function returns a table response, you can still apply filters and modifiers; use `overrideTypes()` when cross-schema inference falls short.
 - Supply generated database types to the client with `createClient<Database>(...)`, and let generated `Row`, `Insert`, and `Update` types drive your data layer.
 
-### Edge Functions
+## Edge Functions
 
 - Treat Edge Functions as Deno-based, TypeScript-first endpoints for webhooks, integrations, validation, and privileged server logic.
 - Create locally with `supabase functions new`, run with `supabase functions serve`, and deploy with `supabase functions deploy`.
@@ -103,7 +63,7 @@ RLS as Supabase applies it, and where an ORM does or does not fit.
 - Invoke client-facing functions through `supabase.functions.invoke()` or a thin server wrapper rather than leaking privileged credentials into app code.
 - Keep each function focused and explicit about its input, auth expectations, and side effects.
 
-### ORM boundaries
+## ORM boundaries
 
 - Supabase is Postgres-first, so ORMs can fit, but only with a clear ownership model.
 - If the team wants an ORM and has not chosen one already, start with Drizzle because Supabase documents it directly and it keeps the schema close to typed SQL instead of hiding Postgres behind a heavier abstraction.
@@ -117,27 +77,12 @@ RLS as Supabase applies it, and where an ORM does or does not fit.
 
 ## Gotchas
 
-- Service-role or secret keys do not belong in browser code.
-- Data API access is not automatic. Exposed tables or functions, RLS, and client-role permissions must line up.
-- Generated database types must be refreshed after schema changes or client code drifts from reality.
-- Query order matters: put `select()` before filters on reads, and put modifiers after filters.
-- Mutation methods do not return changed rows unless you chain `.select()`.
 - `db diff` can miss some changes, including publications, storage buckets, and views with `security_invoker`.
-- `migration squash` omits data manipulation, cron jobs, storage buckets, and encrypted vault secrets.
-- `delete()` under RLS can appear to do nothing if no `SELECT` or `ALL` policy makes the target rows visible.
 - In server environments without storage, auth defaults can log session persistence warnings unless you disable `persistSession` or provide a storage implementation.
-- In Deno-managed repos, direct `deno run npm:supabase` is not always the most stable path because the Supabase package relies on install-time behavior; when that happens, use a `deno task` that calls `./node_modules/supabase/bin/supabase` instead.
-- Supabase migrations and ORM-managed migrations must not compete for schema authority.
 
-## Validation
+## Before finishing
 
-- The local stack and remote link flow are explicit.
-- Schema changes regenerate types, replay locally, and stay aligned with migration history.
-- Migration drift has a deliberate inspection and repair path.
-- CRUD calls show the right key choice, `select()` or filter ordering, pagination, and returned-row expectations.
-- Browser clients never hold privileged keys.
-- Edge Functions are small, focused, debug or deploy cleanly, and use secrets correctly.
-- ORM usage has a clear boundary, connection mode, and migration authority.
+- Migration history, local schema, generated types, and the remote project agree.
 
 ## References
 
@@ -147,5 +92,3 @@ RLS as Supabase applies it, and where an ORM does or does not fit.
 - Supabase Functions Guide: <https://supabase.com/docs/guides/functions>
 - Supabase Drizzle Guide: <https://supabase.com/docs/guides/database/drizzle>
 - Read `./references/checklist.md` for a quick Supabase review pass.
-- Read `./assets/trigger-eval-queries.example.json` when checking trigger quality for Supabase platform requests.
-- Review `./evals/evals.json` when validating output quality for CLI, schema, or Edge Function guidance.
