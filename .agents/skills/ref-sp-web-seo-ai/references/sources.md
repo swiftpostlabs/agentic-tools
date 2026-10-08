@@ -52,7 +52,7 @@ The strongest evidence in this skill, because it is **not** Google talking about
 
 **Reading Bing requires a real browser.** The page returns HTTP 200 to `curl` and is a client-rendered
 JavaScript shell — a non-rendering fetch gets the title and no body. Use
-`.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`:
+`ref-sp-dev-playwright-cli`:
 
 ```sh
 yarn playwright open
@@ -144,7 +144,7 @@ behaviour is not a matter of opinion, and it is the one part of the AI pipeline 
 ## Sources that live in the SEO skill
 
 These two files are deliberately split, and claims cross the boundary. Do not duplicate a row — look
-it up in `.agents/skills/ref-sp-web-seo/references/sources.md`, which owns:
+it up in `ref-sp-web-seo` (its `references/sources.md`), which owns:
 
 - **Bing's Webmaster Guidelines** in full — including the crawl, rendering, and link-discovery
   corroboration, and the note that the page is a JavaScript shell requiring a real browser to read.

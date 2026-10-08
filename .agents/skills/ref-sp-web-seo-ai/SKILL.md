@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-seo-ai
-description: "Visibility in AI answers — Google AI Overviews and AI Mode, and assistants like ChatGPT, Claude, and Perplexity: how they retrieve and cite pages, how to control AI crawler access, how AI surfaces distort your Search Console numbers, and which GEO advice is defensible versus speculative. Use when: asked how to rank, appear, or get cited in AI search, AI Overviews, or chatbots; asked about GEO, AEO, or answer-engine optimization; deciding whether to allow or block AI crawlers (GPTBot, ClaudeBot, Claude-User, PerplexityBot, Google-Extended, CCBot), or whether to opt out of AI training; writing robots.txt rules for AI bots; or diagnosing falling clicks while impressions hold steady."
+description: "Visibility in AI answers (AI Overviews, ChatGPT, Claude, Perplexity): how they cite pages, GEO advice that holds up, and AI crawler control. Use for AI search or GEO questions, allowing or blocking GPTBot or ClaudeBot or AI training, or clicks falling while impressions hold."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,12 +13,10 @@ metadata:
 
 # AI Search Visibility
 
-## Purpose
-
-Give honest guidance on being found and cited by AI answer surfaces: what is mechanically true and
-checkable, what it does to your measurements, and — the part most sources get wrong — how much of the
-prevailing "GEO" advice is actually unvalidated guesswork that should not be shipped as a
-recommendation.
+Being found and cited by AI answer surfaces: what is mechanically true and checkable, what it does
+to your measurements, and how much "GEO" advice is unvalidated guesswork. Google and Bing both say
+ordinary SEO is the AI-visibility lever, so technical questions (indexing, canonicals, rendering,
+Core Web Vitals) usually belong to `ref-sp-web-seo` (see Adjacent skills).
 
 ## Verify before you assert — this file rots fastest
 
@@ -34,19 +32,6 @@ Scan it for the documents in that table, re-fetch only those, and update the cla
 Proof this is not theoretical: the first draft of this skill was superseded **within the same working
 session** — Search Console shipped a Generative AI performance report and Google published an AI
 optimization guide, neither of which existed in the docs the draft was built from.
-
-## When to use this skill
-
-- Asked how to "rank in ChatGPT", "show up in AI Overviews", or "get cited by AI".
-- Asked about GEO (Generative Engine Optimization) or AEO (Answer Engine Optimization).
-- Deciding whether to allow or block AI crawlers in `robots.txt`, or **whether to opt out of AI
-  training** — three separate decisions that most people collapse into one.
-- Clicks are falling while impressions hold steady, or CTR dropped with no ranking change.
-- A stakeholder is proposing an AI-search content strategy and wants it sanity-checked.
-
-**Route elsewhere when:** the question is ordinary technical SEO — indexing, canonicals, rendering,
-Core Web Vitals (`.agents/skills/ref-sp-web-seo/SKILL.md`). Note that per Google *and* Bing, ordinary
-SEO **is** the AI-visibility lever, so that skill will often be the real answer.
 
 ## The honest position, stated first
 
@@ -97,7 +82,7 @@ So the deliverable is: **do ordinary good SEO, control crawler access deliberate
 invent the rest.**
 
 If you cannot say *why* a tactic would work in terms of retrieval mechanics, it is a hypothesis, not
-a recommendation. See the claim-tiering rule in `.agents/skills/ref-sp-web-seo/SKILL.md`.
+a recommendation. See the claim-tiering rule in `ref-sp-web-seo`.
 
 Say this to users plainly. They are being sold certainty that does not exist, and an agent that plays
 along is part of the problem.
@@ -147,13 +132,13 @@ These are checkable, and they are the whole of the defensible baseline.
   in the most widely deployed extractor. Load `./references/extraction.md` when someone asks whether
   semantic tags help AI, or when a page is being ingested wrongly.
 - **Being worth citing is not a trick.** Systems that cite sources are built to prefer ones that are
-  accurate, specific, and attributable. That is the same target as ordinary content quality — load
-  `.agents/skills/ref-sp-web-seo/references/content-quality.md` (Google's rater framework: page
+  accurate, specific, and attributable. That is the same target as ordinary content quality, which
+  `ref-sp-web-seo` covers in its `references/content-quality.md` (Google's rater framework: page
   purpose, YMYL, E-E-A-T with Trust at the centre). It is not a separate discipline, and there is no
   AI-specific version of it.
 
 **Every bullet above is an ordinary SEO task.** That is the point, and it is where this skill hands
-off. The work of *being fetchable and renderable* lives in `.agents/skills/ref-sp-web-seo/SKILL.md`:
+off. The work of *being fetchable and renderable* lives in `ref-sp-web-seo`:
 
 | To do this | Go to `ref-sp-web-seo` |
 | --- | --- |
@@ -283,7 +268,7 @@ problem exists. Chasing a phantom demotion wastes a quarter.
 - **Beware advice built on a vendor's own visibility product.** An agency selling AI-visibility
   tracking has an interest in AI visibility being both measurable and urgent.
 
-## Validation
+## Before finishing
 
 - Every recommendation is labelled mechanical (checkable) or speculative (a hypothesis to test).
 - The `robots.txt` AI-crawler state was actually fetched, not assumed.
@@ -310,7 +295,7 @@ backstop.
 
 ## Adjacent skills
 
-### The technical audit — `.agents/skills/ref-sp-web-seo/SKILL.md`
+### The technical audit — `ref-sp-web-seo`
 
 **This skill is the smaller half of one job.** Google and Bing both say ordinary SEO *is* the
 AI-visibility lever, so a question that arrives dressed as "how do we win at AI search" is usually a
@@ -327,7 +312,7 @@ technical SEO question. Send it back:
 | To diagnose *not indexed* / *not ranking* / *organic traffic dropped* | "The durable model" — crawl → render → index → rank → measure |
 | Core Web Vitals, canonicals, structured data, titles | The corresponding sections there |
 
-### Traffic and conversions — `.agents/skills/ref-sp-web-marketing/SKILL.md`
+### Traffic and conversions — `ref-sp-web-marketing`
 
 When the conversation moves from *appearing in answers* to *what that traffic did*: attribution, the
 "Direct" bucket, dark social, and whether a difference is signal or noise.

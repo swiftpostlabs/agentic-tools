@@ -90,7 +90,7 @@ that does not require cleverness — real prose in real paragraphs, server-rende
 The extraction argument is weak. The other two arguments are strong, and neither is about AI:
 
 - **Accessibility.** Native elements carry role, focusability, and keyboard behaviour that a `<div>`
-  does not. See `.agents/skills/ref-sp-ux-accessibility/references/semantic-structure.md`.
+  does not. See `ref-sp-ux-accessibility` (its `references/semantic-structure.md`).
 - **Maintainability.** Structure that names itself survives redesigns.
 
 Recommend semantic HTML on those grounds. Do not sell it as an AI-visibility lever — that is the

@@ -66,7 +66,7 @@ none.
 
 There is no metadata API for JSON-LD. Render it yourself as a `<script type="application/ld+json">`
 in the component, server-rendered so it lands in the static HTML. Validate it — and add it for **rich
-results**, never for AI visibility (see `.agents/skills/ref-sp-web-seo-ai/SKILL.md`).
+results**, never for AI visibility (see `ref-sp-web-seo-ai`).
 
 ### Static export (`output: 'export'`)
 
@@ -90,7 +90,7 @@ publish webhook to CI, or accept that the site is only as fresh as its last buil
 
 **This file covers WordPress *SEO* only.** For building on WordPress — the security gates
 (sanitize/capability/escape), hooks, `$wpdb->prepare`, child themes, and the headless REST API — use
-`.agents/skills/ref-sp-web-wordpress/SKILL.md`.
+`ref-sp-web-wordpress`.
 
 ### Core sitemaps
 

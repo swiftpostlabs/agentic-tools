@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-marketing
-description: "Measure web marketing honestly: why 'Direct' is a bucket of lost origins rather than a channel, how dark social destroys referrer data, when a conversion difference is noise rather than signal, and how to recover attribution you cannot track. Use when: reading a traffic, channel, or conversion report; asked which channel is working or where to spend budget; asked why Direct traffic is so high; interpreting a conversion-rate change, a campaign result, or a traffic spike; setting up UTM tags or self-reported attribution; analyzing analytics from Google Analytics, Wix, Shopify, or similar; or judging whether a marketing claim is supported by the data behind it."
+description: "Reading traffic and conversion data honestly: Direct is lost origins, dark social, self-reported attribution, signal vs noise. Use when reading analytics, interpreting a conversion or campaign change, judging a marketing claim, or asked which channel works or where to spend."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,19 +13,9 @@ metadata:
 
 # Web Marketing Measurement
 
-## Purpose
-
-Read marketing and conversion data without lying to yourself. Most bad marketing decisions are not
-failures of strategy — they are confident conclusions drawn from data that could not support them.
-This skill is about knowing which conclusions the data can actually carry.
-
-## When to use this skill
-
-- Reading a traffic, channel, or conversion report.
-- Asked "which channel is working" or "where should we spend."
-- Interpreting a conversion-rate change, a campaign result, or a traffic spike.
-- Analyzing analytics exports from Google Analytics, Wix, Shopify, or similar.
-- Sanity-checking a marketing claim, a dashboard, or an agency's report.
+Knowing which conclusions marketing data can actually carry. Most bad marketing decisions are
+confident conclusions drawn from data that couldn't support them. SEO audits are `ref-sp-web-seo`;
+AI answers `ref-sp-web-seo-ai`; organic social `ref-sp-web-social-media`.
 
 ## "Direct" is not a channel
 
@@ -124,9 +114,9 @@ Two consequences worth stating to a stakeholder:
   unfalsifiable claims about "brand awareness."
 
 For how AI answer surfaces specifically distort search metrics, use
-`.agents/skills/ref-sp-web-seo-ai/SKILL.md`. For whether the link suppression is real and whether a
+`ref-sp-web-seo-ai`. For whether the link suppression is real and whether a
 brand should be on a platform at all — the strategy side, kept separate from this measurement side —
-use `.agents/skills/ref-sp-web-social-media/SKILL.md`.
+use `ref-sp-web-social-media`.
 
 ## Defaults
 
@@ -157,12 +147,12 @@ use `.agents/skills/ref-sp-web-social-media/SKILL.md`.
 - `./references/sources.md` — provenance by section: the SparkToro dark-social experiment and its
   numbers, the zero-click figures and why they carry a vendor caveat, and the analytics channel
   definitions. Read it before quoting any percentage.
-- `.agents/skills/ref-sp-web-seo-ai/SKILL.md` — how AI answer surfaces distort search metrics.
-- `.agents/skills/ref-sp-web-social-media/SKILL.md` — organic discovery and reach on social/video
+- `ref-sp-web-seo-ai` — how AI answer surfaces distort search metrics.
+- `ref-sp-web-social-media` — organic discovery and reach on social/video
   platforms; the strategy counterpart to this measurement skill.
-- `.agents/skills/ref-sp-web-seo/SKILL.md` — the claim-tiering rule this skill also applies.
+- `ref-sp-web-seo` — the claim-tiering rule this skill also applies.
 
-## Validation
+## Before finishing
 
 Before delivering a marketing analysis:
 

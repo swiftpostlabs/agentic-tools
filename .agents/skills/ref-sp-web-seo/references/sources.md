@@ -46,7 +46,7 @@ loud.** A claim resting on a single interested source is a tier-1 document but n
    bump both dates, and tell the user what moved.
 
 5. **Check content, not status codes.** A source that returns 200 is not a source that supports the
-   claim — see the crawler-doc example in `.agents/skills/ref-sp-web-seo-ai/references/sources.md`,
+   claim — see the crawler-doc example in `ref-sp-web-seo-ai` (its `references/sources.md`),
    where a live page had silently stopped documenting the thing it was cited for.
 
 ## Section: Anti-folklore
@@ -142,7 +142,7 @@ yarn playwright goto "https://www.bing.com/webmasters/help/webmaster-guidelines-
 ```
 
 (Note the canonical path is `webmaster-guidelines`, singular; the plural form redirects.) See
-`.agents/skills/ref-sp-dev-playwright-cli/SKILL.md`.
+`ref-sp-dev-playwright-cli`.
 
 **The lesson, twice over.** Check content, never status codes — and note *what* defeated the fetch:
 Bing's own public guidance telling site owners not to hide content behind client-side rendering is
@@ -157,5 +157,5 @@ happening on the site you are auditing.
 - Bing Webmaster Guidelines — <https://www.bing.com/webmasters/help/webmasters-guidelines-30fba23a>
   (**read it in a real browser**, not a fetcher — see below)
 - AI surfaces rotate fastest and have their own provenance file:
-  `.agents/skills/ref-sp-web-seo-ai/references/sources.md`
-- Traffic and attribution provenance: `.agents/skills/ref-sp-web-marketing/references/sources.md`
+  `ref-sp-web-seo-ai` (its `references/sources.md`)
+- Traffic and attribution provenance: `ref-sp-web-marketing` (its `references/sources.md`)
