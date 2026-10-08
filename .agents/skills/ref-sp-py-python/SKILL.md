@@ -16,7 +16,7 @@ side-effect rule) are `ref-sp-dev-coding-patterns`; folder boundaries are
 `ref-sp-dev-projects-architecture`; a repo's exact names and commands are its conventions skill (here,
 `ref-sp-dev-repo-conventions`).
 
-## Basics
+## Defaults
 
 - `pathlib.Path` over path strings; dataclasses, `TypedDict`, or small domain objects over loose
   dicts when structure matters; explicit exceptions with clear messages over silent fallbacks.
