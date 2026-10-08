@@ -1,6 +1,6 @@
 ---
 name: ref-sp-dev-repo-conventions
-description: "Repo-specific conventions for this Python project (agentic-tools): the feature-first src/agentic_tools layout, pyproject.toml configuration hub, Black + Pyright-strict + pytest tooling via Poe, typing rules, CLI and script placement, and translations. Use when: creating or moving features, tests, or CLI entrypoints; deciding which top-level or package folder a file belongs in; adjusting pyproject.toml, Poe tasks, or tool config; or explaining how this repo is wired."
+description: "How this agentic-tools repo is laid out and wired: the feature-first src/agentic_tools package, pyproject.toml, Poe tasks for Black, Pyright strict, and pytest, typing rules, CLI and script placement, translations. Use when adding, moving, or validating code here."
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
@@ -11,37 +11,14 @@ metadata:
 
 # Repo Conventions
 
-## Purpose
-
-Help the agent work within this repository the way it is actually structured, configured, and validated, so the codebase stays clean and maintainable. This skill owns the **repo-specific** decisions; portable guidance lives in the skills listed under Scope boundaries.
-
-## Values
-
-- Prefer simplicity over cleverness.
-- Prefer maintainability over short-term convenience.
-- Prefer explicit structure and predictable behavior over hidden magic.
-
-## When to use this skill
-
-- Creating, moving, or reviewing code under `src/agentic_tools/` (features, entrypoints, core plumbing).
-- Adding or updating tests, CLI entrypoints, or Poe tasks.
-- Deciding which top-level folder (`src/`, `scripts/`, `.agents/`, `.github/`) or package folder (`main`, `features`, `core`, `shared`, `infrastructure`) a file belongs in.
-- Adjusting `pyproject.toml`, tool configuration (Pyright, Black, pytest, Hatch), or the Poe tasks.
-- Explaining how this repository is wired at the top level.
-
-## Scope boundaries
-
-This skill is the repo-specific layer. Defer portable decisions:
-
-- `.agents/skills/ref-sp-py-python/SKILL.md` — portable Python structure, typing, and CLI patterns.
-- `.agents/skills/ref-sp-dev-coding-patterns/SKILL.md` — language-agnostic naming, control flow, comments, testing defaults.
-- `.agents/skills/ref-sp-dev-projects-architecture/SKILL.md` — portable feature-folder boundaries, shared-utility thresholds, product-vs-maintenance split.
-
-Use this skill for the concrete package name, folder placement, `pyproject.toml` wiring, and validation commands in *this* repo.
+This repo's concrete layout, config, and commands. Portable defaults live in `ref-sp-py-python`
+(Python structure and typing), `ref-sp-dev-coding-patterns` (naming, control flow, tests), and
+`ref-sp-dev-projects-architecture` (feature boundaries, shared code, product vs scripts).
 
 ## Project context
 
-- Language: Python (targets 3.14); legacy JS/JSDoc Node port remains under `src/agentic_tools_old` until intentionally redesigned.
+- Language: Python 3.14. The legacy JS/JSDoc Node port under `src/agentic_tools_old` is a
+  boundary: don't extend it unless asked.
 - Distribution name `agentic-tools`; importable package `agentic_tools` under `src/agentic_tools/` (the dash→underscore normalization is normal Python packaging).
 - Tooling: Hatch (packaging), uv (dependencies/runner), Black (formatting), Pyright strict (types), pytest (tests), poethepoet (`[tool.poe.tasks]`).
 
@@ -116,27 +93,23 @@ src/agentic_tools/
 Prefer the Poe tasks as the standard entrypoints; reach for the raw tool only for focused flags or debugging.
 
 - `uv run poe test` — pytest
-- `uv run poe lint` / `uv run poe lint-fix` — Black check / format
+- `uv run poe lint` — policy, version, and plugin drift checks plus Black `--check`
+- `uv run poe lint-fix` — Black formatting only
 - `uv run poe typecheck` — Pyright strict on `./src`
 - `uv run agentic-tools policy sync` / `... policy import-vscode` — regenerate agent policy config
-- Before committing: `uv run poe lint-fix` → `uv run poe typecheck` → `uv run poe test`, then commit only if all pass.
 
 For the full `pyproject.toml` section-by-section breakdown, the tool command reference, and common config tasks, read `./references/pyproject-and-tooling.md`.
 
-## Validation
+## Before finishing
 
-For a narrow scaffold or folder-layout change:
-
-```text
-uv run python -m pytest src/agentic_tools/main/cli_test.py -q
-uv run python -m black --check src/agentic_tools
-uv run python -m pyright src/agentic_tools src/typings
-```
-
-For broader changes touching shared config or the legacy boundary, run the full Poe tasks above. Read `./references/checklist.md` before finalizing a placement or `pyproject.toml` change.
+While iterating, run the focused tasks on the touched paths, for example
+`uv run poe lint-focused src/agentic_tools/main` (same shape for `typecheck-focused` and
+`test-focused`; each takes the paths). Before
+committing, run `uv run poe lint && uv run poe typecheck && uv run poe test` (format first with
+`lint-fix` if Black complains), and commit only if all pass. Read `./references/checklist.md` before
+finalizing a placement or `pyproject.toml` change.
 
 ## References
 
 - `./references/pyproject-and-tooling.md` — `pyproject.toml` configuration hub, tool command reference, and common config tasks.
 - `./references/checklist.md` — quick review pass on placement and `pyproject.toml` consistency.
-- `./assets/trigger-eval-queries.example.json` — starter trigger-eval queries for this skill.

@@ -1,6 +1,6 @@
 ---
 name: ref-sp-dev-playwright-cli
-description: "Automate browser interactions, test web pages, and work with Playwright tests via the playwright-cli terminal tool. Use when: driving a real browser from the command line (open/goto/click/fill/snapshot), debugging a page's console/network/DOM, running or debugging Playwright tests, recording video or traces of a session, or asking the user for live UI/design feedback."
+description: "Drive a real browser from the terminal with playwright-cli: click, fill, snapshot, inspect console and network, mock requests, record video or traces, run Playwright tests, collect live UI feedback. Use when testing or debugging a web page, or reading a JS-rendered page."
 license: Apache-2.0
 allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*) Bash(yarn:*)
 metadata:
@@ -14,22 +14,10 @@ metadata:
 
 # Browser Automation with playwright-cli
 
-## Purpose
-
-Drive a real, running browser from the terminal — navigate, click, fill forms, inspect the DOM,
-mock network requests, and capture screenshots/video/traces — without writing a throwaway
-Playwright script for one-off checks or agent-driven UI verification.
-
-## When to use this skill
-
-- Verifying a UI or frontend change actually works by exercising it in a real browser.
-- Debugging a page's console output, network requests, or DOM state interactively.
-- Running or debugging Playwright test files (`references/playwright-tests.md`).
-- Recording a session as video or trace for later review (`references/video-recording.md`, `references/tracing.md`).
-- Asking the user for live UI/design feedback via the annotation dashboard.
-- Reading a page that plain fetching cannot retrieve — see [Reading pages that plain fetching
-  cannot](#reading-pages-that-plain-fetching-cannot).
-- Any task that would otherwise require writing and discarding a one-off Playwright script.
+`playwright-cli` drives a real, running browser from the terminal (navigate, click, fill, inspect the DOM, mock
+requests, capture screenshots, video, and traces) without writing a throwaway Playwright script.
+Also the way to read pages plain fetching can't (see below) and to ask the user for live UI
+feedback through the annotation dashboard.
 
 ## Provenance
 

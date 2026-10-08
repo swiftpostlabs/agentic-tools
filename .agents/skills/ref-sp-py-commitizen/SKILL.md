@@ -1,6 +1,6 @@
 ---
 name: ref-sp-py-commitizen
-description: "Python Commitizen release workflow guidance. Use when: configuring commitizen in pyproject.toml, choosing version providers, generating changelogs, validating conventional commits, or designing Commitizen-led release commands for Python or mixed Python/Node repos."
+description: "Running releases with Python Commitizen: [tool.commitizen] config, version providers (uv, pep621, scm), cz bump and changelog commands, and their failure modes. Use when configuring Commitizen or debugging a bump, tag, or changelog."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -13,27 +13,11 @@ metadata:
 
 # Python Commitizen
 
-## Purpose
+Commitizen-specific config, commands, and gotchas. General release policy (version source, manifest
+sync, changelog ownership) is `ref-sp-dev-package-management`; bump meaning is
+`ref-sp-dev-semantic-versioning`; commit wording is `ref-sp-dev-git-commits`.
 
-Guide agents through using the Python `commitizen` package as the owner for conventional commits, semantic version bumps, changelog generation, release tags, and version-file updates.
-
-## When to use this skill
-
-- Adding or reviewing `[tool.commitizen]` in `pyproject.toml`.
-- Choosing a Commitizen `version_provider` for a Python, uv, mixed Python/Node, or tag-derived release workflow.
-- Designing `cz bump`, `cz changelog`, `cz check`, or project wrapper commands.
-- Debugging version drift, missing release tags, changelog ranges, or conventional-commit parsing.
-- Deciding whether Commitizen should replace custom version or changelog scripts.
-- Deciding whether a mixed Python/Node repo should keep Commitizen or move to an explicit release-intent workflow such as Changesets.
-
-## Scope Boundaries
-
-- Use `ref-sp-dev-package-management` for general package metadata, changelog ownership, and multi-manifest release policy.
-- Use `ref-sp-dev-semantic-versioning` for bump meaning, prerelease stability, and dependency-range decisions.
-- Use `ref-sp-dev-git-commits` for commit grouping, commit bodies, and day-to-day commit message quality.
-- Use this skill for Commitizen-specific commands, configuration, and failure modes.
-
-## Default Position
+## When to use Commitizen
 
 Prefer Commitizen when a repo already wants conventional commits and generated changelogs. Let it own the normal release-prep step instead of maintaining separate custom version writers, unless the repo needs behavior Commitizen cannot express.
 
@@ -41,7 +25,7 @@ For Python projects using uv, prefer `version_provider = "uv"` so Commitizen upd
 
 For mixed Python/Node repositories, Commitizen can remain the release owner when one stable bump, one changelog, and one tag describe the whole project. Consider Changesets or another explicit-intent tool only when per-change release summaries, monorepo package-level bumps, or commit-history-independent release notes solve a real workflow problem.
 
-## Core Configuration
+## Core configuration
 
 Keep Commitizen configuration in `pyproject.toml` for Python projects unless the repo already has a deliberate standalone Commitizen config file.
 
@@ -64,7 +48,7 @@ tag_format = "v$version"
 
 Adjust the example to the repo. A pure Python uv package may not need `package.json:version` or `VERSION`. A Python-only package that does not need npm-compatible semver prerelease syntax can use the default PEP 440 scheme instead of `semver2`.
 
-## Version Provider Selection
+## Version provider selection
 
 | Provider | Use when | Notes |
 | --- | --- | --- |
@@ -77,7 +61,7 @@ Adjust the example to the repo. A pure Python uv package may not need `package.j
 
 `version_files` can be combined with any provider to update extra version-bearing files during a bump.
 
-## Command Patterns
+## Command patterns
 
 Wrap Commitizen commands in the repo's task runner when possible so contributors use one stable interface.
 
@@ -93,7 +77,7 @@ Wrap Commitizen commands in the repo's task runner when possible so contributors
 
 Use `--yes` for non-interactive automation. Use `--check-consistency` before real bumps when `version_files` are configured so drift is caught early.
 
-## Release Workflow Pattern
+## Release workflow
 
 For a Commitizen-led stable release flow:
 
@@ -108,7 +92,7 @@ Use project tasks such as `release-prepare-preview`, `release-prepare`, and `rel
 
 Commitizen should prepare the release; registry authentication should normally belong to the release workflow. For PyPI and npm, prefer trusted publishers with OIDC over stored publish tokens, and keep `id-token: write` scoped to the CI jobs that publish.
 
-## Changelog Guidance
+## Changelog
 
 Commitizen changelogs depend on parseable commit history and matching release tags.
 
@@ -128,14 +112,12 @@ Commitizen changelogs depend on parseable commit history and matching release ta
 - `--check-consistency` catches drift, but if a bump command partially changed files before failing, inspect and restore only those attempted bump changes before retrying. Do not use broad destructive git commands.
 - Commitizen-generated changelogs are only as good as the commit history. If the team routinely needs richer per-change release notes before merge, that is a reason to evaluate an explicit-intent workflow rather than adding fragile commit-message rules.
 
-## Validation
+## Before finishing
 
-- `cz version -p` returns the same version users see in the package metadata.
-- `cz bump --dry-run --check-consistency --increment <part> --yes` previews the expected next version and tag.
-- Every file in `version_files` contains the current version before a real bump.
-- The generated changelog uses the intended tag format and commit range.
-- Release docs or task names make clear whether Commitizen prepares the release, publishes it, or both.
-- Publishing workflows use trusted publishing or document why stored registry tokens remain necessary.
+- `cz version -p` matches the version users see in the package metadata.
+- Every file in `version_files` holds the current version before a real bump.
+- Release docs or task names say whether Commitizen prepares the release, publishes it, or both.
+- The generated changelog uses the intended tag format and commit range (`cz changelog --dry-run`).
 
 ## References
 

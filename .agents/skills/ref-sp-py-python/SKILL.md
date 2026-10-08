@@ -1,6 +1,6 @@
 ---
 name: ref-sp-py-python
-description: "Portable Python guidance for typed application code, scripts, CLIs, and tests. Use when: writing or refactoring Python modules, designing Python feature folders, or deciding typing and testing patterns."
+description: "Python defaults: type hints and Pyright-friendly typing, uv and Poe, side-effect-free imports, CLI vs maintenance scripts, packaging boundaries, and collocated tests. Use when writing, refactoring, or packaging Python code."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -11,49 +11,19 @@ metadata:
 
 # Python
 
-## Purpose
+Portable Python defaults. Language-neutral rules (naming, comments, CLI ergonomics, the import
+side-effect rule) are `ref-sp-dev-coding-patterns`; folder boundaries are
+`ref-sp-dev-projects-architecture`; a repo's exact names and commands are its conventions skill (here,
+`ref-sp-dev-repo-conventions`).
 
-Provide portable Python defaults that emphasize explicit typing, simple structure, maintainable CLIs, and focused tests.
+## Basics
 
-## When to use this skill
+- `pathlib.Path` over path strings; dataclasses, `TypedDict`, or small domain objects over loose
+  dicts when structure matters; explicit exceptions with clear messages over silent fallbacks.
+- `uv` for dependencies, environments, and running commands, unless the repo mandates another
+  workflow. Use the repo's formatter, type checker, and test tasks when they exist.
 
-- Writing or refactoring Python application code.
-- Designing a Python CLI or maintenance script.
-- Choosing how to type shared data and interfaces.
-- Deciding where tests should live and what they should cover.
-- Reviewing Python code for readability and long-term maintainability.
-
-## Scope Boundaries
-
-- Use this skill for portable Python structure, typing, CLI, and testing guidance.
-- Use `ref-sp-dev-coding-patterns` for language-agnostic naming, comment, and CLI ergonomics defaults.
-- Use `ref-sp-dev-projects-architecture` for shared-utility thresholds and product-versus-maintenance boundaries.
-- Use a repo's own repo-conventions skill (in this repo, `ref-sp-dev-repo-conventions`) when the question is about that repository's exact package names, top-level folders, or validation commands.
-
-## Defaults
-
-- Prefer modern Python with type hints throughout public and shared code.
-- If the repo already targets a modern Python baseline such as 3.14+, do not add `from __future__ import annotations` or similar compatibility boilerplate just to mimic older code.
-- Prefer inferred return types for local helpers when the type checker can infer them cleanly; add return annotations when the function defines an API contract or inference would hide ambiguity.
-- Prefer `pathlib.Path` over raw path strings.
-- Prefer dataclasses, typed dicts, or small domain objects over loose dictionaries when structure matters.
-- Prefer explicit exceptions and clear error messages over silent fallbacks.
-- Prefer inert module imports: defer connections, I/O, and client construction to factory functions or lazy accessors rather than running them at module scope.
-- Prefer `uv` for Python dependency management, virtual environments, and runnable project commands unless the repo already mandates another Python workflow.
-- In `uv`-managed repos that use Poe, prefer tasks that invoke installed console entry points through `uv run` instead of adding tiny wrapper scripts.
-- Prefer the repo's standard formatter, type checker, and test task wrappers when they exist.
-
-## Task Framing
-
-| Command or action | What | Why | When | Expected outcome |
-| --- | --- | --- | --- | --- |
-| Organize a Python feature | Choose a feature folder, local modules, and collocated tests. | A good starting layout keeps future refactors local instead of repo-wide. | When adding a new unit of behavior. | The feature is easy to find, extend, and test. |
-| Decide between product CLI and maintenance script | Choose whether a command belongs under the package or in repo maintenance paths. | Many Python repos accumulate product behavior in ad hoc scripts. | When a new command-line flow appears. | Product commands are packaged cleanly and maintenance glue stays separate. |
-| Review types and tests together | Check whether the public API, data structures, and risky branches are explicit. | Python stays maintainable when type clarity and test coverage grow together. | When reviewing or refactoring non-trivial logic. | Data shapes are clear and the fragile branches are covered. |
-
-## Core Rules
-
-### Typing
+## Typing
 
 - Type function parameters clearly.
 - Prefer inferred return types for private/local helpers whose implementation makes the result obvious to the checker and reader.
@@ -67,20 +37,20 @@ Provide portable Python defaults that emphasize explicit typing, simple structur
 - Treat type hints as the checked parameter contract: Pyright and mypy verify annotations but never read docstring `Args:`, `:param`, or `Returns:` blocks, so a docstring that restates the signature drifts silently and no type check catches it.
 - Prefer not to restate typed parameters in prose; if a project genuinely needs API docstrings, enforce them with a dedicated docstring linter, not the type checker. Prefer `pydoclint` — actively maintained, runs standalone or as a pre-commit hook, and adds no new lint stack; `darglint` is unmaintained. Ruff's equivalent `DOC` rules are still preview-only, so do not pull in Ruff just for docstring checks.
 
-### Structure
+## Structure
 
 - Group related modules by feature or responsibility.
 - Keep tests close to the behavior they cover when the repo layout supports it.
 - Extract helper modules only when the behavior is truly shared or the file has become hard to navigate.
 - On modern Python baselines, do not create `__init__.py` files solely to make directories importable; use implicit namespace packages unless package-level code is actually needed.
 
-### Module initialization
+## Module initialization
 
-- Remember that `import module` executes the module's entire top level, so a module-scope `client = SomeClient(...)` runs its work at import time and makes import order significant.
-- Prefer a factory function or a lazy accessor — for example a `get_client()` function, optionally memoized with `functools.lru_cache` — over a ready-built instance at module scope.
-- Keep module-scope bindings limited to constants, type aliases, and other inert values; defer connections, configuration or environment reads, and I/O to call time.
-- Treat module-scope instantiation of a stateful object as a deliberate, shared decision with a stated reason, not a default; explore a factory first. See `ref-sp-dev-coding-patterns` for the portable rule.
-- In tests, module-scope setup is more acceptable given small modules, but still prefer fixtures over import-time work when it could couple test order.
+`import module` runs the whole top level, so a module-scope `client = SomeClient(...)` works at
+import time and makes import order matter. Use a factory or a lazy accessor (a `get_client()`,
+optionally memoized with `functools.lru_cache`); keep module scope to constants, type aliases, and
+inert values. Module-scope instantiation of a stateful object is a deliberate, stated decision.
+In tests, prefer fixtures over import-time setup.
 
 ```python
 # avoid: runs at import time, import order now matters
@@ -91,27 +61,27 @@ def get_client() -> ApiClient:
     return ApiClient(settings.api_url)
 ```
 
-### CLI and scripts
+## CLI and scripts
 
 - If a command is part of the installed product, expose a clear `main()` function and register it as an entrypoint.
 - If a `uv`-managed repo needs a development task for an installed dependency, prefer a Poe task that calls the dependency's console command through `uv run`, for example `sync-shared-tool = "uv run shared-tool sync"`, instead of a pass-through script like `python scripts/run_sync.py`.
 - If code is only for repo maintenance or one-off automation, keep it as a script.
 - Use descriptive subcommands and flags for multi-action CLIs.
 
-### Packaging boundaries
+## Packaging boundaries
 
 - `[project.scripts]` is distribution metadata, not a local convenience: it becomes `entry_points.txt` inside the built artifact. There is no internal-only entrypoint, so a command meant to stay in the repo belongs in the task runner instead.
 - Keep repo maintenance directories out of the distributed package list. Shipping them installs test files and repo-mutating scripts into every consumer's environment.
 - Never distribute a generic top-level import name such as `scripts`, `utils`, `common`, or `i18n`. A directory with no `__init__.py` is a namespace package, so it merges across `sys.path` and silently shadows a consumer's same-named package — the consumer's own code loses, because installed paths usually sort ahead of theirs.
 - Do not derive a repo root from `__file__` in a module that can be installed. Once it is copied into `site-packages` the path resolves to the venv rather than the checkout. Walk up from the working directory, or keep the module out of the distribution.
 
-### Testing
+## Testing
 
 - Add unit tests for non-trivial logic and error cases.
 - Prefer small builders, fixtures, or factory helpers over giant setup blocks.
 - Keep test names specific enough that failures are easy to localize.
 
-## Example Layouts
+## Example layouts
 
 ### Packaged feature with collocated tests
 
@@ -128,8 +98,8 @@ src/package_name/report_sync/
 
 ```text
 scripts/
-  update_from_upstream.py
-  update_from_upstream_test.py
+  init_project.py
+  init_project_test.py
 ```
 
 Give it a task-runner entry rather than a `[project.scripts]` one, so it keeps a first-class
@@ -146,18 +116,11 @@ what makes it internal-only in a way `[project.scripts]` cannot be. The payoff b
 consistency: every documented command in the repo becomes `uv run poe <task>`, instead of one script
 path standing out from the rest.
 
-## Validation
+## Before finishing
 
-- Public Python code is typed clearly and reads without guesswork.
-- Parameter contracts live in type hints; any prose `Args:` docstrings are backed by a docstring linter, not assumed correct by the type checker.
-- Modern-baseline projects do not carry legacy compatibility imports without a version-specific reason.
-- Paths, errors, and data structures are explicit.
-- Importing a module runs no connections or I/O; stateful clients are built by factories or lazy accessors, not at module scope.
-- Product CLIs and maintenance scripts are separated intentionally, and internal commands are task-runner tasks rather than `[project.scripts]` entries.
-- No distributed package claims a generic top-level import name, and no installable module derives a repo root from `__file__`.
-- Tests cover non-trivial logic and stay readable.
+- After `uv build`, list the wheel (`unzip -l dist/*.whl`): no maintenance directories or test files
+  ship in it.
 
 ## References
 
 - Read `./references/checklist.md` for a quick Python review pass.
-- Read `./assets/trigger-eval-queries.example.json` when checking trigger quality for Python-focused prompts.
