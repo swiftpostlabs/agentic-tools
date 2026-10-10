@@ -67,7 +67,7 @@ the required confidence.
 ## What a check can prove
 
 A check that runs cleanly and returns a clear result can still be silently ambiguous about the thing
-it was run to settle. Three failure shapes recur, and all three produce *evidence* — which is what
+it was run to settle. Four failure shapes recur, and all four produce *evidence* — which is what
 makes them dangerous, since the method is to prune on evidence.
 
 - **The observer's position decides what the check exercises.** A check performed from inside the
@@ -85,8 +85,15 @@ makes them dangerous, since the method is to prune on evidence.
   supplies something real use will not — a human present to read a value, a warm cache, a populated
   fixture, an already-open session — the run is valid and still says nothing about whether the system
   works. Check that every state the test leans on will be there when the system is actually used.
+- **A works-here, fails-there comparison varies more than the difference you named.** Reading it as
+  evidence about the browser, machine, or network leaves every other difference between the runs as
+  an unexamined rival. The one most often missed is what the user supplied: which credentials were
+  entered (including what a password manager autofilled), which account, which input file. It
+  varies silently, explains every observation as well as the environment theory does, and is the
+  cheapest candidate to rule out, so confirm the inputs were identical before building hypotheses
+  about the environment.
 
-The common repair is the same in all three: state what the check *did* establish, separately from
+The common repair is the same in all four: state what the check *did* establish, separately from
 what it was hoped to establish, and treat the gap as unverified rather than covered.
 
 ## Human claims
