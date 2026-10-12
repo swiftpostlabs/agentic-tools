@@ -29,6 +29,8 @@
     "version:check": "node scripts/check-version-drift.mts check",
     "assistants:build": "node scripts/project-assistant-instructions.mts",
     "assistants:check": "node scripts/project-assistant-instructions.mts --check",
+    "release": "commit-and-tag-version",
+    "release:preview": "commit-and-tag-version --dry-run",
     "validate:skills": "node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts .agents/skills --all",
     "validate:sharing": "node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
     "validate": "node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts .agents/skills --all && node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
@@ -46,6 +48,7 @@
     "@jest/globals": "^30.2.0",
     "@playwright/cli": "^0.1.17",
     "@types/node": "^24.10.1",
+    "commit-and-tag-version": "13.2.1",
     "jest": "^30.2.0",
     "typescript": "^5.9.3"
   },
