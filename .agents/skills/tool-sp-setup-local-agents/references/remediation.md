@@ -123,7 +123,7 @@ it to the origins that need it. If nothing browser-based uses it, remove the var
 **`M1` nothing installed.** Choose by fit, not by reputation. Size candidates first:
 
 ```bash
-uv run $SKILLS_FOLDER/ref-sp-agents-local-setup/scripts/local_model_fit.py \
+node $SKILLS_FOLDER/ref-sp-agents-local-setup/scripts/local-model-fit.mts \
   --context <the server's real context> --kv-bytes <1 for q8_0, 2 for f16>
 ```
 
@@ -181,7 +181,7 @@ at a trimmed file. Template:
 Re-run the affected checks rather than the whole audit:
 
 ```bash
-uv run <skill-dir>/scripts/audit_local_setup.py --only S2,S3
+node <skill-dir>/scripts/audit-local-setup.mts --only S2,S3
 ```
 
 Then verify empirically with `ollama ps` and a real task. A check that passes because a file says so

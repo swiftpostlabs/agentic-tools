@@ -143,4 +143,4 @@ skill make the output better than no skill or the previous version? Read
 - `./references/description-guide.md`: writing and trigger-testing descriptions.
 - `./references/evaluation-guide.md`: trigger and output evals, baselines, grading.
 - `./references/scripts-and-resources.md`: what goes in `references/`, `scripts/`, `assets/`, `evals/`.
-- `./scripts/aggregate_eval_results.py`: summarise `grading.json` files from eval runs.
+- `./scripts/aggregate-eval-results.mts`: summarise `grading.json` files from eval runs.

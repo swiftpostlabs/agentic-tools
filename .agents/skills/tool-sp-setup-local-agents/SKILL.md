@@ -26,14 +26,15 @@ the usual failure is a setting the server never read.
 Run the audit before reading anything else or changing a setting:
 
 ```bash
-uv run <skill-dir>/scripts/audit_local_setup.py
+node <skill-dir>/scripts/audit-local-setup.mts
 ```
 
 It is read-only, prints one line per check plus the server configuration it saw, and exits non-zero
 when a check failed. Flags: `--class agent|fim` to audit against a target rather than
 what the hardware can afford, `--json` when the output feeds another step, `--only H2,S2` to re-run
-a subset after a fix. Use `uv run`, not the system `python3`: the script is stdlib-only and
-declares its Python version in PEP 723 metadata, so uv fetches a matching interpreter.
+a subset after a fix. Run it with Node 22.18 or newer, which executes `.mts` directly; it needs no dependencies. Node will
+not strip types under `node_modules`, so when the skill is linked from an npm install, copy the
+script out first.
 
 Do not re-derive this by hand with `systemctl cat`, `nvidia-smi`, and `ollama list`. That is the
 slow path the script replaces, and hand-reading misses the variable that is set but undocumented.
@@ -115,7 +116,7 @@ Then prove the harness class actually works:
 
 ## Before finishing
 
-- Re-run `audit_local_setup.py`; every check is `pass`, `info`, or an explicitly accepted exception.
+- Re-run `audit-local-setup.mts`; every check is `pass`, `info`, or an explicitly accepted exception.
 - `ollama ps` shows the intended context and `100% GPU` for the chosen model.
 - The harness class was proven by a real task, not by a configuration read.
 - Any check the user declined is reported as declined, not quietly dropped.
@@ -125,7 +126,7 @@ Then prove the harness class actually works:
 - Read `./references/remediation.md` for the per-check fix procedure, in the order to apply them.
 - Read `$SKILLS_FOLDER/ref-sp-agents-local-setup/SKILL.md` for the rules behind every check: fit
   arithmetic, harness classes, and the model table.
-- Run `$SKILLS_FOLDER/ref-sp-agents-local-setup/scripts/local_model_fit.py` to size specific models
+- Run `$SKILLS_FOLDER/ref-sp-agents-local-setup/scripts/local-model-fit.mts` to size specific models
   against this machine. Pass `--context` and `--kv-bytes` to match the server's real settings, and
   `--config` with a model's `config.json` for an exact rather than estimated cache figure.
-- Run `./scripts/audit_local_setup.py` for the audit itself; `--help` lists the flags.
+- Run `./scripts/audit-local-setup.mts` for the audit itself; `--help` lists the flags.

@@ -24,13 +24,14 @@ formats belong to `ref-sp-agents-local-tasks` and `ref-sp-agents-retro`.
 Run the audit before reading anything else or touching a file:
 
 ```bash
-uv run <skill-dir>/scripts/audit_agent_repo.py --repo <repo>
+node <skill-dir>/scripts/audit-agent-repo.mts --repo <repo>
 ```
 
 It is read-only, prints one line per check with details, and exits non-zero when a check failed.
 `--json` for machine output, `--only I2,I3` to re-run a subset. Don't re-derive it by hand.
-Use `uv run`, not the system `python3`: the script declares its Python version in PEP 723
-metadata and uv fetches a matching interpreter.
+Run it with Node 22.18 or newer, which executes `.mts` directly; it needs no dependencies. Node will
+not strip types under `node_modules`, so when the skill is linked from an npm install, copy the
+script out first.
 
 ## The baseline
 

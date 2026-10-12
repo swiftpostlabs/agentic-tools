@@ -4,5 +4,5 @@
     "noUncheckedIndexedAccess": false,
     "exactOptionalPropertyTypes": false
   },
-  "include": [".agents/skills/*/scripts/*.mts", ".agents/skills/*/assets/*.ts"]
+  "include": [".agents/skills/*/scripts/*.mts", ".agents/skills/*/assets/*.mts"]
 }

@@ -42,7 +42,7 @@ Ask the user only when the change scope is unclear or two skills could both own 
   dependency changes what can be exported.
 - Prefer extending an existing owner over creating a new skill.
 - When evals produced `grading.json` files, summarise them with
-  `.agents/skills/ref-sp-agents-skills-authoring/scripts/aggregate_eval_results.py <workspace>`.
+  `node .agents/skills/ref-sp-agents-skills-authoring/scripts/aggregate-eval-results.mts <workspace>`.
 
 ## Before finishing
 

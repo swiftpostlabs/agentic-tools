@@ -1,6 +1,6 @@
 # Remediation By Check
 
-One section per check ID emitted by this skill's `./scripts/audit_agent_repo.py`. Apply in the order listed
+One section per check ID emitted by this skill's `./scripts/audit-agent-repo.mts`. Apply in the order listed
 here — later stages assume earlier ones. Every command uses `<repo>` for the audited repository
 root.
 

@@ -113,8 +113,8 @@ for detail rather than repeating it.
 
 Open items are plain bullets, `- [] item`, or `- [ ] item`; done items are `- [x] item` (or `[X]`).
 Anything substantial becomes a task folder instead. A script that finds the next open item must
-accept all three open forms: `./assets/next_todo.py` and `./assets/next-todo.ts` are starting
-points to copy into `.agents/playground/`.
+accept all three open forms: `./assets/next-todo.mts` is a starting point to copy into
+`.agents/playground/`.
 
 ## Gotchas
 
