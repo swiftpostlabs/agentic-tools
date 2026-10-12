@@ -1,7 +1,7 @@
 {
   "name": "agentic-tools",
   "version": "0.1.0",
-  "description": "Shared agent skills and CLI tools for Node-based repositories.",
+  "description": "Shared agent skills and the agentic-tools CLI for policy, skills, plugin, and export workflows.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/swiftpostlabs/agentic-tools.git"
@@ -9,39 +9,41 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "agentic-tools": "./scripts/agentic-tools.mjs"
+    "agentic-tools": "./dist/cli.js"
   },
   "files": [
     ".agents/skills",
-    "scripts/agentic-tools.mjs",
-    "src/agentic_tools_old/main.mjs",
-    "src/agentic_tools_old/utils/common.mjs",
-    "src/agentic_tools_old/agents_policy/main.mjs",
-    "src/agentic_tools_old/skills_management/main.mjs",
+    "dist",
     "CHANGELOG.md",
     "README.md",
     "LICENSE"
   ],
   "packageManager": "yarn@1.22.22",
   "scripts": {
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
-    "typecheck": "tsc --project tsconfig.node.json --noEmit",
+    "build": "tsc -p tsconfig.build.json",
+    "prepare": "tsc -p tsconfig.build.json",
+    "cli": "node src/cli.ts",
+    "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.skills.json",
+    "lint": "node src/cli.ts policy check && node src/cli.ts plugin check",
     "validate:skills": "node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts .agents/skills --all",
     "validate:sharing": "node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
     "validate": "node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts .agents/skills --all && node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
     "check:drift": "node .agents/skills/ref-sp-agents-shareable-skills/scripts/check-vendored-drift.mts .agents/skills",
-    "lint": "node --check scripts/agentic-tools.mjs && node --check src/agentic_tools_old/main.mjs && node --check src/agentic_tools_old/utils/common.mjs && node --check src/agentic_tools_old/agents_policy/main.mjs && node --check src/agentic_tools_old/agents_policy/main.test.mjs && node --check src/agentic_tools_old/skills_management/main.mjs && node --check src/agentic_tools_old/skills_management/main.test.mjs && node --check src/agentic_tools_old/main.test.mjs",
     "pack": "npm pack --dry-run",
     "playwright": "playwright-cli"
   },
   "dependencies": {
     "citty": "^0.2.2",
-    "consola": "^3.4.2"
+    "consola": "^3.4.2",
+    "json5": "^2.2.3",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@jest/globals": "^30.2.0",
+    "@playwright/cli": "^0.1.17",
     "@types/node": "^24.10.1",
     "jest": "^30.2.0",
-    "@playwright/cli": "^0.1.17",
     "typescript": "^5.9.3"
   },
   "engines": {
