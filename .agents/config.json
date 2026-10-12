@@ -31,8 +31,8 @@
     ],
     "terminalAutoApprove": {
       "/^git (log|status|diff).*$/": true,
-      "/^uv run poe (lint|lint-fix|typecheck|test)$/": true,
-      "/^uv run agentic-tools policy (sync|check|import-vscode)$/": true,
+      "/^yarn (lint|typecheck|test|validate)$/": true,
+      "/^yarn cli policy (sync|check|import-vscode)$/": true,
       "rm": false,
       "rmdir": false,
       "del": false,
