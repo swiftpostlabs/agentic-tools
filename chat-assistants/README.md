@@ -68,8 +68,8 @@ gets dropped. In order of what survives:
 persona and verification text verbatim, so they do, and the copy is mechanical:
 
 ```bash
-uv run poe assistants-build   # regenerate from chat-assistants/*/templates/
-uv run poe assistants-check   # fail if a generated file drifted from its template
+yarn assistants:build   # regenerate from chat-assistants/*/templates/
+yarn assistants:check   # fail if a generated file drifted from its template
 ```
 
 Edit `gemini-gem/templates/*.template.md`, never the generated
@@ -102,11 +102,11 @@ Roughly:
    whatever domain rules it needs.
 4. **If the field is large, template it.** Put `{{PERSONA}}` and
    `{{VERIFICATION}}` in a `templates/<name>.template.md` under the product
-   folder and run `uv run poe assistants-build`. If the field is small, write it
+   folder and run `yarn assistants:build`. If the field is small, write it
    by hand and say in the product README that it is a fork.
 5. **For a Gem that needs knowledge files**, the exporter bundles skills into
-   them: `uv run python -m agentic_tools.main.cli export build --target
-   gemini-gem --config <config.json> --out <dir>`. It refuses to build an empty
+   them: `yarn cli export build --target gemini-gem --config <config.json>
+   --out <dir>`. It refuses to build an empty
    selection, so a Gem with no knowledge files does not go through it.
 6. **Test the two failure modes**: ask it something factual and watch the
    register, then push back on a correct answer and see whether it re-verifies

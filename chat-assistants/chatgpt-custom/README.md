@@ -42,5 +42,5 @@ check notices when the skills move on without them. Edit them directly, and
 measure afterwards:
 
 ```bash
-uv run python -c "from pathlib import Path; print(len(Path('chat-assistants/chatgpt-custom/default/instructions.md').read_text().strip()))"
+node -e "console.log([...require('node:fs').readFileSync('chat-assistants/chatgpt-custom/default/instructions.md', 'utf8').trim()].length)"
 ```

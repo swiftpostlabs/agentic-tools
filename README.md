@@ -1,39 +1,51 @@
 # Agentic Tools
 
-This project packages reusable agent workflows, shareable skills, and supporting automation for agent-oriented repositories.
+Reusable agent skills, plus the `agentic-tools` CLI that links them into other repositories and keeps
+per-client agent policy files in sync.
 
 ## For Users
 
-Use this repo when you want to install shared agent tooling into another repository instead of copying prompts, skills, and policy glue by hand.
+Use this repo when you want shared agent tooling in another repository instead of copying prompts,
+skills, and policy glue by hand. It provides:
 
-It provides:
+- Shareable skills under `.agents/skills/`.
+- The `agentic-tools` CLI with `skills`, `policy`, `plugin`, and `export` command groups.
 
-- Shareable skill definitions under `.agents/skills/`
-- A packaged `agentic-tools` CLI with grouped `skills` and `policy` scopes
+The CLI is written in TypeScript. Node repos install it from npm or GitHub; Python repos install a
+thin Python package that bundles the same CLI with a Node runtime, the way `pyright` ships on PyPI,
+so they need no Node install of their own.
 
-### Install In Another Repo
+### Install in another repo
 
-Python repos can install the package with uv:
+A Python repo, with uv:
 
 ```sh
 uv add --dev "agentic-tools @ git+https://github.com/swiftpostlabs/agentic-tools.git"
 ```
 
-Node repos should prefer Yarn for Node-managed installs and commands:
+Building that install fetches the CLI's two npm dependencies from the npm registry once, using the
+npm that ships with the bundled Node runtime.
+
+A Node repo, with Yarn:
 
 ```sh
 corepack enable
 yarn add --dev github:swiftpostlabs/agentic-tools#<commit>
 ```
 
-Pin a full commit SHA. Every commit of this package carries the same `version`, and Yarn classic caches a
-GitHub dependency without a ref under one folder (`npm-agentic-tools-<version>`) for all commits, so a
-machine that cached an older commit installs that copy whatever the lockfile says. With the commit in the
-spec, each commit gets its own cache entry. To upgrade, change the commit and run `yarn install`. A
-machine that already installed a stale copy needs `yarn cache clean agentic-tools`, then removing
-`node_modules/agentic-tools` and `yarn install --force`.
+Pin a full commit SHA. Every commit of this package carries the same `version`, and Yarn classic
+caches a GitHub dependency without a ref under one folder (`npm-agentic-tools-<version>`) for all
+commits, so a machine that cached an older commit installs that copy whatever the lockfile says.
+With the commit in the spec, each commit gets its own cache entry. To upgrade, change the commit and
+run `yarn install`. A machine that already installed a stale copy needs
+`yarn cache clean agentic-tools`, then removing `node_modules/agentic-tools` and
+`yarn install --force`.
 
-Then declare which shared skills you want in `.agents/config.json`:
+The commands below use `uv run agentic-tools`; in a Node repo, run `yarn agentic-tools` instead.
+
+### Sync shared skills
+
+Declare the skills you want in `.agents/config.json`:
 
 ```json
 {
@@ -42,210 +54,84 @@ Then declare which shared skills you want in `.agents/config.json`:
       {
         "from": "package:agentic-tools",
         "url": "https://github.com/swiftpostlabs/agentic-tools",
-        "skills": [
-          "ref-sp-agents-mr-wolf-persona",
-          "ref-sp-agents-security",
-          "ref-sp-dev-coding-patterns",
-          "ref-sp-py-python"
-        ]
+        "skills": ["ref-sp-agents-mr-wolf-persona", "ref-sp-agents-security", "ref-sp-dev-coding-patterns"]
+      },
+      {
+        "from": "../another-skill-repo",
+        "skills": ["ref-sp-js-react"]
       }
     ]
   }
 }
 ```
 
-Sync the configured skills into the current repo:
+Then link them:
 
 ```sh
 uv run agentic-tools skills sync
 ```
 
-If you run the command from a subdirectory, add `--workspace <repo-root>` so the grouped CLI resolves policy and skills paths from the intended repo root.
+- `package:agentic-tools` links to the installed copy: `node_modules/agentic-tools/.agents/skills`
+  in a Node repo, the copy inside the Python package in a uv repo. Relative `from` paths resolve from
+  the repo root.
+- `sync` removes dead links and links no longer declared, reports missing skill names per source
+  before changing anything, and regenerates `.agents/skills/.gitignore` so the links stay out of
+  version control.
+- A skill renamed upstream still resolves through the source's rename registry; `sync` rewrites the
+  stored name in your config and prints a note.
+- Only `public` and `organization` skills travel. A requested `repo-local` skill is reported and
+  skipped.
+- From a subdirectory, add `--workspace <repo-root>`.
 
-Or, in a Node-managed repo:
+`skills list`, `skills link <name>...` (with `--global` for `~/.agents/skills`), and
+`skills unlink <name>...` cover one-off use. Every command takes `--help`.
 
-```sh
-yarn agentic-tools skills sync
-```
+### Manage agent policy
 
-When the source uses `package:agentic-tools`, the linked skill directories come from the installed package location in the current environment, such as `.venv` for Python installs or `node_modules/agentic-tools/.agents/skills` for Node installs.
-
-The Node package ships JavaScript/JSDoc ESM source, so installing it from GitHub works without a separate build step on modern Node.
-
-### Manage Agent Policy
-
-After adding or updating the `policy` section in `.agents/config.json`, sync the generated agent files with:
+After adding or changing the `policy` section of `.agents/config.json`, regenerate the client files
+(`.aiexclude`, `.claude/settings.json`, `.vscode/settings.json`):
 
 ```sh
 uv run agentic-tools policy sync
 ```
 
-To enforce that generated policy files are already in sync during CI or before committing, run:
+`policy check` fails without writing when the generated files drifted, for CI and pre-commit use.
+`policy import-vscode` copies approvals you made in VS Code back into the policy before syncing.
 
-```sh
-uv run agentic-tools policy check
-```
+### Skill scripts
 
-Or, in a Node-managed repo:
-
-```sh
-yarn agentic-tools policy sync
-```
-
-### Focused Docs
-
-- Skills management: [src/agentic_tools_old/skills_management/README.md](src/agentic_tools_old/skills_management/README.md)
-- Agents policy: [src/agentic_tools_old/agents_policy/README.md](src/agentic_tools_old/agents_policy/README.md)
-
-## Requirements
-
-- macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`
-or
-- Windows: `powershell -c "irm https://astral.sh/uv/install.ps1 | iex"`
-
-uv can manage Python versions directly. To install Python 3.13 via uv: `uv python install 3.13`
-
-For Node-based usage, use Node.js 22 or newer. Prefer Yarn for Node-managed installs and command execution. Deno-owned repos should keep using Deno's native tooling instead of adding Yarn just for this package.
+Some skills carry `.mts` scripts, run with `node <skill-dir>/scripts/<name>.mts` on Node 22.18 or
+newer. Node refuses to strip types for files under `node_modules`, so run them from a checkout, from
+a global skills folder, or from a uv install, not from a Yarn or npm install.
 
 ## For Developers
 
-### Local Setup
+Requirements: Node 22.18 or newer and Yarn 1 (`corepack enable`). uv is needed only to build the
+Python package.
 
 ```sh
-uv sync
-```
-
-```sh
-yarn install
-```
-
-After this step you may want to close and reopen your terminal or IDE to ensure that the uv-managed virtual environment is activated correctly.
-
-The Node CLI source is a no-build JavaScript/JSDoc port that lives with the owning features under `src/agentic_tools/<feature>/main.mjs`, with colocated Jest coverage in `main.test.mjs`.
-The shipped Node command shim is `scripts/agentic-tools.mjs`; feature-specific CLIs route through the grouped `agentic-tools` command instead of standalone package bins.
-
-### Skills Management
-
-```sh
-uv run agentic-tools skills list
-```
-
-```sh
-uv run agentic-tools skills sync
-```
-
-`sync` also removes dead skill links and linked skills that are no longer declared in the destination `.agents/config.json`, then reports configured skill names that are missing from a source before changing anything. Legacy `.agents/skills.json` files still work as a fallback.
-
-If a configured skill name was renamed upstream, `sync` resolves it through the source's rename registry, rewrites the stored name in your config to the current one, and prints a note — so a renamed skill keeps working without manual edits. After linking, `sync` (re)generates `.agents/skills/.gitignore` so the synced skill symlinks stay out of version control.
-
-To declare shared skill sources for `sync`, add a `skills` section to `.agents/config.json` in the target repo. Each source may carry an optional `url` recording the repository the skills come from; sync lists those URLs in the generated `.gitignore`:
-
-```json
-{
-  "skills": {
-    "sources": [
-      {
-        "from": "package:agentic-tools",
-        "url": "https://github.com/swiftpostlabs/agentic-tools",
-        "skills": [
-          "ref-sp-agents-skills-authoring",
-          "ref-sp-dev-projects-architecture",
-          "ref-sp-dev-coding-patterns"
-        ]
-      },
-      {
-        "from": "../another-skill-repo",
-        "skills": [
-          "ref-sp-js-react"
-        ]
-      }
-    ]
-  }
-}
-```
-
-Relative `from` paths resolve from the target repo root. Package sources use `package:<name>` and resolve by looking up the installed package location. When the source package is installed instead of cloned, `agentic-tools skills sync` resolves packaged skills from the active environment, including the Python package's `agentic_tools/shareable_skills` directory and the Node package's `.agents/skills` directory.
-
-### Versioning
-
-The repo keeps `VERSION`, `pyproject.toml`, `package.json`, and `uv.lock` aligned.
-
-Commitizen is the intended release owner for the repo's stable release workflow. The local helper script now remains only as a drift check while the migration away from custom version-writing commands settles.
-
-Use these commands for version management:
-
-```sh
-uv run poe version-check
-```
-
-```sh
-uv run cz commit
-```
-
-```sh
-uv run poe version-next
-```
-
-```sh
-uv run poe release-prepare-preview patch
-```
-
-```sh
-uv run poe release-prepare patch
-```
-
-```sh
-uv run poe release-publish-python
-```
-
-```sh
-uv run poe release-publish-node
-```
-
-```sh
-uv run poe release-publish
-```
-
-```sh
-uv run cz check -m "fix(skills): example"
-```
-
-`release-prepare` is the normal release-prep command. It creates the release commit, updates `CHANGELOG.md`, and creates a `vX.Y.Z` tag through Commitizen.
-
-`release-publish` is the local fallback when you already have publish credentials configured. The preferred path is to push the generated release tag and let [release.yaml](.github/workflows/release.yaml) publish both the Python and npm packages from CI.
-
-There is still one manual bootstrap step: the current `0.1.0` baseline needs a matching `v0.1.0` tag before changelog-on-bump works cleanly for future releases. After that bootstrap tag exists, the normal workflow is `uv run poe release-prepare <major|minor|patch>` followed by pushing the resulting commit and tag.
-
-For CI publishing, configure trusted publishing for both registries against [release.yaml](.github/workflows/release.yaml): PyPI should trust the workflow as a publisher for `agentic-tools`, and npm should register the same workflow filename as the package's trusted publisher.
-
-### Tests
-
-```sh
-uv run poe test
-```
-
-```sh
-yarn test
-```
-
-### Linting
-
-```sh
-uv run poe lint
-```
-
-```sh
-yarn lint
-```
-
-```sh
+yarn install    # dependencies, and builds dist/
+yarn lint       # policy, plugin, version, and chat-assistant drift checks
 yarn typecheck
+yarn test
+yarn validate   # skill structure and sharing spec, when a skill changed
 ```
 
-This now includes `uv run agentic-tools policy check` before the Python lint step so generated policy files fail fast in the standard validation flow.
+Run the CLI from source with `yarn cli <group> <command>`, for example `yarn cli skills list`.
 
-### Typechecking
+- `src/` holds the CLI, one folder per feature with tests beside the code. `scripts/` holds repo
+  maintenance scripts as `.mts`. `python/` holds the Python launcher and its wheel build hook.
+- `yarn assistants:build` regenerates `chat-assistants/*/instructions.md` from their templates; see
+  [chat-assistants/README.md](chat-assistants/README.md).
+- `yarn cli plugin sync` regenerates `.claude-plugin/` from the skills catalog.
 
-```sh
-uv run poe typecheck
-```
+### Releasing
+
+`yarn release` bumps `package.json` and `VERSION` from the conventional commits since the last tag
+(or `--release-as patch|minor|major`), regenerates the plugin manifests, prepends `CHANGELOG.md`,
+commits, and tags `vX.Y.Z`. `yarn release:preview` shows what it would do. Pushing the tag runs
+[release.yaml](.github/workflows/release.yaml), which publishes to npm with trusted publishing.
+
+The PyPI job is disabled: the name `agentic-tools` on PyPI belongs to an unrelated project, so Python
+repos install from GitHub until a distribution name is chosen. Build the Python package locally with
+`uv build --out-dir dist-python`.

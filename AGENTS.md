@@ -57,7 +57,7 @@ Project skills live in `.agents/skills/` (`.claude/skills` symlinks there for Cl
 
 | Area | Skill |
 | --- | --- |
-| Python, `pyproject.toml`, Poe tasks, folder placement | `ref-sp-dev-repo-conventions`, `ref-sp-py-python` |
+| TypeScript code, `package.json`, yarn scripts, folder placement, the Python shim | `ref-sp-dev-repo-conventions`, `ref-sp-js-typescript` |
 | Any file under `.agents/skills/` | `ref-sp-agents-skills-authoring`, `ref-sp-agents-shareable-skills` |
 | `AGENTS.md` or other instruction files | `ref-sp-agents-instructions-authoring` |
 | Policy, protected files, `.agents/config.json` | `ref-sp-agents-security`, `ref-sp-agents-policy` |
@@ -73,9 +73,9 @@ For anything else, match the task against the skill descriptions' `Use when:` cl
 When working on this project:
 
 1. **Start**: Pull latest changes and rebase.
-2. **Setup**: Run `uv sync` (Python) and `yarn install` (JS/TS) at the start of work and again after rebasing or dependency changes. Install whichever toolchains cover the code you will touch.
+2. **Setup**: Run `yarn install` at the start of work and again after rebasing or dependency changes.
 3. **Implement**: Follow the owning skill for the area you are touching.
-4. **Validate**: Before committing, run the validators for the toolchain you touched — `uv run poe lint/typecheck/test` for Python, `yarn lint/typecheck/test` for JS/TS, and `yarn validate` when you changed a skill under `.agents/skills/`. Confirm the change introduced no new warnings or type issues, filtering output to the changed files so unrelated noise does not hide a real regression. Chain lint and type-check into one command when that saves a round trip.
+4. **Validate**: Before committing, run `yarn lint`, `yarn typecheck`, and `yarn test`, plus `yarn validate` when you changed a skill under `.agents/skills/`. Confirm the change introduced no new warnings or type issues, filtering output to the changed files so unrelated noise does not hide a real regression. Chain lint and type-check into one command when that saves a round trip.
 5. **Commit**: Keep commits small and focused — one feature or area, a few related files at a time — and commit only after lint and type-check pass.
 6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. For a substantial task, capture a short, descriptive retrospective under `.agents/retro/` following `ref-sp-agents-retro` — what went well, what went wrong, and improvement hypotheses — kept descriptive rather than prescriptive. Summarize the result to the user and ask if they want the guidance updated. If yes, promote the durable, general observations into the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
 
@@ -83,33 +83,17 @@ Run steps 3–5 as a loop, not a phase: for a task with several steps or several
 
 ## Quick Commands
 
-This is a mixed repo: the Python code is managed with `uv` (and Poe tasks), and the JS/TS code plus the skill validators are managed with `yarn` (Node >= 22). Use the toolchain that matches the files you are touching.
+The CLI is TypeScript, managed with `yarn` on Node >= 22.18, which runs `.ts` and `.mts` directly. A Python shim under `python/` ships the same CLI to Python projects; see `ref-sp-dev-repo-conventions`.
 
-### Python (uv / Poe)
-
-- `uv sync` — Install or refresh Python dependencies.
-- `uv run poe test` — Run tests.
-- `uv run poe test-focused <path> [<path> ...]` — Run tests only for the touched slice.
-- `uv run poe lint` — Check formatting.
-- `uv run poe lint-focused <path> [<path> ...]` — Check formatting only for the touched slice.
-- `uv run poe lint-fix` — Auto-format code.
-- `uv run poe typecheck` — Run Pyright strict mode.
-- `uv run poe typecheck-focused <path> [<path> ...]` — Run Pyright only for the touched slice.
-- `uv run poe lint-filter` — Run lint and filter output.
-- `uv run poe typecheck-filter` — Run type-checking and filter output.
-- `uv run agentic-tools skills list` — List skills available from the current repo or a specified source.
-- `uv run agentic-tools policy sync` — Regenerate agent config from `.agents/config.json`.
-- `uv run agentic-tools policy import-vscode` — Import VS Code approvals into policy, then sync.
-
-### JS/TS and skills (yarn, Node >= 22)
-
-- `yarn install` — Install or refresh JS/TS dependencies.
-- `yarn test` — Run the Jest test suite.
-- `yarn typecheck` — Type-check the Node/TS sources.
-- `yarn lint` — Syntax-check the JS entrypoints.
+- `yarn install` — Install dependencies and build `dist/`.
+- `yarn test [<path> ...]` — Run the Jest suite, or only the touched slice.
+- `yarn typecheck` — Strict `tsc` over `src/` and `scripts/`, then over skill scripts.
+- `yarn lint` — Every drift check: generated policy files, plugin manifests, version files, projected chat-assistant instructions.
+- `yarn cli <group> <command>` — Run the CLI from source, e.g. `yarn cli skills list` or `yarn cli policy sync`.
+- `yarn cli policy import-vscode` — Import VS Code approvals into policy, then sync.
 - `yarn validate:skills` — Validate every skill against the Agent Skills structure and quality rules. Canonical skill-quality check.
 - `yarn validate:sharing` — Validate every skill against the sharing spec (naming, domain, visibility, dependencies). Canonical sharing-spec check.
 - `yarn validate` — Run both `validate:skills` and `validate:sharing`.
+- `yarn assistants:build` — Regenerate `chat-assistants/*/instructions.md` from their templates.
+- `yarn release` — Bump the version, update the changelog, and tag, from conventional commits (`--release-as patch|minor|major` to choose).
 - `yarn playwright <command>` — Drive a real browser from the terminal (`@playwright/cli` devDependency; `playwright-cli` is not on `PATH`, so use this script or `node_modules/.bin/playwright-cli`). Use it to verify UI changes, debug page console/network/DOM, and read pages that plain fetching cannot — client-rendered JavaScript shells return HTTP 200 with an empty body to `curl`. See `ref-sp-dev-playwright-cli`.
-
-Prefer the Poe tasks over calling Black, Pyright, or pytest directly. Iterate with the `-focused` variants on the touched paths, then run the full tasks before committing. The skill validators are `.mts` scripts that need Node >= 22 (for example via `nvm use 22`).

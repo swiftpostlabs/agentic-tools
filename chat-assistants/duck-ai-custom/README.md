@@ -33,5 +33,5 @@ drifting from the skills.
 Measure after editing, because going over is silent until the field rejects it:
 
 ```bash
-uv run python -c "from pathlib import Path; print(len(Path('chat-assistants/duck-ai-custom/default/instructions.md').read_text().strip()))"
+node -e "console.log([...require('node:fs').readFileSync('chat-assistants/duck-ai-custom/default/instructions.md', 'utf8').trim()].length)"
 ```

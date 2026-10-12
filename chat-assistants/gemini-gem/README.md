@@ -40,10 +40,10 @@ These files are generated. Edit
 [`templates/default-it.template.md`](./templates/default-it.template.md), then:
 
 ```bash
-uv run poe assistants-build
+yarn assistants:build
 ```
 
 The `{{PERSONA}}` and `{{VERIFICATION}}` placeholders are filled verbatim from
 the skills that own that text. Editing a generated `instructions.md` directly
-forks it from its source, and `uv run poe assistants-check` will fail until it
+forks it from its source, and `yarn assistants:check` will fail until it
 is regenerated.
