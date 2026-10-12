@@ -23,7 +23,7 @@ method to its own findings.
 ## Canonical verification text
 
 The source for the Verification Discipline section of `AGENTS.md` and the Gemini gem exports.
-Change it here first, then re-sync the copies (`uv run poe assistants-build`).
+Change it here first, then re-sync the copies (`yarn assistants:build`).
 
 ```md
 Every claim — the agent's or the user's — starts unverified. Two dials govern how much checking

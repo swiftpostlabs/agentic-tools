@@ -286,7 +286,7 @@ Renaming touches many **reference surfaces**; all must move atomically:
 4. `$SKILLS_FOLDER/<name>` paths in bodies
 5. cross-links in skill bodies
 6. the skill index in `AGENTS.md` (root and nested)
-7. the CLI/config that lists or links skills (`.agents/config.json`, `src/agentic_tools/features/skills`)
+7. the CLI/config that lists or links skills (`.agents/config.json`, the `skills` feature of the agentic-tools CLI)
 
 **Phases:**
 

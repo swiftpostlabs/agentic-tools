@@ -30,7 +30,7 @@ first). New skills set visibility in `tool-sp-create-skill`; re-scoping many ski
    marking the whole skill local.
 4. List only hard dependencies in `shareable-skills.requires`; optional ones go in `suggests`.
 5. Update the metadata, then run `yarn validate` and the sharing spec's `references/checklist.md`.
-6. If a linker exists, dry-run it: `uv run agentic-tools skills link <name> --global --dry-run`.
+6. If a linker exists, dry-run it: `agentic-tools skills link <name> --global --dry-run` (prefixed with `uv run` or `yarn`, as the repo installs it).
 
 Ask the user only what the skill itself doesn't answer: whether it really works elsewhere, which
 dependencies are required, and whether to split.

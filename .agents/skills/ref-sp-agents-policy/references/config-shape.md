@@ -13,10 +13,10 @@
     "protectedFiles": ["*.env"],
     "excludedFiles": ["dist/"],
     "terminalAutoApprove": {
-      "/^uv run agentic-tools policy sync$/": true
+      "/^yarn agentic-tools policy sync$/": true
     },
     "editAutoApprove": {
-      "**/*.py": true
+      "**/*.ts": true
     }
   }
 }

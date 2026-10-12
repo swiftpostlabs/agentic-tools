@@ -15,10 +15,10 @@ The `agentic-tools skills` CLI that links shared skills into other repos. Which 
 the sharing spec (`ref-sp-agents-shareable-skills`); writing skills is
 `ref-sp-agents-skills-authoring`.
 
-It lives in the `skills-management` feature of the `agentic-tools` package (Python, with a legacy
-Node port). Find it by feature name. Run it as `uv run agentic-tools skills ...` (or the Node
-`agentic-tools skills ...`); there are no standalone bins. The global destination is
-`~/.agents/skills`.
+It lives in the `skills` feature of the `agentic-tools` CLI (TypeScript). Find it by feature name.
+Run it as `uv run agentic-tools skills ...` in a Python repo (through the shim) or
+`yarn agentic-tools skills ...` in a Node repo; there are no standalone bins. The global destination
+is `~/.agents/skills`.
 
 ## Commands
 
@@ -38,9 +38,9 @@ Node port). Find it by feature name. Run it as `uv run agentic-tools skills ...`
 `link`, `sync`, and `unlink` take `--dry-run`; `link` and `sync` take `--force` to replace a link
 that points elsewhere.
 
-Use `link` for one-off picks and `sync` for a repo that declares its shared skills. In a uv repo
-with Poe, add a task (`sync-skills = "uv run agentic-tools skills sync"`) rather than a wrapper
-script.
+Use `link` for one-off picks and `sync` for a repo that declares its shared skills. Wire `sync` as a
+task in the repo's runner (a Poe task or a `package.json` script, `"sync:skills": "agentic-tools skills
+sync"`) rather than a wrapper script.
 
 ## What may be linked
 
@@ -64,8 +64,10 @@ Missing metadata points the user to `tool-sp-make-skill-shareable`.
 ```
 
 `from` is a filesystem path (relative paths resolve from the target repo root) or
-`package:<name>`. Prefer `package:` when the source is an installed dependency, a relative path
-when two repos are cloned side by side. Full contract: `./references/config-shape.md`.
+`package:<name>`. A package source resolves to `node_modules/<name>` in the config's repo or a
+parent, then to the running `agentic-tools` package itself, which is how a Python repo finds the
+skills bundled in the shim. Prefer `package:` when the source is an installed dependency, a relative
+path when two repos are cloned side by side. Full contract: `./references/config-shape.md`.
 
 ## Gotchas
 
@@ -75,13 +77,13 @@ when two repos are cloned side by side. Full contract: `./references/config-shap
   re-pin reproduces the error.
 - A renamed skill fails like a missing one, so a rename is a breaking change for every consumer
   that hasn't re-pinned.
-- On Windows, if a directory symlink fails with `WinError 1314`, the CLI creates a directory
-  junction instead; both count as supported links.
+- On Windows, if a directory symlink fails for lack of symlink privileges, the CLI creates a
+  directory junction instead; both count as supported links.
 
 ## Before finishing
 
-- `uv run agentic-tools skills list` parses the metadata.
-- `uv run agentic-tools skills sync --dry-run --to <repo>` before a real sync when debugging.
+- `yarn cli skills list` parses the metadata.
+- `yarn cli skills sync --dry-run --to <repo>` before a real sync when debugging.
 - The feature's tests pass when source resolution, dependencies, or link handling changed, and the
   README examples still match. The implementation and its tests are the authority on exact
   behaviour; check them when this summary isn't enough.
