@@ -24,40 +24,47 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
           cache: yarn
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Install dependencies with uv
-        run: uv sync
-
-      - name: Install Node dependencies with Yarn
+      - name: Install dependencies
         run: |
           corepack enable
           yarn install --frozen-lockfile
 
-      - name: Check AI policy generated files
-        run: uv run agentic-tools policy check
-
-      - name: Run tests
-        run: uv run poe test
-      - name: Run Node tests
-        run: yarn test
-      - name: Validate Node package
-        run: yarn run pack
-      - name: Run Node linting
+      - name: Check generated files and version drift
         run: yarn lint
-      - name: Run Node typechecking
+      - name: Type-check
         run: yarn typecheck
-      - name: Run linting
-        run: uv run poe lint
-      - name: Run typechecking
-        run: uv run poe typecheck
+      - name: Run tests
+        run: yarn test
+      - name: Validate skills
+        run: yarn validate
+      - name: Validate npm package
+        run: yarn run pack
+
+  python_shim:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      # No node_modules here on purpose: the build hook must fetch the runtime
+      # dependencies itself, as it does for a `uv add git+...` install.
+      - name: Build the wheel from a bare checkout
+        run: uv build --wheel --out-dir dist-python
+
+      - name: Run the CLI through the shim
+        run: |
+          uv venv .venv-shim
+          uv pip install --python .venv-shim dist-python/*.whl
+          .venv-shim/bin/agentic-tools --help
+          .venv-shim/bin/agentic-tools skills list --from .venv-shim/lib/python*/site-packages/agentic_tools/js > /dev/null
 
   dependabot-automerge:
-    needs: build_test_lint_typecheck
+    needs: [build_test_lint_typecheck, python_shim]
     if: github.event.pull_request.user.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
