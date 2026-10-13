@@ -23,6 +23,10 @@ updates:
       - dependency-name: "@types/node"
         update-types:
           - "version-update:semver-major"
+      # typescript-eslint declares typescript <6.1.0; lift this once it supports TypeScript 7.
+      - dependency-name: "typescript"
+        update-types:
+          - "version-update:semver-major"
     cooldown:
       default-days: 2
   # The Python shim only (pyproject.toml): its build backend and the Node runtime wheel.
