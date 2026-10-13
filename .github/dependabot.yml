@@ -5,6 +5,21 @@
 
 version: 2
 updates:
+  # The CLI and its tooling (package.json, yarn.lock).
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      # Tooling only; a broken minor shows up in CI, not in what consumers install.
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    cooldown:
+      default-days: 2
+  # The Python shim only (pyproject.toml): its build backend and the Node runtime wheel.
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
