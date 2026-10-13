@@ -15,24 +15,27 @@
  * `duck-ai-custom/` are hand-written compressions: no canonical block fits a 500 or 1,500
  * character field.
  */
-import fs from "node:fs";
-import path from "node:path";
-import { readCanonicalBlock } from "../src/features/export/discovery.ts";
+import fs from 'node:fs';
+import path from 'node:path';
+import { readCanonicalBlock } from '../src/features/export/discovery.ts';
 
-const repoRoot = path.resolve(import.meta.dirname, "..");
-const skillsRoot = path.join(repoRoot, ".agents", "skills");
-const assistantsRoot = path.join(repoRoot, "chat-assistants");
-const templateSuffix = ".template.md";
+const repoRoot = path.resolve(import.meta.dirname, '..');
+const skillsRoot = path.join(repoRoot, '.agents', 'skills');
+const assistantsRoot = path.join(repoRoot, 'chat-assistants');
+const templateSuffix = '.template.md';
 
 /** Placeholder to the skill publishing its canonical block; named here so a rename is one line. */
 const injections = {
-  PERSONA: "ref-sp-agents-mr-wolf-persona",
-  VERIFICATION: "ref-sp-agents-verification-discipline",
+  PERSONA: 'ref-sp-agents-mr-wolf-persona',
+  VERIFICATION: 'ref-sp-agents-verification-discipline',
 } as const;
 
 /** Fill one template. Throws when a placeholder cannot be resolved. */
-export const render = (templatePath: string, root: string = skillsRoot): string => {
-  let text = fs.readFileSync(templatePath, "utf8");
+export const render = (
+  templatePath: string,
+  root: string = skillsRoot,
+): string => {
+  let text = fs.readFileSync(templatePath, 'utf8');
   for (const [placeholder, skillName] of Object.entries(injections)) {
     const token = `{{${placeholder}}}`;
     if (!text.includes(token)) {
@@ -47,21 +50,30 @@ export const render = (templatePath: string, root: string = skillsRoot): string 
     }
     text = text.replaceAll(token, block);
   }
-  if (text.includes("{{")) {
-    throw new Error(`${path.basename(templatePath)} still holds an unresolved placeholder`);
+  if (text.includes('{{')) {
+    throw new Error(
+      `${path.basename(templatePath)} still holds an unresolved placeholder`,
+    );
   }
   return text;
 };
 
 /** `<product>/templates/<name>.template.md` -> `<product>/<name>/instructions.md`. */
 export const outputPath = (templatePath: string): string =>
-  path.join(path.dirname(path.dirname(templatePath)), path.basename(templatePath, templateSuffix), "instructions.md");
+  path.join(
+    path.dirname(path.dirname(templatePath)),
+    path.basename(templatePath, templateSuffix),
+    'instructions.md',
+  );
 
 const findTemplates = (): string[] =>
   fs
     .readdirSync(assistantsRoot)
-    .map((product) => path.join(assistantsRoot, product, "templates"))
-    .filter((directory) => fs.existsSync(directory) && fs.statSync(directory).isDirectory())
+    .map((product) => path.join(assistantsRoot, product, 'templates'))
+    .filter(
+      (directory) =>
+        fs.existsSync(directory) && fs.statSync(directory).isDirectory(),
+    )
     .flatMap((directory) =>
       fs
         .readdirSync(directory)
@@ -71,7 +83,7 @@ const findTemplates = (): string[] =>
     .sort();
 
 const main = (argv: string[]): number => {
-  const check = argv.includes("--check");
+  const check = argv.includes('--check');
   const templates = findTemplates();
   if (templates.length === 0) {
     process.stderr.write(`no templates found under ${assistantsRoot}\n`);
@@ -84,13 +96,19 @@ const main = (argv: string[]): number => {
     try {
       rendered = render(templatePath);
     } catch (error) {
-      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+      process.stderr.write(
+        `${error instanceof Error ? error.message : String(error)}\n`,
+      );
       return 1;
     }
     const destination = outputPath(templatePath);
-    const relative = path.relative(repoRoot, destination).split(path.sep).join("/");
+    const relative = path
+      .relative(repoRoot, destination)
+      .split(path.sep)
+      .join('/');
     if (check) {
-      const current = fs.existsSync(destination) ? fs.readFileSync(destination, "utf8") : "";
+      const current =
+        fs.existsSync(destination) ? fs.readFileSync(destination, 'utf8') : '';
       if (current !== rendered) {
         stale.push(relative);
         process.stderr.write(`stale: ${relative}\n`);
@@ -98,9 +116,11 @@ const main = (argv: string[]): number => {
       continue;
     }
     fs.mkdirSync(path.dirname(destination), { recursive: true });
-    fs.writeFileSync(destination, rendered, "utf8");
+    fs.writeFileSync(destination, rendered, 'utf8');
     // Instruction-field limits are undocumented on these products, so report the size.
-    process.stdout.write(`wrote ${relative} (${[...rendered].length.toLocaleString("en-US")} chars)\n`);
+    process.stdout.write(
+      `wrote ${relative} (${[...rendered].length.toLocaleString('en-US')} chars)\n`,
+    );
   }
 
   if (stale.length > 0) {
@@ -110,12 +130,17 @@ const main = (argv: string[]): number => {
     return 1;
   }
   if (check) {
-    process.stdout.write(`${templates.length} generated file(s) match their templates\n`);
+    process.stdout.write(
+      `${templates.length} generated file(s) match their templates\n`,
+    );
   }
   return 0;
 };
 
 // Run only when executed directly, so tests can import the helpers.
-if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === import.meta.filename) {
+if (
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === import.meta.filename
+) {
   process.exitCode = main(process.argv.slice(2));
 }

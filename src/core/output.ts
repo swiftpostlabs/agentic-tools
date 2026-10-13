@@ -1,4 +1,4 @@
-import { consola } from "consola";
+import { consola } from 'consola';
 
 /** Where commands write user-facing lines. Injected so tests can capture output. */
 export type Output = {

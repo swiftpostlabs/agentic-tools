@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
-import { ToolError } from "../../core/errors.ts";
-import { errorMessage } from "../../core/json.ts";
+import fs from 'node:fs';
+import path from 'node:path';
+import { ToolError } from '../../core/errors.ts';
+import { errorMessage } from '../../core/json.ts';
 
 /** A symlink, or on Windows a directory junction; Node reports both as symbolic links. */
 export const isDirectoryLink = (target: string): boolean => {
@@ -19,7 +19,9 @@ export const resolveLoose = (target: string): string => {
     return fs.realpathSync(absolute);
   } catch {
     const parent = path.dirname(absolute);
-    return parent === absolute ? absolute : path.join(resolveLoose(parent), path.basename(absolute));
+    return parent === absolute ? absolute : (
+        path.join(resolveLoose(parent), path.basename(absolute))
+      );
   }
 };
 
@@ -43,19 +45,24 @@ export const removeDirectoryLink = (link: string): void => {
 };
 
 const isPermissionError = (error: unknown): boolean =>
-  error instanceof Error && "code" in error && (error.code === "EPERM" || error.code === "EACCES");
+  error instanceof Error &&
+  'code' in error &&
+  (error.code === 'EPERM' || error.code === 'EACCES');
 
 /**
  * Create a directory symlink. Windows without symlink privileges gets a junction instead, which
  * needs no elevation and behaves the same for a local directory target.
  */
-export const createDirectoryLink = (destination: string, target: string): void => {
+export const createDirectoryLink = (
+  destination: string,
+  target: string,
+): void => {
   try {
-    fs.symlinkSync(target, destination, "dir");
+    fs.symlinkSync(target, destination, 'dir');
   } catch (error) {
-    if (process.platform === "win32" && isPermissionError(error)) {
+    if (process.platform === 'win32' && isPermissionError(error)) {
       try {
-        fs.symlinkSync(target, destination, "junction");
+        fs.symlinkSync(target, destination, 'junction');
         return;
       } catch (junctionError) {
         throw new ToolError(
@@ -63,6 +70,8 @@ export const createDirectoryLink = (destination: string, target: string): void =
         );
       }
     }
-    throw new ToolError(`Could not create symlink '${destination}' -> '${target}': ${errorMessage(error)}`);
+    throw new ToolError(
+      `Could not create symlink '${destination}' -> '${target}': ${errorMessage(error)}`,
+    );
   }
 };

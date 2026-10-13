@@ -4,9 +4,9 @@
  *
  *     node aggregate-eval-results.mts <workspace> [--output summary.json] [--markdown summary.md]
  */
-import fs from "node:fs";
-import path from "node:path";
-import { parseArgs } from "node:util";
+import fs from 'node:fs';
+import path from 'node:path';
+import { parseArgs } from 'node:util';
 
 type JsonObject = { [key: string]: unknown };
 
@@ -31,80 +31,111 @@ type ConfigurationSummary = {
   time_seconds_stdev: number | null;
 };
 
-export type EvalSummary = { runs: RunResult[]; configurations: Record<string, ConfigurationSummary> };
+export type EvalSummary = {
+  runs: RunResult[];
+  configurations: Record<string, ConfigurationSummary>;
+};
 
-const knownConfigurations = new Set(["baseline", "new_skill", "old_skill", "with_skill", "without_skill"]);
+const knownConfigurations = new Set([
+  'baseline',
+  'new_skill',
+  'old_skill',
+  'with_skill',
+  'without_skill',
+]);
 
 const isObject = (value: unknown): value is JsonObject =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
+  typeof value === 'object' && value !== null && !Array.isArray(value);
 
 const readJson = (file: string): JsonObject => {
-  const value: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
+  const value: unknown = JSON.parse(fs.readFileSync(file, 'utf8'));
   if (!isObject(value)) {
     throw new Error(`JSON root must be an object: ${file}`);
   }
   return value;
 };
 
-const asInt = (value: unknown, fallback = 0): number => (Number.isInteger(value) ? (value as number) : fallback);
-const asNumber = (value: unknown): number | null => (typeof value === "number" ? value : null);
+const asInt = (value: unknown, fallback = 0): number =>
+  Number.isInteger(value) ? (value as number) : fallback;
+const asNumber = (value: unknown): number | null =>
+  typeof value === 'number' ? value : null;
 
-const mean = (values: number[]): number => values.reduce((total, value) => total + value, 0) / values.length;
+const mean = (values: number[]): number =>
+  values.reduce((total, value) => total + value, 0) / values.length;
 
 /** Sample standard deviation, like Python's `statistics.stdev`. */
 const stdev = (values: number[]): number => {
   const average = mean(values);
-  return Math.sqrt(values.reduce((total, value) => total + (value - average) ** 2, 0) / (values.length - 1));
+  return Math.sqrt(
+    values.reduce((total, value) => total + (value - average) ** 2, 0) /
+      (values.length - 1),
+  );
 };
 
-const toPosix = (relative: string): string => relative.split(path.sep).join("/");
+const toPosix = (relative: string): string =>
+  relative.split(path.sep).join('/');
 
 /** Name the run's configuration from its folder: a known name, else the nearest non-run folder. */
-export const inferConfiguration = (root: string, gradingPath: string): string => {
-  const parts = path.relative(root, path.dirname(gradingPath)).split(path.sep).filter((part) => part !== "");
+export const inferConfiguration = (
+  root: string,
+  gradingPath: string,
+): string => {
+  const parts = path
+    .relative(root, path.dirname(gradingPath))
+    .split(path.sep)
+    .filter((part) => part !== '');
   if (parts.length === 0) {
-    return "unknown";
+    return 'unknown';
   }
   const reversed = [...parts].reverse();
   return (
     reversed.find((part) => knownConfigurations.has(part)) ??
-    reversed.find((part) => !part.startsWith("run-") && !part.startsWith("eval-")) ??
+    reversed.find(
+      (part) => !part.startsWith('run-') && !part.startsWith('eval-'),
+    ) ??
     (parts.at(-1) as string)
   );
 };
 
-const readDuration = (source: JsonObject): { found: boolean; value: number | null } =>
-  "total_duration_seconds" in source
-    ? { found: true, value: asNumber(source["total_duration_seconds"]) }
-    : { found: false, value: null };
+const readDuration = (
+  source: JsonObject,
+): { found: boolean; value: number | null } =>
+  'total_duration_seconds' in source ?
+    { found: true, value: asNumber(source['total_duration_seconds']) }
+  : { found: false, value: null };
 
 export const loadRun = (root: string, gradingPath: string): RunResult => {
   const grading = readJson(gradingPath);
-  const summary = grading["summary"];
+  const summary = grading['summary'];
   let passed: number;
   let failed: number;
   let total: number;
   let passRate: number;
   if (isObject(summary)) {
-    passed = asInt(summary["passed"]);
-    failed = asInt(summary["failed"]);
-    total = asInt(summary["total"], passed + failed);
-    passRate = asNumber(summary["pass_rate"]) ?? (total > 0 ? passed / total : 0);
+    passed = asInt(summary['passed']);
+    failed = asInt(summary['failed']);
+    total = asInt(summary['total'], passed + failed);
+    passRate =
+      asNumber(summary['pass_rate']) ?? (total > 0 ? passed / total : 0);
   } else {
-    const expectations = Array.isArray(grading["expectations"]) ? grading["expectations"] : [];
-    passed = expectations.filter((item) => isObject(item) && item["passed"] === true).length;
+    const expectations =
+      Array.isArray(grading['expectations']) ? grading['expectations'] : [];
+    passed = expectations.filter(
+      (item) => isObject(item) && item['passed'] === true,
+    ).length;
     total = expectations.length;
     failed = total - passed;
     passRate = total > 0 ? passed / total : 0;
   }
 
-  const timing = grading["timing"];
+  const timing = grading['timing'];
   let timeSeconds: number | null = null;
-  const inline = isObject(timing) ? readDuration(timing) : { found: false, value: null };
+  const inline =
+    isObject(timing) ? readDuration(timing) : { found: false, value: null };
   if (inline.found) {
     timeSeconds = inline.value;
   } else {
-    const timingPath = path.join(path.dirname(gradingPath), "timing.json");
+    const timingPath = path.join(path.dirname(gradingPath), 'timing.json');
     if (fs.existsSync(timingPath) && fs.statSync(timingPath).isFile()) {
       timeSeconds = readDuration(readJson(timingPath)).value;
     }
@@ -124,14 +155,20 @@ export const loadRun = (root: string, gradingPath: string): RunResult => {
 export const summarize = (results: RunResult[]): EvalSummary => {
   const byConfiguration = new Map<string, RunResult[]>();
   for (const result of results) {
-    byConfiguration.set(result.configuration, [...(byConfiguration.get(result.configuration) ?? []), result]);
+    byConfiguration.set(result.configuration, [
+      ...(byConfiguration.get(result.configuration) ?? []),
+      result,
+    ]);
   }
   const configurations: Record<string, ConfigurationSummary> = {};
   for (const name of [...byConfiguration.keys()].sort()) {
     const runs = byConfiguration.get(name) ?? [];
     const passRates = runs.map((run) => run.pass_rate);
-    const times = runs.map((run) => run.time_seconds).filter((time) => time !== null);
-    const sum = (pick: (run: RunResult) => number) => runs.reduce((total, run) => total + pick(run), 0);
+    const times = runs
+      .map((run) => run.time_seconds)
+      .filter((time) => time !== null);
+    const sum = (pick: (run: RunResult) => number) =>
+      runs.reduce((total, run) => total + pick(run), 0);
     configurations[name] = {
       runs: runs.length,
       passed: sum((run) => run.passed),
@@ -147,23 +184,28 @@ export const summarize = (results: RunResult[]): EvalSummary => {
 };
 
 export const renderMarkdown = (summary: EvalSummary): string => {
-  const lines = ["# Skill Eval Summary", "", "| Configuration | Runs | Pass Rate | Time |", "| --- | ---: | ---: | ---: |"];
+  const lines = [
+    '# Skill Eval Summary',
+    '',
+    '| Configuration | Runs | Pass Rate | Time |',
+    '| --- | ---: | ---: | ---: |',
+  ];
   for (const [name, data] of Object.entries(summary.configurations)) {
     const time =
-      data.time_seconds_mean === null
-        ? "n/a"
-        : `${data.time_seconds_mean.toFixed(1)}s +/- ${(data.time_seconds_stdev ?? 0).toFixed(1)}s`;
+      data.time_seconds_mean === null ?
+        'n/a'
+      : `${data.time_seconds_mean.toFixed(1)}s +/- ${(data.time_seconds_stdev ?? 0).toFixed(1)}s`;
     lines.push(
       `| ${name} | ${data.runs} | ${(data.pass_rate_mean * 100).toFixed(1)}% +/- ${(data.pass_rate_stdev * 100).toFixed(1)}% | ${time} |`,
     );
   }
-  return `${lines.join("\n")}\n`;
+  return `${lines.join('\n')}\n`;
 };
 
 const findGradingFiles = (directory: string): string[] =>
   fs
-    .readdirSync(directory, { recursive: true, encoding: "utf8" })
-    .filter((relative) => path.basename(relative) === "grading.json")
+    .readdirSync(directory, { recursive: true, encoding: 'utf8' })
+    .filter((relative) => path.basename(relative) === 'grading.json')
     .map((relative) => path.join(directory, relative))
     .sort();
 
@@ -171,10 +213,16 @@ const main = (argv: string[]): number => {
   const { values, positionals } = parseArgs({
     args: argv,
     allowPositionals: true,
-    options: { output: { type: "string" }, markdown: { type: "string" }, help: { type: "boolean", short: "h" } },
+    options: {
+      output: { type: 'string' },
+      markdown: { type: 'string' },
+      help: { type: 'boolean', short: 'h' },
+    },
   });
   if (values.help === true || positionals.length !== 1) {
-    process.stdout.write("Usage: aggregate-eval-results.mts <workspace> [--output <json>] [--markdown <md>]\n");
+    process.stdout.write(
+      'Usage: aggregate-eval-results.mts <workspace> [--output <json>] [--markdown <md>]\n',
+    );
     return values.help === true ? 0 : 2;
   }
 
@@ -191,9 +239,13 @@ const main = (argv: string[]): number => {
 
   let results: RunResult[];
   try {
-    results = gradingPaths.map((gradingPath) => loadRun(workspace, gradingPath));
+    results = gradingPaths.map((gradingPath) =>
+      loadRun(workspace, gradingPath),
+    );
   } catch (error) {
-    process.stderr.write(`Failed to aggregate eval results: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `Failed to aggregate eval results: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
     return 1;
   }
 
@@ -202,14 +254,17 @@ const main = (argv: string[]): number => {
   if (values.output === undefined) {
     process.stdout.write(`${summaryJson}\n`);
   } else {
-    fs.writeFileSync(values.output, `${summaryJson}\n`, "utf8");
+    fs.writeFileSync(values.output, `${summaryJson}\n`, 'utf8');
   }
   if (values.markdown !== undefined) {
-    fs.writeFileSync(values.markdown, renderMarkdown(summary), "utf8");
+    fs.writeFileSync(values.markdown, renderMarkdown(summary), 'utf8');
   }
   return 0;
 };
 
-if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === import.meta.filename) {
+if (
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === import.meta.filename
+) {
   process.exitCode = main(process.argv.slice(2));
 }

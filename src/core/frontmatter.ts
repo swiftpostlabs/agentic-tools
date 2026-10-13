@@ -1,12 +1,16 @@
-import { ToolError } from "./errors.ts";
+import { ToolError } from './errors.ts';
 
-const delimiter = "---";
+const delimiter = '---';
 const keyPattern = /^([^:\s][^:]*):(.*)$/;
 
 const unquote = (value: string): string => {
   const trimmed = value.trim();
   const first = trimmed[0];
-  if (trimmed.length >= 2 && (first === '"' || first === "'") && trimmed.at(-1) === first) {
+  if (
+    trimmed.length >= 2 &&
+    (first === '"' || first === "'") &&
+    trimmed.at(-1) === first
+  ) {
     return trimmed.slice(1, -1);
   }
   return trimmed;
@@ -22,7 +26,7 @@ const unquote = (value: string): string => {
 export const parseFrontmatter = (text: string): Map<string, string> => {
   const lines = text.split(/\r?\n/);
   if (lines[0]?.trim() !== delimiter) {
-    throw new ToolError("Skill file is missing YAML frontmatter.");
+    throw new ToolError('Skill file is missing YAML frontmatter.');
   }
 
   const fields = new Map<string, string>();
@@ -31,11 +35,11 @@ export const parseFrontmatter = (text: string): Map<string, string> => {
     if (line.trim() === delimiter) {
       return fields;
     }
-    if (line.trim() === "" || line.trimStart().startsWith("#")) {
+    if (line.trim() === '' || line.trimStart().startsWith('#')) {
       continue;
     }
 
-    const indented = line[0] === " " || line[0] === "\t";
+    const indented = line[0] === ' ' || line[0] === '\t';
     const match = keyPattern.exec(line.trim());
     if (match === null) {
       if (!indented) {
@@ -44,22 +48,24 @@ export const parseFrontmatter = (text: string): Map<string, string> => {
       continue;
     }
 
-    const [, rawKey = "", rawValue = ""] = match;
+    const [, rawKey = '', rawValue = ''] = match;
     const key = rawKey.trim();
     const value = unquote(rawValue);
     if (!indented) {
-      parent = value === "" ? key : undefined;
-      if (value !== "") {
+      parent = value === '' ? key : undefined;
+      if (value !== '') {
         fields.set(key, value);
       }
       continue;
     }
-    if (parent !== undefined && value !== "") {
+    if (parent !== undefined && value !== '') {
       fields.set(`${parent}.${key}`, value);
     }
   }
 
-  throw new ToolError("Skill file is missing the closing frontmatter delimiter.");
+  throw new ToolError(
+    'Skill file is missing the closing frontmatter delimiter.',
+  );
 };
 
 /** The body after the frontmatter block, or the whole text when there is none. */

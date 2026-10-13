@@ -1,38 +1,69 @@
-import fs from "node:fs";
-import path from "node:path";
-import { z } from "zod";
-import { ToolError } from "../../core/errors.ts";
-import { exists, isFile } from "../../core/fs.ts";
-import { errorMessage, isJsonObject, parseWith, toJsonText, type JsonObject } from "../../core/json.ts";
-import { agentsFileNames, agentsPaths, resolveUserPath } from "../../core/paths.ts";
-import { deduplicate, toRepoRoot } from "./manifest.ts";
+import fs from 'node:fs';
+import path from 'node:path';
+import { z } from 'zod';
+import { ToolError } from '../../core/errors.ts';
+import { exists, isFile } from '../../core/fs.ts';
+import {
+  errorMessage,
+  isJsonObject,
+  parseWith,
+  toJsonText,
+  type JsonObject,
+} from '../../core/json.ts';
+import {
+  agentsFileNames,
+  agentsPaths,
+  resolveUserPath,
+} from '../../core/paths.ts';
+import { deduplicate, toRepoRoot } from './manifest.ts';
 
-const skillsSection = "skills";
+const skillsSection = 'skills';
 
-export type ConfiguredSource = { from: string; skills: string[]; url: string | undefined };
+export type ConfiguredSource = {
+  from: string;
+  skills: string[];
+  url: string | undefined;
+};
 
-const isNonEmptyString = (value: unknown): value is string => typeof value === "string" && value.trim() !== "";
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === 'string' && value.trim() !== '';
 
 /** One `sources[]` entry. Messages name the source so a long config stays debuggable. */
 const sourceSchema = (index: number) =>
   z
-    .looseObject({ from: z.unknown().optional(), url: z.unknown().optional(), skills: z.unknown().optional() })
+    .looseObject({
+      from: z.unknown().optional(),
+      url: z.unknown().optional(),
+      skills: z.unknown().optional(),
+    })
     .transform((source, context): ConfiguredSource => {
       if (!isNonEmptyString(source.from)) {
-        context.addIssue({ code: "custom", message: `Skills config source #${index} is missing a non-empty 'from' value.` });
+        context.addIssue({
+          code: 'custom',
+          message: `Skills config source #${index} is missing a non-empty 'from' value.`,
+        });
         return z.NEVER;
       }
       const label = `Skills config source '${source.from}' skills`;
       if (!Array.isArray(source.skills)) {
-        context.addIssue({ code: "custom", message: `${label} must be an array of strings.` });
+        context.addIssue({
+          code: 'custom',
+          message: `${label} must be an array of strings.`,
+        });
         return z.NEVER;
       }
       if (!source.skills.every(isNonEmptyString)) {
-        context.addIssue({ code: "custom", message: `${label} must contain only non-empty strings.` });
+        context.addIssue({
+          code: 'custom',
+          message: `${label} must contain only non-empty strings.`,
+        });
         return z.NEVER;
       }
       if (source.skills.length === 0) {
-        context.addIssue({ code: "custom", message: `${label} must not be empty.` });
+        context.addIssue({
+          code: 'custom',
+          message: `${label} must not be empty.`,
+        });
         return z.NEVER;
       }
       return {
@@ -55,13 +86,13 @@ export const parseConfiguredSources = (text: string): ConfiguredSource[] => {
     return fail(`Skills config is not valid JSON: ${errorMessage(error)}`);
   }
   if (!isJsonObject(parsed)) {
-    return fail("Skills config must be a JSON object.");
+    return fail('Skills config must be a JSON object.');
   }
   const section = skillsSection in parsed ? parsed[skillsSection] : parsed;
   if (!isJsonObject(section)) {
-    return fail("Agents config skills must be a JSON object.");
+    return fail('Agents config skills must be a JSON object.');
   }
-  const rawSources = section["sources"];
+  const rawSources = section['sources'];
   if (!Array.isArray(rawSources) || rawSources.length === 0) {
     return fail("Skills config must define a non-empty 'sources' array.");
   }
@@ -75,19 +106,21 @@ export const parseConfiguredSources = (text: string): ConfiguredSource[] => {
   });
 };
 
-export const loadConfiguredSources = (configPath: string): ConfiguredSource[] => {
+export const loadConfiguredSources = (
+  configPath: string,
+): ConfiguredSource[] => {
   if (!exists(configPath)) {
     return fail(`Could not find skills config at ${configPath}`);
   }
   if (!isFile(configPath)) {
     return fail(`Skills config path is not a file: ${configPath}`);
   }
-  return parseConfiguredSources(fs.readFileSync(configPath, "utf8"));
+  return parseConfiguredSources(fs.readFileSync(configPath, 'utf8'));
 };
 
 const agentsConfigHasSkills = (configPath: string): boolean => {
   try {
-    const parsed: unknown = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    const parsed: unknown = JSON.parse(fs.readFileSync(configPath, 'utf8'));
     return !isJsonObject(parsed) || isJsonObject(parsed[skillsSection]);
   } catch {
     return true;
@@ -106,12 +139,15 @@ export const resolveSyncConfigPath = (options: {
     return resolveUserPath(options.rawConfig, options.cwd, options.home);
   }
   if (options.useGlobal) {
-    return fail("sync with --global requires --config");
+    return fail('sync with --global requires --config');
   }
   const repoRoot = toRepoRoot(options.destination);
   const agentsConfig = path.join(repoRoot, agentsPaths.config);
   const legacyConfig = path.join(repoRoot, agentsPaths.skillsConfig);
-  if (isFile(agentsConfig) && (agentsConfigHasSkills(agentsConfig) || !isFile(legacyConfig))) {
+  if (
+    isFile(agentsConfig) &&
+    (agentsConfigHasSkills(agentsConfig) || !isFile(legacyConfig))
+  ) {
     return agentsConfig;
   }
   return isFile(legacyConfig) ? legacyConfig : agentsConfig;
@@ -120,7 +156,9 @@ export const resolveSyncConfigPath = (options: {
 /** Relative sources resolve from the repo that owns the config, not from the shell's directory. */
 export const configBaseRoot = (configPath: string): string => {
   const parent = path.dirname(configPath);
-  return path.basename(parent) === agentsFileNames.root ? path.dirname(parent) : parent;
+  return path.basename(parent) === agentsFileNames.root ?
+      path.dirname(parent)
+    : parent;
 };
 
 /**
@@ -135,9 +173,9 @@ export const applyConfigAliasRenames = (
   if (renamesBySource.size === 0) {
     return [];
   }
-  const raw = JSON.parse(fs.readFileSync(configPath, "utf8")) as JsonObject;
+  const raw = JSON.parse(fs.readFileSync(configPath, 'utf8')) as JsonObject;
   const section = isJsonObject(raw[skillsSection]) ? raw[skillsSection] : raw;
-  const sources = section["sources"] as Array<{ skills: string[] }>;
+  const sources = section['sources'] as Array<{ skills: string[] }>;
 
   const messages: string[] = [];
   let changed = false;
@@ -146,12 +184,19 @@ export const applyConfigAliasRenames = (
     if (source === undefined) {
       continue;
     }
-    const updated = deduplicate(source.skills.map((name) => renames.get(name) ?? name));
-    if (updated.length === source.skills.length && updated.every((name, position) => name === source.skills[position])) {
+    const updated = deduplicate(
+      source.skills.map((name) => renames.get(name) ?? name),
+    );
+    if (
+      updated.length === source.skills.length &&
+      updated.every((name, position) => name === source.skills[position])
+    ) {
       continue;
     }
     for (const [oldName, newName] of renames) {
-      messages.push(`${dryRun ? "Would update" : "Updated"} config: '${oldName}' -> '${newName}'`);
+      messages.push(
+        `${dryRun ? 'Would update' : 'Updated'} config: '${oldName}' -> '${newName}'`,
+      );
     }
     if (!dryRun) {
       source.skills = updated;
@@ -159,7 +204,7 @@ export const applyConfigAliasRenames = (
     }
   }
   if (changed) {
-    fs.writeFileSync(configPath, toJsonText(raw), "utf8");
+    fs.writeFileSync(configPath, toJsonText(raw), 'utf8');
   }
   return messages;
 };

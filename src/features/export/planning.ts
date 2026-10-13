@@ -4,7 +4,7 @@
  * are already a coherence judgement recorded in skill metadata. Destination limits are guardrails,
  * enforced loudly when they bind and ignored otherwise.
  */
-import { ToolError } from "../../core/errors.ts";
+import { ToolError } from '../../core/errors.ts';
 import {
   bundleWordCount,
   skillPrefix,
@@ -13,9 +13,12 @@ import {
   type Selection,
   type SkillDocument,
   type TargetLimits,
-} from "./models.ts";
+} from './models.ts';
 
-const rejectionReason = (skill: SkillDocument, selection: Selection): string | undefined => {
+const rejectionReason = (
+  skill: SkillDocument,
+  selection: Selection,
+): string | undefined => {
   const excludedReason = selection.excludedSkills[skill.name];
   if (excludedReason !== undefined) {
     return excludedReason;
@@ -23,16 +26,24 @@ const rejectionReason = (skill: SkillDocument, selection: Selection): string | u
   // An explicit include list overrides every other filter: naming a skill is a stronger signal than
   // any category rule it falls outside of.
   if (selection.includedSkills.length > 0) {
-    return selection.includedSkills.includes(skill.name) ? undefined : "not in the requested skill list";
+    return selection.includedSkills.includes(skill.name) ?
+        undefined
+      : 'not in the requested skill list';
   }
-  if (selection.visibilities.length > 0 && !selection.visibilities.includes(skill.visibility)) {
+  if (
+    selection.visibilities.length > 0 &&
+    !selection.visibilities.includes(skill.visibility)
+  ) {
     return `visibility is ${skill.visibility}`;
   }
   const prefix = skillPrefix(skill);
   if (selection.prefixes.length > 0 && !selection.prefixes.includes(prefix)) {
     return `prefix ${prefix} is not exported`;
   }
-  if (selection.domains.length > 0 && !selection.domains.includes(skill.domain)) {
+  if (
+    selection.domains.length > 0 &&
+    !selection.domains.includes(skill.domain)
+  ) {
     return `domain ${skill.domain} is not in the requested domains`;
   }
   if (selection.excludedDomains.includes(skill.domain)) {
@@ -59,7 +70,8 @@ export const selectSkills = (
   return { kept, dropped };
 };
 
-const byWordsDescending = (left: Bundle, right: Bundle): number => bundleWordCount(right) - bundleWordCount(left);
+const byWordsDescending = (left: Bundle, right: Bundle): number =>
+  bundleWordCount(right) - bundleWordCount(left);
 
 /** One bundle per domain, largest first. */
 export const bundleByDomain = (skills: SkillDocument[]): Bundle[] => {
@@ -74,7 +86,10 @@ export const bundleByDomain = (skills: SkillDocument[]): Bundle[] => {
 };
 
 const skillsByteSize = (skills: SkillDocument[]): number =>
-  skills.reduce((total, skill) => total + Buffer.byteLength(skill.body, "utf8"), 0);
+  skills.reduce(
+    (total, skill) => total + Buffer.byteLength(skill.body, 'utf8'),
+    0,
+  );
 
 /** Split by whole skills until every part fits; splitting mid-skill would separate guidance from its reasons. */
 const splitOversized = (bundle: Bundle, maxBytes: number): Bundle[] => {
@@ -86,7 +101,10 @@ const splitOversized = (bundle: Bundle, maxBytes: number): Bundle[] => {
   for (const skill of bundle.skills) {
     const candidate = [...current, skill];
     if (current.length > 0 && skillsByteSize(candidate) > maxBytes) {
-      parts.push({ name: `${bundle.name}-${parts.length + 1}`, skills: current });
+      parts.push({
+        name: `${bundle.name}-${parts.length + 1}`,
+        skills: current,
+      });
       current = [skill];
     } else {
       current = candidate;
@@ -115,12 +133,17 @@ export const enforceLimits = (
     if (strict) {
       throw new ToolError(
         `${working.length} bundles exceed the ${limits.maxFiles}-file limit for this target: ` +
-          working.map((bundle) => bundle.name).join(", "),
+          working.map((bundle) => bundle.name).join(', '),
       );
     }
-    working.sort((left, right) => bundleWordCount(left) - bundleWordCount(right));
+    working.sort(
+      (left, right) => bundleWordCount(left) - bundleWordCount(right),
+    );
     const [first, second] = working.splice(0, 2) as [Bundle, Bundle];
-    const merged = { name: `${first.name}-${second.name}`, skills: [...first.skills, ...second.skills] };
+    const merged = {
+      name: `${first.name}-${second.name}`,
+      skills: [...first.skills, ...second.skills],
+    };
     notices.push(
       `merged '${first.name}' (${bundleWordCount(first)} words) and '${second.name}' (${bundleWordCount(second)} words) ` +
         `into '${merged.name}' to stay within the ${limits.maxFiles}-file limit`,
@@ -143,7 +166,7 @@ export const enforceLimits = (
     if (words > limits.softWordsPerBundle) {
       notices.push(
         `'${bundle.name}' is ${words} words, above the ${limits.softWordsPerBundle}-word guideline; retrieval may be ` +
-          "noisier. Consider selecting fewer skills for this bundle.",
+          'noisier. Consider selecting fewer skills for this bundle.',
       );
     }
   }
@@ -159,6 +182,10 @@ export const buildPlan = (
   strict = false,
 ): ExportPlan => {
   const { kept, dropped } = selectSkills(skills, selection);
-  const { bundles, notices } = enforceLimits(bundleByDomain(kept), limits, strict);
+  const { bundles, notices } = enforceLimits(
+    bundleByDomain(kept),
+    limits,
+    strict,
+  );
   return { bundles, excluded: dropped, notices };
 };

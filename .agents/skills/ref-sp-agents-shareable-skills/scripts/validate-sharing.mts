@@ -16,10 +16,10 @@
 //   node validate-sharing.mts <skills-root> --all
 //   node validate-sharing.mts <target> [--format text|json] [--warnings-as-errors]
 
-import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { basename, dirname, join, resolve } from "node:path";
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 
-type Severity = "error" | "warning";
+type Severity = 'error' | 'warning';
 
 interface Finding {
   skill: string;
@@ -45,7 +45,7 @@ type Metadata = Record<string, string>;
 type FrontmatterValue = string | Metadata;
 type Frontmatter = Record<string, FrontmatterValue>;
 
-type Visibility = "repo-local" | "organization" | "public";
+type Visibility = 'repo-local' | 'organization' | 'public';
 
 interface SkillInfo {
   visibility: Visibility | null;
@@ -54,13 +54,15 @@ interface SkillInfo {
 // Visibility ordered from least to most portable. A skill may only hard-require
 // dependencies at least as visible as itself, so anything it needs travels with it.
 const VISIBILITY_RANK: Record<Visibility, number> = {
-  "repo-local": 0,
+  'repo-local': 0,
   organization: 1,
   public: 2,
 };
 
 function visibilityRank(visibility: Visibility | null): number | null {
-  return visibility !== null && Object.hasOwn(VISIBILITY_RANK, visibility) ? VISIBILITY_RANK[visibility] : null;
+  return visibility !== null && Object.hasOwn(VISIBILITY_RANK, visibility) ?
+      VISIBILITY_RANK[visibility]
+    : null;
 }
 
 // --- frontmatter parsing (self-contained; no YAML dependency) ---
@@ -78,24 +80,27 @@ function stripYamlString(value: string): string {
 }
 
 function leadingSpaces(line: string): number {
-  return line.length - line.replace(/^ +/, "").length;
+  return line.length - line.replace(/^ +/, '').length;
 }
 
-function parseFrontmatter(text: string): { frontmatter: Frontmatter; body: string } {
+function parseFrontmatter(text: string): {
+  frontmatter: Frontmatter;
+  body: string;
+} {
   const lines = text.split(/\r?\n/);
-  if (lines.length === 0 || lines[0].trim() !== "---") {
-    throw new Error("SKILL.md is missing opening YAML frontmatter delimiter");
+  if (lines.length === 0 || lines[0].trim() !== '---') {
+    throw new Error('SKILL.md is missing opening YAML frontmatter delimiter');
   }
 
   let endIndex = -1;
   for (let i = 1; i < lines.length; i += 1) {
-    if (lines[i].trim() === "---") {
+    if (lines[i].trim() === '---') {
       endIndex = i;
       break;
     }
   }
   if (endIndex === -1) {
-    throw new Error("SKILL.md is missing closing YAML frontmatter delimiter");
+    throw new Error('SKILL.md is missing closing YAML frontmatter delimiter');
   }
 
   const fmLines = lines.slice(1, endIndex);
@@ -105,40 +110,46 @@ function parseFrontmatter(text: string): { frontmatter: Frontmatter; body: strin
 
   while (index < fmLines.length) {
     const line = fmLines[index];
-    if (line.trim() === "") {
+    if (line.trim() === '') {
       index += 1;
       continue;
     }
 
     if (leadingSpaces(line) === 0) {
-      const sep = line.indexOf(":");
+      const sep = line.indexOf(':');
       if (sep === -1) {
         throw new Error(`Invalid frontmatter line: ${line}`);
       }
       const key = line.slice(0, sep).trim();
       const rawValue = line.slice(sep + 1).trim();
 
-      if (rawValue === "") {
+      if (rawValue === '') {
         currentMapping = {};
         frontmatter[key] = currentMapping;
         index += 1;
         continue;
       }
 
-      if (rawValue === ">" || rawValue === "|" || rawValue === ">-" || rawValue === "|-") {
+      if (
+        rawValue === '>' ||
+        rawValue === '|' ||
+        rawValue === '>-' ||
+        rawValue === '|-'
+      ) {
         const blockLines: string[] = [];
         index += 1;
         while (index < fmLines.length) {
           const cont = fmLines[index];
-          if (cont.trim() !== "" && leadingSpaces(cont) === 0) {
+          if (cont.trim() !== '' && leadingSpaces(cont) === 0) {
             break;
           }
           blockLines.push(cont.trim());
           index += 1;
         }
-        frontmatter[key] = rawValue.startsWith("|")
-          ? blockLines.join("\n")
-          : blockLines.filter((entry) => entry !== "").join(" ");
+        frontmatter[key] =
+          rawValue.startsWith('|') ?
+            blockLines.join('\n')
+          : blockLines.filter((entry) => entry !== '').join(' ');
         currentMapping = null;
         continue;
       }
@@ -155,23 +166,25 @@ function parseFrontmatter(text: string): { frontmatter: Frontmatter; body: strin
     }
 
     const trimmed = line.trim();
-    const sep = trimmed.indexOf(":");
+    const sep = trimmed.indexOf(':');
     if (sep === -1) {
       throw new Error(`Invalid nested frontmatter line: ${line}`);
     }
-    currentMapping[trimmed.slice(0, sep).trim()] = stripYamlString(trimmed.slice(sep + 1).trim());
+    currentMapping[trimmed.slice(0, sep).trim()] = stripYamlString(
+      trimmed.slice(sep + 1).trim(),
+    );
     index += 1;
   }
 
-  const body = lines.slice(endIndex + 1).join("\n");
+  const body = lines.slice(endIndex + 1).join('\n');
   return { frontmatter, body };
 }
 
 // --- helpers ---
 
 function asMetadata(frontmatter: Frontmatter): Metadata {
-  const value = frontmatter["metadata"];
-  if (value && typeof value === "object") {
+  const value = frontmatter['metadata'];
+  if (value && typeof value === 'object') {
     return value;
   }
   return {};
@@ -180,7 +193,7 @@ function asMetadata(frontmatter: Frontmatter): Metadata {
 // Portability fields live under the `metadata.shareable-skills.*` namespace so they cannot collide
 // with spec-defined or third-party metadata keys. `ss(metadata, "domain")` reads
 // `metadata["shareable-skills.domain"]`.
-const SS_PREFIX = "shareable-skills.";
+const SS_PREFIX = 'shareable-skills.';
 
 function ss(metadata: Metadata, key: string): string | undefined {
   return metadata[SS_PREFIX + key];
@@ -197,21 +210,32 @@ function splitList(value: string | undefined): string[] {
 }
 
 function computeVisibility(metadata: Metadata): string | null {
-  const visibility = ss(metadata, "visibility");
+  const visibility = ss(metadata, 'visibility');
   return visibility !== undefined ? visibility : null;
 }
 
 function loadRegistry(): { registry: Registry | null; error: string | null } {
   // The registry lives inside this skill (references/registry.json) so it travels with the skill
   // when the skill is vendored or symlinked, independent of the skills root being validated.
-  const path = resolve(import.meta.dirname, "..", "references", "registry.json");
+  const path = resolve(
+    import.meta.dirname,
+    '..',
+    'references',
+    'registry.json',
+  );
   if (!existsSync(path)) {
     return { registry: null, error: `registry.json not found at ${path}` };
   }
   try {
-    return { registry: JSON.parse(readFileSync(path, "utf8")) as Registry, error: null };
+    return {
+      registry: JSON.parse(readFileSync(path, 'utf8')) as Registry,
+      error: null,
+    };
   } catch (error) {
-    return { registry: null, error: `registry.json is not valid JSON: ${(error as Error).message}` };
+    return {
+      registry: null,
+      error: `registry.json is not valid JSON: ${(error as Error).message}`,
+    };
   }
 }
 
@@ -221,12 +245,12 @@ function loadSkillIndex(skillsRoot: string): Map<string, SkillInfo> {
     if (!entry.isDirectory()) {
       continue;
     }
-    const skillMd = join(skillsRoot, entry.name, "SKILL.md");
+    const skillMd = join(skillsRoot, entry.name, 'SKILL.md');
     if (!existsSync(skillMd)) {
       continue;
     }
     try {
-      const { frontmatter } = parseFrontmatter(readFileSync(skillMd, "utf8"));
+      const { frontmatter } = parseFrontmatter(readFileSync(skillMd, 'utf8'));
       const visibility = computeVisibility(asMetadata(frontmatter));
       index.set(entry.name, { visibility: visibility as Visibility | null });
     } catch {
@@ -250,42 +274,43 @@ function validateSharingSkill(
     findings.push({ skill: label, severity, message });
   };
   // Downgrade a phase-dependent error to a warning until the migration reaches minPhase.
-  const gate = (target: Severity, minPhase: number): Severity => (phase >= minPhase ? target : "warning");
+  const gate = (target: Severity, minPhase: number): Severity =>
+    phase >= minPhase ? target : 'warning';
 
-  const skillMd = join(skillDir, "SKILL.md");
+  const skillMd = join(skillDir, 'SKILL.md');
   if (!existsSync(skillMd)) {
-    add("error", "SKILL.md not found");
+    add('error', 'SKILL.md not found');
     return findings;
   }
 
   let frontmatter: Frontmatter;
   let body: string;
   try {
-    const parsed = parseFrontmatter(readFileSync(skillMd, "utf8"));
+    const parsed = parseFrontmatter(readFileSync(skillMd, 'utf8'));
     frontmatter = parsed.frontmatter;
     body = parsed.body;
   } catch (error) {
-    add("error", (error as Error).message);
+    add('error', (error as Error).message);
     return findings;
   }
 
   const metadata = asMetadata(frontmatter);
 
   // --- domain ---
-  const domain = ss(metadata, "domain");
+  const domain = ss(metadata, 'domain');
   if (!domain) {
-    add(gate("error", 1), "missing domain (metadata.shareable-skills.domain)");
+    add(gate('error', 1), 'missing domain (metadata.shareable-skills.domain)');
   } else if (registry) {
     if (Object.hasOwn(registry.domains, domain)) {
       // registered target domain
     } else if (Object.hasOwn(registry.domainAliases, domain)) {
       add(
-        "warning",
+        'warning',
         `domain '${domain}' is a legacy domain; migrate to '${registry.domainAliases[domain]}' and move specifics to tags`,
       );
     } else {
       add(
-        "error",
+        'error',
         `domain '${domain}' is not a registered domain. The vocabulary is intentionally growing — open an issue explaining what and why it matters, then add it to registry.json`,
       );
     }
@@ -295,57 +320,79 @@ function validateSharingSkill(
   const visibility = computeVisibility(metadata);
   let shareable = false;
   if (!visibility) {
-    add(gate("error", 2), "missing visibility (metadata.shareable-skills.visibility: repo-local | organization | public)");
+    add(
+      gate('error', 2),
+      'missing visibility (metadata.shareable-skills.visibility: repo-local | organization | public)',
+    );
   } else {
-    if (visibility !== "repo-local" && visibility !== "organization" && visibility !== "public") {
-      add("error", "visibility must be one of repo-local, organization, public");
+    if (
+      visibility !== 'repo-local' &&
+      visibility !== 'organization' &&
+      visibility !== 'public'
+    ) {
+      add(
+        'error',
+        'visibility must be one of repo-local, organization, public',
+      );
     }
-    shareable = visibility === "organization" || visibility === "public";
-    if (visibility === "public") {
-      const license = frontmatter["license"];
-      if (typeof license !== "string" || license.trim() === "") {
-        add("error", "visibility 'public' requires a top-level 'license'");
+    shareable = visibility === 'organization' || visibility === 'public';
+    if (visibility === 'public') {
+      const license = frontmatter['license'];
+      if (typeof license !== 'string' || license.trim() === '') {
+        add('error', "visibility 'public' requires a top-level 'license'");
       }
     }
   }
 
-  if (shareable && !ss(metadata, "owner")) {
-    add(gate("warning", 2), "shareable skill should declare metadata.shareable-skills.owner (the canonical repo)");
+  if (shareable && !ss(metadata, 'owner')) {
+    add(
+      gate('warning', 2),
+      'shareable skill should declare metadata.shareable-skills.owner (the canonical repo)',
+    );
   }
 
   // --- name grammar (only enforced once owner-prefix is present) ---
-  const ownerPrefix = ss(metadata, "owner-prefix");
-  const rawName = frontmatter["name"];
-  const name = typeof rawName === "string" ? rawName : label;
+  const ownerPrefix = ss(metadata, 'owner-prefix');
+  const rawName = frontmatter['name'];
+  const name = typeof rawName === 'string' ? rawName : label;
   if (ownerPrefix) {
-    const segments = name.split("-");
+    const segments = name.split('-');
     const type = segments[0];
-    if (type !== "ref" && type !== "tool") {
-      add("error", "name must start with 'ref-' or 'tool-'");
+    if (type !== 'ref' && type !== 'tool') {
+      add('error', "name must start with 'ref-' or 'tool-'");
     } else if (segments[1] !== ownerPrefix) {
       add(
-        "error",
-        `name owner segment '${segments[1] ?? ""}' does not match metadata.shareable-skills.owner-prefix '${ownerPrefix}'`,
+        'error',
+        `name owner segment '${segments[1] ?? ''}' does not match metadata.shareable-skills.owner-prefix '${ownerPrefix}'`,
       );
-    } else if (type === "ref" && domain && registry && Object.hasOwn(registry.domains, domain) && segments[2] !== domain) {
-      add("error", `name domain segment '${segments[2] ?? ""}' does not match metadata.shareable-skills.domain '${domain}'`);
+    } else if (
+      type === 'ref' &&
+      domain &&
+      registry &&
+      Object.hasOwn(registry.domains, domain) &&
+      segments[2] !== domain
+    ) {
+      add(
+        'error',
+        `name domain segment '${segments[2] ?? ''}' does not match metadata.shareable-skills.domain '${domain}'`,
+      );
     }
   } else {
     add(
-      gate("warning", 2),
-      "skill not yet migrated to the owner-prefixed name grammar (ref-<owner>-<domain>-... / tool-<owner>-<verb>-...)",
+      gate('warning', 2),
+      'skill not yet migrated to the owner-prefixed name grammar (ref-<owner>-<domain>-... / tool-<owner>-<verb>-...)',
     );
   }
 
   // --- dependencies ---
   const aliases = registry?.aliases ?? {};
-  const requires = splitList(ss(metadata, "requires"));
+  const requires = splitList(ss(metadata, 'requires'));
   const selfRank = visibilityRank(visibility as Visibility | null);
   for (const dep of requires) {
     const resolved = Object.hasOwn(aliases, dep) ? aliases[dep] : dep;
     const info = index.get(resolved);
     if (!info) {
-      add("error", `requires '${dep}' does not resolve to an existing skill`);
+      add('error', `requires '${dep}' does not resolve to an existing skill`);
       continue;
     }
     // A skill must not hard-depend on a lower-visibility (less portable) skill,
@@ -353,7 +400,7 @@ function validateSharingSkill(
     const depRank = visibilityRank(info.visibility);
     if (selfRank !== null && depRank !== null && depRank < selfRank) {
       add(
-        "error",
+        'error',
         `${visibility} skill must not hard-depend on lower-visibility ${info.visibility} skill '${dep}'`,
       );
     }
@@ -362,25 +409,34 @@ function validateSharingSkill(
   // --- tags (advisory) ---
   if (registry) {
     const knownTags = new Set(registry.tags);
-    for (const tag of splitList(ss(metadata, "tags"))) {
+    for (const tag of splitList(ss(metadata, 'tags'))) {
       if (!knownTags.has(tag)) {
-        add("warning", `unknown tag '${tag}' (advisory; consider adding it to registry.json tags)`);
+        add(
+          'warning',
+          `unknown tag '${tag}' (advisory; consider adding it to registry.json tags)`,
+        );
       }
     }
   }
 
   // --- vendoring ---
-  if (ss(metadata, "vendored-sha")) {
-    if (!ss(metadata, "vendored-time")) {
-      add("warning", "vendored copy should record metadata.shareable-skills.vendored-time");
+  if (ss(metadata, 'vendored-sha')) {
+    if (!ss(metadata, 'vendored-time')) {
+      add(
+        'warning',
+        'vendored copy should record metadata.shareable-skills.vendored-time',
+      );
     }
-    if (!ss(metadata, "owner")) {
-      add("warning", "vendored copy should keep metadata.shareable-skills.owner pointing upstream");
+    if (!ss(metadata, 'owner')) {
+      add(
+        'warning',
+        'vendored copy should keep metadata.shareable-skills.owner pointing upstream',
+      );
     }
     const lowered = body.toLowerCase();
-    if (!(lowered.includes("vendored") && lowered.includes("do not edit"))) {
+    if (!(lowered.includes('vendored') && lowered.includes('do not edit'))) {
       add(
-        "warning",
+        'warning',
         "vendored copy should carry a read-only body banner (e.g. '⚠️ Vendored copy — do not edit')",
       );
     }
@@ -396,7 +452,7 @@ function validateSharingSkill(
 // the visibility tiers at the publication boundary, so the manifest and the catalog must agree.
 // See ref-sp-agents-plugin-marketplaces for the enumeration and versioning rules.
 
-const MANIFEST_LABEL = "plugin-manifest";
+const MANIFEST_LABEL = 'plugin-manifest';
 
 interface PluginManifest {
   root: string;
@@ -407,16 +463,20 @@ interface PluginManifest {
 function findPluginManifest(skillsRoot: string): PluginManifest | null {
   let dir = skillsRoot;
   for (;;) {
-    const path = join(dir, ".claude-plugin", "plugin.json");
+    const path = join(dir, '.claude-plugin', 'plugin.json');
     if (existsSync(path)) {
       let parsed: unknown;
       try {
-        parsed = JSON.parse(readFileSync(path, "utf8"));
+        parsed = JSON.parse(readFileSync(path, 'utf8'));
       } catch {
         return { root: dir, path, skills: [] };
       }
       const raw = (parsed as { skills?: unknown } | null)?.skills;
-      const skills = typeof raw === "string" ? [raw] : Array.isArray(raw) ? raw.filter((s): s is string => typeof s === "string") : [];
+      const skills =
+        typeof raw === 'string' ? [raw]
+        : Array.isArray(raw) ?
+          raw.filter((s): s is string => typeof s === 'string')
+        : [];
       return { root: dir, path, skills };
     }
     const parent = dirname(dir);
@@ -425,7 +485,10 @@ function findPluginManifest(skillsRoot: string): PluginManifest | null {
   }
 }
 
-function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo>): Finding[] {
+function validatePluginManifest(
+  skillsRoot: string,
+  index: Map<string, SkillInfo>,
+): Finding[] {
   const manifest = findPluginManifest(skillsRoot);
   // A repo that publishes no plugin has nothing to keep in sync.
   if (manifest === null) return [];
@@ -444,8 +507,11 @@ function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo
       containerListed = true;
       continue;
     }
-    if (!existsSync(join(resolved, "SKILL.md"))) {
-      add("error", `'${entry}' does not point at a skill — a dangling entry silently drops from the published plugin`);
+    if (!existsSync(join(resolved, 'SKILL.md'))) {
+      add(
+        'error',
+        `'${entry}' does not point at a skill — a dangling entry silently drops from the published plugin`,
+      );
       continue;
     }
     listed.add(basename(resolved));
@@ -456,10 +522,10 @@ function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo
   if (containerListed) {
     // Listing the container publishes everything inside it, tier metadata notwithstanding.
     for (const [name, info] of index) {
-      if (info.visibility === "public") continue;
+      if (info.visibility === 'public') continue;
       add(
-        "error",
-        `manifest lists the skills container, which publishes every skill in it — '${name}' is ${info.visibility ?? "untiered"} and would leak. Enumerate individual skill directories instead.`,
+        'error',
+        `manifest lists the skills container, which publishes every skill in it — '${name}' is ${info.visibility ?? 'untiered'} and would leak. Enumerate individual skill directories instead.`,
       );
     }
     return findings;
@@ -467,10 +533,10 @@ function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo
 
   for (const name of listed) {
     const visibility = index.get(name)?.visibility ?? null;
-    if (visibility !== "public") {
+    if (visibility !== 'public') {
       add(
-        "error",
-        `'${name}' is ${visibility ?? "untiered"} but listed in ${manifestName} — publishing it would leak a skill that is not public`,
+        'error',
+        `'${name}' is ${visibility ?? 'untiered'} but listed in ${manifestName} — publishing it would leak a skill that is not public`,
       );
     }
   }
@@ -478,8 +544,11 @@ function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo
   // A public skill may legitimately be in flight before its first release, so this is a warning:
   // the omission is recoverable, unlike a leak.
   for (const [name, info] of index) {
-    if (info.visibility === "public" && !listed.has(name)) {
-      add("warning", `'${name}' is public but missing from ${manifestName} — it will not ship in the published plugin`);
+    if (info.visibility === 'public' && !listed.has(name)) {
+      add(
+        'warning',
+        `'${name}' is public but missing from ${manifestName} — it will not ship in the published plugin`,
+      );
     }
   }
 
@@ -491,7 +560,11 @@ function validatePluginManifest(skillsRoot: string, index: Map<string, SkillInfo
 function findSkillDirs(target: string, validateAll: boolean): string[] {
   if (validateAll) {
     return readdirSync(target, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory() && existsSync(join(target, entry.name, "SKILL.md")))
+      .filter(
+        (entry) =>
+          entry.isDirectory() &&
+          existsSync(join(target, entry.name, 'SKILL.md')),
+      )
       .map((entry) => join(target, entry.name))
       .sort();
   }
@@ -499,47 +572,55 @@ function findSkillDirs(target: string, validateAll: boolean): string[] {
 }
 
 function printText(findings: Finding[], checked: number): void {
-  const errors = findings.filter((finding) => finding.severity === "error").length;
-  const warnings = findings.filter((finding) => finding.severity === "warning").length;
+  const errors = findings.filter(
+    (finding) => finding.severity === 'error',
+  ).length;
+  const warnings = findings.filter(
+    (finding) => finding.severity === 'warning',
+  ).length;
   if (findings.length > 0) {
     for (const finding of findings) {
-      console.log(`${finding.severity.toUpperCase()} ${finding.skill}: ${finding.message}`);
+      console.log(
+        `${finding.severity.toUpperCase()} ${finding.skill}: ${finding.message}`,
+      );
     }
   } else {
-    console.log("No findings.");
+    console.log('No findings.');
   }
-  console.log(`Summary: checked=${checked} errors=${errors} warnings=${warnings}`);
+  console.log(
+    `Summary: checked=${checked} errors=${errors} warnings=${warnings}`,
+  );
 }
 
 function main(): number {
   const argv = process.argv.slice(2);
   let target: string | undefined;
   let validateAll = false;
-  let format: "text" | "json" = "text";
+  let format: 'text' | 'json' = 'text';
   let warningsAsErrors = false;
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
-    if (arg === "--all") {
+    if (arg === '--all') {
       validateAll = true;
-    } else if (arg === "--warnings-as-errors") {
+    } else if (arg === '--warnings-as-errors') {
       warningsAsErrors = true;
-    } else if (arg === "--format") {
+    } else if (arg === '--format') {
       const value = argv[i + 1];
       i += 1;
-      if (value !== "text" && value !== "json") {
+      if (value !== 'text' && value !== 'json') {
         console.error("--format must be 'text' or 'json'");
         return 2;
       }
       format = value;
-    } else if (arg.startsWith("--format=")) {
-      const value = arg.slice("--format=".length);
-      if (value !== "text" && value !== "json") {
+    } else if (arg.startsWith('--format=')) {
+      const value = arg.slice('--format='.length);
+      if (value !== 'text' && value !== 'json') {
         console.error("--format must be 'text' or 'json'");
         return 2;
       }
       format = value;
-    } else if (!arg.startsWith("-") && target === undefined) {
+    } else if (!arg.startsWith('-') && target === undefined) {
       target = arg;
     } else {
       console.error(`Unrecognized argument: ${arg}`);
@@ -548,7 +629,9 @@ function main(): number {
   }
 
   if (target === undefined) {
-    console.error("usage: validate-sharing.mts <target> [--all] [--format text|json] [--warnings-as-errors]");
+    console.error(
+      'usage: validate-sharing.mts <target> [--all] [--format text|json] [--warnings-as-errors]',
+    );
     return 2;
   }
 
@@ -564,7 +647,11 @@ function main(): number {
 
   const findings: Finding[] = [];
   if (registryError) {
-    findings.push({ skill: "registry", severity: "error", message: registryError });
+    findings.push({
+      skill: 'registry',
+      severity: 'error',
+      message: registryError,
+    });
   }
 
   const skillDirs = findSkillDirs(resolvedTarget, validateAll);
@@ -578,14 +665,18 @@ function main(): number {
     findings.push(...validatePluginManifest(skillsRoot, index));
   }
 
-  if (format === "json") {
-    console.log(JSON.stringify({ checked: skillDirs.length, findings }, null, 2));
+  if (format === 'json') {
+    console.log(
+      JSON.stringify({ checked: skillDirs.length, findings }, null, 2),
+    );
   } else {
     printText(findings, skillDirs.length);
   }
 
-  const hasErrors = findings.some((finding) => finding.severity === "error");
-  const hasWarnings = findings.some((finding) => finding.severity === "warning");
+  const hasErrors = findings.some((finding) => finding.severity === 'error');
+  const hasWarnings = findings.some(
+    (finding) => finding.severity === 'warning',
+  );
   return hasErrors || (warningsAsErrors && hasWarnings) ? 1 : 0;
 }
 

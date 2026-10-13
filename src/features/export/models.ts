@@ -31,13 +31,21 @@ export type Selection = {
  * `softWordsPerBundle` only warns, because splitting on it would trade retrieval coherence for a
  * number nobody set.
  */
-export type TargetLimits = { maxFiles: number; maxFileBytes: number; softWordsPerBundle: number };
+export type TargetLimits = {
+  maxFiles: number;
+  maxFileBytes: number;
+  softWordsPerBundle: number;
+};
 
 /** One output file: skills that belong together for retrieval. */
 export type Bundle = { name: string; skills: SkillDocument[] };
 
 /** What an export would produce, before anything is written. */
-export type ExportPlan = { bundles: Bundle[]; excluded: Record<string, string>; notices: string[] };
+export type ExportPlan = {
+  bundles: Bundle[];
+  excluded: Record<string, string>;
+  notices: string[];
+};
 
 export const emptySelection: Selection = {
   visibilities: [],
@@ -49,11 +57,14 @@ export const emptySelection: Selection = {
 };
 
 /** The role prefix (`ref-`, `tool-`) used for selection. */
-export const skillPrefix = (skill: SkillDocument): string => `${skill.name.split("-")[0] ?? ""}-`;
+export const skillPrefix = (skill: SkillDocument): string =>
+  `${skill.name.split('-')[0] ?? ''}-`;
 
-export const countWords = (text: string): number => text.split(/\s+/).filter((word) => word !== "").length;
+export const countWords = (text: string): number =>
+  text.split(/\s+/).filter((word) => word !== '').length;
 
-export const skillWordCount = (skill: SkillDocument): number => countWords(skill.body);
+export const skillWordCount = (skill: SkillDocument): number =>
+  countWords(skill.body);
 
 export const bundleWordCount = (bundle: Bundle): number =>
   bundle.skills.reduce((total, skill) => total + skillWordCount(skill), 0);
@@ -65,4 +76,5 @@ export const planWordCount = (plan: ExportPlan): number =>
   plan.bundles.reduce((total, bundle) => total + bundleWordCount(bundle), 0);
 
 /** Format an integer with thousands separators, like Python's `{:,}`. */
-export const formatCount = (value: number): string => Math.round(value).toLocaleString("en-US");
+export const formatCount = (value: number): string =>
+  Math.round(value).toLocaleString('en-US');

@@ -5,12 +5,12 @@
  *
  * Plugin manifests carry the version too; `agentic-tools plugin check` owns those.
  */
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const versionFile = "VERSION";
-const packageJsonFile = "package.json";
-const pyprojectFile = "pyproject.toml";
+const versionFile = 'VERSION';
+const packageJsonFile = 'package.json';
+const pyprojectFile = 'pyproject.toml';
 
 const semverPattern =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
@@ -23,13 +23,17 @@ export const validateSemver = (version: string): string => {
   return normalized;
 };
 
-const readText = (root: string, file: string): string => fs.readFileSync(path.join(root, file), "utf8");
+const readText = (root: string, file: string): string =>
+  fs.readFileSync(path.join(root, file), 'utf8');
 
 const readPackageJsonVersion = (root: string): string => {
   const parsed: unknown = JSON.parse(readText(root, packageJsonFile));
-  const version = typeof parsed === "object" && parsed !== null ? (parsed as { version?: unknown }).version : undefined;
-  if (typeof version !== "string") {
-    throw new Error("package.json is missing version");
+  const version =
+    typeof parsed === 'object' && parsed !== null ?
+      (parsed as { version?: unknown }).version
+    : undefined;
+  if (typeof version !== 'string') {
+    throw new Error('package.json is missing version');
   }
   return validateSemver(version);
 };
@@ -42,7 +46,10 @@ const readPyprojectVersion = (root: string): string | undefined => {
   if (!fs.existsSync(path.join(root, pyprojectFile))) {
     return undefined;
   }
-  const project = /^\[project\]\s*$([\s\S]*?)(?=^\[|(?![\s\S]))/m.exec(readText(root, pyprojectFile))?.[1] ?? "";
+  const project =
+    /^\[project\]\s*$([\s\S]*?)(?=^\[|(?![\s\S]))/m.exec(
+      readText(root, pyprojectFile),
+    )?.[1] ?? '';
   const version = /^version\s*=\s*"([^"]+)"/m.exec(project)?.[1];
   return version === undefined ? undefined : validateSemver(version);
 };
@@ -67,26 +74,35 @@ export const checkRepositoryVersion = (root: string): string => {
     .filter(([, actual]) => actual !== expected)
     .map(([file, actual]) => `${file}=${actual}`);
   if (mismatches.length > 0) {
-    throw new Error(`Version drift detected. Expected ${expected} from ${versionFile}, got ${mismatches.join(", ")}`);
+    throw new Error(
+      `Version drift detected. Expected ${expected} from ${versionFile}, got ${mismatches.join(', ')}`,
+    );
   }
   return expected;
 };
 
 const main = (argv: string[]): number => {
-  if (argv[0] !== "check" || argv.length !== 1) {
-    process.stderr.write("Usage: node scripts/checkVersionDrift.mts check\n");
+  if (argv[0] !== 'check' || argv.length !== 1) {
+    process.stderr.write('Usage: node scripts/checkVersionDrift.mts check\n');
     return 2;
   }
   try {
-    process.stdout.write(`${checkRepositoryVersion(path.resolve(import.meta.dirname, ".."))}\n`);
+    process.stdout.write(
+      `${checkRepositoryVersion(path.resolve(import.meta.dirname, '..'))}\n`,
+    );
     return 0;
   } catch (error) {
-    process.stderr.write(`Error: ${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `Error: ${error instanceof Error ? error.message : String(error)}\n`,
+    );
     return 1;
   }
 };
 
 // Run only when executed directly, so tests can import the helpers.
-if (process.argv[1] !== undefined && path.resolve(process.argv[1]) === import.meta.filename) {
+if (
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === import.meta.filename
+) {
   process.exitCode = main(process.argv.slice(2));
 }
