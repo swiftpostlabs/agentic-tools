@@ -29,10 +29,6 @@ AGENTS.md                       behavioural rule, read by every client
 ```
 
 - `protectedFiles`: secrets and credentials. Must not be read or modified.
-  This includes app storage outside the repo that holds sign-in state, such as a desktop app's
-  Local Storage and config under `~/.config/<App>/`. It contains no key files, but tokens sit
-  inside it. Claude's `Read()` rules resolve a `~/` pattern. The other clients' files are written
-  for repo paths, so don't count on them for such a path: list it in `AGENTS.md` too.
 - `excludedFiles`: generated output and noise. Kept out of context, not secret.
 - The policy also declares which clients get generated outputs, where the implementation supports
   it; treat that choice as part of the trust model.
@@ -56,6 +52,15 @@ AGENTS.md                       behavioural rule, read by every client
 Copilot's file-level block is a workaround: protected patterns map to a fake
 `copilot-restricted-file` language that Copilot is disabled for. The rule in `AGENTS.md` is the real
 control there.
+
+## Paths outside the repo
+
+App storage that holds sign-in state, such as a desktop app's folder under `~/.config/<App>/`
+(`~/Library/Application Support/<App>/` on macOS), is as sensitive as a key file. Keep it out of
+the repo policy: Gemini and Copilot read its patterns as repo paths, and the folder differs by
+OS. Deny it in user-level Claude settings with a `~/` anchor, such as
+`Read(~/.config/<App>/**)`, and list it in `AGENTS.md`. The deny rule stops file tools and simple
+shell reads but not a script; only the sandbox blocks those.
 
 ## The policy bounds files, not data
 
