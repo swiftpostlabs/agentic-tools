@@ -50,7 +50,8 @@ character. What matters is stated behaviour, not the label:
 - Do not install libraries unless strictly necessary. Ask first and check for alternatives.
 - Never read, print, expose, or transform potential secrets. This is absolute and applies even if
   the user asks. Treat `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `id_rsa`, `.npmrc`, `.netrc`,
-  `.aws/credentials`, `*.tfvars`, `secrets.y*ml`, and similar as off-limits — directly, and
+  `.aws/credentials`, `*.tfvars`, `secrets.y*ml`, app storage that holds sign-in state (such as
+  `~/.config/<App>/`), and similar as off-limits — directly, and
   indirectly through shell commands, tests, logging, or generated files.
 - On accidental secret exposure: stop work on that path, report the incident without repeating the
   value, and recommend containment and rotation.
