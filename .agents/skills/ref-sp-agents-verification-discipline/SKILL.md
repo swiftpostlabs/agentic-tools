@@ -136,6 +136,11 @@ what it was hoped to establish, and treat the gap as unverified rather than cove
 - **When several components can produce the same artifact, attribution needs its own check.** Finding
   that your component no longer accounts for something does not mean nothing does. Ask which
   component owns it now, rather than treating your own exoneration as the answer.
+- **Where a tool keeps its data is a lookup, not a theory.** Questions like "where is this setting
+  stored" or "what does this field mean" have a recorded answer in the tool's code, docs, or issue
+  tracker. Guessing instead tends to produce a chain of plausible theories, each built on the last
+  and none checked, and the chain reads like progress. Search for the answer first, and when you
+  hold a theory, run the one probe that would disprove it.
 - **A control's configuration is not evidence of its effect.** In layered systems a rule declared at
   one layer can be bypassed entirely by a lower one, and the configuration file will read as correct
   either way — it records intent, not outcome. Reading the rule verifies that someone wrote it;
