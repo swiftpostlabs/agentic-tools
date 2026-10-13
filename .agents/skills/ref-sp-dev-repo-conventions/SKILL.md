@@ -18,7 +18,7 @@ scripts).
 
 ## Project context
 
-- Language: strict TypeScript on Node >= 22, managed with Yarn 1. Runtime dependencies are `citty`
+- Language: strict TypeScript on Node >= 24 (`engines`), managed with Yarn 1. Runtime dependencies are `citty`
   (commands and help), `consola` (output), `zod` (validation at every config boundary), and `json5`
   (config and settings files may carry comments). Ask before adding another.
 - One implementation. The npm package `agentic-tools` ships the compiled CLI in `dist/` plus

@@ -106,7 +106,7 @@ a global skills folder, or from a uv install, not from a Yarn or npm install.
 
 ## For Developers
 
-Requirements: Node 22.18 or newer and Yarn 1 (`corepack enable`). uv is needed only to build the
+Requirements: Node 24 or newer and Yarn 1 (`corepack enable`). uv is needed only to build the
 Python package.
 
 ```sh

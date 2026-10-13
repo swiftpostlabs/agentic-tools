@@ -85,7 +85,7 @@ Run steps 3–5 as a loop, not a phase: for a task with several steps or several
 
 ## Quick Commands
 
-The CLI is TypeScript (`citty` commands, `consola` output, `zod` schemas), managed with `yarn` on Node >= 22.18, which runs `.ts` and `.mts` directly. A Python shim under `python/` ships the same CLI to Python projects; see `ref-sp-dev-repo-conventions`.
+The CLI is TypeScript (`citty` commands, `consola` output, `zod` schemas), managed with `yarn` on Node >= 24, which runs `.ts` and `.mts` directly. A Python shim under `python/` ships the same CLI to Python projects; see `ref-sp-dev-repo-conventions`.
 
 - `yarn install` — Install dependencies and build `dist/`.
 - `yarn test [<path> ...]` — Run the Jest suite, or only the touched slice.
