@@ -24,6 +24,7 @@
     "prepare": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
     "cli": "node src/core/cli.mts",
     "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
+    "test:bun": "bun test ./src ./scripts ./.agents/skills",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.skills.json",
     "lint": "eslint . && yarn -s check:generated",
     "version:check": "node scripts/checkVersionDrift.mts check",
@@ -38,7 +39,8 @@
     "pack": "npm pack --dry-run",
     "playwright": "playwright-cli",
     "lint:fix": "eslint . --fix",
-    "check:generated": "node src/core/cli.mts policy check && node src/core/cli.mts plugin check && node scripts/checkVersionDrift.mts check && node scripts/projectAssistantInstructions.mts --check"
+    "check:generated": "node src/core/cli.mts policy check && node src/core/cli.mts plugin check && node scripts/checkVersionDrift.mts check && node scripts/projectAssistantInstructions.mts --check",
+    "check:runtimes": "node scripts/checkRuntimeParity.mts"
   },
   "dependencies": {
     "citty": "0.2.2",
