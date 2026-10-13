@@ -1,8 +1,5 @@
 import { defineCommand } from 'citty';
-import {
-  defineStrictCommand,
-  type CommandContext,
-} from '../../core/command.ts';
+import type { CommandContext } from '../../core/command.ts';
 import { runPolicyCommand, type PolicyMode } from './sync.ts';
 
 const modeCommand = (
@@ -10,7 +7,7 @@ const modeCommand = (
   mode: PolicyMode,
   description: string,
 ) =>
-  defineStrictCommand({
+  defineCommand({
     meta: { name: mode, description },
     args: {
       config: {

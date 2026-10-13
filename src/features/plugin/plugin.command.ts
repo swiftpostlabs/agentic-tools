@@ -1,9 +1,6 @@
 import path from 'node:path';
 import { defineCommand } from 'citty';
-import {
-  defineStrictCommand,
-  type CommandContext,
-} from '../../core/command.ts';
+import type { CommandContext } from '../../core/command.ts';
 import {
   buildManifests,
   findDriftedManifests,
@@ -29,7 +26,7 @@ export const createPluginCommand = (context: CommandContext) =>
         'Generate and verify the Claude Code plugin and marketplace manifests.',
     },
     subCommands: {
-      sync: defineStrictCommand({
+      sync: defineCommand({
         meta: {
           name: 'sync',
           description:
@@ -43,7 +40,7 @@ export const createPluginCommand = (context: CommandContext) =>
           }
         },
       }),
-      check: defineStrictCommand({
+      check: defineCommand({
         meta: {
           name: 'check',
           description:

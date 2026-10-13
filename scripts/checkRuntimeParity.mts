@@ -24,6 +24,12 @@ export const parityCommands: readonly (readonly [string, ...string[]])[] = [
   ['src/core/cli.mts', 'skills', 'link', '--help'],
   ['src/core/cli.mts', 'skills', 'list'],
   ['src/core/cli.mts', 'skills', 'list', '--bogus'],
+  ['src/core/cli.mts', 'skills', 'list', '--from'],
+  ['src/core/cli.mts', 'skills', 'list', 'extra'],
+  ['src/core/cli.mts', 'skills', 'sync', '--force=false'],
+  ['src/core/cli.mts', 'export', 'build', '--exclude', '--dry-run'],
+  ['src/core/cli.mts', '--bogus', 'skills', 'list'],
+  ['src/core/cli.mts', '-w'],
   ['src/core/cli.mts', 'nope'],
   ['src/core/cli.mts', 'policy'],
   ['src/core/cli.mts', 'policy', 'check'],
@@ -90,7 +96,6 @@ const run = (runtime: string, args: readonly string[], cwd: string): Run => {
   const result = spawnSync(runtime, args, {
     cwd,
     encoding: 'utf8',
-    env: { ...process.env, NO_COLOR: '1' },
   });
   if (result.error !== undefined) {
     throw result.error;

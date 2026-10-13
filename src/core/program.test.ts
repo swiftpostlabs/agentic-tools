@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { findUnknownOptions, repeatedOption } from './command.ts';
+import { repeatedOption } from './command.ts';
 import { createCapturedOutput } from './output.ts';
 import { runCli } from './program.ts';
 import { makeTempDir, writeJson, writeSkill } from './testFixtures.ts';
@@ -39,7 +39,7 @@ describe('runCli', () => {
     expect((await run(['skills', 'nope'])).code).toBe(2);
     const bogus = await run(['skills', 'list', '--bogus']);
     expect(bogus.code).toBe(2);
-    expect(bogus.output.errors[0]).toContain('Unknown option: --bogus');
+    expect(bogus.output.errors[0]).toContain("Unknown option '--bogus'");
     expect((await run(['skills', 'link'])).code).toBe(2);
   });
 
@@ -122,26 +122,65 @@ describe('runCli', () => {
   });
 });
 
-describe('findUnknownOptions', () => {
-  const args = {
-    config: { type: 'string', alias: 'c' },
-    'dry-run': { type: 'boolean' },
-    skill: { type: 'positional' },
-  } as const;
+describe('runCli argument validation', () => {
+  // Each case was a regression found by review: the pre-citty CLI refused it (exit 2) or accepted
+  // it (exit 0), and so must this one. Run in an empty workspace, so nothing is written.
+  const cases: readonly (readonly [string, readonly string[], number])[] = [
+    ['a string option missing its value', ['skills', 'list', '--from'], 2],
+    [
+      'a string option followed by a flag',
+      ['export', 'build', '--exclude', '--dry-run'],
+      2,
+    ],
+    ['a negated string option', ['skills', 'list', '--no-from'], 2],
+    ['a negated boolean', ['skills', 'sync', '--no-force'], 2],
+    ['a value on a boolean', ['skills', 'sync', '--force=false'], 2],
+    ['an unknown option before the group', ['--bogus', 'skills', 'list'], 2],
+    ['an unknown option after the group', ['skills', '--bogus', 'list'], 2],
+    ['a negated root option', ['--no-workspace', 'skills', 'list'], 2],
+    [
+      'the workspace option after the command',
+      ['skills', 'list', '-w', '.'],
+      2,
+    ],
+    ['a workspace option missing its value', ['-w'], 2],
+    ['an unexpected positional', ['skills', 'list', 'extra'], 2],
+    ['a positional after --', ['skills', 'list', '--', '--bogus'], 2],
+    ['help with an unknown option', ['skills', 'list', '--bogus', '--help'], 2],
+    ['a value on help', ['skills', 'list', '--help=1'], 2],
+    ['-- before the group', ['--', 'skills', 'list'], 2],
+    ['an attached short value', ['skills', 'list', '-f.'], 0],
+    ['help before the group', ['--help', 'skills', 'list'], 0],
+  ];
 
-  test('accepts declared names, aliases, negations, and option values that look like flags', () => {
-    expect(
-      findUnknownOptions(
-        ['-c', '--x', '--dry-run', '--no-dry-run', '--config=a', '-h'],
-        args,
-      ),
-    ).toEqual([]);
+  test.each(cases)('%s', async (_label, argv, expected) => {
+    const workspace = makeTempDir();
+    fs.mkdirSync(path.join(workspace, '.agents', 'skills'), {
+      recursive: true,
+    });
+    const { code } = await run([...argv], workspace);
+    expect(code).toBe(expected);
+    expect(fs.readdirSync(workspace)).toEqual(['.agents']);
   });
 
-  test('reports undeclared options and ignores anything after --', () => {
-    expect(findUnknownOptions(['--conf', '-x', '--', '--later'], args)).toEqual(
-      ['--conf', '-x'],
-    );
+  test('combined short flags reach the command', async () => {
+    const source = makeTempDir();
+    writeSkill(path.join(source, '.agents', 'skills'), 'ref-a', {
+      domain: 'dev',
+      visibility: 'public',
+    });
+    const destination = makeTempDir();
+    const { code, output } = await run([
+      'skills',
+      'link',
+      'ref-a',
+      '-f',
+      source,
+      '-t' + destination,
+      '--dry-run',
+    ]);
+    expect(code).toBe(0);
+    expect(output.lines[0]).toContain('Would link');
   });
 });
 

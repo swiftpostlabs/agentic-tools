@@ -1,9 +1,5 @@
 import { defineCommand } from 'citty';
-import {
-  defineStrictCommand,
-  repeatedOption,
-  type CommandContext,
-} from '../../core/command.ts';
+import { repeatedOption, type CommandContext } from '../../core/command.ts';
 import { runExportBuild } from './build.ts';
 
 /** `agentic-tools export build`. */
@@ -15,7 +11,7 @@ export const createExportCommand = (context: CommandContext) =>
         'Build a skill export for a chat assistant that cannot load skills itself.',
     },
     subCommands: {
-      build: defineStrictCommand({
+      build: defineCommand({
         meta: {
           name: 'build',
           description:

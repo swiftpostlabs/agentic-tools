@@ -2,8 +2,3 @@
 export class ToolError extends Error {
   override name = 'ToolError';
 }
-
-/** A malformed invocation (unknown option, missing argument): the CLI prints usage and exits 2. */
-export class UsageError extends ToolError {
-  override name = 'UsageError';
-}

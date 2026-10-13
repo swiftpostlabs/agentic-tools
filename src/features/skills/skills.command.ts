@@ -1,8 +1,5 @@
 import { defineCommand } from 'citty';
-import {
-  defineStrictCommand,
-  type CommandContext,
-} from '../../core/command.ts';
+import type { CommandContext } from '../../core/command.ts';
 import {
   runSkillsLink,
   runSkillsList,
@@ -46,9 +43,13 @@ const forceArgs = {
   },
 } as const;
 
-/** citty binds only the first positional to `skill`; the rest stay in `_`. */
+/** One or more skill names; the program binds the first to `skills` and all of them to `_`. */
 const skillNamesArgs = {
-  skill: { type: 'positional', description: 'Skill names.', required: true },
+  skills: {
+    type: 'positional',
+    description: 'Skill names, one or more.',
+    required: true,
+  },
 } as const;
 
 const destination = (args: {
@@ -69,14 +70,14 @@ export const createSkillsCommand = (context: CommandContext) =>
       description: 'List, link, sync, and unlink shared skills.',
     },
     subCommands: {
-      list: defineStrictCommand({
+      list: defineCommand({
         meta: { name: 'list', description: 'List skills from a source repo.' },
         args: sourceArgs,
         run: ({ args }) => {
           runSkillsList(context, args.from);
         },
       }),
-      link: defineStrictCommand({
+      link: defineCommand({
         meta: { name: 'link', description: 'Link skills from a source repo.' },
         args: {
           ...skillNamesArgs,
@@ -93,7 +94,7 @@ export const createSkillsCommand = (context: CommandContext) =>
           });
         },
       }),
-      sync: defineStrictCommand({
+      sync: defineCommand({
         meta: {
           name: 'sync',
           description: 'Link skills declared in a skills config.',
@@ -117,7 +118,7 @@ export const createSkillsCommand = (context: CommandContext) =>
           });
         },
       }),
-      unlink: defineStrictCommand({
+      unlink: defineCommand({
         meta: {
           name: 'unlink',
           description: 'Remove linked skills from a destination repo.',
