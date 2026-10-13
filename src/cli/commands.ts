@@ -1,8 +1,8 @@
 import path from "node:path";
-import { runExportBuild } from "../export/build.ts";
-import { buildManifests, findDriftedManifests, writeManifests } from "../plugin/manifests.ts";
-import { runPolicyCommand, type PolicyMode } from "../policy/sync.ts";
-import { runSkillsLink, runSkillsList, runSkillsSync, runSkillsUnlink } from "../skills/commands.ts";
+import { runExportBuild } from "../features/export/build.ts";
+import { buildManifests, findDriftedManifests, writeManifests } from "../features/plugin/manifests.ts";
+import { runPolicyCommand, type PolicyMode } from "../features/policy/sync.ts";
+import { runSkillsLink, runSkillsList, runSkillsSync, runSkillsUnlink } from "../features/skills/skills.ts";
 import { booleanValue, listValue, stringValue, type CommandGroup, type CommandSpec, type OptionSpecs } from "./spec.ts";
 
 const configOption: OptionSpecs = {

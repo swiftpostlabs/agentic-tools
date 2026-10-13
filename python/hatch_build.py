@@ -32,7 +32,7 @@ def locked_version(root: Path, name: str) -> str | None:
 
 
 def is_runtime_source(path: Path) -> bool:
-    return not path.name.endswith(".test.ts") and "test-support" not in path.parts
+    return not path.name.endswith(".test.ts") and path.name != "testFixtures.ts"
 
 
 class JsPayloadBuildHook(BuildHookInterface[Any]):

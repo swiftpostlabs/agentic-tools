@@ -1,7 +1,7 @@
 /**
  * Fail when a version-bearing file drifts from `VERSION`, the repo's single source of truth.
  *
- *     node scripts/check-version-drift.mts check
+ *     node scripts/checkVersionDrift.mts check
  *
  * Plugin manifests carry the version too; `agentic-tools plugin check` owns those.
  */
@@ -74,7 +74,7 @@ export const checkRepositoryVersion = (root: string): string => {
 
 const main = (argv: string[]): number => {
   if (argv[0] !== "check" || argv.length !== 1) {
-    process.stderr.write("Usage: node scripts/check-version-drift.mts check\n");
+    process.stderr.write("Usage: node scripts/checkVersionDrift.mts check\n");
     return 2;
   }
   try {

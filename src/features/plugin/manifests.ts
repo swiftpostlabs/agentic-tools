@@ -14,11 +14,11 @@ import fs from "node:fs";
 import path from "node:path";
 import JSON5 from "json5";
 import { z } from "zod";
-import { ToolError } from "../core/errors.ts";
-import { parseFrontmatter } from "../core/frontmatter.ts";
-import { isDirectory, isFile, listSorted, readTextOrUndefined, writeText } from "../core/fs.ts";
-import { errorMessage, isJsonObject, parseWith, toJsonText, type JsonObject } from "../core/json.ts";
-import { agentsPaths } from "../core/paths.ts";
+import { ToolError } from "../../core/errors.ts";
+import { parseFrontmatter } from "../../core/frontmatter.ts";
+import { isDirectory, isFile, listSorted, readTextOrUndefined, writeText } from "../../core/fs.ts";
+import { errorMessage, isJsonObject, parseWith, toJsonText, type JsonObject } from "../../core/json.ts";
+import { agentsPaths } from "../../core/paths.ts";
 
 export const pluginManifestPath = ".claude-plugin/plugin.json";
 export const marketplaceManifestPath = ".claude-plugin/marketplace.json";

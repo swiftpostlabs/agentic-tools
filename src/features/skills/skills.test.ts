@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "@jest/globals";
-import { createCapturedOutput } from "../core/output.ts";
-import { makeTempDir, readJson, writeFile, writeJson, writeSkill } from "../test-support/fixtures.ts";
+import { createCapturedOutput } from "../../core/output.ts";
+import { makeTempDir, readJson, writeFile, writeJson, writeSkill } from "../../core/testFixtures.ts";
 import {
   buildSyncedSkillsGitignore,
   describeSkills,
@@ -12,7 +12,7 @@ import {
   runSkillsSync,
   runSkillsUnlink,
   type SkillsContext,
-} from "./commands.ts";
+} from "./skills.ts";
 import { discoverSkillManifests, loadSkillAliases } from "./manifest.ts";
 import { resolvePackageSourceRoot } from "./sources.ts";
 

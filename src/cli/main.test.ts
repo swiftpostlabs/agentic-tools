@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "@jest/globals";
 import { createCapturedOutput } from "../core/output.ts";
-import { makeTempDir, writeJson, writeSkill } from "../test-support/fixtures.ts";
+import { makeTempDir, writeJson, writeSkill } from "../core/testFixtures.ts";
 import { runCli } from "./main.ts";
 
 const run = (argv: string[], cwd = makeTempDir()) => {

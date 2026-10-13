@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError } from "../core/errors.ts";
-import { exists, isDirectory, isFile } from "../core/fs.ts";
-import type { Output } from "../core/output.ts";
-import { agentsPaths, resolveUserPath } from "../core/paths.ts";
+import { ToolError } from "../../core/errors.ts";
+import { exists, isDirectory, isFile } from "../../core/fs.ts";
+import type { Output } from "../../core/output.ts";
+import { agentsPaths, resolveUserPath } from "../../core/paths.ts";
 import { applyConfigAliasRenames, loadConfiguredSources, resolveSyncConfigPath } from "./config.ts";
 import { createDirectoryLink, isDirectoryLink, removeDirectoryLink, resolveLinkTarget, resolveLoose } from "./links.ts";
 import {

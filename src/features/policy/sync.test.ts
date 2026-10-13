@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "@jest/globals";
-import { makeTempDir, readJson, writeFile, writeJson } from "../test-support/fixtures.ts";
+import { makeTempDir, readJson, writeFile, writeJson } from "../../core/testFixtures.ts";
 import { applyPolicyToClaudeSettings } from "./claude.ts";
 import { parseAiPolicy, policyToJson, withDefaults } from "./schema.ts";
 import { discoverPolicyPath, runPolicyCommand, syncPolicyFile } from "./sync.ts";

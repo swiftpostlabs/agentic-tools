@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError } from "../core/errors.ts";
-import { isDirectory, isFile } from "../core/fs.ts";
-import { isJsonObject } from "../core/json.ts";
-import { agentsPaths, resolveUserPath } from "../core/paths.ts";
+import { ToolError } from "../../core/errors.ts";
+import { isDirectory, isFile } from "../../core/fs.ts";
+import { isJsonObject } from "../../core/json.ts";
+import { agentsPaths, resolveUserPath } from "../../core/paths.ts";
 import { configBaseRoot } from "./config.ts";
 
 const packageSourcePrefix = "package:";

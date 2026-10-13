@@ -5,8 +5,8 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { parseFrontmatter } from "../core/frontmatter.ts";
-import { isDirectory, isFile, listSorted } from "../core/fs.ts";
+import { parseFrontmatter } from "../../core/frontmatter.ts";
+import { isDirectory, isFile, listSorted } from "../../core/fs.ts";
 import type { SkillDocument } from "./models.ts";
 
 const frontmatterBlock = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;

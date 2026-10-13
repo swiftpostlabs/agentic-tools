@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError } from "../core/errors.ts";
-import { parseFrontmatter } from "../core/frontmatter.ts";
-import { exists, isDirectory, isFile, listSorted } from "../core/fs.ts";
-import { isJsonObject } from "../core/json.ts";
-import { agentsFileNames, agentsPaths } from "../core/paths.ts";
+import { ToolError } from "../../core/errors.ts";
+import { parseFrontmatter } from "../../core/frontmatter.ts";
+import { exists, isDirectory, isFile, listSorted } from "../../core/fs.ts";
+import { isJsonObject } from "../../core/json.ts";
+import { agentsFileNames, agentsPaths } from "../../core/paths.ts";
 import { isDirectoryLink } from "./links.ts";
 
 export const skillFileName = "SKILL.md";

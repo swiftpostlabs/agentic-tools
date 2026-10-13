@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import { ToolError } from "../core/errors.ts";
-import { exists, isFile } from "../core/fs.ts";
-import { errorMessage, isJsonObject, parseWith, toJsonText, type JsonObject } from "../core/json.ts";
-import { agentsFileNames, agentsPaths, resolveUserPath } from "../core/paths.ts";
+import { ToolError } from "../../core/errors.ts";
+import { exists, isFile } from "../../core/fs.ts";
+import { errorMessage, isJsonObject, parseWith, toJsonText, type JsonObject } from "../../core/json.ts";
+import { agentsFileNames, agentsPaths, resolveUserPath } from "../../core/paths.ts";
 import { deduplicate, toRepoRoot } from "./manifest.ts";
 
 const skillsSection = "skills";

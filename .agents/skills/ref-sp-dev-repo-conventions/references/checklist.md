@@ -6,7 +6,7 @@ Use before finalizing a placement, scaffold, or packaging change.
 
 - Does each file have one clear owner: the CLI wiring (`src/cli/`), a feature, or `src/core/`?
 - Is feature behaviour hiding in `core`, `utils`, or `helpers`?
-- Are tests beside the code they exercise (`*.test.ts`), with fixtures from `src/test-support/`?
+- Are tests beside the code they exercise (`*.test.ts`), with fixtures from `src/core/testFixtures.ts`?
 - Does the folder match responsibility: shipped CLI (`src/`), repo maintenance (`scripts/`), agent
   guidance (`.agents/`), Python packaging (`python/`)?
 - Is `AGENTS.md` the only instruction file, with no `CLAUDE.md` or `GEMINI.md` beside it?

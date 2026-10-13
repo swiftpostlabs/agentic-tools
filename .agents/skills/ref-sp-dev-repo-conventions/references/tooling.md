@@ -9,7 +9,7 @@ release flow, or the Python shim.
 | --- | --- |
 | `package.json` | Version source, runtime and dev dependencies, the `agentic-tools` bin (`dist/cli.js`), yarn scripts, the npm `files` list |
 | `tsconfig.json` | Strict type-check of `src/` and `scripts/`; no emit |
-| `tsconfig.build.json` | Emits `dist/` from `src/`, excluding `*.test.ts` and `test-support/` |
+| `tsconfig.build.json` | Emits `dist/` from `src/`, excluding `*.test.ts` and `testFixtures.ts` |
 | `tsconfig.skills.json` | Type-check of skill scripts and `.mts` assets at plain `strict` |
 | `jest.config.mjs`, `jest.transform.mjs` | Jest over `src/`, `scripts/`, and `.agents/skills`, stripping types with Node |
 | `.versionrc.json` | `commit-and-tag-version`: bump files, changelog header, the plugin-sync hook |
@@ -18,7 +18,7 @@ release flow, or the Python shim.
 
 ## Versions and release
 
-- `package.json` and `VERSION` carry the version. `scripts/check-version-drift.mts` (in `yarn lint`)
+- `package.json` and `VERSION` carry the version. `scripts/checkVersionDrift.mts` (in `yarn lint`)
   fails when they disagree, and also checks a static `pyproject.toml` version if one is ever added.
 - `yarn release` runs `commit-and-tag-version`: it picks the bump from conventional commits (or
   `--release-as patch|minor|major`), updates `package.json` and `VERSION`, regenerates

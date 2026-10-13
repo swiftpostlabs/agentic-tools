@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { ToolError } from "../core/errors.ts";
-import { isJsonObject, parseWith, readJson5File, toJsonText, type JsonObject } from "../core/json.ts";
+import { ToolError } from "../../core/errors.ts";
+import { isJsonObject, parseWith, readJson5File, toJsonText, type JsonObject } from "../../core/json.ts";
 import { describeSupportedServices, normalizeServiceName, supportedServices, type SupportedService } from "./services.ts";
 
 /** VS Code accepts a boolean or an object such as `{"approve": true, "matchCommandLine": true}`. */

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, expect, test } from "@jest/globals";
-import { checkRepositoryVersion, validateSemver } from "./check-version-drift.mts";
+import { checkRepositoryVersion, validateSemver } from "./checkVersionDrift.mts";
 
 const roots: string[] = [];
 afterEach(() => roots.splice(0).forEach((root) => fs.rmSync(root, { recursive: true, force: true })));

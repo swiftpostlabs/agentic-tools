@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "@jest/globals";
-import { createCapturedOutput } from "../core/output.ts";
-import { makeTempDir, writeFile, writeJson, writeSkill } from "../test-support/fixtures.ts";
+import { createCapturedOutput } from "../../core/output.ts";
+import { makeTempDir, writeFile, writeJson, writeSkill } from "../../core/testFixtures.ts";
 import { runExportBuild, type ExportBuildOptions } from "./build.ts";
 import { injectionsFromConfig, loadConfigFile, presets, resolveSelection } from "./config.ts";
 import { demoteHeadings, discoverSkills, flattenSkill, readCanonicalBlock, stripBody } from "./discovery.ts";
-import { geminiGemLimits, renderBundle, renderBundleMap, renderInstructions, renderReadme } from "./gemini-gem.ts";
+import { geminiGemLimits, renderBundle, renderBundleMap, renderInstructions, renderReadme } from "./geminiGem.ts";
 import { emptySelection, skillPrefix, skillWordCount, type Bundle, type SkillDocument } from "./models.ts";
 import { buildPlan, bundleByDomain, enforceLimits, selectSkills } from "./planning.ts";
 

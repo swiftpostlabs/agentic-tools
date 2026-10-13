@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isJsonObject, type JsonObject } from "../core/json.ts";
+import { isJsonObject, type JsonObject } from "../../core/json.ts";
 import type { SettingsDocument } from "./schema.ts";
 
 /** The keys of `.claude/settings.json` this tool reads; the rest round-trip untouched. */

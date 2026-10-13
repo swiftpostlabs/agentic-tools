@@ -4,7 +4,7 @@
  * are already a coherence judgement recorded in skill metadata. Destination limits are guardrails,
  * enforced loudly when they bind and ignored otherwise.
  */
-import { ToolError } from "../core/errors.ts";
+import { ToolError } from "../../core/errors.ts";
 import {
   bundleWordCount,
   skillPrefix,

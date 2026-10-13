@@ -26,7 +26,7 @@ jobs:
           node-version: 24
 
       - name: Check version drift
-        run: node scripts/check-version-drift.mts check
+        run: node scripts/checkVersionDrift.mts check
 
       - name: Verify tag matches repo version
         shell: bash

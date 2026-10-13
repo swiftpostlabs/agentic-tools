@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError } from "../core/errors.ts";
-import { isFile, readTextOrUndefined, writeOrRemove } from "../core/fs.ts";
-import { isJsonObject, readJson5File, toJsonText, type JsonObject } from "../core/json.ts";
-import { agentsFileNames, agentsPaths, clientPaths, formatRelative, resolveUserPath } from "../core/paths.ts";
+import { ToolError } from "../../core/errors.ts";
+import { isFile, readTextOrUndefined, writeOrRemove } from "../../core/fs.ts";
+import { isJsonObject, readJson5File, toJsonText, type JsonObject } from "../../core/json.ts";
+import { agentsFileNames, agentsPaths, clientPaths, formatRelative, resolveUserPath } from "../../core/paths.ts";
 import { applyPolicyToClaudeSettings, claudeManagedOrder, claudeManagedSchema } from "./claude.ts";
 import { buildAiExcludeContent } from "./gemini.ts";
 import {

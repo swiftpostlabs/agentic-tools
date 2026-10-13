@@ -5,9 +5,9 @@
  */
 import fs from "node:fs";
 import { z } from "zod";
-import { ToolError } from "../core/errors.ts";
-import { isFile } from "../core/fs.ts";
-import { errorMessage, isJsonObject, parseWith, type JsonObject } from "../core/json.ts";
+import { ToolError } from "../../core/errors.ts";
+import { isFile } from "../../core/fs.ts";
+import { errorMessage, isJsonObject, parseWith, type JsonObject } from "../../core/json.ts";
 import { emptySelection, type Selection } from "./models.ts";
 
 export const presets = {

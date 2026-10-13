@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError } from "../core/errors.ts";
-import { errorMessage } from "../core/json.ts";
+import { ToolError } from "../../core/errors.ts";
+import { errorMessage } from "../../core/json.ts";
 
 /** A symlink, or on Windows a directory junction; Node reports both as symbolic links. */
 export const isDirectoryLink = (target: string): boolean => {

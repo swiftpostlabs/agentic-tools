@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { ToolError } from "../core/errors.ts";
-import type { Output } from "../core/output.ts";
+import { ToolError } from "../../core/errors.ts";
+import type { Output } from "../../core/output.ts";
 import { injectionsFromConfig, loadConfigFile, resolveSelection, type ExportConfig } from "./config.ts";
 import { discoverSkills, readCanonicalBlock } from "./discovery.ts";
 import {
@@ -10,7 +10,7 @@ import {
   geminiGemLimits,
   renderInstructions,
   writeExport,
-} from "./gemini-gem.ts";
+} from "./geminiGem.ts";
 import { bundleWordCount, formatCount, planSkillCount, planWordCount, type ExportPlan } from "./models.ts";
 import { buildPlan } from "./planning.ts";
 

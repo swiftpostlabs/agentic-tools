@@ -46,8 +46,8 @@ src/
   cli.ts              # bin entry: runs the dispatcher, sets the exit code
   cli/                # command table and dispatcher over node:util parseArgs
   core/<concern>.ts   # plumbing every feature uses: paths, fs, JSON and zod helpers, frontmatter, output
-  <feature>/          # policy, skills, plugin, export; code and *.test.ts side by side
-  test-support/       # fixtures for tests; never built or shipped
+  features/<feature>/ # policy, skills, plugin, export; code and *.test.ts side by side
+  core/testFixtures.ts  # fixtures for tests; never built or shipped
 ```
 
 - A command group lives in its feature folder and is mounted in `src/cli/commands.ts`. Don't add
@@ -97,7 +97,7 @@ src/
 
 - Jest runs `.ts` through `jest.transform.mjs`, which calls Node's `stripTypeScriptTypes`. Import
   `describe`, `test`, and `expect` from `@jest/globals`.
-- Use `src/test-support/fixtures.ts` for temp directories and skill fixtures; tests never touch the
+- Use `src/core/testFixtures.ts` for temp directories and skill fixtures; tests never touch the
   real home directory.
 - Add at least one focused test for new non-trivial logic.
 

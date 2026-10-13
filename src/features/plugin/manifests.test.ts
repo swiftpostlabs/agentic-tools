@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, test } from "@jest/globals";
-import { makeTempDir, writeFile, writeJson, writeSkill } from "../test-support/fixtures.ts";
+import { makeTempDir, writeFile, writeJson, writeSkill } from "../../core/testFixtures.ts";
 import { buildManifests, collectPublishableSkills, findDriftedManifests, readPluginConfig, writeManifests } from "./manifests.ts";
 
 const pluginRepo = (plugin: Record<string, unknown> = {}) => {

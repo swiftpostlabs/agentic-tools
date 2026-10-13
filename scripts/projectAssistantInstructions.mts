@@ -5,8 +5,8 @@
  * stand for canonical blocks published by skills. This fills them and writes
  * `chat-assistants/<product>/<name>/instructions.md`, the file a person pastes into the product.
  *
- *     node scripts/project-assistant-instructions.mts          # write
- *     node scripts/project-assistant-instructions.mts --check  # verify, write nothing
+ *     node scripts/projectAssistantInstructions.mts          # write
+ *     node scripts/projectAssistantInstructions.mts --check  # verify, write nothing
  *
  * `--check` fails when a generated file no longer matches a fresh projection, which is the only
  * thing standing between a paste target and a silent fork of the persona text.
@@ -17,7 +17,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
-import { readCanonicalBlock } from "../src/export/discovery.ts";
+import { readCanonicalBlock } from "../src/features/export/discovery.ts";
 
 const repoRoot = path.resolve(import.meta.dirname, "..");
 const skillsRoot = path.join(repoRoot, ".agents", "skills");
@@ -105,7 +105,7 @@ const main = (argv: string[]): number => {
 
   if (stale.length > 0) {
     process.stderr.write(
-      `\n${stale.length} file(s) no longer match their template. Run: node scripts/project-assistant-instructions.mts\n`,
+      `\n${stale.length} file(s) no longer match their template. Run: node scripts/projectAssistantInstructions.mts\n`,
     );
     return 1;
   }

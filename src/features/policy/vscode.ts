@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isJsonObject, type JsonObject } from "../core/json.ts";
+import { isJsonObject, type JsonObject } from "../../core/json.ts";
 import type { SettingsDocument, TerminalApprovalValue } from "./schema.ts";
 
 const restrictedLanguage = "copilot-restricted-file";
