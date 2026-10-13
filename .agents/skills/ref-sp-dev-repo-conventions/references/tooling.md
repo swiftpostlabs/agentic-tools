@@ -46,7 +46,7 @@ release flow, or the Python shim.
 
 ## Common tasks
 
-- **New command**: add the logic in its feature, a `defineStrictCommand` in the feature's
+- **New command**: add the logic in its feature, a citty `defineCommand` in the feature's
   `<feature>.command.ts`, and a test that calls the logic with a captured `Output`. A new command
   group also gets one line in `src/core/program.ts`.
 - **New config field**: extend the feature's zod schema; reading and validation stay in one place.

@@ -63,5 +63,6 @@
     "agentic",
     "cooldown",
     "swiftpostlabs"
-  ]
+  ],
+  "chat.useNestedAgentsMdFiles": true
 }

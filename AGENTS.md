@@ -74,8 +74,8 @@ Folder rules live in nested `AGENTS.md` files. Read the one for the folder you a
 
 Everything that runs in this repo, the CLI, `scripts/`, and the skill scripts, must run unchanged and give identical output on Node (the runtime `package.json` declares) and Bun. CI's `bun_parity` job fails the build otherwise. When writing or changing runtime code:
 
-- Use only `node:` built-ins and web standards. No `Bun.*` APIs, and no Node-only APIs outside test and build plumbing such as `jest.transform.mjs`.
-- Guard entry points with `process.argv[1] === import.meta.filename`, not `import.meta.main`.
+- For runtime APIs, use only `node:` built-ins and web standards. No `Bun.*` APIs, and no Node-only APIs outside test and build plumbing such as `jest.transform.mjs`.
+- Guard entry points with `path.resolve(process.argv[1]) === import.meta.filename`, not `import.meta.main`.
 - Keep TypeScript erasable and relative imports explicit (`./skills.ts`); Bun accepts more, Node does not.
 - Fail through handled errors with your own message. Uncaught stack traces print differently on each runtime, so parity holds only on handled paths.
 - Add each new deterministic command to `scripts/checkRuntimeParity.mts`.
@@ -103,7 +103,7 @@ The CLI is TypeScript (`citty` commands, `consola` output, `zod` schemas), manag
 - `yarn lint` — ESLint (typescript-eslint `strictTypeChecked`, Prettier as a rule), then every drift check: generated policy files, plugin manifests, version files, projected chat-assistant instructions.
 - `yarn lint:fix` — Apply ESLint and Prettier fixes.
 - `yarn check:generated` — Only the drift checks.
-- `yarn test:bun` — Run the Jest suite under `bun test` (needs Bun on `PATH`).
+- `yarn test:bun` — Run the same test files under Bun's test runner (needs Bun on `PATH`).
 - `yarn check:runtimes` — Run the CLI, repo scripts, and skill scripts under Node and Bun and fail on any output difference (needs Bun on `PATH`).
 - `yarn cli <group> <command>` — Run the CLI from source, e.g. `yarn cli skills list` or `yarn cli policy sync`.
 - `yarn cli policy import-vscode` — Import VS Code approvals into policy, then sync.

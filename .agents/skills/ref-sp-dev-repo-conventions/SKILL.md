@@ -46,7 +46,7 @@ src/
   core/
     cli.mts             # run-only bin entry → dist/core/cli.mjs
     program.ts          # runCli: mounts each feature's command, --workspace, help, exit codes
-    command.ts          # CommandContext, defineStrictCommand, repeatedOption
+    command.ts          # CommandContext, toParseArgsOptions, repeatedOption
     <concern>.ts        # plumbing every feature uses: errors, output, paths, fs, json, frontmatter
     testFixtures.ts     # test fixtures; never built or shipped
   features/
@@ -61,7 +61,9 @@ src/
   `src/core/program.ts`. Don't add another bin.
 - Features take a `CommandContext` (`cwd`, `home`, `output`, `setExitCode`) instead of reading
   `process.cwd()`, `os.homedir()`, or writing to stdout, so tests stay hermetic.
-- Expected failures throw `ToolError` and exit 1; `UsageError` and citty's parse errors exit 2.
+- Expected failures throw `ToolError` and exit 1, as does a group run without a command. Every
+  usage error exits 2: `program.ts` validates each level with strict `node:util` `parseArgs`, and
+  citty supplies only command definitions and usage text.
 - File and folder names are camelCase and say what they hold. Don't create `utils/` or `helpers/`:
   name the `core/<concern>` or the feature.
 - No top-level `tests/` folder: `thing.ts` gets `thing.test.ts` beside it.
@@ -111,8 +113,8 @@ src/
 
 - npm: `prepare` runs `tsc -p tsconfig.build.json`, so git installs (`github:swiftpostlabs/...`) build
   `dist/` themselves. `files` ships `dist/` and `.agents/skills`.
-- Python: `pyproject.toml` builds a wheel through `python/hatch_build.py`, which stages `src/**/*.ts`
-  (no tests), `package.json`, the runtime `node_modules`, and `.agents/skills` under
+- Python: `pyproject.toml` builds a wheel through `python/hatch_build.py`, which stages `src/**/*.ts` and
+  `src/**/*.mts` (no tests, no `testFixtures.ts`), `package.json`, the runtime `node_modules`, and `.agents/skills` under
   `agentic_tools/js/`. The launcher runs `src/core/cli.mts` with Node from `nodejs-wheel-binaries`. The
   version is read from `package.json`. Build with `uv build --out-dir dist-python`; the default
   `dist/` is the npm build's.
@@ -146,8 +148,9 @@ src/
 ## Before finishing
 
 While iterating, narrow tests to the touched feature. Before committing, run
-`yarn lint && yarn typecheck && yarn test`, plus `yarn validate` when a skill changed, and commit
-only if all pass. Read `./references/checklist.md` before finalizing a placement or packaging change.
+`yarn lint && yarn typecheck && yarn test`, plus `yarn validate` when a skill changed and
+`yarn test:bun && yarn check:runtimes` when runtime code changed and Bun is installed (CI runs
+them regardless), and commit only if all pass. Read `./references/checklist.md` before finalizing a placement or packaging change.
 
 ## References
 

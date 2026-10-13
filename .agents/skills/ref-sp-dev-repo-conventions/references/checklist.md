@@ -29,3 +29,4 @@ Use before finalizing a placement, scaffold, or packaging change.
 ## Validation
 
 - `yarn lint` (ESLint and drift checks), `yarn typecheck`, and `yarn test` pass, and `yarn validate` when a skill changed.
+- With Bun installed and runtime code changed, `yarn test:bun` and `yarn check:runtimes` pass, and any new deterministic command is in `scripts/checkRuntimeParity.mts`.

@@ -16,6 +16,9 @@ live under `chat-assistants/`.
 
 ## Rules
 
-- **A new target is a new `<target>.ts` file** with its limits and renderers, plus an entry in
-  `exportTargets`; planning stays target-neutral.
+- **Gemini Gem is the only target, and `build.ts` calls `geminiGem.ts` directly.** A second
+  target needs a `<target>.ts` with its limits and renderers, an entry in `exportTargets`, and
+  `build.ts` choosing limits and renderers by target instead of importing Gemini's; until then
+  an entry in `exportTargets` alone would plan and render with Gemini's. Planning
+  (`planning.ts`) takes limits as an argument and stays target-neutral.
 - **Limits are data**, with their source noted beside them, so a product change is a one-line edit.
