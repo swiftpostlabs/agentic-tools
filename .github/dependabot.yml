@@ -17,6 +17,12 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Types track the oldest Node in package.json engines; newer types allow APIs that crash there.
+      # Raise this pin together with engines.
+      - dependency-name: "@types/node"
+        update-types:
+          - "version-update:semver-major"
     cooldown:
       default-days: 2
   # The Python shim only (pyproject.toml): its build backend and the Node runtime wheel.
