@@ -6,7 +6,7 @@
   "packageFiles": [{ "filename": "package.json", "type": "json" }],
   "header": "# Changelog\n\nAll notable changes to this project will be documented in this file. Entries are generated from\nconventional commits by `yarn release`.\n",
   "scripts": {
-    "postbump": "node src/cli.ts plugin sync && git add .claude-plugin"
+    "postbump": "node src/core/cli.mts plugin sync && git add .claude-plugin"
   },
   "commitAll": true,
   "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
