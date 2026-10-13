@@ -32,7 +32,7 @@ jobs:
           corepack enable
           yarn install --frozen-lockfile
 
-      - name: Check generated files and version drift
+      - name: Lint and check generated files
         run: yarn lint
       - name: Type-check
         run: yarn typecheck

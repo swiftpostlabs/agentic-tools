@@ -68,6 +68,8 @@ Project skills live in `.agents/skills/` (`.claude/skills` symlinks there for Cl
 
 For anything else, match the task against the skill descriptions' `Use when:` clauses.
 
+Folder rules live in nested `AGENTS.md` files. Read the one for the folder you are changing before editing it: `src/` (code rules for everything under it), `src/core/`, `src/features/`, one per feature (`policy/`, `skills/`, `plugin/`, `export/`), and `scripts/`.
+
 ## Workflow
 
 When working on this project:
@@ -83,12 +85,14 @@ Run steps 3–5 as a loop, not a phase: for a task with several steps or several
 
 ## Quick Commands
 
-The CLI is TypeScript, managed with `yarn` on Node >= 22.18, which runs `.ts` and `.mts` directly. A Python shim under `python/` ships the same CLI to Python projects; see `ref-sp-dev-repo-conventions`.
+The CLI is TypeScript (`citty` commands, `consola` output, `zod` schemas), managed with `yarn` on Node >= 22.18, which runs `.ts` and `.mts` directly. A Python shim under `python/` ships the same CLI to Python projects; see `ref-sp-dev-repo-conventions`.
 
 - `yarn install` — Install dependencies and build `dist/`.
 - `yarn test [<path> ...]` — Run the Jest suite, or only the touched slice.
 - `yarn typecheck` — Strict `tsc` over `src/` and `scripts/`, then over skill scripts.
-- `yarn lint` — Every drift check: generated policy files, plugin manifests, version files, projected chat-assistant instructions.
+- `yarn lint` — ESLint (typescript-eslint `strictTypeChecked`, Prettier as a rule), then every drift check: generated policy files, plugin manifests, version files, projected chat-assistant instructions.
+- `yarn lint:fix` — Apply ESLint and Prettier fixes.
+- `yarn check:generated` — Only the drift checks.
 - `yarn cli <group> <command>` — Run the CLI from source, e.g. `yarn cli skills list` or `yarn cli policy sync`.
 - `yarn cli policy import-vscode` — Import VS Code approvals into policy, then sync.
 - `yarn validate:skills` — Validate every skill against the Agent Skills structure and quality rules. Canonical skill-quality check.

@@ -111,7 +111,8 @@ Python package.
 
 ```sh
 yarn install    # dependencies, and builds dist/
-yarn lint       # policy, plugin, version, and chat-assistant drift checks
+yarn lint       # ESLint with Prettier, then policy, plugin, version, and chat-assistant drift checks
+yarn lint:fix   # apply ESLint and Prettier fixes
 yarn typecheck
 yarn test
 yarn validate   # skill structure and sharing spec, when a skill changed
@@ -119,8 +120,9 @@ yarn validate   # skill structure and sharing spec, when a skill changed
 
 Run the CLI from source with `yarn cli <group> <command>`, for example `yarn cli skills list`.
 
-- `src/` holds the CLI, one folder per feature with tests beside the code. `scripts/` holds repo
-  maintenance scripts as `.mts`. `python/` holds the Python launcher and its wheel build hook.
+- `src/core/` holds the CLI's entry point and shared plumbing, and `src/features/` one folder per
+  command group, with tests beside the code. Each folder's rules are in its own `AGENTS.md`.
+  `scripts/` holds repo maintenance scripts as `.mts`. `python/` holds the Python launcher and its wheel build hook.
 - `yarn assistants:build` regenerates `chat-assistants/*/instructions.md` from their templates; see
   [chat-assistants/README.md](chat-assistants/README.md).
 - `yarn cli plugin sync` regenerates `.claude-plugin/` from the skills catalog.
