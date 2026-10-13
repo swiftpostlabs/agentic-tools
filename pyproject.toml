@@ -11,13 +11,13 @@ authors = [{ name = "swiftpost", email = "swiftpostlab@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["nodejs-wheel-binaries>=22.18"]
+dependencies = ["nodejs-wheel-binaries>=24.19.0"]
 
 [project.scripts]
 agentic-tools = "agentic_tools.__main__:main"
 
 [build-system]
-requires = ["hatchling", "nodejs-wheel-binaries>=22.18"]
+requires = ["hatchling", "nodejs-wheel-binaries>=24.19.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
