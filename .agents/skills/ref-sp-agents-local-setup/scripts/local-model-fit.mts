@@ -208,7 +208,7 @@ export const parseOllamaList = (out: string): InstalledModel[] =>
       const size = Number(match[2]);
       return [
         {
-          name: match[1] as string,
+          name: match[1],
           weightsGb: match[3] === 'MB' ? size / 1000 : size,
         },
       ];

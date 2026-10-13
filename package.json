@@ -25,7 +25,7 @@
     "cli": "node src/core/cli.mts",
     "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning node_modules/jest/bin/jest.js --config jest.config.mjs --runInBand",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.skills.json",
-    "lint": "node src/core/cli.mts policy check && node src/core/cli.mts plugin check && node scripts/checkVersionDrift.mts check && node scripts/projectAssistantInstructions.mts --check",
+    "lint": "eslint . && yarn -s check:generated",
     "version:check": "node scripts/checkVersionDrift.mts check",
     "assistants:build": "node scripts/projectAssistantInstructions.mts",
     "assistants:check": "node scripts/projectAssistantInstructions.mts --check",
@@ -36,7 +36,9 @@
     "validate": "node .agents/skills/ref-sp-agents-skills-authoring/scripts/validate-skill.mts .agents/skills --all && node .agents/skills/ref-sp-agents-shareable-skills/scripts/validate-sharing.mts .agents/skills --all",
     "check:drift": "node .agents/skills/ref-sp-agents-shareable-skills/scripts/check-vendored-drift.mts .agents/skills",
     "pack": "npm pack --dry-run",
-    "playwright": "playwright-cli"
+    "playwright": "playwright-cli",
+    "lint:fix": "eslint . --fix",
+    "check:generated": "node src/core/cli.mts policy check && node src/core/cli.mts plugin check && node scripts/checkVersionDrift.mts check && node scripts/projectAssistantInstructions.mts --check"
   },
   "dependencies": {
     "citty": "0.2.2",
@@ -45,12 +47,19 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@jest/globals": "^30.2.0",
     "@playwright/cli": "^0.1.17",
     "@types/node": "^24.10.1",
     "commit-and-tag-version": "13.2.1",
+    "eslint": "^10.12.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "globals": "^17.13.0",
     "jest": "^30.2.0",
-    "typescript": "^5.9.3"
+    "prettier": "^3.9.9",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.1"
   },
   "engines": {
     "node": ">=22"

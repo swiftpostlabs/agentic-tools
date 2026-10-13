@@ -185,7 +185,7 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
   // The Gem instruction field's limit is undocumented, so report the size rather than let it be
   // discovered on paste.
   output.info(
-    `Instructions are ${formatCount([...renderInstructions(plan, template, injections)].length)} characters. The Gem ` +
+    `Instructions are ${formatCount(Array.from(renderInstructions(plan, template, injections)).length)} characters. The Gem ` +
       "instruction field's limit is undocumented — if it rejects them, shorten the template rather than the routing block.",
   );
   output.info(`Wrote ${written.length} files to ${destinationLabel}`);

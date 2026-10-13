@@ -37,7 +37,7 @@ const pluginRepo = (plugin: Record<string, unknown> = {}) => {
 describe('plugin manifests', () => {
   test('enumerate only skills whose visibility is published', () => {
     const root = pluginRepo();
-    const plugin = JSON.parse(buildManifests(root).plugin);
+    const plugin: unknown = JSON.parse(buildManifests(root).plugin);
     expect(plugin).toEqual({
       name: 'demo',
       displayName: 'Demo',
@@ -66,7 +66,9 @@ describe('plugin manifests', () => {
   });
 
   test('keep the version out of the marketplace entry so it cannot mask plugin.json', () => {
-    const marketplace = JSON.parse(buildManifests(pluginRepo()).marketplace);
+    const marketplace = JSON.parse(
+      buildManifests(pluginRepo()).marketplace,
+    ) as { plugins: unknown[]; metadata: unknown };
     expect(marketplace.plugins[0]).toEqual({
       name: 'demo',
       source: './',

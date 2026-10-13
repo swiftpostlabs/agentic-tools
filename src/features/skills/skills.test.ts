@@ -254,7 +254,7 @@ describe('skills link and unlink', () => {
     expect(output.lines[0]).toBe(
       `Would link ${home}/.agents/skills/ref-base -> ${root}/.agents/skills/ref-base`,
     );
-    expect(() =>
+    expect(() => {
       runSkillsLink(ctx, {
         skills: ['ref-base'],
         source: undefined,
@@ -262,8 +262,8 @@ describe('skills link and unlink', () => {
         useGlobal: true,
         dryRun: true,
         force: false,
-      }),
-    ).toThrow('cannot combine --global with --to');
+      });
+    }).toThrow('cannot combine --global with --to');
   });
 
   test('links, refuses to clobber, replaces with --force, and unlinks', () => {
@@ -290,14 +290,14 @@ describe('skills link and unlink', () => {
     );
 
     const other = sourceRepo();
-    expect(() =>
+    expect(() => {
       runSkillsLink(ctx, {
         ...link,
         source: other.root,
         skills: ['ref-base'],
         force: false,
-      }),
-    ).toThrow('Use --force to replace it.');
+      });
+    }).toThrow('Use --force to replace it.');
     runSkillsLink(ctx, {
       ...link,
       source: other.root,
@@ -333,15 +333,15 @@ describe('skills link and unlink', () => {
       dryRun: false,
       force: false,
     });
-    expect(() =>
+    expect(() => {
       runSkillsUnlink(ctx, {
         skills: ['ref-base'],
         source: other.root,
         destination: undefined,
         useGlobal: false,
         dryRun: false,
-      }),
-    ).toThrow('points to');
+      });
+    }).toThrow('points to');
   });
 });
 
@@ -394,15 +394,15 @@ describe('skills sync', () => {
 
   test('--global requires --config', () => {
     const { context: ctx } = context(makeTempDir());
-    expect(() =>
+    expect(() => {
       runSkillsSync(ctx, {
         destination: undefined,
         useGlobal: true,
         config: undefined,
         dryRun: true,
         force: false,
-      }),
-    ).toThrow('sync with --global requires --config');
+      });
+    }).toThrow('sync with --global requires --config');
   });
 
   test('reports missing skills grouped by source', () => {
@@ -411,15 +411,15 @@ describe('skills sync', () => {
       { from: root, skills: ['ref-base', 'ref-nope', 'ref-gone'] },
     ]);
     const { context: ctx } = context(consumer);
-    expect(() =>
+    expect(() => {
       runSkillsSync(ctx, {
         destination: undefined,
         useGlobal: false,
         config: undefined,
         dryRun: true,
         force: false,
-      }),
-    ).toThrow(
+      });
+    }).toThrow(
       `Skills config references missing skills:\n- source '${root}': ref-nope, ref-gone`,
     );
   });
@@ -538,15 +538,15 @@ describe('skills sync', () => {
       { from: other.root, skills: ['ref-base'] },
     ]);
     const { context: ctx } = context(consumer);
-    expect(() =>
+    expect(() => {
       runSkillsSync(ctx, {
         destination: undefined,
         useGlobal: false,
         config: undefined,
         dryRun: true,
         force: false,
-      }),
-    ).toThrow(
+      });
+    }).toThrow(
       "Skill 'ref-base' is configured more than once across sync sources.",
     );
   });
@@ -554,15 +554,15 @@ describe('skills sync', () => {
   test('rejects malformed source entries with the source named', () => {
     const consumer = consumerWith([{ from: 'x', skills: [] }]);
     const { context: ctx } = context(consumer);
-    expect(() =>
+    expect(() => {
       runSkillsSync(ctx, {
         destination: undefined,
         useGlobal: false,
         config: undefined,
         dryRun: true,
         force: false,
-      }),
-    ).toThrow("Skills config source 'x' skills must not be empty.");
+      });
+    }).toThrow("Skills config source 'x' skills must not be empty.");
   });
 });
 

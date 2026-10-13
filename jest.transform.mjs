@@ -5,6 +5,10 @@ import { stripTypeScriptTypes } from 'node:module';
 const typeScriptFile = /\.m?ts$/;
 
 export default {
+  /**
+   * @param {string} source
+   * @param {string} filename
+   */
   process(source, filename) {
     if (!typeScriptFile.test(filename)) {
       return { code: source };

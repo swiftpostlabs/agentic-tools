@@ -8,11 +8,11 @@ import {
 } from './checkVersionDrift.mts';
 
 const roots: string[] = [];
-afterEach(() =>
-  roots
-    .splice(0)
-    .forEach((root) => fs.rmSync(root, { recursive: true, force: true })),
-);
+afterEach(() => {
+  roots.splice(0).forEach((root) => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+});
 
 const repo = (
   versions: {

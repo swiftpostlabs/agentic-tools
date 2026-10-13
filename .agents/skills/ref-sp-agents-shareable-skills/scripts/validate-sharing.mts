@@ -480,7 +480,9 @@ function findPluginManifest(skillsRoot: string): PluginManifest | null {
       return { root: dir, path, skills };
     }
     const parent = dirname(dir);
-    if (parent === dir) return null;
+    if (parent === dir) {
+      return null;
+    }
     dir = parent;
   }
 }
@@ -491,7 +493,9 @@ function validatePluginManifest(
 ): Finding[] {
   const manifest = findPluginManifest(skillsRoot);
   // A repo that publishes no plugin has nothing to keep in sync.
-  if (manifest === null) return [];
+  if (manifest === null) {
+    return [];
+  }
 
   const findings: Finding[] = [];
   const add = (severity: Severity, message: string): void => {
@@ -522,7 +526,9 @@ function validatePluginManifest(
   if (containerListed) {
     // Listing the container publishes everything inside it, tier metadata notwithstanding.
     for (const [name, info] of index) {
-      if (info.visibility === 'public') continue;
+      if (info.visibility === 'public') {
+        continue;
+      }
       add(
         'error',
         `manifest lists the skills container, which publishes every skill in it — '${name}' is ${info.visibility ?? 'untiered'} and would leak. Enumerate individual skill directories instead.`,

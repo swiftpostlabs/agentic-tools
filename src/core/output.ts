@@ -7,8 +7,12 @@ export type Output = {
 };
 
 export const createConsoleOutput = (): Output => ({
-  info: (line) => consola.log(line),
-  error: (line) => consola.error(line),
+  info: (line) => {
+    consola.log(line);
+  },
+  error: (line) => {
+    consola.error(line);
+  },
 });
 
 export type CapturedOutput = Output & { lines: string[]; errors: string[] };

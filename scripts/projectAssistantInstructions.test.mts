@@ -5,11 +5,11 @@ import { afterEach, expect, test } from '@jest/globals';
 import { outputPath, render } from './projectAssistantInstructions.mts';
 
 const roots: string[] = [];
-afterEach(() =>
-  roots
-    .splice(0)
-    .forEach((root) => fs.rmSync(root, { recursive: true, force: true })),
-);
+afterEach(() => {
+  roots.splice(0).forEach((root) => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+});
 
 const tempRoot = (): string => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'assistants-'));

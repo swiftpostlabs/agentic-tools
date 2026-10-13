@@ -1,5 +1,6 @@
 import {
   defineCommand,
+  type Resolvable,
   type ArgsDef,
   type CittyPlugin,
   type CommandDef,
@@ -18,6 +19,10 @@ export type CommandContext = {
   output: Output;
   setExitCode: (code: number) => void;
 };
+
+/** citty's `Resolvable`: a value, a promise of it, or a function returning either. */
+export const resolveValue = async <T>(value: Resolvable<T>): Promise<T> =>
+  typeof value === 'function' ? (value as () => T | Promise<T>)() : value;
 
 const helpFlags = ['help', 'h'] as const;
 
@@ -131,8 +136,10 @@ const rejectUnknownOptions: CittyPlugin = {
   name: 'reject-unknown-options',
   setup: async ({ rawArgs, cmd }) => {
     const args =
-      typeof cmd.args === 'function' ? await cmd.args() : await cmd.args;
-    const unknown = findUnknownOptions(rawArgs, args ?? {});
+      cmd.args === undefined ?
+        {}
+      : await resolveValue(cmd.args as Resolvable<ArgsDef>);
+    const unknown = findUnknownOptions(rawArgs, args);
     if (unknown.length > 0) {
       throw new UsageError(
         `Unknown option${unknown.length === 1 ? '' : 's'}: ${unknown.join(', ')}`,

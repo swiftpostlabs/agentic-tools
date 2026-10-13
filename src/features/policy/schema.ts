@@ -40,7 +40,7 @@ const stringList = (field: string) =>
       });
       return z.NEVER;
     }
-    return value as string[];
+    return value;
   });
 
 const services = z.unknown().transform((value, context): SupportedService[] => {

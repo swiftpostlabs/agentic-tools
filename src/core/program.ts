@@ -5,6 +5,7 @@ import {
   defineCommand,
   renderUsage,
   runCommand,
+  type ArgsDef,
   type CommandDef,
   type Resolvable,
 } from 'citty';
@@ -12,7 +13,11 @@ import { createExportCommand } from '../features/export/export.command.ts';
 import { createPluginCommand } from '../features/plugin/plugin.command.ts';
 import { createPolicyCommand } from '../features/policy/policy.command.ts';
 import { createSkillsCommand } from '../features/skills/skills.command.ts';
-import { firstPositionalIndex, type CommandContext } from './command.ts';
+import {
+  firstPositionalIndex,
+  resolveValue,
+  type CommandContext,
+} from './command.ts';
 import { ToolError, UsageError } from './errors.ts';
 import { createConsoleOutput, type Output } from './output.ts';
 
@@ -25,9 +30,6 @@ export type RunOptions = { cwd?: string; home?: string; output?: Output };
 // args is not assignable to `CommandDef<ArgsDef>`, so walking the tree needs the same escape hatch.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyCommand = CommandDef<any>;
-
-const resolve = async <T>(value: Resolvable<T>): Promise<T> =>
-  typeof value === 'function' ? (value as () => T | Promise<T>)() : value;
 
 const resolveWorkspace = (raw: string | undefined, cwd: string): string => {
   if (raw === undefined) {
@@ -79,10 +81,12 @@ const resolveCommandPath = async (
     const subCommands =
       command.subCommands === undefined ?
         undefined
-      : await resolve(command.subCommands);
+      : await resolveValue(command.subCommands);
     const index = firstPositionalIndex(
       rest,
-      command.args === undefined ? {} : await resolve(command.args),
+      command.args === undefined ?
+        {}
+      : await resolveValue(command.args as Resolvable<ArgsDef>),
     );
     const name = index === -1 ? undefined : rest[index];
     const next =
@@ -93,7 +97,7 @@ const resolveCommandPath = async (
       return { names, command };
     }
     names.push(name);
-    command = await resolve(next);
+    command = await resolveValue(next);
     rest = rest.slice(index + 1);
   }
 };

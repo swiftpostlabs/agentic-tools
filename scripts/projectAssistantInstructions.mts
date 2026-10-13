@@ -119,7 +119,7 @@ const main = (argv: string[]): number => {
     fs.writeFileSync(destination, rendered, 'utf8');
     // Instruction-field limits are undocumented on these products, so report the size.
     process.stdout.write(
-      `wrote ${relative} (${[...rendered].length.toLocaleString('en-US')} chars)\n`,
+      `wrote ${relative} (${Array.from(rendered).length.toLocaleString('en-US')} chars)\n`,
     );
   }
 

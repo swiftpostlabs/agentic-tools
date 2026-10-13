@@ -226,7 +226,7 @@ const main = (argv: string[]): number => {
     return values.help === true ? 0 : 2;
   }
 
-  const workspace = path.resolve(positionals[0] as string);
+  const workspace = path.resolve(positionals[0]);
   if (!fs.existsSync(workspace) || !fs.statSync(workspace).isDirectory()) {
     process.stderr.write(`Workspace not found: ${workspace}\n`);
     return 2;
