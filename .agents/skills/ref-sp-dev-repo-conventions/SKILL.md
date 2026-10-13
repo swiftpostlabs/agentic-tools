@@ -43,7 +43,7 @@ dist/                              # tsc output for npm (gitignored, built by `p
 
 ```text
 src/
-  cli.ts              # bin entry: runs the dispatcher, sets the exit code
+  core/cli.mts        # bin entry (run-only): runs the program, sets the exit code
   cli/                # command table and dispatcher over node:util parseArgs
   core/<concern>.ts   # plumbing every feature uses: paths, fs, JSON and zod helpers, frontmatter, output
   features/<feature>/ # policy, skills, plugin, export; code and *.test.ts side by side
@@ -87,7 +87,7 @@ src/
   `dist/` themselves. `files` ships `dist/` and `.agents/skills`.
 - Python: `pyproject.toml` builds a wheel through `python/hatch_build.py`, which stages `src/**/*.ts`
   (no tests), `package.json`, the runtime `node_modules`, and `.agents/skills` under
-  `agentic_tools/js/`. The launcher runs `src/cli.ts` with Node from `nodejs-wheel-binaries`. The
+  `agentic_tools/js/`. The launcher runs `src/core/cli.mts` with Node from `nodejs-wheel-binaries`. The
   version is read from `package.json`. Build with `uv build --out-dir dist-python`; the default
   `dist/` is the npm build's.
 - `package:agentic-tools` skill sources resolve from `node_modules`, then from the running package

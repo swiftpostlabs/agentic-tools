@@ -8,7 +8,7 @@ from nodejs_wheel import node
 # Staged by python/hatch_build.py: the TypeScript sources, package.json, the runtime
 # node_modules, and .agents/skills. Node runs the .ts entry point directly, which it
 # allows anywhere outside a node_modules directory.
-CLI_ENTRY = Path(__file__).resolve().parent / "js" / "src" / "cli.ts"
+CLI_ENTRY = Path(__file__).resolve().parent / "js" / "src" / "core" / "cli.mts"
 
 
 def main() -> int:

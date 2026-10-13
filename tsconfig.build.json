@@ -8,6 +8,6 @@
     "sourceMap": false,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/**/*.mts"],
   "exclude": ["src/**/*.test.ts", "src/**/testFixtures.ts"]
 }

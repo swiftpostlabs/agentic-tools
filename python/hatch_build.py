@@ -47,7 +47,8 @@ class JsPayloadBuildHook(BuildHookInterface[Any]):
         shutil.rmtree(staging, ignore_errors=True)
         (staging / "node_modules").mkdir(parents=True)
 
-        for source in (root / "src").rglob("*.ts"):
+        sources = [*(root / "src").rglob("*.ts"), *(root / "src").rglob("*.mts")]
+        for source in sources:
             relative = source.relative_to(root)
             if is_runtime_source(relative):
                 (staging / relative).parent.mkdir(parents=True, exist_ok=True)

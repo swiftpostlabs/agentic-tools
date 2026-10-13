@@ -1,3 +1,5 @@
+import { consola } from "consola";
+
 /** Where commands write user-facing lines. Injected so tests can capture output. */
 export type Output = {
   info: (line: string) => void;
@@ -5,8 +7,8 @@ export type Output = {
 };
 
 export const createConsoleOutput = (): Output => ({
-  info: (line) => process.stdout.write(`${line}\n`),
-  error: (line) => process.stderr.write(`${line}\n`),
+  info: (line) => consola.log(line),
+  error: (line) => consola.error(line),
 });
 
 export type CapturedOutput = Output & { lines: string[]; errors: string[] };

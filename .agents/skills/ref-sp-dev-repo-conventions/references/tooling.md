@@ -38,7 +38,7 @@ release flow, or the Python shim.
   `node_modules` when the checkout has them, otherwise installed at their `yarn.lock` versions with the
   npm from `nodejs-wheel-binaries`, a build requirement. A uv git install therefore needs network
   access to the npm registry once per built version.
-- `python/agentic_tools/__main__.py` runs `js/src/cli.ts` with that package's Node. It holds no logic
+- `python/agentic_tools/__main__.py` runs `js/src/core/cli.mts` with that package's Node. It holds no logic
   beyond the launch; behaviour changes belong in `src/`.
 - CI builds the wheel from a checkout without `node_modules` and runs it, which is the uv git-install
   path.
