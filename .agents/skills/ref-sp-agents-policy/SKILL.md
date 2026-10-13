@@ -58,7 +58,7 @@ as `uv run agentic-tools ...` or `yarn agentic-tools ...`; this repo runs it fro
 ## Before finishing
 
 - `yarn cli policy sync`, then `yarn cli policy check`, pass after any policy or generator change.
-- `yarn test src/policy` when policy logic changed.
+- `yarn test src/features/policy` when policy logic changed.
 - If an output file or command name changed, update `.github/workflows/ci.yaml`.
 
 ## References

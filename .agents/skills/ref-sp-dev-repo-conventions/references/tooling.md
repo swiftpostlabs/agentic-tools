@@ -7,8 +7,9 @@ release flow, or the Python shim.
 
 | File | Owns |
 | --- | --- |
-| `package.json` | Version source, runtime and dev dependencies, the `agentic-tools` bin (`dist/cli.js`), yarn scripts, the npm `files` list |
+| `package.json` | Version source, runtime and dev dependencies, the `agentic-tools` bin (`dist/core/cli.mjs`), yarn scripts, the npm `files` list |
 | `tsconfig.json` | Strict type-check of `src/` and `scripts/`; no emit |
+| `eslint.config.mjs` | typescript-eslint `strictTypeChecked`, Prettier as a rule with inline options |
 | `tsconfig.build.json` | Emits `dist/` from `src/`, excluding `*.test.ts` and `testFixtures.ts` |
 | `tsconfig.skills.json` | Type-check of skill scripts and `.mts` assets at plain `strict` |
 | `jest.config.mjs`, `jest.transform.mjs` | Jest over `src/`, `scripts/`, and `.agents/skills`, stripping types with Node |
@@ -45,9 +46,10 @@ release flow, or the Python shim.
 
 ## Common tasks
 
-- **New command**: add the handler in its feature, a `CommandSpec` in `src/cli/commands.ts`, and a
-  test that calls the handler with a captured `Output`.
+- **New command**: add the logic in its feature, a `defineStrictCommand` in the feature's
+  `<feature>.command.ts`, and a test that calls the logic with a captured `Output`. A new command
+  group also gets one line in `src/core/program.ts`.
 - **New config field**: extend the feature's zod schema; reading and validation stay in one place.
 - **New runtime dependency**: ask first. It lands in `dependencies`, and the shim's build hook picks it
   up from `package.json` with no further change.
-- **New repo script**: `scripts/<name>.mts`, a yarn script for it, and a `<name>.test.mts` beside it.
+- **New repo script**: `scripts/<camelCaseName>.mts`, a yarn script for it, and a `<name>.test.mts` beside it.

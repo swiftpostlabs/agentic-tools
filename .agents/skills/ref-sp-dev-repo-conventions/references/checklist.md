@@ -4,7 +4,8 @@ Use before finalizing a placement, scaffold, or packaging change.
 
 ## Placement and layout
 
-- Does each file have one clear owner: the CLI wiring (`src/cli/`), a feature, or `src/core/`?
+- Does each file have one clear owner: a feature under `src/features/`, or `src/core/`?
+- Does a new command group live in `<feature>.command.ts`, mounted in `src/core/program.ts`?
 - Is feature behaviour hiding in `core`, `utils`, or `helpers`?
 - Are tests beside the code they exercise (`*.test.ts`), with fixtures from `src/core/testFixtures.ts`?
 - Does the folder match responsibility: shipped CLI (`src/`), repo maintenance (`scripts/`), agent
@@ -15,7 +16,8 @@ Use before finalizing a placement, scaffold, or packaging change.
 
 - Is the code erasable-only, with `.ts` extensions on relative imports?
 - Is every config or settings file parsed through a zod schema rather than cast?
-- Do features take `cwd`, `home`, and `Output` instead of reading globals?
+- Do features take a `CommandContext` instead of reading `process.cwd()`, `os.homedir()`, or stdout?
+- Are file and folder names camelCase?
 - Is a skill script standalone, using only Node built-ins?
 
 ## Packaging
@@ -26,4 +28,4 @@ Use before finalizing a placement, scaffold, or packaging change.
 
 ## Validation
 
-- `yarn lint && yarn typecheck && yarn test` pass, and `yarn validate` when a skill changed.
+- `yarn lint` (ESLint and drift checks), `yarn typecheck`, and `yarn test` pass, and `yarn validate` when a skill changed.

@@ -18,9 +18,9 @@ scripts).
 
 ## Project context
 
-- Language: strict TypeScript on Node >= 22, managed with Yarn 1. Runtime dependencies are `zod`
-  (validation at every config boundary) and `json5` (config and settings files may carry comments).
-  Ask before adding another.
+- Language: strict TypeScript on Node >= 22, managed with Yarn 1. Runtime dependencies are `citty`
+  (commands and help), `consola` (output), `zod` (validation at every config boundary), and `json5`
+  (config and settings files may carry comments). Ask before adding another.
 - One implementation. The npm package `agentic-tools` ships the compiled CLI in `dist/` plus
   `.agents/skills`. A Python shim under `python/` ships the same CLI to Python projects.
 
@@ -32,7 +32,7 @@ AGENTS.md                          # the only agent instruction file; no CLAUDE.
 .agents/config.json                # policy, skills, and plugin config
 .agents/playground/  .agents/tasks/  .agents/retro/   # local workspaces (gitignored)
 src/                               # the CLI, feature-first (see below)
-scripts/*.mts                      # repo maintenance, run directly by Node, not shipped
+scripts/<name>.mts                 # repo maintenance, run directly by Node, not shipped
 python/                            # the Python shim: launcher module and hatch build hook
 chat-assistants/                   # generated instructions for chat products
 .claude-plugin/                    # generated plugin and marketplace manifests
@@ -43,20 +43,27 @@ dist/                              # tsc output for npm (gitignored, built by `p
 
 ```text
 src/
-  core/cli.mts        # bin entry (run-only): runs the program, sets the exit code
-  cli/                # command table and dispatcher over node:util parseArgs
-  core/<concern>.ts   # plumbing every feature uses: paths, fs, JSON and zod helpers, frontmatter, output
-  features/<feature>/ # policy, skills, plugin, export; code and *.test.ts side by side
-  core/testFixtures.ts  # fixtures for tests; never built or shipped
+  core/
+    cli.mts             # run-only bin entry → dist/core/cli.mjs
+    program.ts          # runCli: mounts each feature's command, --workspace, help, exit codes
+    command.ts          # CommandContext, defineStrictCommand, repeatedOption
+    <concern>.ts        # plumbing every feature uses: errors, output, paths, fs, json, frontmatter
+    testFixtures.ts     # test fixtures; never built or shipped
+  features/
+    <feature>/          # policy, skills, plugin, export
+      <feature>.command.ts   # the citty command group
+      <concern>.ts           # the feature's logic, with <concern>.test.ts beside it
 ```
 
-- A command group lives in its feature folder and is mounted in `src/cli/commands.ts`. Don't add
-  another bin.
-- Features take `cwd`, `home`, and an `Output` as arguments instead of reading `process.cwd()`,
-  `os.homedir()`, or writing to stdout, so tests stay hermetic.
-- Expected failures throw `ToolError` (`src/core/errors.ts`); the CLI prints the message and exits 1.
-  Usage errors exit 2.
-- Don't create `utils/` or `helpers/` folders: name the `core/<concern>` or the feature.
+- Each folder's rules are in its nested `AGENTS.md` (`src/`, `src/core/`, `src/features/`, each
+  feature, `scripts/`); this skill gives the overview they share.
+- A command group is `features/<feature>/<feature>.command.ts`, mounted with one line in
+  `src/core/program.ts`. Don't add another bin.
+- Features take a `CommandContext` (`cwd`, `home`, `output`, `setExitCode`) instead of reading
+  `process.cwd()`, `os.homedir()`, or writing to stdout, so tests stay hermetic.
+- Expected failures throw `ToolError` and exit 1; `UsageError` and citty's parse errors exit 2.
+- File and folder names are camelCase and say what they hold. Don't create `utils/` or `helpers/`:
+  name the `core/<concern>` or the feature.
 - No top-level `tests/` folder: `thing.ts` gets `thing.test.ts` beside it.
 
 ## TypeScript rules
@@ -71,9 +78,19 @@ src/
 - Parse config and settings files with a zod schema through `parseWith` (`src/core/json.ts`), which
   reports the first issue with its field path.
 
+## Lint and format
+
+- `eslint.config.mjs` uses typescript-eslint `strictTypeChecked` with Prettier as the
+  `prettier/prettier` rule, its options inline (`singleQuote`, `experimentalTernaries`) and no
+  `.prettierrc`. This matches the repo's other TypeScript projects.
+- Skill scripts lint against `tsconfig.skills.json`, where `no-unnecessary-condition` is off because
+  that config leaves `noUncheckedIndexedAccess` off.
+- `.git-blame-ignore-revs` lists mechanical reformat commits; set
+  `git config blame.ignoreRevsFile .git-blame-ignore-revs` once per clone.
+
 ## Scripts and skill scripts
 
-- Repo maintenance scripts are `scripts/<name>.mts`, run with `node`, wired as yarn scripts. A
+- Repo maintenance scripts are `scripts/<camelCaseName>.mts`, run with `node`, wired as yarn scripts. A
   user-facing capability belongs in a feature under `src/`, not in `scripts/`.
 - Skill scripts are `.agents/skills/<skill>/scripts/<name>.mts`: standalone, Node built-ins only, no
   imports from `src/`. Node refuses to strip types under `node_modules`, so a skill script runs from
@@ -104,10 +121,11 @@ src/
 ## Commands
 
 - `yarn install`: install dependencies and build `dist/`.
-- `yarn lint`: every drift check: policy files, plugin manifests, version files, projected
-  chat-assistant instructions.
+- `yarn lint`: ESLint with Prettier, then every drift check: policy files, plugin manifests, version
+  files, projected chat-assistant instructions. `yarn lint:fix` applies fixes;
+  `yarn check:generated` runs only the drift checks.
 - `yarn typecheck`: `tsc` over `src/` and `scripts/`, then over skill scripts.
-- `yarn test`: Jest. Pass paths to narrow it (`yarn test src/skills`).
+- `yarn test`: Jest. Pass paths to narrow it (`yarn test src/features/skills`).
 - `yarn validate`: skill structure and sharing spec.
 - `yarn cli <group> <command>`: run the CLI from source, e.g. `yarn cli policy sync`.
 - `yarn release`: bump, changelog, and tag (`--release-as patch|minor|major`); see
