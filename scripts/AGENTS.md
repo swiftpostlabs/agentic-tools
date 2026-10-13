@@ -6,6 +6,9 @@ Repo maintenance, run directly by Node and wired as yarn scripts. Nothing here s
   Part of `yarn lint`.
 - `projectAssistantInstructions.mts`: renders `chat-assistants/*/instructions.md` from their
   templates (`yarn assistants:build`), or checks them (`--check`, part of `yarn lint`).
+- `checkRuntimeParity.mts`: runs the CLI, repo scripts, and skill scripts under Node and Bun and
+  fails on any difference (`yarn check:runtimes`, CI's `bun_parity` job). Commands that read a
+  workspace by convention run from a fixture directory.
 
 ## Rules
 

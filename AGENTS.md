@@ -70,6 +70,16 @@ For anything else, match the task against the skill descriptions' `Use when:` cl
 
 Folder rules live in nested `AGENTS.md` files. Read the one for the folder you are changing before editing it: `src/` (code rules for everything under it), `src/core/`, `src/features/`, one per feature (`policy/`, `skills/`, `plugin/`, `export/`), and `scripts/`.
 
+## Node and Bun
+
+Everything that runs in this repo, the CLI, `scripts/`, and the skill scripts, must run unchanged and give identical output on Node (the runtime `package.json` declares) and Bun. CI's `bun_parity` job fails the build otherwise. When writing or changing runtime code:
+
+- Use only `node:` built-ins and web standards. No `Bun.*` APIs, and no Node-only APIs outside test and build plumbing such as `jest.transform.mjs`.
+- Guard entry points with `process.argv[1] === import.meta.filename`, not `import.meta.main`.
+- Keep TypeScript erasable and relative imports explicit (`./skills.ts`); Bun accepts more, Node does not.
+- Fail through handled errors with your own message. Uncaught stack traces print differently on each runtime, so parity holds only on handled paths.
+- Add each new deterministic command to `scripts/checkRuntimeParity.mts`.
+
 ## Workflow
 
 When working on this project:
@@ -77,7 +87,7 @@ When working on this project:
 1. **Start**: Pull latest changes and rebase.
 2. **Setup**: Run `yarn install` at the start of work and again after rebasing or dependency changes.
 3. **Implement**: Follow the owning skill for the area you are touching.
-4. **Validate**: Before committing, run `yarn lint`, `yarn typecheck`, and `yarn test`, plus `yarn validate` when you changed a skill under `.agents/skills/`. Confirm the change introduced no new warnings or type issues, filtering output to the changed files so unrelated noise does not hide a real regression. Chain lint and type-check into one command when that saves a round trip.
+4. **Validate**: Before committing, run `yarn lint`, `yarn typecheck`, and `yarn test`, plus `yarn validate` when you changed a skill under `.agents/skills/`, and `yarn test:bun` and `yarn check:runtimes` when Bun is installed and you changed runtime code. Confirm the change introduced no new warnings or type issues, filtering output to the changed files so unrelated noise does not hide a real regression. Chain lint and type-check into one command when that saves a round trip.
 5. **Commit**: Keep commits small and focused — one feature or area, a few related files at a time — and commit only after lint and type-check pass.
 6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. For a substantial task, capture a short, descriptive retrospective under `.agents/retro/` following `ref-sp-agents-retro` — what went well, what went wrong, and improvement hypotheses — kept descriptive rather than prescriptive. Summarize the result to the user and ask if they want the guidance updated. If yes, promote the durable, general observations into the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
 
@@ -93,6 +103,8 @@ The CLI is TypeScript (`citty` commands, `consola` output, `zod` schemas), manag
 - `yarn lint` — ESLint (typescript-eslint `strictTypeChecked`, Prettier as a rule), then every drift check: generated policy files, plugin manifests, version files, projected chat-assistant instructions.
 - `yarn lint:fix` — Apply ESLint and Prettier fixes.
 - `yarn check:generated` — Only the drift checks.
+- `yarn test:bun` — Run the Jest suite under `bun test` (needs Bun on `PATH`).
+- `yarn check:runtimes` — Run the CLI, repo scripts, and skill scripts under Node and Bun and fail on any output difference (needs Bun on `PATH`).
 - `yarn cli <group> <command>` — Run the CLI from source, e.g. `yarn cli skills list` or `yarn cli policy sync`.
 - `yarn cli policy import-vscode` — Import VS Code approvals into policy, then sync.
 - `yarn validate:skills` — Validate every skill against the Agent Skills structure and quality rules. Canonical skill-quality check.

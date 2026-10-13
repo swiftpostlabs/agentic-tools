@@ -17,6 +17,8 @@ never relax them.
   happens inside a function the caller runs. Start-up work belongs only in `core/cli.mts`.
 - **`.ts` for anything imported, `.mts` only for a file that is only ever run.** Relative imports name
   the file with its extension (`./skills.ts`).
+- **It runs on Node and Bun unchanged.** Root `AGENTS.md` (Node and Bun) lists what that rules out;
+  a new deterministic command goes into `scripts/checkRuntimeParity.mts`.
 - **Erasable syntax only:** no `enum`, namespaces, or parameter properties. Node runs this source
   directly through the Python shim and Jest.
 - **Names are camelCase** for files and folders, and say what the file holds. No `utils/` or

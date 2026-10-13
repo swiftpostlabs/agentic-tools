@@ -93,10 +93,19 @@ src/
 - Repo maintenance scripts are `scripts/<camelCaseName>.mts`, run with `node`, wired as yarn scripts. A
   user-facing capability belongs in a feature under `src/`, not in `scripts/`.
 - Skill scripts are `.agents/skills/<skill>/scripts/<name>.mts`: standalone, Node built-ins only, no
-  imports from `src/`. Node refuses to strip types under `node_modules`, so a skill script runs from
-  a checkout, a global skills folder, or the Python shim's site-packages, but not from an npm install.
+  imports from `src/`. Node refuses to strip types under `node_modules`, so under Node a skill script
+  runs from a checkout, a global skills folder, or the Python shim's site-packages, but not from an
+  npm install. Bun has no such restriction.
 - Guard an entry point with `path.resolve(process.argv[1]) === import.meta.filename`, so tests can
   import the module.
+
+## Runtimes
+
+- Node is the declared runtime (`engines`, the npm `bin`, the Python shim). Bun runs the same source
+  unchanged; the rules that keep it so are in root `AGENTS.md` (Node and Bun).
+- `scripts/checkRuntimeParity.mts` runs a fixed list of deterministic commands under both runtimes
+  and compares stdout, stderr, and exit code. CI's `bun_parity` job runs it and `bun test`, with
+  Bun pinned in the workflow.
 
 ## Packaging
 
@@ -113,7 +122,8 @@ src/
 ## Testing
 
 - Jest runs `.ts` through `jest.transform.mjs`, which calls Node's `stripTypeScriptTypes`. Import
-  `describe`, `test`, and `expect` from `@jest/globals`.
+  `describe`, `test`, and `expect` from `@jest/globals`; `bun test` runs the same files unchanged.
+  It skips dot directories, so `yarn test:bun` names `./.agents/skills` explicitly.
 - Use `src/core/testFixtures.ts` for temp directories and skill fixtures; tests never touch the
   real home directory.
 - Add at least one focused test for new non-trivial logic.
@@ -127,6 +137,8 @@ src/
 - `yarn typecheck`: `tsc` over `src/` and `scripts/`, then over skill scripts.
 - `yarn test`: Jest. Pass paths to narrow it (`yarn test src/features/skills`).
 - `yarn validate`: skill structure and sharing spec.
+- `yarn test:bun`, `yarn check:runtimes`: the suite under Bun, and the Node/Bun output comparison.
+  Both need Bun on `PATH`.
 - `yarn cli <group> <command>`: run the CLI from source, e.g. `yarn cli policy sync`.
 - `yarn release`: bump, changelog, and tag (`--release-as patch|minor|major`); see
   `./references/tooling.md`.
