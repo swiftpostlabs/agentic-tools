@@ -69,6 +69,17 @@ protection, and that path is both cheaper and more stable:
 the same specification as a PDF on their `datasheets.` subdomain fetched with plain `curl`. The
 browser was the wrong escalation; a different host was the answer.
 
+**5. When no other source exists, use collaborative mode.** Open the page in a headed browser so
+the user can clear the challenge by hand, then continue in the same session:
+
+```bash
+playwright-cli open <url> --headed
+```
+
+Name the page and what blocks it, wait until the user says it is cleared, and never solve the
+challenge yourself. The cleared session carries over to the following commands, so fetch everything
+needed from that site before closing it.
+
 **Record which sources needed which treatment** when the research will be revisited. The next agent
 otherwise repeats the whole ladder from the top.
 
