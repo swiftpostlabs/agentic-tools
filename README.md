@@ -30,14 +30,20 @@ A Node repo, with Yarn:
 
 ```sh
 corepack enable
-yarn add --dev github:swiftpostlabs/agentic-tools#<commit>
+yarn add --dev "git+https://github.com/swiftpostlabs/agentic-tools.git#<commit>"
 ```
+
+Use the `git+https:` form, not the `github:` shorthand. The CLI runs from `dist/`, which the
+package's `prepare` script builds on install. Yarn classic clones a `git+https:` dependency and runs
+`prepare`, but fetches a `github:` shorthand as a tarball without running it, which leaves no `dist/`
+and no `agentic-tools` command.
 
 Pin a full commit SHA. Every commit of this package carries the same `version`, and Yarn classic
 caches a GitHub dependency without a ref under one folder (`npm-agentic-tools-<version>`) for all
 commits, so a machine that cached an older commit installs that copy whatever the lockfile says.
 With the commit in the spec, each commit gets its own cache entry. To upgrade, change the commit and
-run `yarn install`. A machine that already installed a stale copy needs
+run `yarn install`. A machine that already installed a stale copy, or that installed the same commit
+through `github:` and now reports `Incorrect hash when fetching from the cache`, needs
 `yarn cache clean agentic-tools`, then removing `node_modules/agentic-tools` and
 `yarn install --force`.
 

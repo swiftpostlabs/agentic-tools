@@ -111,8 +111,10 @@ src/
 
 ## Packaging
 
-- npm: `prepare` runs `tsc -p tsconfig.build.json`, so git installs (`github:swiftpostlabs/...`) build
-  `dist/` themselves. `files` ships `dist/` and `.agents/skills`.
+- npm: `prepare` runs `tsc -p tsconfig.build.json`, so git installs build `dist/` themselves. Yarn
+  classic runs `prepare` only for `git+https://github.com/swiftpostlabs/agentic-tools.git#<sha>`: it
+  fetches a `github:` shorthand as a tarball, so `dist/` and the bin are missing. `files` ships
+  `dist/` and `.agents/skills`.
 - Python: `pyproject.toml` builds a wheel through `python/hatch_build.py`, which stages `src/**/*.ts` and
   `src/**/*.mts` (no tests, no `testFixtures.ts`), `package.json`, the runtime `node_modules`, and `.agents/skills` under
   `agentic_tools/js/`. The launcher runs `src/core/cli.mts` with Node from `nodejs-wheel-binaries`. The
