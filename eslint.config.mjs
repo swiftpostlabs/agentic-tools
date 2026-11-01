@@ -15,6 +15,10 @@ export default defineConfig(
       'dist',
       'build',
       '.venv',
+      // Gitignored local workspaces: scratch scripts, never shipped or checked.
+      '.agents/playground',
+      '.agents/tasks',
+      '.agents/retro',
       // Templates copied into other repos, not code that runs here.
       '.agents/skills/*/assets/*.mjs',
       '.agents/skills/*/assets/*.d.ts',
