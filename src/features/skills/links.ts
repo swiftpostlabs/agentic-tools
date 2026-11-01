@@ -44,8 +44,10 @@ export const removeDirectoryLink = (link: string): void => {
   }
 };
 
+// Not `instanceof Error`: fs errors can come from another realm (Jest's VM modules), where it fails.
 const isPermissionError = (error: unknown): boolean =>
-  error instanceof Error &&
+  typeof error === 'object' &&
+  error !== null &&
   'code' in error &&
   (error.code === 'EPERM' || error.code === 'EACCES');
 

@@ -211,7 +211,7 @@ describe('skills list', () => {
     fs.symlinkSync(
       path.join(skills, 'ref-legacy'),
       path.join(consumer, '.agents', 'skills', 'ref-legacy'),
-      'dir',
+      'junction',
     );
     expect(describeSkills(discoverSkillManifests(consumer))).toBe(
       'ref-legacy: domain missing; visibility organization; requires -',
@@ -233,8 +233,8 @@ describe('skills link and unlink', () => {
       force: false,
     });
     expect(output.lines).toEqual([
-      `Would link ${consumer}/.agents/skills/ref-base -> ${root}/.agents/skills/ref-base`,
-      `Would link ${consumer}/.agents/skills/ref-feature -> ${root}/.agents/skills/ref-feature`,
+      `Would link ${path.join(consumer, '.agents', 'skills', 'ref-base')} -> ${path.join(root, '.agents', 'skills', 'ref-base')}`,
+      `Would link ${path.join(consumer, '.agents', 'skills', 'ref-feature')} -> ${path.join(root, '.agents', 'skills', 'ref-feature')}`,
     ]);
     expect(fs.existsSync(path.join(consumer, '.agents'))).toBe(false);
   });
@@ -252,7 +252,7 @@ describe('skills link and unlink', () => {
       force: false,
     });
     expect(output.lines[0]).toBe(
-      `Would link ${home}/.agents/skills/ref-base -> ${root}/.agents/skills/ref-base`,
+      `Would link ${path.join(home, '.agents', 'skills', 'ref-base')} -> ${path.join(root, '.agents', 'skills', 'ref-base')}`,
     );
     expect(() => {
       runSkillsLink(ctx, {
@@ -286,7 +286,7 @@ describe('skills link and unlink', () => {
 
     runSkillsLink(ctx, { ...link, skills: ['ref-base'], force: false });
     expect(output.lines.at(-1)).toBe(
-      `Already linked ${consumer}/.agents/skills/ref-base -> ${skills}/ref-base`,
+      `Already linked ${path.join(consumer, '.agents', 'skills', 'ref-base')} -> ${path.join(skills, 'ref-base')}`,
     );
 
     const other = sourceRepo();
@@ -305,7 +305,7 @@ describe('skills link and unlink', () => {
       force: true,
     });
     expect(output.lines.at(-1)).toBe(
-      `Linked ${consumer}/.agents/skills/ref-base -> ${other.skills}/ref-base`,
+      `Linked ${path.join(consumer, '.agents', 'skills', 'ref-base')} -> ${path.join(other.skills, 'ref-base')}`,
     );
 
     runSkillsUnlink(ctx, {
@@ -371,7 +371,7 @@ describe('skills sync', () => {
       force: false,
     });
     expect(output.lines[0]).toBe(
-      `Would link ${consumer}/.agents/skills/ref-base -> ${parent}/source/.agents/skills/ref-base`,
+      `Would link ${path.join(consumer, '.agents', 'skills', 'ref-base')} -> ${path.join(parent, 'source', '.agents', 'skills', 'ref-base')}`,
     );
   });
 
@@ -440,7 +440,7 @@ describe('skills sync', () => {
     fs.symlinkSync(
       path.join(consumer, 'missing'),
       path.join(consumer, '.agents', 'skills', 'ref-dead'),
-      'dir',
+      'junction',
     );
     const { context: ctx, output } = context(consumer);
 
@@ -456,10 +456,10 @@ describe('skills sync', () => {
     expect(output.lines).toEqual([
       `Skipped skills that are not shippable to another repo (repo-local or otherwise non-exportable):\n- source '${root}': ref-local`,
       "Updated config: 'ref-old-feature' -> 'ref-feature'",
-      `Removed dead link ${skillsDir}/ref-dead -> ${consumer}/missing`,
-      `Linked ${skillsDir}/ref-base -> ${root}/.agents/skills/ref-base`,
-      `Linked ${skillsDir}/ref-feature -> ${root}/.agents/skills/ref-feature`,
-      `Updated ${skillsDir}/.gitignore`,
+      `Removed dead link ${path.join(skillsDir, 'ref-dead')} -> ${path.join(consumer, 'missing')}`,
+      `Linked ${path.join(skillsDir, 'ref-base')} -> ${path.join(root, '.agents', 'skills', 'ref-base')}`,
+      `Linked ${path.join(skillsDir, 'ref-feature')} -> ${path.join(root, '.agents', 'skills', 'ref-feature')}`,
+      `Updated ${path.join(skillsDir, '.gitignore')}`,
     ]);
     expect(readJson(path.join(consumer, '.agents', 'config.json'))).toEqual({
       skills: {
@@ -512,7 +512,7 @@ describe('skills sync', () => {
     fs.symlinkSync(
       path.join(skills, 'ref-org'),
       path.join(consumer, '.agents', 'skills', 'ref-org'),
-      'dir',
+      'junction',
     );
     const { context: ctx, output } = context(consumer);
     runSkillsSync(ctx, {
@@ -523,7 +523,7 @@ describe('skills sync', () => {
       force: false,
     });
     expect(output.lines).toContain(
-      `Removed unconfigured link ${consumer}/.agents/skills/ref-org -> ${skills}/ref-org`,
+      `Removed unconfigured link ${path.join(consumer, '.agents', 'skills', 'ref-org')} -> ${path.join(skills, 'ref-org')}`,
     );
     expect(
       fs.existsSync(path.join(consumer, '.agents', 'skills', 'ref-org')),
@@ -595,7 +595,7 @@ describe('package sources', () => {
       force: false,
     });
     expect(output.lines[0]).toBe(
-      `Would link ${consumer}/.agents/skills/ref-pkg -> ${workspace}/node_modules/shared-skills/.agents/skills/ref-pkg`,
+      `Would link ${path.join(consumer, '.agents', 'skills', 'ref-pkg')} -> ${path.join(workspace, 'node_modules', 'shared-skills', '.agents', 'skills', 'ref-pkg')}`,
     );
   });
 
