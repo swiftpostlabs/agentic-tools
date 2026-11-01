@@ -58,6 +58,6 @@ test('rejects a placeholder the tool cannot fill', () => {
 
 test('writes one folder per assistant beside the templates folder', () => {
   expect(outputPath('/a/gemini-gem/templates/default-it.template.md')).toBe(
-    '/a/gemini-gem/default-it/instructions.md',
+    path.join('/a', 'gemini-gem', 'default-it', 'instructions.md'),
   );
 });

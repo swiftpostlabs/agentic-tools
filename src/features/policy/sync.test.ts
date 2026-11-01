@@ -259,7 +259,7 @@ describe('policy discovery', () => {
         home: root,
       }),
     ).toEqual([
-      'No .agents/config.json policy, .agents/policy.json, or legacy .ai-policy.json found. Nothing to sync.',
+      `No ${path.join('.agents', 'config.json')} policy, ${path.join('.agents', 'policy.json')}, or legacy .ai-policy.json found. Nothing to sync.`,
     ]);
   });
 });
