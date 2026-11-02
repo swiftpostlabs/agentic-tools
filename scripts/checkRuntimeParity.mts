@@ -26,6 +26,7 @@ export const parityCommands: readonly (readonly [string, ...string[]])[] = [
   ['src/core/cli.mts', 'skills', 'list', '--bogus'],
   ['src/core/cli.mts', 'skills', 'list', '--from'],
   ['src/core/cli.mts', 'skills', 'list', 'extra'],
+  ['src/core/cli.mts', 'skills', 'list', '-from'],
   ['src/core/cli.mts', 'skills', 'sync', '--force=false'],
   ['src/core/cli.mts', 'export', 'build', '--exclude', '--dry-run'],
   ['src/core/cli.mts', '--bogus', 'skills', 'list'],

@@ -10,7 +10,8 @@ The front controller, plus what every feature shares. Nothing here holds a featu
 - `program.ts`: `runCli`, the importable program and the front controller. It builds one commander
   program, with `--workspace` only before the group and each command's options after its name, and
   resolves the workspace in a `preAction` hook, once every argument has been validated. It first
-  refuses what commander accepts: help beside another mistake, and a command after `--`. Exit codes:
+  refuses what commander accepts: help beside another mistake, a command after `--`, and a
+  value attached to a short option (`-to`). Exit codes:
   0 success and help; 1 for a `ToolError` or a group run without a command; 2 for any usage error.
 - `command.ts`: the command contract. `CommandContext` (`cwd`, `home`, `output`, `setExitCode`), and
   the `value` and `collect` option parsers, without which commander takes a flag as a value and keeps

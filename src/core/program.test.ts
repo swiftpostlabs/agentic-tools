@@ -122,6 +122,13 @@ describe('runCli', () => {
 });
 
 describe('runCli argument validation', () => {
+  test('names the separate form when refusing an attached value', async () => {
+    const { output } = await run(['skills', 'list', '-from']);
+    expect(output.errors[0]).toContain(
+      "'-from': -f takes a value, so pass it separately or use --from=value.",
+    );
+  });
+
   // Each case was a regression found by review: the pre-citty CLI refused it (exit 2) or accepted
   // it (exit 0), and so must this one. Run in an empty workspace, so nothing is written.
   const cases: readonly (readonly [string, readonly string[], number])[] = [
@@ -148,7 +155,17 @@ describe('runCli argument validation', () => {
     ['help with an unknown option', ['skills', 'list', '--bogus', '--help'], 2],
     ['a value on help', ['skills', 'list', '--help=1'], 2],
     ['-- before the group', ['--', 'skills', 'list'], 2],
-    ['an attached short value', ['skills', 'list', '-f.'], 0],
+    ['an attached short value', ['skills', 'list', '-f.'], 2],
+    ['a long name with one dash', ['skills', 'list', '-from'], 2],
+    ['a value letter inside a group', ['skills', 'sync', '-tg'], 2],
+    ['a value letter before a group end', ['skills', 'sync', '-gto'], 2],
+    ['an attached workspace', ['-w.', 'skills', 'list'], 2],
+    ['an attached value beside help', ['skills', 'list', '-from', '--help'], 2],
+    ['a separate short value', ['skills', 'list', '-f', '.'], 0],
+    ['a value with =', ['skills', 'list', '--from=.'], 0],
+    ['a value after a group', ['skills', 'sync', '-gt', '.', '--dry-run'], 1],
+    ['grouped short flags', ['skills', 'sync', '-gh'], 0],
+    ['a refused form after --', ['skills', 'link', '--', '-to'], 1],
     ['help before the group', ['--help', 'skills', 'list'], 0],
     ['help before an unknown group', ['--help', 'nope'], 2],
     [
@@ -170,7 +187,7 @@ describe('runCli argument validation', () => {
     expect(fs.readdirSync(workspace)).toEqual(['.agents']);
   });
 
-  test('combined short flags reach the command', async () => {
+  test('short options reach the command', async () => {
     const source = makeTempDir();
     writeSkill(path.join(source, '.agents', 'skills'), 'ref-a', {
       domain: 'dev',
@@ -183,7 +200,8 @@ describe('runCli argument validation', () => {
       'ref-a',
       '-f',
       source,
-      '-t' + destination,
+      '-t',
+      destination,
       '--dry-run',
     ]);
     expect(code).toBe(0);

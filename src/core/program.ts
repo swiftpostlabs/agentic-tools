@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { Command, CommanderError } from 'commander';
+import { Command, CommanderError, type Option } from 'commander';
 import { z } from 'zod';
 import { registerExportCommand } from '../features/export/export.command.ts';
 import { registerPluginCommand } from '../features/plugin/plugin.command.ts';
@@ -29,8 +29,42 @@ const resolveWorkspace = (raw: string | undefined, cwd: string): string => {
   return fs.realpathSync(workspace);
 };
 
+/**
+ * Commander reads `-to` as `-t` with the value `o`, which is far more likely a typo for `--to`. A
+ * letter that takes a value must end its group, with the value as the next argument.
+ */
+const refuseAttachedValues = (argv: readonly string[], action: Command) => {
+  const options: Option[] = [];
+  for (
+    let command: Command | null = action;
+    command !== null;
+    command = command.parent
+  ) {
+    options.push(...command.options);
+  }
+  const end = argv.indexOf('--');
+  for (const token of end === -1 ? argv : argv.slice(0, end)) {
+    if (!/^-[^-]./.test(token)) {
+      continue;
+    }
+    const letters = token.slice(1, -1);
+    const attached = options.find(
+      (option) =>
+        option.short !== undefined &&
+        letters.includes(option.short.slice(1)) &&
+        (option.required || option.optional),
+    );
+    if (attached !== undefined) {
+      action.error(
+        `error: '${token}': ${attached.short ?? ''} takes a value, so pass it separately or use ${attached.long ?? ''}=value.`,
+        { exitCode: usageErrorCode },
+      );
+    }
+  }
+};
+
 /** The front controller: each feature contributes one command group. */
-const createProgram = (context: CommandContext) => {
+const createProgram = (context: CommandContext, argv: readonly string[]) => {
   const program = new Command('agentic-tools')
     .description(
       'Run shared policy, skills, plugin, and export workflows from one CLI.',
@@ -52,7 +86,8 @@ const createProgram = (context: CommandContext) => {
       'Run the command from this workspace directory.',
       value,
     )
-    .hook('preAction', () => {
+    .hook('preAction', (_program, action) => {
+      refuseAttachedValues(argv, action);
       const { workspace } = parseWith(rootOptionsSchema, program.opts());
       context.cwd = resolveWorkspace(workspace, context.cwd);
     });
@@ -95,6 +130,7 @@ const refuseWhatCommanderAccepts = (program: Command, argv: string[]): void => {
     if (!unknown.some(isHelp)) {
       return;
     }
+    refuseAttachedValues(argv, command);
     const flag = unknown.find(
       (token) => token.startsWith('-') && !isHelp(token),
     );
@@ -147,8 +183,8 @@ export const runCli = async (
     },
   };
   try {
-    refuseWhatCommanderAccepts(createProgram(context), [...argv]);
-    await createProgram(context).parseAsync([...argv], { from: 'user' });
+    refuseWhatCommanderAccepts(createProgram(context, argv), [...argv]);
+    await createProgram(context, argv).parseAsync([...argv], { from: 'user' });
     return exitCode;
   } catch (error) {
     if (error instanceof ToolError) {
