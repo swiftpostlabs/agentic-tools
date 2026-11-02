@@ -12,9 +12,9 @@ One folder per command group. Each has its own `AGENTS.md` saying what it holds.
 ## Rules
 
 - **A feature's command lives in `<name>.command.ts`** beside its logic. It exports
-  `create<Name>Command(context)`, which returns citty's `defineCommand` for the group and for each
-  runnable sub-command. Help text lives in the `meta` and `args` descriptions. The program
-  validates arguments before `run` is called, so `run` reads `args` as given.
+  `register<Name>Command(program, context)`, which adds the group and each runnable sub-command with
+  `.command()`, so they inherit the program's settings. Every option that takes a value uses `value`
+  or `collect` from `core/command.ts`, and each action validates its options with a zod schema.
 - **Commands stay thin.** They map parsed arguments onto the feature's own functions, which take
   plain options and the context, and hold no parsing of their own.
 - **Expected failures throw `ToolError`.** A command that reports several problems before failing

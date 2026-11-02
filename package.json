@@ -43,7 +43,7 @@
     "check:runtimes": "node scripts/checkRuntimeParity.mts"
   },
   "dependencies": {
-    "citty": "0.2.2",
+    "commander": "15.0.0",
     "consola": "3.4.2",
     "json5": "^2.2.3",
     "zod": "^4.6.7"

@@ -6,8 +6,7 @@ the visibility and `requires` rules it enforces are `ref-sp-agents-shareable-ski
 
 ## What it holds
 
-- `skills.command.ts`: the four sub-commands. Skill names are variadic positionals, read from
-  citty's `_`.
+- `skills.command.ts`: the four sub-commands. Skill names are a variadic positional.
 - `skills.ts`: the operations behind them, including the `requires` closure and alias redirects.
 - `manifest.ts`: reads each `SKILL.md`'s sharing metadata and the alias map.
 - `config.ts`: parses the `skills` section of `.agents/config.json` or a bare skills config.

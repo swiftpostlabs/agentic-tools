@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, test } from '@jest/globals';
-import { repeatedOption } from './command.ts';
 import { createCapturedOutput } from './output.ts';
 import { runCli } from './program.ts';
 import { makeTempDir, writeJson, writeSkill } from './testFixtures.ts';
@@ -39,7 +38,7 @@ describe('runCli', () => {
     expect((await run(['skills', 'nope'])).code).toBe(2);
     const bogus = await run(['skills', 'list', '--bogus']);
     expect(bogus.code).toBe(2);
-    expect(bogus.output.errors[0]).toContain("Unknown option '--bogus'");
+    expect(bogus.output.errors[0]).toContain("unknown option '--bogus'");
     expect((await run(['skills', 'link'])).code).toBe(2);
   });
 
@@ -151,6 +150,14 @@ describe('runCli argument validation', () => {
     ['-- before the group', ['--', 'skills', 'list'], 2],
     ['an attached short value', ['skills', 'list', '-f.'], 0],
     ['help before the group', ['--help', 'skills', 'list'], 0],
+    ['help before an unknown group', ['--help', 'nope'], 2],
+    [
+      'help beside an unexpected positional',
+      ['skills', 'list', 'extra', '--help'],
+      2,
+    ],
+    ['a help command', ['skills', 'help'], 2],
+    ['-- inside a group', ['skills', '--', 'list'], 2],
   ];
 
   test.each(cases)('%s', async (_label, argv, expected) => {
@@ -181,16 +188,5 @@ describe('runCli argument validation', () => {
     ]);
     expect(code).toBe(0);
     expect(output.lines[0]).toContain('Would link');
-  });
-});
-
-describe('repeatedOption', () => {
-  test('collects spaced and inline values', () => {
-    expect(
-      repeatedOption(
-        ['--exclude', 'a', '--exclude=b', '--', '--exclude', 'c'],
-        'exclude',
-      ),
-    ).toEqual(['a', 'b']);
   });
 });

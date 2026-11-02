@@ -1,54 +1,60 @@
-import { defineCommand } from 'citty';
-import type { CommandContext } from '../../core/command.ts';
+import type { Command } from 'commander';
+import { z } from 'zod';
+import { value, type CommandContext } from '../../core/command.ts';
+import { parseWith } from '../../core/json.ts';
 import { runPolicyCommand, type PolicyMode } from './sync.ts';
 
-const modeCommand = (
+const optionsSchema = z.object({ config: z.string().optional() });
+
+const addModeCommand = (
+  group: Command,
   context: CommandContext,
   mode: PolicyMode,
   description: string,
-) =>
-  defineCommand({
-    meta: { name: mode, description },
-    args: {
-      config: {
-        type: 'string',
-        alias: 'c',
-        description: 'Path to an agents config or policy file.',
-        valueHint: 'path',
-      },
-    },
-    run: ({ args }) => {
+) => {
+  group
+    .command(mode)
+    .description(description)
+    .option(
+      '-c, --config <path>',
+      'Path to an agents config or policy file.',
+      value,
+    )
+    .action((raw: unknown) => {
+      const { config } = parseWith(optionsSchema, raw);
       runPolicyCommand({
         mode,
-        config: args.config,
+        config,
         cwd: context.cwd,
         home: context.home,
       }).forEach(context.output.info);
-    },
-  });
+    });
+};
 
 /** `agentic-tools policy <sync|check|import-vscode>`. */
-export const createPolicyCommand = (context: CommandContext) =>
-  defineCommand({
-    meta: {
-      name: 'policy',
-      description: 'Sync or check generated agent policy files.',
-    },
-    subCommands: {
-      sync: modeCommand(
-        context,
-        'sync',
-        'Sync generated policy files from .agents/config.json.',
-      ),
-      check: modeCommand(
-        context,
-        'check',
-        'Report drift without rewriting generated policy files.',
-      ),
-      'import-vscode': modeCommand(
-        context,
-        'import-vscode',
-        'Import VS Code approvals into the policy file before syncing.',
-      ),
-    },
-  });
+export const registerPolicyCommand = (
+  program: Command,
+  context: CommandContext,
+) => {
+  const group = program
+    .command('policy')
+    .description('Sync or check generated agent policy files.');
+  addModeCommand(
+    group,
+    context,
+    'sync',
+    'Sync generated policy files from .agents/config.json.',
+  );
+  addModeCommand(
+    group,
+    context,
+    'check',
+    'Report drift without rewriting generated policy files.',
+  );
+  addModeCommand(
+    group,
+    context,
+    'import-vscode',
+    'Import VS Code approvals into the policy file before syncing.',
+  );
+};

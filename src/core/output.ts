@@ -11,7 +11,7 @@ export type Output = {
   error: (line: string) => void;
 };
 
-/** citty colours usage and its own messages without checking for a terminal; pipes and logs get plain text. */
+/** Pipes and logs get plain text, whatever a message carries. */
 const forStream = (stream: NodeJS.WriteStream, line: string): string =>
   stream.isTTY ? line : stripVTControlCharacters(line);
 

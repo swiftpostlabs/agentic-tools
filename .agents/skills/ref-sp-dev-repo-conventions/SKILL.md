@@ -18,8 +18,8 @@ scripts).
 
 ## Project context
 
-- Language: strict TypeScript on Node >= 24 (`engines`), managed with Yarn 1. Runtime dependencies are `citty`
-  (commands and help), `consola` (output), `zod` (validation at every config boundary), and `json5`
+- Language: strict TypeScript on Node >= 24 (`engines`), managed with Yarn 1. Runtime dependencies are `commander`
+  (commands and help), `consola` (diagnostics), `zod` (validation at every config boundary), and `json5`
   (config and settings files may carry comments). Ask before adding another.
 - One implementation. The npm package `agentic-tools` ships the compiled CLI in `dist/` plus
   `.agents/skills`. A Python shim under `python/` ships the same CLI to Python projects.
@@ -46,12 +46,12 @@ src/
   core/
     cli.mts             # run-only bin entry → dist/core/cli.mjs
     program.ts          # runCli: mounts each feature's command, --workspace, help, exit codes
-    command.ts          # CommandContext, toParseArgsOptions, repeatedOption
+    command.ts          # CommandContext, the value and collect option parsers
     <concern>.ts        # plumbing every feature uses: errors, output, paths, fs, json, frontmatter
     testFixtures.ts     # test fixtures; never built or shipped
   features/
     <feature>/          # policy, skills, plugin, export
-      <feature>.command.ts   # the citty command group
+      <feature>.command.ts   # the commander command group
       <concern>.ts           # the feature's logic, with <concern>.test.ts beside it
 ```
 
@@ -62,8 +62,8 @@ src/
 - Features take a `CommandContext` (`cwd`, `home`, `output`, `setExitCode`) instead of reading
   `process.cwd()`, `os.homedir()`, or writing to stdout, so tests stay hermetic.
 - Expected failures throw `ToolError` and exit 1, as does a group run without a command. Every
-  usage error exits 2: `program.ts` validates each level with strict `node:util` `parseArgs`, and
-  citty supplies only command definitions and usage text.
+  usage error exits 2: commander parses, with the `value` and `collect` option parsers and the checks
+  in `program.ts` keeping it strict.
 - File and folder names are camelCase and say what they hold. Don't create `utils/` or `helpers/`:
   name the `core/<concern>` or the feature.
 - No top-level `tests/` folder: `thing.ts` gets `thing.test.ts` beside it.

@@ -47,7 +47,7 @@ describe('console output', () => {
       environment,
     );
     expect(stdout).toBe('');
-    expect(stderr).toMatch(/^\[error\] Unknown option '--bogus'/);
+    expect(stderr).toMatch(/^\[error\] unknown option '--bogus'/);
     expect(status).toBe(2);
   });
 });

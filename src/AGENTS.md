@@ -10,9 +10,8 @@ never relax them.
   or intentional hoisting.
 - **Return types are inferred**, except on exported API contracts and where inference falls short
   (recursion, a deliberately narrow union, a value that would otherwise be `any`).
-- **No `any`, no unchecked casts.** Files, environment, and `JSON.parse` output are `unknown` until a
-  zod schema or a guard narrows them. The one sanctioned `any` is citty's command tree, walked in
-  `core/program.ts` and narrowed there at a single boundary.
+- **No `any`, no unchecked casts.** Files, environment, `JSON.parse` output, and commander's options are
+  `unknown` until a zod schema or a guard narrows them.
 - **Importing a module has no side effects.** Reading files, the environment, or `process.cwd()`
   happens inside a function the caller runs. Start-up work belongs only in `core/cli.mts`.
 - **`.ts` for anything imported, `.mts` only for a file that is only ever run.** Relative imports name
