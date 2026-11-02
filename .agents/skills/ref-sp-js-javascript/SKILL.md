@@ -68,8 +68,9 @@ export const statValueLabels = /** @type {const} */ ({
 
 ## Library recommendations
 
-- Prefer `citty` for Node-facing JavaScript CLIs that need argument parsing, subcommands, help text, and a maintainable command surface.
-- Prefer `consola` for Node-facing JavaScript CLI logging so success, warning, and error output stay consistent without hand-rolled terminal formatting.
+- For a CLI with subcommands, use `commander` for arguments and `consola` for diagnostics, configured as in `./references/cli-setup.md`. Their defaults are not enough: read it before adding either.
+- For a single-command script, `parseArgs` from `node:util` with `strict: true` is enough and adds no dependency.
+- Command results go to stdout and everything else to stderr. Never print results through a logger.
 - Prefer Jest for Node-facing JavaScript or TypeScript package tests when one runner should cover colocated `*.test.js` and `*.test.ts` files.
 - Keep CLI-specific dependencies narrow: if a local helper plus native APIs are enough, do not add a framework just because it is popular.
 
@@ -126,4 +127,5 @@ src/features/example-data-transform/
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
 - TypeScript JSDoc Reference: <https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html>
 - Read `./references/checklist.md` for a quick JavaScript and JSDoc review pass.
+- Read `./references/cli-setup.md` when building or changing a Node CLI: the `commander` and `consola` configuration, with the reasons.
 - Read `./references/config-templates.md` when you need the `web-pages` flat ESLint template for scripts, browser modules, and userscript slices.

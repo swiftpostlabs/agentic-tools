@@ -28,6 +28,7 @@ per-runtime `tsconfig` rules don't apply there. Language-neutral defaults are
   implementations, recursive or poorly inferred generics, deliberately narrow unions, and
   framework or library boundaries.
 - Yarn for installs and scripts in Node-based projects, unless the repo is Deno-owned.
+- For CLI libraries and their configuration, see `ref-sp-js-javascript`; they apply to TypeScript too.
 
 ## Type design
 
