@@ -56,6 +56,9 @@ import order changes behaviour, something works at import time.
 
 - Verb subcommands for multi-action tools; long flags with short aliases for the common ones;
   predictable pairs like `--from` / `--to`.
+- Two dashes for full names, one dash for one-letter aliases: `--help` and `-h`, never `-help` or
+  `--h`. One-letter flags may group (`-la`, `-gt out`). A letter that takes a value ends its group,
+  with the value as the next argument: parsers read `-to` as `-t` with the value `o`, so refuse that.
 - Safe defaults: default to the current directory when that is unsurprising, and make the riskiest
   behaviour opt-in.
 - `--dry-run` for destructive or high-impact actions; `--help` with real examples.

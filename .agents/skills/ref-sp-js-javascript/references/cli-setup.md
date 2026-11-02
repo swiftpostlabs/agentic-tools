@@ -4,6 +4,8 @@ A strict, predictable setup for a Node CLI with subcommands, safe for people and
 parse its output. Verified 2026-11-02 with commander 15.0.0 and consola 3.4.2 on Node 24 and Bun
 1.4.3. For plain JavaScript, drop the type annotations.
 
+Contents: Output, Arguments, What commander already refuses, Why not the alternatives.
+
 ## Output
 
 Command results go to stdout. Everything else, including errors and debug lines, goes to stderr, so
@@ -47,10 +49,40 @@ const collect = (raw: string, previous: string[] = []): string[] => [
   value(raw),
 ];
 
-const createProgram = () => {
+// Commander reads `-to` as `-t` with the value `o`. A letter that takes a value must end its group,
+// with the value as the next argument; `-fg` and `-gt out` stay valid.
+const refuseAttachedValues =
+  (argv: string[]) => (_program: Command, action: Command) => {
+    const options = [];
+    for (let command: Command | null = action; command; command = command.parent) {
+      options.push(...command.options);
+    }
+    const end = argv.indexOf('--');
+    for (const token of end === -1 ? argv : argv.slice(0, end)) {
+      if (!/^-[^-]./.test(token)) {
+        continue;
+      }
+      const letters = token.slice(1, -1);
+      const attached = options.find(
+        (option) =>
+          option.short !== undefined &&
+          letters.includes(option.short.slice(1)) &&
+          (option.required || option.optional),
+      );
+      if (attached !== undefined) {
+        action.error(
+          `error: '${token}': ${attached.short} takes a value, so pass it separately or use ${attached.long}=value.`,
+          { exitCode: 2, code: 'attachedValue' },
+        );
+      }
+    }
+  };
+
+const createProgram = (argv: string[]) => {
   const program = new Command('my-tool')
     .exitOverride() // throw instead of exiting, so the entry point sets the code
     .enablePositionalOptions() // program options only before the subcommand
+    .hook('preAction', refuseAttachedValues(argv))
     .option('--debug', 'show debug output');
   program
     .command('copy <name>')
@@ -63,10 +95,10 @@ const createProgram = () => {
   return program;
 };
 
-/** 0 for success and help, 2 for a usage error; commander has already printed the message. */
+/** 0 for success and help, 2 for a usage error; commander prints its own messages. */
 export const run = async (argv: string[]): Promise<number> => {
   try {
-    await createProgram().parseAsync(argv, { from: 'user' });
+    await createProgram(argv).parseAsync(argv, { from: 'user' });
     return 0;
   } catch (error) {
     if (error instanceof CommanderError) {
@@ -83,15 +115,26 @@ export const run = async (argv: string[]): Promise<number> => {
   repeated option keeps only the last value.
 - Leave `value` off an option that legitimately takes values starting with `-`, such as negative
   numbers. It also refuses the `--to=--x` form. `-` alone stays allowed, for stdin or stdout.
+- Define every option as `-x, --full-name` or `--full-name`. Commander refuses `-to` as a definition
+  but accepts `--t`, so a one-letter long name is yours to avoid.
+- `refuseAttachedValues` keeps standard grouping (`-fg`, `-gt out`) and refuses only a value-taking
+  letter with something after it (`-to`, `-tout`, `-tg`). Attached values are legal in POSIX and
+  common in tools like `gcc -lm`, but here `-to` is far more likely a typo for `--to`. A negative
+  number needs `--count=-10` on an option without `value`, or `--` before a positional.
 - Treat `options` as `unknown` and validate it with zod, or use the `@commander-js/extra-typings`
   companion package for inferred types. Plain commander types options loosely.
 - Handle an expected runtime failure inside the action: log it and set exit code 1.
 
+For a single-command script on `parseArgs`, pass `tokens: true` and refuse any token with
+`kind === 'option'`, `inlineValue === true`, and a `rawName` not starting with `--`. Its error for an
+unknown letter inside a group differs between runtimes (`-x` on Node, `x` on Bun); the failure itself
+does not.
+
 ## What commander already refuses
 
-No configuration needed: unknown options (with a spelling suggestion), extra positionals, a missing
-required positional, an option with no value, `=value` on a boolean option, and `--no-x` unless
-`--no-x` is declared.
+No configuration needed: unknown options (with a spelling suggestion), including `-help` and `--h`,
+extra positionals, a missing required positional, an option with no value, `=value` on a boolean
+option, and `--no-x` unless `--no-x` is declared. `-h, --help` is built in.
 
 ## Why not the alternatives
 

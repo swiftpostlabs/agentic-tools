@@ -69,7 +69,7 @@ export const statValueLabels = /** @type {const} */ ({
 ## Library recommendations
 
 - For a CLI with subcommands, use `commander` for arguments and `consola` for diagnostics, configured as in `./references/cli-setup.md`. Their defaults are not enough: read it before adding either.
-- For a single-command script, `parseArgs` from `node:util` with `strict: true` is enough and adds no dependency.
+- For a single-command script, `parseArgs` from `node:util` with `strict: true` is enough and adds no dependency. It reads `-to` as `-t o`, so refuse attached values as that reference shows.
 - Command results go to stdout and everything else to stderr. Never print results through a logger.
 - Prefer Jest for Node-facing JavaScript or TypeScript package tests when one runner should cover colocated `*.test.js` and `*.test.ts` files.
 - Keep CLI-specific dependencies narrow: if a local helper plus native APIs are enough, do not add a framework just because it is popular.
