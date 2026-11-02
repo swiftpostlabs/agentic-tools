@@ -18,7 +18,9 @@ The front controller, plus what every feature shares. Nothing here holds a featu
   `toParseArgsOptions` (a citty args definition as strict `parseArgs` options; one-letter aliases
   only), and `repeatedOption` for repeatable flags, whose `args` value holds only the last one.
 - `errors.ts`: `ToolError`, an expected failure the CLI reports by message alone.
-- `output.ts`: the injectable `Output`, backed by consola, plus a capturing one for tests.
+- `output.ts`: the injectable `Output`, plus a capturing one for tests. `info` is a command's result,
+  written straight to stdout; `warn` and `error` are diagnostics, written to stderr through one
+  explicitly configured consola, so the environment cannot change or drop a line.
 - `paths.ts`, `fs.ts`, `json.ts`, `frontmatter.ts`: workspace locations, filesystem checks, JSON
   and zod helpers (`parseWith`), and `SKILL.md` frontmatter parsing.
 - `testFixtures.ts`: temp directories and skill fixtures for tests. Excluded from `dist/` and the

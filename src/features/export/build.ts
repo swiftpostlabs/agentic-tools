@@ -99,7 +99,7 @@ const reportPlan = (plan: ExportPlan, output: Output): void => {
     );
   }
   for (const notice of plan.notices) {
-    output.info(`  note: ${notice}`);
+    output.warn(notice);
   }
 };
 
@@ -178,13 +178,13 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
     destinationLabel,
   );
   for (const placeholder of Object.keys(injections).sort()) {
-    output.info(
+    output.warn(
       `Projected the canonical block for ${placeholder} verbatim from its skill.`,
     );
   }
   // The Gem instruction field's limit is undocumented, so report the size rather than let it be
   // discovered on paste.
-  output.info(
+  output.warn(
     `Instructions are ${formatCount(Array.from(renderInstructions(plan, template, injections)).length)} characters. The Gem ` +
       "instruction field's limit is undocumented — if it rejects them, shorten the template rather than the routing block.",
   );

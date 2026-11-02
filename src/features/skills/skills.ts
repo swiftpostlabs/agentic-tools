@@ -383,12 +383,12 @@ export const runSkillsLink = (
   const requested = deduplicate(options.skills);
 
   describeAliasRedirects(requested, manifests, aliases).forEach(
-    context.output.info,
+    context.output.warn,
   );
   for (const manifest of resolveSelectedSkills(manifests, requested, aliases)) {
     const warning = legacyMetadataWarning(manifest);
     if (warning !== undefined) {
-      context.output.info(warning);
+      context.output.warn(warning);
     }
     context.output.info(linkSkillDirectory(manifest, destinationDir, options));
   }
@@ -527,7 +527,7 @@ export const runSkillsSync = (
     );
   }
   if (skippedBySource.length > 0) {
-    context.output.info(
+    context.output.warn(
       describeBySource(
         'Skipped skills that are not shippable to another repo (repo-local or otherwise non-exportable):',
         skippedBySource,
@@ -545,7 +545,7 @@ export const runSkillsSync = (
   for (const manifest of manifestsToLink) {
     const warning = legacyMetadataWarning(manifest);
     if (warning !== undefined) {
-      context.output.info(warning);
+      context.output.warn(warning);
     }
     context.output.info(linkSkillDirectory(manifest, destinationDir, options));
   }

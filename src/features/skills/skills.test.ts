@@ -277,7 +277,7 @@ describe('skills link and unlink', () => {
       dryRun: false,
     };
     runSkillsLink(ctx, { ...link, skills: ['ref-old-feature'], force: false });
-    expect(output.lines[0]).toBe(
+    expect(output.warnings[0]).toBe(
       "Note: skill 'ref-old-feature' was renamed to 'ref-feature'; update your configuration to use the new name.",
     );
     expect(
@@ -453,8 +453,10 @@ describe('skills sync', () => {
     });
 
     const skillsDir = path.join(consumer, '.agents', 'skills');
-    expect(output.lines).toEqual([
+    expect(output.warnings).toEqual([
       `Skipped skills that are not shippable to another repo (repo-local or otherwise non-exportable):\n- source '${root}': ref-local`,
+    ]);
+    expect(output.lines).toEqual([
       "Updated config: 'ref-old-feature' -> 'ref-feature'",
       `Removed dead link ${path.join(skillsDir, 'ref-dead')} -> ${path.join(consumer, 'missing')}`,
       `Linked ${path.join(skillsDir, 'ref-base')} -> ${path.join(root, '.agents', 'skills', 'ref-base')}`,
