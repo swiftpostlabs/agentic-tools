@@ -4,7 +4,8 @@ A strict, predictable setup for a Node CLI with subcommands, safe for people and
 parse its output. Verified 2026-11-02 with commander 15.0.0 and consola 3.4.2 on Node 24 and Bun
 1.4.3. For plain JavaScript, drop the type annotations.
 
-Contents: Output, Arguments, What commander already refuses, Why not the alternatives.
+Contents: Output, Arguments, What commander already refuses, What commander still accepts, Why not
+the alternatives.
 
 ## Output
 
@@ -95,14 +96,18 @@ const createProgram = (argv: string[]) => {
   return program;
 };
 
-/** 0 for success and help, 2 for a usage error; commander prints its own messages. */
+/** 0 for success and help, 1 for a group without a command, 2 for a usage error; commander prints its own messages. */
 export const run = async (argv: string[]): Promise<number> => {
   try {
     await createProgram(argv).parseAsync(argv, { from: 'user' });
     return 0;
   } catch (error) {
     if (error instanceof CommanderError) {
-      return error.exitCode === 0 ? 0 : 2;
+      if (error.exitCode === 0) {
+        return 0;
+      }
+      // A group without a command prints its help and fails, which is not a malformed line.
+      return error.code === 'commander.help' ? 1 : 2;
     }
     throw error;
   }
@@ -135,6 +140,22 @@ does not.
 No configuration needed: unknown options (with a spelling suggestion), including `-help` and `--h`,
 extra positionals, a missing required positional, an option with no value, `=value` on a boolean
 option, and `--no-x` unless `--no-x` is declared. `-h, --help` is built in.
+
+## What commander still accepts
+
+Checked on commander 15.0.0 on Node, 2026-11-04. Refuse these yourself if the CLI promises exit 2 for
+any usage error:
+
+- **Help beside a mistake.** `copy --bogus --help` and `copy extra --help` show help and exit 0,
+  because help is checked before unknown options and extra positionals. `preAction` hooks do not run
+  on help, so `refuseAttachedValues` misses `-to --help` too. Walk the levels before the real parse
+  with `command.parseOptions(tokens)`, on a separate program because it records option values. After
+  an unknown option, everything lands in `unknown`, including the group and command names, so
+  `--help copy` has `copy` there and must stay valid.
+- **A command after `--`.** `-- copy x` runs `copy` rather than refusing it. In the same walk, parse
+  only the tokens before `--`, and refuse when a group level has a `--` and no command before it.
+- **A `help` subcommand on a group.** `.helpCommand(false)` on the root does not reach groups, so
+  `group help` still prints help. Call it on each group as well.
 
 ## Why not the alternatives
 
