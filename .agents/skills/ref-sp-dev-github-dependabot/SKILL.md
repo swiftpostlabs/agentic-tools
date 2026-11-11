@@ -25,6 +25,9 @@ Dependabot PRs are `ref-sp-dev-github-actions-ci`; what a version range permits 
 
 ## Ecosystems and directories
 
+When deciding how to split ecosystems, group updates, or wire private registries, read
+`./references/config-patterns.md`.
+
 - Use `directory` for one manifest root and `directories` only when a multi-directory update block is truly warranted.
 - Keep directory values repo-root-relative.
 - For GitHub Actions, use `package-ecosystem: github-actions` with `directory: "/"`; Dependabot will scan workflow files under `.github/workflows` and root action definitions.
@@ -102,11 +105,12 @@ Enabling Dependabot auto-merge with `gh pr merge --auto` needs **three** indepen
 
 ## Before finishing
 
+- Run the quick Dependabot review pass in `./references/checklist.md`.
 - Auto-merge automation conditions on actor, repository, dependency metadata, update type, and
   dependency scope before approving or enabling auto-merge.
 - All three auto-merge prerequisites are in place (above).
 
-## References
+## Sources
 
 - Dependabot Options Reference: <https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference>
 - Configuring Dependabot Version Updates: <https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates>
@@ -114,5 +118,3 @@ Enabling Dependabot auto-merge with `gh pr merge --auto` needs **three** indepen
 - Automating Dependabot with GitHub Actions (the auto-merge workflow pattern): <https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions>
 - Automatically merging a pull request (auto-merge prerequisites and auto-disable rules): <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/automatically-merging-a-pull-request>
 - Managing auto-merge for pull requests (the "Allow auto-merge" repo setting): <https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/managing-auto-merge-for-pull-requests-in-your-repository>
-- Read `./references/checklist.md` for a quick Dependabot review pass.
-- Read `./references/config-patterns.md` when deciding how to split ecosystems, group updates, or wire private registries.

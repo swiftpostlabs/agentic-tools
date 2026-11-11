@@ -76,6 +76,9 @@ export const statValueLabels = /** @type {const} */ ({
 
 ## File extensions and linting
 
+For the flat ESLint template covering scripts, browser modules, and userscript slices, read
+`./references/config-templates.md`.
+
 - If modern Node or Deno can run the file directly, reconsider whether it should be TypeScript before defaulting to `.js`.
 - For no-build npm packages or Git-installed CLIs that run from `node_modules`, ship `.mjs` with
   JSDoc and `checkJs` type checking enabled: Node refuses type stripping under `node_modules`. That
@@ -119,13 +122,11 @@ src/features/example-data-transform/
 
 ## Before finishing
 
+- Run the quick JavaScript and JSDoc review pass in `./references/checklist.md`.
 - A Node or Deno file is JavaScript by deliberate choice, not inertia.
 
-## References
+## Sources
 
 - MDN JavaScript Guide: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide>
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
 - TypeScript JSDoc Reference: <https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html>
-- Read `./references/checklist.md` for a quick JavaScript and JSDoc review pass.
-- Read `./references/cli-setup.md` when building or changing a Node CLI: the `commander` and `consola` configuration, with the reasons.
-- Read `./references/config-templates.md` when you need the `web-pages` flat ESLint template for scripts, browser modules, and userscript slices.

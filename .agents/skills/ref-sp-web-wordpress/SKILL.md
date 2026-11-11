@@ -17,7 +17,9 @@ WordPress the way WordPress documents it: extend through hooks, never core, and 
 as hostile until it passes the three security gates. Most WordPress vulnerabilities are a missing
 capability check or an unescaped output, preventable with documented APIs. WordPress **SEO**
 (sitemaps, canonicals, headless + Next.js metadata) is `ref-sp-web-seo` and its
-`references/frameworks.md`; don't duplicate it here.
+`references/frameworks.md`; don't duplicate it here. Before asserting a specific function or
+standard, read `./references/sources.md`, which gives the handbook page for every claim here; both
+change over time.
 
 ## The security model — three gates, all three required
 
@@ -85,6 +87,9 @@ around means nobody downstream can tell whether it is safe.
 **Escape even data from your own database.** It was user input once.
 
 ## Database access
+
+The general principles behind `$wpdb->prepare()` and least-privilege access are
+`ref-sp-db-security`.
 
 Never concatenate input into SQL. Use `$wpdb->prepare()`:
 
@@ -162,12 +167,3 @@ Before shipping WordPress code, confirm:
 - Every SQL query with a variable in it goes through `$wpdb->prepare()`, placeholders unquoted.
 - No core or parent-theme file was modified.
 - Every filter callback returns a value.
-
-## References
-
-- `./references/sources.md` — provenance for every claim above, with the exact WordPress handbook page.
-  Read it before asserting a specific; the function set and the coding standards do change.
-- `ref-sp-web-seo` (its `references/frameworks.md`) — WordPress **SEO**: core sitemaps, the
-  archive/thin-content problem, and the headless canonical trap.
-- `ref-sp-db-security` — the general database-security principles behind
-  `$wpdb->prepare()` and least-privilege access.

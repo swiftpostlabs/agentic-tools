@@ -39,6 +39,9 @@ State plainly when a claim came from the docs versus when it is an assumption, p
 
 ## Defaults
 
+When the question turns from toolchain to screens, styling, lists, or performance, use
+`ref-sp-js-react-native`.
+
 - Prefer Expo for new React Native work; bare React Native is the escape hatch, not the start.
 - Prefer a **development build** over the prebuilt sandbox client beyond a first look.
 - Expo Router for new apps.
@@ -103,6 +106,9 @@ This is the single most common source of confusion; recognize it early.
 
 ## Builds, submissions, and updates
 
+When planning a release, choosing between an update and a build, or reasoning about runtime
+versions and rollout risk, read `./references/delivery.md`.
+
 - Build profiles are configuration. Keep development, preview, and production profiles distinct and
   explicit rather than overloading one.
 - **Over-the-air updates ship JavaScript, styling, images, and copy. They cannot ship native
@@ -141,18 +147,13 @@ This is the single most common source of confusion; recognize it early.
 
 ## Before finishing
 
+- Run the quick Expo review pass in `./references/checklist.md`.
 - Runtime version was bumped if native code changed.
 - Every version-specific claim came from the docs, and assumptions are labelled.
 
-## References
+## Sources
 
 - Expo documentation index for agents: <https://docs.expo.dev/llms.txt>
 - Any Expo docs page as markdown: append `.md` to the URL, for example
   <https://docs.expo.dev/workflow/continuous-native-generation.md>
 - React Native documentation index for agents: <https://reactnative.dev/llms.txt>
-- Read `./references/checklist.md` for a quick Expo review pass.
-- Read `./references/delivery.md` when planning a release, choosing between an update and a build,
-  or
-  reasoning about runtime versions and rollout risk.
-- Read `ref-sp-js-react-native` when the question turns from toolchain to
-  screens, styling, lists, or performance.

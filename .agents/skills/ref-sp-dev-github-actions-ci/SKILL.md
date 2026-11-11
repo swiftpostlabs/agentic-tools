@@ -36,6 +36,9 @@ Defaults for `.github/workflows/*.yml`. The Dependabot config that opens depende
 
 ## Permissions, tokens, and secrets
 
+When the workflow touches permissions, forks, self-hosted runners, or third-party actions, read
+`./references/security-and-structure.md`.
+
 - Set `permissions` explicitly instead of relying on broad defaults.
 - Prefer workflow-level `permissions: read-all` or a minimal explicit map, then elevate specific jobs only when needed.
 - Treat `GITHUB_TOKEN` as a real credential; even if an action can read `github.token` implicitly, it should still receive only the narrow permissions it needs.
@@ -87,14 +90,13 @@ Defaults for `.github/workflows/*.yml`. The Dependabot config that opens depende
 
 ## Before finishing
 
+- Run the quick workflow review pass in `./references/checklist.md`.
 - Any write step in a PR workflow (such as auto-merge) runs in its own `needs`-gated job with job-scoped write
   permissions, never in a job that runs untrusted PR code.
 - npm workflows state whether they publish directly, with provenance, or staged for 2FA approval.
 
-## References
+## Sources
 
 - GitHub Actions Workflow Syntax: <https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax>
 - GitHub `GITHUB_TOKEN` Guidance: <https://docs.github.com/en/actions/security-for-github-actions/security-guides/automatic-token-authentication>
 - GitHub Actions Secure Use Reference: <https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions>
-- Read `./references/checklist.md` for a quick workflow review pass.
-- Read `./references/security-and-structure.md` when the workflow touches permissions, forks, self-hosted runners, or third-party actions.
