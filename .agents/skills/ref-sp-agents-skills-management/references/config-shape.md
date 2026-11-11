@@ -35,7 +35,7 @@
 
 - Relative `from` values resolve from the destination repo root.
 - Absolute `from` values are used directly.
-- `package:<name>` values resolve by locating the installed package module and walking upward until a repo root with `.agents/skills` is found.
+- `package:<name>` values resolve to `node_modules/<name>` in the config's repo or any parent directory, then to the running `agentic-tools` package itself, which is how the Python shim finds its bundled skills. Other Python packages are not searched.
 - A configured skill name may appear only once across all sync sources.
 
 ## Practical use
