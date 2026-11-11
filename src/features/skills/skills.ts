@@ -184,11 +184,7 @@ const linkSkillDirectory = (
 ) => {
   const destination = path.join(destinationDir, manifest.name);
   const target = resolveLoose(manifest.directory);
-  if (options.dryRun) {
-    return `Would link ${destination} -> ${target}`;
-  }
-  fs.mkdirSync(destinationDir, { recursive: true });
-
+  // A dry run makes the same checks as a real one and stops before the first write.
   if (isDirectoryLink(destination)) {
     const existingTarget = resolveLinkTarget(destination);
     if (existingTarget === target) {
@@ -199,6 +195,9 @@ const linkSkillDirectory = (
         `Destination '${destination}' already points to '${existingTarget}'. Use --force to replace it.`,
       );
     }
+    if (options.dryRun) {
+      return `Would replace ${destination} -> ${target}`;
+    }
     removeDirectoryLink(destination);
   } else if (exists(destination)) {
     throw new ToolError(
@@ -206,6 +205,10 @@ const linkSkillDirectory = (
     );
   }
 
+  if (options.dryRun) {
+    return `Would link ${destination} -> ${target}`;
+  }
+  fs.mkdirSync(destinationDir, { recursive: true });
   createDirectoryLink(destination, target);
   return `Linked ${destination} -> ${target}`;
 };

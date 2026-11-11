@@ -239,6 +239,27 @@ describe('skills link and unlink', () => {
     expect(fs.existsSync(path.join(consumer, '.agents'))).toBe(false);
   });
 
+  test('dry run reports existing links as a real run would', () => {
+    const { root } = sourceRepo();
+    const consumer = makeTempDir();
+    const link = (dryRun: boolean) => {
+      const { context: ctx, output } = context(consumer);
+      runSkillsLink(ctx, {
+        skills: ['ref-base'],
+        source: root,
+        destination: undefined,
+        useGlobal: false,
+        dryRun,
+        force: false,
+      });
+      return output.lines;
+    };
+    link(false);
+    expect(link(true)).toEqual([
+      `Already linked ${path.join(consumer, '.agents', 'skills', 'ref-base')} -> ${path.join(root, '.agents', 'skills', 'ref-base')}`,
+    ]);
+  });
+
   test('--global targets ~/.agents/skills and refuses --to', () => {
     const { root } = sourceRepo();
     const home = makeTempDir();
