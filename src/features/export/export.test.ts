@@ -458,6 +458,25 @@ describe('export build command', () => {
     ).toMatch(/^Be direct\.\n\n\*\*`dev\.md`\*\*/);
   });
 
+  test('warns about an unknown --exclude and files a previous run left behind', () => {
+    const root = makeTempDir();
+    writeSkill(path.join(root, '.agents', 'skills'), 'ref-sp-dev-x', {
+      domain: 'dev',
+      visibility: 'public',
+    });
+    writeFile(path.join(root, 'out', 'old.md'), 'stale');
+    const run = options(root, { exclude: ['ref-typo'] });
+    expect(runExportBuild(run)).toBe(0);
+    const warnings = (run.output as ReturnType<typeof createCapturedOutput>)
+      .warnings;
+    expect(warnings).toContain(
+      "--exclude 'ref-typo' matches no skill under .agents/skills.",
+    );
+    expect(warnings.at(-1)).toBe(
+      'out also holds files this run did not write; remove them before uploading: old.md',
+    );
+  });
+
   test('returns 2 for a bad request and 1 when nothing matches', () => {
     const root = makeTempDir();
     expect(runExportBuild(options(root, { target: 'chatgpt' }))).toBe(2);

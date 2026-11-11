@@ -144,6 +144,16 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
     return 1;
   }
 
+  // A misspelled --exclude would otherwise ship the skill it meant to drop.
+  const known = new Set(skills.map((skill) => skill.name));
+  for (const name of options.exclude) {
+    if (!known.has(name)) {
+      output.warn(
+        `--exclude '${name}' matches no skill under ${options.skillsRoot}.`,
+      );
+    }
+  }
+
   const plan = buildPlan(skills, selection, geminiGemLimits, options.strict);
   if (plan.bundles.length === 0) {
     output.error('The selection matched no skills.');
@@ -189,5 +199,16 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
       "instruction field's limit is undocumented — if it rejects them, shorten the template rather than the routing block.",
   );
   output.info(`Wrote ${written.length} files to ${destinationLabel}`);
+  // Never deleted: the folder may hold the user's own files. Uploading them would ship stale bundles.
+  const writtenNames = new Set(written.map((file) => path.basename(file)));
+  const stale = fs
+    .readdirSync(path.resolve(options.cwd, destinationLabel))
+    .filter((name) => name.endsWith('.md') && !writtenNames.has(name))
+    .sort();
+  if (stale.length > 0) {
+    output.warn(
+      `${destinationLabel} also holds files this run did not write; remove them before uploading: ${stale.join(', ')}`,
+    );
+  }
   return 0;
 };
