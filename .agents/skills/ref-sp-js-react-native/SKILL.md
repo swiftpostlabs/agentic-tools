@@ -40,6 +40,9 @@ actively harmful — it produces migration steps for migrations that already fin
 
 ## Primitives, not elements
 
+Before choosing a native dependency for styling, lists, navigation, storage, or animation, read
+`./references/library-recommendations.md`.
+
 For the fuller explanation of primitives, styling, threading, and list behaviour behind the rules
 below, read `./references/platform-model.md`.
 
@@ -68,6 +71,9 @@ This is where web React guidance inverts, and the inversion is easy to miss.
   `ref-sp-ux-accessibility`. Do not restate them here or guess them.
 
 ## Styling and layout
+
+When building or reviewing the shared primitive layer, or before writing raw flex styles at a
+call site, read `./references/component-primitives.md`.
 
 - Write styles in JavaScript, colocated with the component that uses them, rather than splitting them
   into a detached stylesheet module. `StyleSheet.create` is a type-checking and readability tool, not
@@ -119,9 +125,6 @@ This is where web React guidance inverts, and the inversion is easy to miss.
   test; a debug build on a high-end simulator will hide the problem you are looking for.
 
 ## Navigation
-
-Before choosing a native dependency for styling, lists, navigation, storage, or animation, read
-`./references/library-recommendations.md`.
 
 - Navigation state is application state that lives outside your components, not a URL the browser
   owns. Route params are serialized — put identifiers in params and fetch the entity on the target
