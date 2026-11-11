@@ -375,6 +375,28 @@ describe('skills sync', () => {
     return consumer;
   };
 
+  test('a conflicting link fails the sync before anything changes', () => {
+    const { root } = sourceRepo();
+    const consumer = consumerWith([{ from: root, skills: ['ref-base'] }]);
+    const skillsDir = path.join(consumer, '.agents', 'skills');
+    fs.mkdirSync(path.join(skillsDir, 'ref-base'), { recursive: true });
+    fs.symlinkSync(
+      path.join(consumer, 'missing'),
+      path.join(skillsDir, 'ref-dead'),
+    );
+    const { context: ctx } = context(makeTempDir());
+    expect(() => {
+      runSkillsSync(ctx, {
+        destination: consumer,
+        useGlobal: false,
+        config: undefined,
+        dryRun: false,
+        force: true,
+      });
+    }).toThrow('is not a symlink');
+    expect(fs.readdirSync(skillsDir).sort()).toEqual(['ref-base', 'ref-dead']);
+  });
+
   test("resolves relative sources from the config's repo, not the shell's directory", () => {
     const parent = makeTempDir();
     const { root } = sourceRepo();

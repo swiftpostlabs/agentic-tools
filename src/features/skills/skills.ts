@@ -538,6 +538,11 @@ export const runSkillsSync = (
     );
   }
 
+  // Refuse a conflicting link before the first write, so a failed sync changes nothing.
+  for (const manifest of manifestsToLink) {
+    linkSkillDirectory(manifest, destinationDir, { ...options, dryRun: true });
+  }
+
   const messages = [
     ...applyConfigAliasRenames(configPath, renamesBySource, options.dryRun),
     ...cleanupDeadLinks(destinationDir, options.dryRun),
