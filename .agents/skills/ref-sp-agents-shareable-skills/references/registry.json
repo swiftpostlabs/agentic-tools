@@ -73,6 +73,10 @@
     "baas": {
       "description": "Backend-as-a-Service platforms you build on: Supabase, Firebase, Appwrite.",
       "belongsWhen": "Is this about a specific managed backend platform, rather than a database concept, an operational activity, or a language?"
+    },
+    "edu": {
+      "description": "Teaching and learning: reviewing learners' work, writing feedback for learners, course and assignment design.",
+      "belongsWhen": "Is this about teaching or assessing learners, rather than managing a team's work (biz) or the subject being taught?"
     }
   },
   "reservedTokens": [
