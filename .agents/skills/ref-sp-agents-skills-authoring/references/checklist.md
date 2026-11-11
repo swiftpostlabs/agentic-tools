@@ -15,7 +15,8 @@ Use when creating, reviewing, refactoring, or consolidating skills.
 - Gotchas in `SKILL.md`.
 - No plans, status, or history; dated sources are fine.
 - Examples use real repo surfaces or obviously synthetic names; nothing copied from another repo.
-- `SKILL.md` under about 200 lines; references one level deep, each with a load condition.
+- `SKILL.md` under about 200 lines; references one level deep, each named
+  with its load condition in the step or section that needs it, not only in a closing list.
 - Same-skill links are `./...`; other skills by name, or `$SKILLS_FOLDER/<name>/...` for a hard
   dependency's files.
 - `metadata` is a flat string map; sharing fields follow the sharing spec.

@@ -53,7 +53,8 @@ When triggering is unreliable, test it rather than adding keywords: `./reference
 
 ## Body shape
 
-Write for an agent that is already smart, in plain prose a person can follow.
+Write for an agent that is already smart, in plain prose a person can follow. Start a new skill
+from `./references/template.md`.
 
 ```markdown
 # Title
@@ -80,6 +81,11 @@ Rules as short bullets or steps, each with its reason when the reason is not obv
 - Keep `SKILL.md` under about 200 lines; the spec's ceiling is 500 lines or 5,000 tokens. Move
   detail to `references/` with a load condition ("read the API errors reference when a call
   returns non-200").
+- **Put each load condition where the agent needs it:** in the step or section the reference
+  serves ("Before step 2, read the API errors reference"). An agent works through the step in
+  front of it and does not read a list at the end, so a reference named only in a closing
+  "References" list gets skipped. A skill without steps can carry a short "when doing X, read Y"
+  lookup near the top. A closing list is optional and only an index.
 - For a reference over 100 lines, start it with a short contents list.
 
 ## What to write
@@ -127,20 +133,14 @@ Rules as short bullets or steps, each with its reason when the reason is not obv
 
 Test the two things that can fail: does the description trigger on realistic prompts, and does the
 skill make the output better than no skill or the previous version? Read
-`./references/evaluation-guide.md` before building evals; starter files are in `./assets/`.
+`./references/evaluation-guide.md` before building evals; starter files are in `./assets/`. To
+summarise `grading.json` files from eval runs, run `./scripts/aggregate-eval-results.mts`.
 
 ## Before finishing
 
 - `node ./scripts/validate-skill.mts <skill-dir>` passes (in this repo, `yarn validate`, which also
   runs the sharing-spec check).
-- Every reference file has a load condition, and every referenced file exists.
+- Every reference file is named, with its load condition, in the step or section that needs it,
+  not only in a closing list; every referenced file exists.
 - Run `./references/checklist.md` for a review or consolidation pass.
 
-## References
-
-- `./references/template.md`: starting point for a new skill.
-- `./references/checklist.md`: review, refactor, and consolidation checklist.
-- `./references/description-guide.md`: writing and trigger-testing descriptions.
-- `./references/evaluation-guide.md`: trigger and output evals, baselines, grading.
-- `./references/scripts-and-resources.md`: what goes in `references/`, `scripts/`, `assets/`, `evals/`.
-- `./scripts/aggregate-eval-results.mts`: summarise `grading.json` files from eval runs.

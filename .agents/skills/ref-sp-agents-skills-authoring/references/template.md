@@ -25,7 +25,7 @@ One to three sentences on what this skill is for. For <related work>, use `<othe
 
 ## <Second task>
 
-1. Inspect <input>.
+1. Inspect <input>. First read `./references/example.md`, which <what it holds>.
 2. Run `./scripts/example.py --input data.json`.
 3. If it reports errors, fix them and run it again.
 
@@ -42,10 +42,6 @@ One to three sentences on what this skill is for. For <related work>, use `<othe
 ## Before finishing
 
 - <A check that is easy to miss.>
-
-## References
-
-- Read `./references/example.md` when <condition>.
 ~~~
 
 Before keeping it:
