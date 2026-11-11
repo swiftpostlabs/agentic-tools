@@ -42,5 +42,6 @@ describe('buildRows', () => {
     });
     expect(old).toMatchObject({ live: false, copy: 'older-copy' });
     expect(old?.resume).toContain("cd '/home/me/my-project'");
+    expect(old?.resume).toContain("--resume 'aaaaaaaa-old' ");
   });
 });

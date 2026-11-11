@@ -213,7 +213,7 @@ export const buildRows = (
         copy: 'keep',
         resume:
           cwd === '' ? '' : (
-            `cd ${shellQuote(cwd)} && claude --bg --remote-control --resume ${sessionId} </dev/null`
+            `cd ${shellQuote(cwd)} && claude --bg --remote-control --resume ${shellQuote(sessionId)} </dev/null`
           ),
       });
     }
