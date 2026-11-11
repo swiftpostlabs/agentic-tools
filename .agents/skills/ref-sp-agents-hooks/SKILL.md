@@ -54,23 +54,23 @@ and `Interrupt`; hooks on those won't port.
 ## Writing one
 
 1. Pick the moment and whether you observe, add context, or block.
-2. Resolve the event name for each target platform.
+2. Resolve the event name for each target platform: read `./references/platform-matrix.md` first.
 3. Use a `command` hook unless the platform supports another type (`http`, `prompt`, `agent`,
    `mcp_tool`) and the job needs it. Start from `./assets/portable-hook.sh`: read stdin, branch,
-   exit with a code and JSON.
+   exit with a code and JSON. For a worked `PreToolUse` gate, see `./assets/git-identity-guard.sh`,
+   which blocks `git commit` when the author identity doesn't match the account `origin` points
+   at; edit its rules table.
 4. Scope it with a matcher, and **also re-check inside the script**: VS Code ignores matchers, so
    every configured hook fires there.
 5. Put the config in each platform's file. For each target, read its reference first:
    `./references/platforms/claude-code-hooks.md` (`.claude/settings.json`, hook types, decision
-   fields), `./references/platforms/codex-hooks.md` (`.codex/hooks.json` or `config.toml`),
+   fields), `./references/platforms/codex-hooks.md` (`.codex/hooks.json` or `config.toml`, extra events),
    `./references/platforms/copilot-cli-hooks.md` (`.github/hooks/*.json`, camel or Pascal case),
    `./references/platforms/vscode-hooks.md` (ignored matchers, OS-specific commands), or
-   `./references/platforms/gemini-cli-hooks.md` (`.gemini/settings.json`).
+   `./references/platforms/gemini-cli-hooks.md` (`.gemini/settings.json`, its own event vocabulary).
 6. Dry-run: pipe a sample payload into the script and check exit code and stdout.
 7. Trigger the real event and confirm it allows or denies as intended.
-8. Before committing, run the review pass in `./references/checklist.md`. For a worked
-   `PreToolUse` gate, see `./assets/git-identity-guard.sh`, which blocks `git commit` when the
-   author identity doesn't match the account `origin` points at; edit its rules table.
+8. Before committing, run the review pass in `./references/checklist.md`.
 
 ## Making it portable
 
