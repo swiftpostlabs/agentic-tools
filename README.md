@@ -87,7 +87,8 @@ uv run agentic-tools skills sync
   stored name in your config and prints a note.
 - Only `public` and `organization` skills travel. A requested `repo-local` skill is reported and
   skipped.
-- From a subdirectory, add `--workspace <repo-root>`.
+- From a subdirectory, put `--workspace <repo-root>` before the command group:
+  `agentic-tools --workspace .. skills sync`.
 
 `skills list`, `skills link <name>...` (with `--global` for `~/.agents/skills`), and
 `skills unlink <name>...` cover one-off use. Every command takes `--help`.

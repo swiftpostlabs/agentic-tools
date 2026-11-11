@@ -20,7 +20,7 @@ release flow, or the Python shim.
 ## Versions and release
 
 - `package.json` and `VERSION` carry the version. `scripts/checkVersionDrift.mts` (in `yarn lint`)
-  fails when they disagree, and also checks a static `pyproject.toml` version if one is ever added.
+  fails when they disagree, and also checks a static `version` in `pyproject.toml`'s `[project]` table when it has one.
 - `yarn release` runs `commit-and-tag-version`: it picks the bump from conventional commits (or
   `--release-as patch|minor|major`), updates `package.json` and `VERSION`, regenerates
   `.claude-plugin/` with `plugin sync`, prepends `CHANGELOG.md`, commits, and tags `vX.Y.Z`.

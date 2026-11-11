@@ -26,8 +26,8 @@
 
 - `policy.services` controls which vendor outputs are generated or cleaned.
 - `policy.protectedFiles` drive Claude and Copilot deterrents and Gemini exclusions.
-- `policy.excludedFiles` currently affect Gemini's generated exclusion file.
-- `policy.terminalAutoApprove` and `policy.editAutoApprove` currently feed managed VS Code settings.
+- `policy.excludedFiles` affect Gemini's generated exclusion file.
+- `policy.terminalAutoApprove` and `policy.editAutoApprove` feed managed VS Code settings.
 
 ## Compatibility
 
