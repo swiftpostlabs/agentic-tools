@@ -83,6 +83,8 @@ export type StatValueLabel = Values<typeof statValueLabels>;
 
 ## File and config conventions
 
+For ready-to-adapt `tsconfig` templates, read `./references/config-templates.md`.
+
 - Use `.ts` for package code, browser-oriented modules, and most feature files.
 - Use `.mts` for repo scripts or Node-run ESM entrypoints when the runtime or surrounding repo conventions rely on explicit module extensions.
 - Use `.d.ts` for ambient declarations or globals that support the main code, such as userscript global definitions.
@@ -129,12 +131,11 @@ tsconfig.json
 
 ## Before finishing
 
+- Run the quick strict-TypeScript review pass in `./references/checklist.md`.
 - No new `any` or unchecked cast without a strong reason.
 - The types read clearly to someone who didn't write them.
 
-## References
+## Sources
 
 - TypeScript Handbook: <https://www.typescriptlang.org/docs/>
 - TSConfig Reference: <https://www.typescriptlang.org/tsconfig>
-- Read `./references/checklist.md` for a quick strict-TypeScript review pass.
-- Read `./references/config-templates.md` when you need ready-to-adapt `tsconfig` templates derived from the `web-pages` repository.

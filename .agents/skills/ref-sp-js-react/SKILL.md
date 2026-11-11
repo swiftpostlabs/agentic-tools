@@ -53,6 +53,9 @@ but there is no DOM, MUI doesn't run, and styling and lists work differently; Ex
 
 ## Library recommendations
 
+Before choosing a React dependency or judging whether one is justified, read
+`./references/library-recommendations.md`.
+
 - Keep library additions rare and intentional.
 - For component-heavy React apps that need a ready-made system, prefer MUI with `@emotion/react` and `@emotion/styled`; if that stack needs icons, prefer `@mui/icons-material`.
 - Prefer `zod` for runtime schema validation at form, URL, persistence, and network boundaries.
@@ -62,15 +65,14 @@ but there is no DOM, MUI doesn't run, and styling and lists work differently; Ex
 
 ## Before finishing
 
+- Run the quick React review pass in `./references/checklist.md`.
 - Every piece of state has a clear owner (local, derived, or async server state), and input crossing a
   boundary is validated.
 
-## References
+## Sources
 
 - React Documentation: <https://react.dev/>
 - MUI Documentation: <https://mui.com/material-ui/getting-started/>
 - TanStack Query Documentation: <https://tanstack.com/query/latest/docs>
 - Zod Documentation: <https://zod.dev/>
 - date-fns Documentation: <https://date-fns.org/>
-- Read `./references/checklist.md` for a quick React review pass.
-- Read `./references/library-recommendations.md` when choosing React dependencies or checking whether a library addition is justified.

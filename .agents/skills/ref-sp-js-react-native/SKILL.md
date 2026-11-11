@@ -40,6 +40,9 @@ actively harmful — it produces migration steps for migrations that already fin
 
 ## Primitives, not elements
 
+For the fuller explanation of primitives, styling, threading, and list behaviour behind the rules
+below, read `./references/platform-model.md`.
+
 - There is no DOM. `View` is the layout container, `Text` is the **only** thing that renders text,
   `Image` renders images, and `Pressable` handles touch. Text outside a `Text` element does not
   render and often throws.
@@ -117,6 +120,9 @@ This is where web React guidance inverts, and the inversion is easy to miss.
 
 ## Navigation
 
+Before choosing a native dependency for styling, lists, navigation, storage, or animation, read
+`./references/library-recommendations.md`.
+
 - Navigation state is application state that lives outside your components, not a URL the browser
   owns. Route params are serialized — put identifiers in params and fetch the entity on the target
   screen rather than passing objects or functions through.
@@ -168,21 +174,15 @@ This is where web React guidance inverts, and the inversion is easy to miss.
 
 ## Before finishing
 
+- Run the quick React Native review pass in `./references/checklist.md`.
 - Checked on both iOS and Android, including safe areas, keyboard, and back navigation: they
   diverge, and one-platform testing hides half the bugs.
 - Every interactive element declares an accessibility role and label.
 - Version-specific claims came from current docs.
 
-## References
+## Sources
 
 - React Native documentation index for agents: <https://reactnative.dev/llms.txt>
 - React Native architecture and threading model: <https://reactnative.dev/architecture/threading-model>
 - Expo documentation index for agents: <https://docs.expo.dev/llms.txt> (append `.md` to any page URL
   for markdown)
-- Read `./references/platform-model.md` when you need the fuller explanation of primitives, styling,
-  threading, and list behaviour behind the rules above.
-- Read `./references/component-primitives.md` when building or reviewing the shared primitive layer,
-  or when you are about to write raw flex styles at a call site.
-- Read `./references/library-recommendations.md` when choosing native dependencies, especially
-  styling, lists, navigation, storage, or animation.
-- Read `./references/checklist.md` for a quick React Native review pass.

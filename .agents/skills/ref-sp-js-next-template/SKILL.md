@@ -25,6 +25,8 @@ stay a no-build browser tool, use `ref-sp-js-web-standalone-template` instead.
 
 ## App baseline
 
+When choosing the app baseline and top-level structure, read `./references/app-stack.md`.
+
 - Keep the initial app baseline minimal instead of front-loading many optional libraries.
 
 ## Top-level structure
@@ -37,9 +39,5 @@ stay a no-build browser tool, use `ref-sp-js-web-standalone-template` instead.
 
 ## Before finishing
 
+- Run the quick whole-app review pass in `./references/checklist.md`.
 - The choice of a full app over a standalone tool is justified, not habit.
-
-## References
-
-- Read `./references/checklist.md` for a quick whole-app review pass.
-- Read `./references/app-stack.md` when choosing the app baseline and top-level structure.

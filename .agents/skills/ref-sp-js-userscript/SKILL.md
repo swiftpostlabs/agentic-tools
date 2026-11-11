@@ -44,6 +44,9 @@ Userscripts running on pages you don't control. Browser apps you own are
 
 ## File and type support
 
+For naming, ambient global, or config examples for `.user.js` and `.user.ts`, read
+`./references/types-and-config.md`.
+
 - Name files `.user.js`, or `.user.ts` only when the repo has a deliberate TypeScript or build flow
   for userscripts, so the role is obvious in search and tooling.
 - If TypeScript or strict linting checks the userscript, keep a small `userscript-globals.d.ts` or similar ambient declaration file beside it rather than scattering missing-global suppressions.
@@ -51,11 +54,10 @@ Userscripts running on pages you don't control. Browser apps you own are
 
 ## Before finishing
 
+- Run the quick userscript review pass in `./references/checklist.md`.
 - Re-running the script doesn't duplicate injected UI or listeners.
 
-## References
+## Sources
 
 - Tampermonkey Documentation: <https://www.tampermonkey.net/documentation.php>
 - Violentmonkey Metadata Block: <https://violentmonkey.github.io/api/metadata-block/>
-- Read `./references/checklist.md` for a quick userscript review pass.
-- Read `./references/types-and-config.md` when you need naming, ambient global, or config examples for `.user.js` and `.user.ts` workflows.
