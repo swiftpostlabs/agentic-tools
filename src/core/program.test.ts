@@ -79,6 +79,31 @@ describe('runCli', () => {
     );
   });
 
+  test('reports a failed file call by its message, as an expected failure', async () => {
+    const workspace = makeTempDir();
+    writeSkill(path.join(workspace, '.agents', 'skills'), 'ref-a', {
+      domain: 'dev',
+      visibility: 'public',
+    });
+    const { code, output } = await run(
+      ['export', 'build', '--instructions', 'missing.md'],
+      workspace,
+    );
+    expect(code).toBe(1);
+    expect(output.errors.at(-1)).toMatch(/^ENOENT: no such file or directory/);
+  });
+
+  test('shows help after a workspace named like a command', async () => {
+    const workspace = makeTempDir();
+    fs.mkdirSync(path.join(workspace, 'skills'));
+    const { code, output } = await run(
+      ['-w', 'skills', 'skills', 'list', '--help'],
+      workspace,
+    );
+    expect(code).toBe(0);
+    expect(output.lines[0]).toContain('agentic-tools skills list');
+  });
+
   test('a missing workspace is an error', async () => {
     expect(
       (await run(['-w', '/definitely/missing', 'skills', 'list'])).code,

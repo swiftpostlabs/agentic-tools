@@ -38,8 +38,11 @@ export const removeDirectoryLink = (link: string): void => {
   }
   try {
     fs.unlinkSync(link);
-  } catch {
+  } catch (error) {
     // Windows removes directory symlinks and junctions with rmdir, not unlink.
+    if (process.platform !== 'win32') {
+      throw error;
+    }
     fs.rmdirSync(link);
   }
 };

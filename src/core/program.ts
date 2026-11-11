@@ -101,6 +101,22 @@ const createProgram = (context: CommandContext, argv: readonly string[]) => {
   return program;
 };
 
+/**
+ * A failed file or process call, such as ENOENT or EACCES, reported by its message alone. Not
+ * `instanceof Error`: fs errors can come from another realm (Jest's VM modules).
+ */
+const isSystemError = (
+  error: unknown,
+): error is { message: string; code: string; syscall: string } =>
+  typeof error === 'object' &&
+  error !== null &&
+  'message' in error &&
+  typeof error.message === 'string' &&
+  'code' in error &&
+  typeof error.code === 'string' &&
+  'syscall' in error &&
+  typeof error.syscall === 'string';
+
 const isHelp = (token: string) => token === '-h' || token === '--help';
 
 /**
@@ -118,8 +134,10 @@ const refuseWhatCommanderAccepts = (program: Command, argv: string[]): void => {
     const name = operands[0];
     const next = command.commands.find((child) => child.name() === name);
     if (next !== undefined) {
+      // With positional options, commander stops at the command name: it is the only operand,
+      // and everything after it is in `unknown`.
       command = next;
-      rest = rest.slice(rest.indexOf(next.name()) + 1);
+      rest = rest.slice(options.length - unknown.length);
       continue;
     }
     if (command.commands.length > 0 && terminator !== -1) {
@@ -187,7 +205,7 @@ export const runCli = async (
     await createProgram(context, argv).parseAsync([...argv], { from: 'user' });
     return exitCode;
   } catch (error) {
-    if (error instanceof ToolError) {
+    if (error instanceof ToolError || isSystemError(error)) {
       output.error(error.message);
       return 1;
     }
