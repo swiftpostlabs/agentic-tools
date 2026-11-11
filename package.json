@@ -1,6 +1,6 @@
 {
   "name": "agentic-tools",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared agent skills and the agentic-tools CLI for policy, skills, plugin, and export workflows.",
   "repository": {
     "type": "git",
