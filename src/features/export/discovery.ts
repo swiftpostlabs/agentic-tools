@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { parseFrontmatter } from '../../core/frontmatter.ts';
 import { isDirectory, isFile, listSorted } from '../../core/fs.ts';
+import { readSkillManifest } from '../skills/manifest.ts';
 import type { SkillDocument } from './models.ts';
 
 const frontmatterBlock = /^---\r?\n[\s\S]*?\r?\n---\r?\n/;
@@ -70,6 +71,7 @@ export const flattenSkill = (
   }
   const raw = fs.readFileSync(manifest, 'utf8');
   const fields = readFields(raw);
+  const skill = readSkillManifest(skillDirectory);
 
   const sections = [stripBody(raw)];
   const references = path.join(skillDirectory, 'references');
@@ -88,9 +90,9 @@ export const flattenSkill = (
 
   return {
     name: fields.get('name') ?? path.basename(skillDirectory),
-    domain: fields.get('metadata.shareable-skills.domain') ?? 'unknown',
-    visibility:
-      fields.get('metadata.shareable-skills.visibility') ?? 'repo-local',
+    // The skills feature's reader, so legacy keys and values resolve as they do for linking.
+    domain: skill.domain ?? 'unknown',
+    visibility: skill.visibility ?? 'repo-local',
     description: fields.get('description') ?? '',
     body: sections.filter((section) => section !== '').join('\n\n'),
   };

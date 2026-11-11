@@ -28,6 +28,7 @@ import {
   renderBundleMap,
   renderInstructions,
   renderReadme,
+  writeExport,
 } from './geminiGem.ts';
 import {
   emptySelection,
@@ -68,6 +69,19 @@ describe('discovery', () => {
     expect(stripBody(text)).toBe(
       '# Title\nFor details, see the "Api tokens" section below and `ref-sp-dev-git-commits`.',
     );
+  });
+
+  test('reads legacy sharing metadata the way skill linking does', () => {
+    const root = makeTempDir();
+    writeSkill(root, 'ref-old', {
+      legacy: true,
+      domain: 'dev',
+      visibility: 'public',
+    });
+    expect(flattenSkill(path.join(root, 'ref-old'))).toMatchObject({
+      domain: 'dev',
+      visibility: 'public',
+    });
   });
 
   test('demotes headings and caps them at six levels', () => {
@@ -350,6 +364,31 @@ describe('gemini gem rendering', () => {
     expect(renderInstructions(plan, 'Intro.\n')).toBe(
       'Intro.\n\n## Knowledge files\n\n**`js.md`**\n\n- *x* — testing ref-sp-js-x.\n',
     );
+  });
+
+  test('instructions keep dollar patterns in injected text literal', () => {
+    const plan = { bundles: [], excluded: {}, notices: [] };
+    expect(
+      renderInstructions(plan, 'P: {{P}}\n{{BUNDLE_MAP}}', {
+        P: "Pay $& and $' now.",
+      }),
+    ).toBe("P: Pay $& and $' now.\n");
+  });
+
+  test('refuses a bundle that would escape the folder or replace a fixed file', () => {
+    for (const name of ['README', 'instructions', '../x']) {
+      expect(() =>
+        writeExport(
+          {
+            bundles: [{ name, skills: [skill('ref-a')] }],
+            excluded: {},
+            notices: [],
+          },
+          makeTempDir(),
+          '{{BUNDLE_MAP}}',
+        ),
+      ).toThrow('Cannot write export file');
+    }
   });
 
   test('the README reports notices and exclusions', () => {

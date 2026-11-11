@@ -6,6 +6,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { ToolError } from '../../core/errors.ts';
 import {
   bundleWordCount,
   formatCount,
@@ -105,12 +106,14 @@ export const renderInstructions = (
 ): string => {
   let rendered = template;
   for (const [name, value] of Object.entries(injections)) {
-    rendered = rendered.replaceAll(`{{${name}}}`, value);
+    // A replacement function, so `$&` and `$'` in the text stay literal.
+    rendered = rendered.replaceAll(`{{${name}}}`, () => value);
   }
   if (!rendered.includes(bundleMapPlaceholder)) {
     return `${rendered.trimEnd()}\n\n## Knowledge files\n\n${renderBundleMap(plan)}\n`;
   }
-  return rendered.replaceAll(bundleMapPlaceholder, renderBundleMap(plan));
+  const bundleMap = renderBundleMap(plan);
+  return rendered.replaceAll(bundleMapPlaceholder, () => bundleMap);
 };
 
 export const renderReadme = (plan: ExportPlan, outDir: string): string => {
@@ -183,7 +186,6 @@ export const writeExport = (
   injections: Record<string, string> = {},
   outLabel: string = outDir,
 ): string[] => {
-  fs.mkdirSync(outDir, { recursive: true });
   const files: Array<[string, string]> = [
     ...plan.bundles.map((bundle): [string, string] => [
       bundleFilename(bundle),
@@ -192,6 +194,24 @@ export const writeExport = (
     ['instructions.md', renderInstructions(plan, template, injections)],
     ['README.md', renderReadme(plan, outLabel)],
   ];
+  // Bundle names come from skill domains, so one could escape the folder or replace a fixed file.
+  const names = files.map(([name]) => name.toLowerCase());
+  for (const [name] of files) {
+    if (!/^[a-z0-9][a-z0-9-]*\.md$/i.test(name)) {
+      throw new ToolError(
+        `Cannot write export file '${name}': domains must be letters, digits, and dashes.`,
+      );
+    }
+    if (
+      names.indexOf(name.toLowerCase()) !==
+      names.lastIndexOf(name.toLowerCase())
+    ) {
+      throw new ToolError(
+        `Cannot write export file '${name}' twice: rename the domain that produces it.`,
+      );
+    }
+  }
+  fs.mkdirSync(outDir, { recursive: true });
   return files.map(([name, content]) => {
     const target = path.join(outDir, name);
     fs.writeFileSync(target, content, 'utf8');
