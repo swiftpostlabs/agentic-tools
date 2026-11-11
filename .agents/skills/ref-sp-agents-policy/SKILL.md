@@ -33,6 +33,9 @@ as `uv run agentic-tools ...` or `yarn agentic-tools ...`; this repo runs it fro
 
 ## Policy fields
 
+Before editing the `policy` section of `.agents/config.json`, read `./references/config-shape.md`,
+which holds the full contract.
+
 - `services`: which outputs to generate (`gemini`, `claude`, `copilot`). Omitted means all.
 - `protectedFiles`: sensitive patterns to block or deter.
 - `excludedFiles`: noisy or generated patterns kept out of Gemini's context.
@@ -46,6 +49,9 @@ as `uv run agentic-tools ...` or `yarn agentic-tools ...`; this repo runs it fro
 | `claude` | `.claude/settings.json` | `permissions.deny` `Read(...)` rules for `protectedFiles`; cleaned when disabled. |
 | `copilot` | `.vscode/settings.json` | File associations, Copilot language disablement, approval maps; cleaned when disabled. |
 
+When one vendor's file comes out wrong, read that vendor's detail: `./references/gemini.md`,
+`./references/claude-code.md`, or `./references/copilot.md`.
+
 ## Rules
 
 - `.agents/config.json` is the source of truth. Control vendors with `services`, never by
@@ -57,13 +63,7 @@ as `uv run agentic-tools ...` or `yarn agentic-tools ...`; this repo runs it fro
 
 ## Before finishing
 
+- When debugging, run the quick pass in `./references/checklist.md`.
 - `yarn cli policy sync`, then `yarn cli policy check`, pass after any policy or generator change.
 - `yarn test src/features/policy` when policy logic changed.
 - If an output file or command name changed, update `.github/workflows/ci.yaml`.
-
-## References
-
-- `./references/config-shape.md`: the full `policy` contract, when editing `.agents/config.json`.
-- `./references/copilot.md`, `./references/claude-code.md`, `./references/gemini.md`: per-vendor
-  output detail, when debugging one vendor's file.
-- `./references/checklist.md`: quick debugging pass.

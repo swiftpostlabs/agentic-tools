@@ -14,7 +14,8 @@ metadata:
 Defaults that apply in any language. Folder layout and feature boundaries are
 `ref-sp-dev-projects-architecture`; language specifics are `ref-sp-py-python`,
 `ref-sp-js-javascript`, and `ref-sp-js-typescript`; a repo's exact paths and commands live in its
-conventions skill (here, `ref-sp-dev-repo-conventions`).
+conventions skill (here, `ref-sp-dev-repo-conventions`). For a review, run the quick pass in
+`./references/checklist.md`.
 
 ## Types and boundaries
 
@@ -69,7 +70,3 @@ import order changes behaviour, something works at import time.
   likely to break, not only the happy path.
 - Readable enough to explain the intended behaviour; a few well-named fixtures or builders over
   large shared setup.
-
-## References
-
-- `./references/checklist.md`: quick review pass when applying these defaults.

@@ -126,6 +126,9 @@ The per-client detail is in `./references/agents-md-standard.md`.
 
 ## Validation
 
+For a review, run the pass in `./references/checklist.md`. Trigger and output evals are in
+`./assets/trigger-eval-queries.example.json` and `./evals/evals.json`.
+
 - The repo has one instruction body, in `AGENTS.md`, and no `CLAUDE.md`, `.claude/CLAUDE.md`, or
   `GEMINI.md` unless a documented fallback needs it.
 - `AGENTS.md` is under the budgets above and carries a compact skill index, not copied descriptions.
@@ -134,16 +137,9 @@ The per-client detail is in `./references/agents-md-standard.md`.
 - Every instruction file, nested ones included, states present-tense rules only: no plans, status, or
   history outside a marked example.
 
-## References
+## Sources
 
 - Vercel, "AGENTS.md outperforms skills in our agent evals" (2026-01-27):
   <https://vercel.com/blog/agents-md-outperforms-skills-in-our-agent-evals>
 - Gloaguen et al., "Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding
   Agents?" (2026): <https://www.sri.inf.ethz.ch/publications/gloaguen2026agentsmd>
-
-- `./references/agents-md-standard.md`: client support, size limits, nesting, fallback bridges,
-  and removing old bridges.
-- `./references/global-instructions.md`: user-level instruction files per client.
-- `./references/providers/copilot-instructions.md`: repos that keep `.github/copilot-instructions.md`.
-- `./references/checklist.md`: quick review pass.
-- `./assets/trigger-eval-queries.example.json` and `./evals/evals.json`: trigger and output evals.

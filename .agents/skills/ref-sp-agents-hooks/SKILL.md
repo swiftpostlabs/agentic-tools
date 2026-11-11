@@ -60,9 +60,17 @@ and `Interrupt`; hooks on those won't port.
    exit with a code and JSON.
 4. Scope it with a matcher, and **also re-check inside the script**: VS Code ignores matchers, so
    every configured hook fires there.
-5. Put the config in each platform's file (platform references below).
+5. Put the config in each platform's file. For each target, read its reference first:
+   `./references/platforms/claude-code-hooks.md` (`.claude/settings.json`, hook types, decision
+   fields), `./references/platforms/codex-hooks.md` (`.codex/hooks.json` or `config.toml`),
+   `./references/platforms/copilot-cli-hooks.md` (`.github/hooks/*.json`, camel or Pascal case),
+   `./references/platforms/vscode-hooks.md` (ignored matchers, OS-specific commands), or
+   `./references/platforms/gemini-cli-hooks.md` (`.gemini/settings.json`).
 6. Dry-run: pipe a sample payload into the script and check exit code and stdout.
 7. Trigger the real event and confirm it allows or denies as intended.
+8. Before committing, run the review pass in `./references/checklist.md`. For a worked
+   `PreToolUse` gate, see `./assets/git-identity-guard.sh`, which blocks `git commit` when the
+   author identity doesn't match the account `origin` points at; edit its rules table.
 
 ## Making it portable
 
@@ -101,16 +109,3 @@ Hooks run arbitrary shell with your permissions, automatically, without confirma
   silently lets the call through.
 - Claude hooks have no controlling terminal (`/dev/tty`); use the platform's notifications, not an
   interactive prompt.
-
-## References
-
-- `./references/platform-matrix.md`: event names and config shapes per platform. Read first.
-- Per platform, when configuring for it:
-  - `./references/platforms/claude-code-hooks.md`: `.claude/settings.json`, hook types, decision fields.
-  - `./references/platforms/codex-hooks.md`: `.codex/hooks.json` or `config.toml`, extra events.
-  - `./references/platforms/copilot-cli-hooks.md`: `.github/hooks/*.json`, camel/Pascal forms.
-  - `./references/platforms/vscode-hooks.md`: ignored matchers, OS-specific command overrides.
-  - `./references/platforms/gemini-cli-hooks.md`: `.gemini/settings.json`, its own vocabulary.
-- `./references/checklist.md`: review pass before committing a hook.
-- `./assets/git-identity-guard.sh`: worked `PreToolUse` example that blocks `git commit` when the
-  author identity doesn't match the account `origin` points at. Edit its rules table.

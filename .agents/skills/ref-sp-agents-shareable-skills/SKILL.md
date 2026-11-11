@@ -105,6 +105,8 @@ repo-tied, split it.
 
 ## Validation
 
+Before finalising a skill's sharing metadata, run the pass in `./references/checklist.md`.
+
 Needs Node >= 22; an older Node fails with confusing errors.
 
 ```sh
@@ -136,12 +138,3 @@ the stakes:
 
 A repo with no `.claude-plugin/plugin.json` is unaffected. The manifest's semantics are owned by
 `ref-sp-agents-plugin-marketplaces`; this validator only enforces that they agree with the tiers.
-
-## References
-
-- `./references/spec.md`: the full spec, when the summary above isn't enough.
-- `./references/registry.json`: domains, tags, aliases, and the validator phase, when choosing a
-  domain.
-- `./references/checklist.md`: a pass before finalising a skill's sharing metadata.
-- `./scripts/check-vendored-drift.mts`: flags vendored copies that were edited or whose upstream
-  moved.
