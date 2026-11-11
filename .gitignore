@@ -1,4 +1,5 @@
 # Agent only dirs
+/.agents/local/
 /.agents/playground/
 /.agents/tasks/
 /.agents/retro/
