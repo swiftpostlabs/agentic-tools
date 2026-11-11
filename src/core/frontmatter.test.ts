@@ -29,6 +29,14 @@ describe('parseFrontmatter', () => {
     );
   });
 
+  test('rejects a list under a mapping, which would drop its values', () => {
+    expect(() =>
+      parseFrontmatter(
+        '---\nname: x\nmetadata:\n  shareable-skills.requires:\n    - ref-b\n---\n',
+      ),
+    ).toThrow('Invalid nested frontmatter line:     - ref-b');
+  });
+
   test('rejects a missing closing delimiter', () => {
     expect(() => parseFrontmatter('---\nname: demo\n')).toThrow(
       'closing frontmatter delimiter',

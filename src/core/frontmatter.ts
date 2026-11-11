@@ -45,6 +45,11 @@ export const parseFrontmatter = (text: string): Map<string, string> => {
       if (!indented) {
         throw new ToolError(`Invalid frontmatter line: ${line}`);
       }
+      // Under a mapping such as `metadata:`, a YAML list would be dropped silently, losing a
+      // dependency. Values are comma-separated strings instead.
+      if (parent !== undefined) {
+        throw new ToolError(`Invalid nested frontmatter line: ${line}`);
+      }
       continue;
     }
 
