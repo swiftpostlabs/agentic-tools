@@ -40,6 +40,8 @@ jobs:
 
   publish_npm:
     needs: verify_release
+    # Held back until publishing is wanted; tags still run verify_release.
+    if: false
     runs-on: ubuntu-latest
     permissions:
       contents: read
