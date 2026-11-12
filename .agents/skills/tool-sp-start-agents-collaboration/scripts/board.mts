@@ -488,10 +488,12 @@ const unread = (
   }
 };
 
-const allLabels = (board: string, roomName: string | undefined): string[] =>
-  placesFor(board, roomName).flatMap((place) =>
-    listMessageFiles(board, place).map((file) => placeLabel(place, file)),
-  );
+/** Message file names are unique on a board (send time plus sender id), so they survive a move into a room. */
+const allMessageFiles = (
+  board: string,
+  roomName: string | undefined,
+): string[] =>
+  placesFor(board, roomName).flatMap((place) => listMessageFiles(board, place));
 
 const watch = (
   board: string,
@@ -500,7 +502,7 @@ const watch = (
   roomName: string | undefined,
   intervalSeconds: number,
 ): void => {
-  const seen = new Set(allLabels(board, roomName));
+  const seen = new Set(allMessageFiles(board, roomName));
   if (since !== undefined) {
     unread(board, me, since, roomName);
   }
@@ -518,14 +520,15 @@ const watch = (
     // Re-read the places each time, so new rooms, joins, and closes take effect while watching.
     for (const place of placesFor(board, roomName)) {
       for (const file of listMessageFiles(board, place)) {
-        const label = placeLabel(place, file);
-        if (seen.has(label)) {
+        if (seen.has(file)) {
           continue;
         }
-        seen.add(label);
+        seen.add(file);
         const message = readMessage(board, place, file);
         if (isForIn(place, message, me)) {
-          process.stdout.write(`${oneLine(message, label)}\n`);
+          process.stdout.write(
+            `${oneLine(message, placeLabel(place, file))}\n`,
+          );
         }
       }
     }
