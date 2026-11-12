@@ -93,7 +93,15 @@ const skillsByteSize = (skills: SkillDocument[]): number =>
 
 /** Split by whole skills until every part fits; splitting mid-skill would separate guidance from its reasons. */
 const splitOversized = (bundle: Bundle, maxBytes: number): Bundle[] => {
-  if (skillsByteSize(bundle.skills) <= maxBytes || bundle.skills.length <= 1) {
+  const oversized = bundle.skills.find(
+    (skill) => skillsByteSize([skill]) > maxBytes,
+  );
+  if (oversized !== undefined) {
+    throw new ToolError(
+      `'${oversized.name}' alone is over the ${maxBytes}-byte limit per file, and a skill is never split. Exclude it.`,
+    );
+  }
+  if (skillsByteSize(bundle.skills) <= maxBytes) {
     return [bundle];
   }
   const parts: Bundle[] = [];
@@ -160,6 +168,13 @@ export const enforceLimits = (
     }
     return parts;
   });
+
+  // Splitting adds files after merging stopped, so the file limit is checked again.
+  if (expanded.length > limits.maxFiles) {
+    throw new ToolError(
+      `${expanded.length} files after splitting oversized bundles exceed the ${limits.maxFiles}-file limit for this target. Select fewer skills.`,
+    );
+  }
 
   for (const bundle of expanded) {
     const words = bundleWordCount(bundle);

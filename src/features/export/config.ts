@@ -33,7 +33,7 @@ export const presets = {
 
 export type PresetName = keyof typeof presets;
 
-const isPresetName = (value: string): value is PresetName =>
+export const isPresetName = (value: string): value is PresetName =>
   Object.hasOwn(presets, value);
 
 export type ExportConfig = JsonObject;

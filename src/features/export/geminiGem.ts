@@ -211,6 +211,15 @@ export const writeExport = (
       );
     }
   }
+  // Planning measures skill bodies only; the rendered file adds headings and separators.
+  for (const [name, content] of files) {
+    const bytes = Buffer.byteLength(content, 'utf8');
+    if (bytes > geminiGemLimits.maxFileBytes) {
+      throw new ToolError(
+        `Cannot write export file '${name}': it is ${bytes} bytes, over the ${geminiGemLimits.maxFileBytes}-byte limit per file. Select fewer skills.`,
+      );
+    }
+  }
   fs.mkdirSync(outDir, { recursive: true });
   return files.map(([name, content]) => {
     const target = path.join(outDir, name);

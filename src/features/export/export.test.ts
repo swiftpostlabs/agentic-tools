@@ -294,10 +294,24 @@ describe('planning', () => {
     expect(
       enforceLimits([twoSkills], tight).bundles.map((entry) => entry.name),
     ).toEqual(['dev-1', 'dev-2']);
-    expect(
-      enforceLimits([bundle('solo', 100)], { ...tight, maxFileBytes: 5 })
-        .bundles,
-    ).toHaveLength(1);
+    expect(() =>
+      enforceLimits([bundle('solo', 100)], { ...tight, maxFileBytes: 5 }),
+    ).toThrow('alone is over the 5-byte limit per file');
+  });
+
+  test('fails when splitting pushes the file count over the limit', () => {
+    const twoSkills: Bundle = {
+      name: 'dev',
+      skills: [
+        skill('ref-a', { body: 'x'.repeat(20) }),
+        skill('ref-b', { body: 'y'.repeat(20) }),
+      ],
+    };
+    expect(() =>
+      enforceLimits([twoSkills], { ...limits, maxFiles: 1, maxFileBytes: 30 }),
+    ).toThrow(
+      '2 files after splitting oversized bundles exceed the 1-file limit',
+    );
   });
 
   test('warns above the soft word guideline without splitting', () => {
@@ -503,6 +517,8 @@ describe('export build command', () => {
   test('returns 2 for a bad request and 1 when nothing matches', () => {
     const root = makeTempDir();
     expect(runExportBuild(options(root, { target: 'chatgpt' }))).toBe(2);
+    expect(runExportBuild(options(root, { preset: 'nope' }))).toBe(2);
+    expect(runExportBuild(options(root, { config: 'missing.json' }))).toBe(1);
     expect(runExportBuild(options(root))).toBe(1);
     writeSkill(path.join(root, '.agents', 'skills'), 'ref-local', {
       visibility: 'repo-local',

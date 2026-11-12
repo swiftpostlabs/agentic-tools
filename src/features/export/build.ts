@@ -4,7 +4,9 @@ import { ToolError } from '../../core/errors.ts';
 import type { Output } from '../../core/output.ts';
 import {
   injectionsFromConfig,
+  isPresetName,
   loadConfigFile,
+  presets,
   resolveSelection,
   type ExportConfig,
 } from './config.ts';
@@ -72,6 +74,11 @@ const resolveInjections = (
   Object.fromEntries(
     Object.entries(injectionsFromConfig(config)).map(
       ([placeholder, skillName]) => {
+        if (!/^[a-z0-9][a-z0-9-]*$/.test(skillName)) {
+          throw new ToolError(
+            `Cannot fill {{${placeholder}}}: '${skillName}' is not a skill name.`,
+          );
+        }
         const block = readCanonicalBlock(path.join(skillsRoot, skillName));
         if (block === undefined) {
           throw new ToolError(
@@ -103,12 +110,19 @@ const reportPlan = (plan: ExportPlan, output: Output): void => {
   }
 };
 
-/** `agentic-tools export build`. Returns the exit code: 2 for a bad request, 1 for nothing to export. */
+/** `agentic-tools export build`. Returns the exit code: 2 for an unknown target or preset, 1 for any other failure. */
 export const runExportBuild = (options: ExportBuildOptions): number => {
   const { output } = options;
   if (!(exportTargets as readonly string[]).includes(options.target)) {
     output.error(
       `Unknown target '${options.target}'. Supported: ${exportTargets.join(', ')}`,
+    );
+    return 2;
+  }
+
+  if (!isPresetName(options.preset)) {
+    output.error(
+      `Unknown preset '${options.preset}'. Available: ${Object.keys(presets).sort().join(', ')}`,
     );
     return 2;
   }
@@ -130,9 +144,10 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
       excludedSkills: options.exclude,
     });
   } catch (error) {
+    // A bad config file is an expected failure, not a malformed command line.
     if (error instanceof ToolError) {
       output.error(error.message);
-      return 2;
+      return 1;
     }
     throw error;
   }
@@ -173,7 +188,7 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
   } catch (error) {
     if (error instanceof ToolError) {
       output.error(error.message);
-      return 2;
+      return 1;
     }
     throw error;
   }
@@ -193,11 +208,10 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
       `Projected the canonical block for ${placeholder} verbatim from its skill.`,
     );
   }
-  // The Gem instruction field's limit is undocumented, so report the size rather than let it be
-  // discovered on paste.
-  output.warn(
-    `Instructions are ${formatCount(Array.from(renderInstructions(plan, template, injections)).length)} characters. The Gem ` +
-      "instruction field's limit is undocumented — if it rejects them, shorten the template rather than the routing block.",
+  // The Gem instruction field's limit is undocumented, so the size is reported as a fact, not warned
+  // about on every run.
+  output.info(
+    `instructions.md is ${formatCount(Array.from(renderInstructions(plan, template, injections)).length)} characters; if the Gem rejects it, shorten the template, not the routing block.`,
   );
   output.info(`Wrote ${written.length} files to ${destinationLabel}`);
   // Never deleted: the folder may hold the user's own files. Uploading them would ship stale bundles.
