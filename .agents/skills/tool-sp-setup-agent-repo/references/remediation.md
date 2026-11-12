@@ -12,23 +12,21 @@ Create the three workspaces. They are a set: tasks without a playground pushes s
 the source tree, and retro without tasks has nothing to reflect on.
 
 ```bash
-mkdir -p <repo>/.agents/tasks <repo>/.agents/retro <repo>/.agents/playground
+mkdir -p <repo>/.agents/local/tasks <repo>/.agents/local/retro <repo>/.agents/local/playground
 ```
 
-`.agents/tasks/` and `.agents/retro/` also want their lifecycle subfolders and, for tasks, a
+`.agents/local/tasks/` and `.agents/local/retro/` also want their lifecycle subfolders and, for tasks, a
 `TODO.md`. Do not invent that structure here — `ref-sp-agents-local-tasks` and `ref-sp-agents-retro`
 own it. Create the directories, then follow those skills if the repo wants them pre-seeded.
 
 ## W2 — workspaces not gitignored
 
-Add the rules to the repo `.gitignore`, anchored to the root so a nested `agents/` folder elsewhere
-is unaffected:
+Add the rule to the repo `.gitignore`, anchored to the root so a nested `agents/` folder elsewhere
+is unaffected. One line covers every workspace under `.agents/local/`:
 
 ```gitignore
 # Agent only dirs
-/.agents/playground/
-/.agents/tasks/
-/.agents/retro/
+/.agents/local/
 ```
 
 These directories hold local, per-developer state. Committing them turns one agent's scratch notes
@@ -37,7 +35,7 @@ into everyone's merge conflicts.
 To keep an empty directory present after cloning, commit a placeholder inside it:
 
 ```gitignore
-# <repo>/.agents/playground/.gitignore
+# <repo>/.agents/local/playground/.gitignore
 # Ignore everything
 *
 !.gitignore
@@ -51,10 +49,10 @@ Real content under an ignored workspace means it was added before the rule, and 
 not retroactively untrack. Confirm with the user, then untrack without deleting the local copies:
 
 ```bash
-git -C <repo> rm -r --cached .agents/tasks .agents/retro .agents/playground
+git -C <repo> rm -r --cached .agents/local/tasks .agents/local/retro .agents/local/playground
 ```
 
-Check what is being untracked first. If the repo has been treating `.agents/tasks/` as shared
+Check what is being untracked first. If the repo has been treating `.agents/local/tasks/` as shared
 project planning, untracking it destroys a workflow — surface that instead of running the command.
 
 ## S1 / S2 — skills root or core skills missing
@@ -69,7 +67,7 @@ The five core skills, and why each is core:
 | `ref-sp-agents-instructions-authoring` | The single-`AGENTS.md` model this whole baseline rests on. |
 | `tool-sp-maintain-skills` | The maintenance pass that keeps the catalog from rotting. |
 | `ref-sp-agents-retro` | The reflection loop that feeds improvements back into skills. |
-| `ref-sp-agents-local-tasks` | The `.agents/tasks/` workspace contract. |
+| `ref-sp-agents-local-tasks` | The `.agents/local/tasks/` workspace contract. |
 
 ## S3 — skills outside `.agents/skills`
 

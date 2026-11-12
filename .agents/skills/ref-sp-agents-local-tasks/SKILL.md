@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-local-tasks
-description: "The format of the gitignored .agents/tasks/ workspace: TODO.md for quick items, dated task folders moving through 10-new, 20-open, and 90-closed with status frontmatter, task briefs, and HANDOFF.md. Use when creating, updating, moving, or handing off a local task."
+description: "The format of the gitignored .agents/local/tasks/ workspace: TODO.md for quick items, dated task folders moving through 10-new, 20-open, and 90-closed with status frontmatter, task briefs, and HANDOFF.md. Use when creating, updating, moving, or handing off a local task."
 license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -12,24 +12,24 @@ metadata:
 
 # Agents Local Tasks
 
-How the local, gitignored `.agents/tasks/` workspace is laid out. Quick items go in `TODO.md`;
+How the local, gitignored `.agents/local/tasks/` workspace is laid out. Quick items go in `TODO.md`;
 anything substantial gets its own dated folder that moves through lifecycle subfolders. Working the
 backlog (picking, triaging, closing out) is `tool-sp-handle-agents-local-tasks`; reflecting after a
-task is `ref-sp-agents-retro`. Scratch files go in `.agents/playground/`. These are the defaults
+task is `ref-sp-agents-retro`. Scratch files go in `.agents/local/playground/`. These are the defaults
 unless the repo documents a different convention.
 
 ## Layout
 
 | Path | Holds |
 | --- | --- |
-| `.agents/tasks/TODO.md` | Quick notes and small tasks with no lifecycle. |
-| `.agents/tasks/10-new/<YYYY-MM-DD>-<name>/` | Tracked task not started (`new`, `ready`, `blocked`). |
-| `.agents/tasks/20-open/<YYYY-MM-DD>-<name>/` | Task being worked (`in-progress`, `in-review`, `blocked`). |
-| `.agents/tasks/90-closed/<YYYY-MM-DD>-<name>/` | Finished task (`done`, `cancelled`). |
+| `.agents/local/tasks/TODO.md` | Quick notes and small tasks with no lifecycle. |
+| `.agents/local/tasks/10-new/<YYYY-MM-DD>-<name>/` | Tracked task not started (`new`, `ready`, `blocked`). |
+| `.agents/local/tasks/20-open/<YYYY-MM-DD>-<name>/` | Task being worked (`in-progress`, `in-review`, `blocked`). |
+| `.agents/local/tasks/90-closed/<YYYY-MM-DD>-<name>/` | Finished task (`done`, `cancelled`). |
 | `<task>/README.md` | The brief, with lifecycle frontmatter. Every tracked task has one. |
 | `<task>/HANDOFF.md` | Optional single resume point (see below). |
 | `<task>/notes.md`, `plan.md`, `validation.md`, `pr-description.md` | Scratch for this task. |
-| `.agents/playground/` | Temporary helper scripts and generated files. Create them with edit tools, not shell heredocs or redirection. |
+| `.agents/local/playground/` | Temporary helper scripts and generated files. Create them with edit tools, not shell heredocs or redirection. |
 
 - Folder names are `<YYYY-MM-DD>-<kebab-case-name>`, dated the day the task was created
   (`10-new/2026-07-25-add-button-for-language/`). Find tasks by topic with a glob
@@ -114,7 +114,7 @@ for detail rather than repeating it.
 Open items are plain bullets, `- [] item`, or `- [ ] item`; done items are `- [x] item` (or `[X]`).
 Anything substantial becomes a task folder instead. A script that finds the next open item must
 accept all three open forms: `./assets/next-todo.mts` is a starting point to copy into
-`.agents/playground/`.
+`.agents/local/playground/`.
 
 ## Gotchas
 

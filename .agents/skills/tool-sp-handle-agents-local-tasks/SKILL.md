@@ -1,6 +1,6 @@
 ---
 name: tool-sp-handle-agents-local-tasks
-description: "Work through the local .agents/tasks backlog: pick the next actionable item, do it, and keep folders, status, and notes in sync. Use when asked to check .agents/tasks/TODO.md or continue the local tasks."
+description: "Work through the local .agents/local/tasks backlog: pick the next actionable item, do it, and keep folders, status, and notes in sync. Use when asked to check .agents/local/tasks/TODO.md or continue the local tasks."
 argument-hint: "Optional task filter, whether to only triage or to execute tasks, and any stopping condition"
 license: "MIT"
 metadata:
@@ -13,7 +13,7 @@ metadata:
 
 # Handle Agents Local Tasks
 
-Works the gitignored `.agents/tasks/` backlog item by item. The format (lifecycle folders, `status`
+Works the gitignored `.agents/local/tasks/` backlog item by item. The format (lifecycle folders, `status`
 values, `TODO.md` syntax) is in `ref-sp-agents-local-tasks`; read it first. The work itself follows
 whichever skill owns that area, and commits go through `tool-sp-commit`.
 
@@ -58,5 +58,5 @@ unless they turn up broader decisions or blockers.
 ## Before finishing
 
 - Every task touched has `updated` bumped and a folder matching its `status`.
-- Durable lessons found during the work are promoted out of `.agents/tasks/` into a skill or
+- Durable lessons found during the work are promoted out of `.agents/local/tasks/` into a skill or
   `AGENTS.md`.

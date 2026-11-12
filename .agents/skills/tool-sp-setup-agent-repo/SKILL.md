@@ -16,7 +16,7 @@ metadata:
 
 Brings a repo up to the shared agent baseline: one script run finds the gaps, then you fix them in
 a safe order. How `AGENTS.md` should be written is `ref-sp-agents-instructions-authoring`; refreshing
-an existing one is `tool-sp-maintain-agents-instructions`. The `.agents/tasks/` and `.agents/retro/`
+an existing one is `tool-sp-maintain-agents-instructions`. The `.agents/local/tasks/` and `.agents/local/retro/`
 formats belong to `ref-sp-agents-local-tasks` and `ref-sp-agents-retro`.
 
 ## First step
@@ -37,7 +37,7 @@ script out first.
 
 | Check | What good looks like |
 | --- | --- |
-| `W1` | `.agents/tasks/`, `.agents/retro/`, and `.agents/playground/` exist. |
+| `W1` | `.agents/local/tasks/`, `.agents/local/retro/`, and `.agents/local/playground/` exist. |
 | `W2` | All three are gitignored. |
 | `W3` | Nothing under them is committed except a placeholder `.gitignore`. |
 | `S1` | `.agents/skills/` exists and holds skills. |

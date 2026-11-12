@@ -24,7 +24,7 @@ Report what is true, not what lands well. Change a position on evidence, never o
 - Preserve the existing repository structure unless the user explicitly asks for structural change.
 - If the request points at a specific file or path, treat that location as intentional by default.
 - Set the chat title to the task title.
-- Instruction files (`AGENTS.md`, nested `AGENTS.md`) and skills state present-tense rules only: no plans, status, or history outside a marked example. Plans belong in `.agents/tasks/`, history in git and `.agents/retro/`. See `ref-sp-agents-instructions-authoring`.
+- Instruction files (`AGENTS.md`, nested `AGENTS.md`) and skills state present-tense rules only: no plans, status, or history outside a marked example. Plans belong in `.agents/local/tasks/`, history in git and `.agents/local/retro/`. See `ref-sp-agents-instructions-authoring`.
 - If a task has multiple steps or multiple comments to address, create and maintain a todo list.
 - If the description contains links, read them.
 - If you need more context, or requirements or behavior are ambiguous, ask for clarification instead of guessing or assuming.
@@ -64,7 +64,7 @@ Project skills live in `.agents/skills/` (`.claude/skills` symlinks there for Cl
 | Skills CLI, linking, sync | `ref-sp-agents-skills-management` |
 | Plugin manifests, `.claude-plugin/` | `ref-sp-agents-plugin-marketplaces` |
 | Commits | `ref-sp-dev-git-commits` |
-| `.agents/tasks/`, `.agents/retro/` | `ref-sp-agents-local-tasks`, `ref-sp-agents-retro` |
+| `.agents/local/tasks/`, `.agents/local/retro/` | `ref-sp-agents-local-tasks`, `ref-sp-agents-retro` |
 
 For anything else, match the task against the skill descriptions' `Use when:` clauses.
 
@@ -89,7 +89,7 @@ When working on this project:
 3. **Implement**: Follow the owning skill for the area you are touching.
 4. **Validate**: Before committing, run `yarn lint`, `yarn typecheck`, and `yarn test`, plus `yarn validate` when you changed a skill under `.agents/skills/`, and `yarn test:bun` and `yarn check:runtimes` when Bun is installed and you changed runtime code. Confirm the change introduced no new warnings or type issues, filtering output to the changed files so unrelated noise does not hide a real regression. Chain lint and type-check into one command when that saves a round trip.
 5. **Commit**: Keep commits small and focused — one feature or area, a few related files at a time — and commit only after lint and type-check pass.
-6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. For a substantial task, capture a short, descriptive retrospective under `.agents/retro/` following `ref-sp-agents-retro` — what went well, what went wrong, and improvement hypotheses — kept descriptive rather than prescriptive. Summarize the result to the user and ask if they want the guidance updated. If yes, promote the durable, general observations into the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
+6. **Reflect**: Review what happened in the session, identify both corrections and durable lessons, and decide whether any skill or instruction should be updated. For a substantial task, capture a short, descriptive retrospective under `.agents/local/retro/` following `ref-sp-agents-retro` — what went well, what went wrong, and improvement hypotheses — kept descriptive rather than prescriptive. Summarize the result to the user and ask if they want the guidance updated. If yes, promote the durable, general observations into the relevant skill using `ref-sp-agents-skills-authoring`, and after editing suggest a follow-up maintenance pass with `tool-sp-maintain-skills`.
 
 Run steps 3–5 as a loop, not a phase: for a task with several steps or several review comments, take one item at a time — edit, then lint and type-check, then commit — before starting the next.
 

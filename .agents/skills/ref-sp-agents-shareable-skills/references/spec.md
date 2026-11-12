@@ -6,7 +6,7 @@ other skills (notably `ref-sp-agents-skills-authoring`) point here instead of re
 
 Rules are stated as requirements. Each carries a short *why* because several rules exist to
 avoid concrete failure modes; the full rationale and decision log live in the local task brief
-`.agents/tasks/skill-standardization-spec/README.md`.
+`.agents/local/tasks/skill-standardization-spec/README.md`.
 
 > **Schema status (read first).** The migration to this spec is **complete**: every skill is
 > owner-prefix renamed, all portability fields live under the `metadata.shareable-skills.*`
@@ -170,7 +170,7 @@ registry-driven** vocabulary.
 - **`biz`** — humans/teams managing work and knowledge: task management incl. classification
   (engineering/bug/story), Jira, Trello, Notion, Obsidian, roadmaps.
   - Disambiguation vs `agents`: `ref-sp-agents-local-tasks` is about *agents* operating
-    `.agents/tasks/` → `agents`. "How we triage in Jira" → `biz`.
+    `.agents/local/tasks/` → `agents`. "How we triage in Jira" → `biz`.
 - **AI family** (crisp, they overlap): `llm` = prompting/context/tool-use/agents-as-LLM;
   `ml` = classical training/modeling; `nlp` = language processing broadly; `ai` = catch-all for
   AI concepts with no sharper home (keep even alongside the others).
@@ -259,7 +259,7 @@ Two **distinct** operations. Keeping them distinct is what removes provenance re
 
 ## 8. Reporting edits upstream (vendored skills)
 
-- **Always write a local task** in the *consuming* repo's `.agents/tasks/` describing the intended
+- **Always write a local task** in the *consuming* repo's `.agents/local/tasks/` describing the intended
   edit, its motivation, and the upstream identity — as the audit trail — **regardless** of whether
   a machine-actionable channel exists. Ties into `.agents/skills/ref-sp-agents-local-tasks/SKILL.md`.
 - **`report-to` (optional)** — a URI-scheme string (`mailto:...` or a tracker/issues URL). A

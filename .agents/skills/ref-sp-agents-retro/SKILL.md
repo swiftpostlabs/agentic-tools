@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-retro
-description: "Writing, naming, and triaging short task retrospectives in the gitignored .agents/retro/ folder, and promoting lasting lessons into skills. Use when finishing a substantial task, reading past retros before similar work, or triaging .agents/retro/10-new/."
+description: "Writing, naming, and triaging short task retrospectives in the gitignored .agents/local/retro/ folder, and promoting lasting lessons into skills. Use when finishing a substantial task, reading past retros before similar work, or triaging .agents/local/retro/10-new/."
 license: "MIT"
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -14,8 +14,8 @@ metadata:
 
 A retro is a short note written after a substantial task: what went well, what went wrong and how
 each problem was solved or worked around, what was learned about the repo or tools, and hypotheses
-for next time. It lives in `.agents/retro/`, which is gitignored like `.agents/tasks/` (active work,
-`ref-sp-agents-local-tasks`) and `.agents/playground/` (scratch). That workspace set is the default
+for next time. It lives in `.agents/local/retro/`, which is gitignored like `.agents/local/tasks/` (active work,
+`ref-sp-agents-local-tasks`) and `.agents/local/playground/` (scratch). That workspace set is the default
 unless the repo documents a different convention. Turning a lesson into a skill is `ref-sp-agents-skills-authoring`. The
 user's cross-session agent memory is a separate thing: don't write retros there.
 
@@ -44,14 +44,14 @@ folders to calibrate, not to obey.
 
 | Folder | Meaning | `status` |
 | --- | --- | --- |
-| `.agents/retro/10-new/` | Captured, not yet triaged | `new` |
-| `.agents/retro/90-closed/` | Triaged | `promoted` or `dismissed` |
+| `.agents/local/retro/10-new/` | Captured, not yet triaged | `new` |
+| `.agents/local/retro/90-closed/` | Triaged | `promoted` or `dismissed` |
 
 - Name entries `<YYYY-MM-DD-task-slug>.md`, so they sort by date and grep by topic.
 - Triage once: promote the durable observations (`promoted`) or let it go as episode-specific
   (`dismissed`). Either way move it to `90-closed/` **and** set `status` in the same step.
 - There is no `20-open/`: a retro is captured and triaged, never worked over time. The numbers match
-  `.agents/tasks/` (10 intake, 90 terminal); `ref-sp-dev-projects-architecture` explains the
+  `.agents/local/tasks/` (10 intake, 90 terminal); `ref-sp-dev-projects-architecture` explains the
   prefix convention.
 - A growing `10-new/` means triage is overdue, not that more retros are needed. Prune `90-closed/`
   entries that promoted guidance has superseded or that no longer match the repo.

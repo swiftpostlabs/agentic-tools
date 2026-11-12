@@ -1,4 +1,4 @@
-// Print the first open item in .agents/tasks/TODO.md. Copy to .agents/playground/ to use.
+// Print the first open item in .agents/local/tasks/TODO.md. Copy to .agents/local/playground/ to use.
 
 import { readFileSync } from 'node:fs';
 
@@ -7,7 +7,7 @@ type TodoItem = {
   text: string;
 };
 
-const todoPath = '.agents/tasks/TODO.md';
+const todoPath = '.agents/local/tasks/TODO.md';
 const doneLine = /^-\s*\[[xX]\]\s+/;
 const openLine = /^-\s*(?:\[\s*\]\s*)?(?<text>\S.*)$/;
 

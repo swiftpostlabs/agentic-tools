@@ -30,7 +30,7 @@ scripts).
 AGENTS.md                          # the only agent instruction file; no CLAUDE.md or GEMINI.md
 .agents/skills/<skill>/SKILL.md    # skills (+ references/ assets/ evals/ scripts/)
 .agents/config.json                # policy, skills, and plugin config
-.agents/playground/  .agents/tasks/  .agents/retro/   # local workspaces (gitignored)
+.agents/local/                     # local workspaces: tasks/ retro/ playground/ (gitignored)
 src/                               # the CLI, feature-first (see below)
 scripts/<name>.mts                 # repo maintenance, run directly by Node, not shipped
 python/                            # the Python shim: launcher module and hatch build hook

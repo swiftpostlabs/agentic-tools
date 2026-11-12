@@ -1,5 +1,6 @@
 # Agent only dirs
 /.agents/local/
+# Pre-.agents/local workspace paths, still present on clones that have not migrated
 /.agents/playground/
 /.agents/tasks/
 /.agents/retro/

@@ -86,7 +86,7 @@ Instruction files state how things are and what to do, in the present tense. The
 ("later", "in phase 3", "will be added"), no status ("not set up yet", "for now"), and no history ("was
 renamed", "previously", "changed because"). The model reads every line as a current rule, so a timeline
 turns into a wrong direction the moment it goes stale, and nothing flags it. Plans belong in
-`.agents/tasks/`, history in git and `.agents/retro/`.
+`.agents/local/tasks/`, history in git and `.agents/local/retro/`.
 
 - State a missing capability as a condition, not a timeline: "logging in requires a platform session and
   its protections; without them, do not log in", not "login comes later".
