@@ -20,8 +20,8 @@ repo-wide structure is `ref-sp-dev-projects-architecture`.
 
 - Start with one self-contained HTML file for small and medium apps. No package manager, build
   pipeline, or React by default; if Node tooling becomes necessary, use Yarn.
-- For richer UI, prefer browser-loadable libraries over hand-building every control
-  (`./references/library-recommendations.md`).
+- For richer UI, prefer browser-loadable libraries over hand-building every control. Before
+  choosing one for a no-build app, read `./references/library-recommendations.md`.
 - Choose HTML elements for the behaviour they carry, not their looks (element table, landmarks,
   headings: `ref-sp-ux-accessibility`, its `references/semantic-structure.md`).
 - Escalate to a full app only when state, routing, or deployment needs have really outgrown a
@@ -65,11 +65,10 @@ src/features/example-dashboard-kit/
 
 ## Before finishing
 
+- Run the quick standalone-app review pass in `./references/checklist.md`.
 - Repeated values and DOM hooks are named rather than repeated inline.
 
-## References
+## Sources
 
 - MDN HTML Element Reference: <https://developer.mozilla.org/en-US/docs/Web/HTML/Element>
 - MDN JavaScript Modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
-- Read `./references/checklist.md` for a quick standalone-app review pass.
-- Read `./references/library-recommendations.md` when choosing browser-loadable UI or utility libraries for a no-build app.

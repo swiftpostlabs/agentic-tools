@@ -44,12 +44,12 @@ Next.js framework rules. React itself is `ref-sp-js-react`; planning a whole app
 
 ## Before finishing
 
+- Run the quick Next.js review pass in `./references/checklist.md`.
 - Internationalization is added only when the app actually needs it.
 
-## References
+## Sources
 
 - Next.js Documentation: <https://nextjs.org/docs>
 - Next.js App Router Documentation: <https://nextjs.org/docs/app>
 - MUI Next.js Integration: <https://mui.com/material-ui/integrations/nextjs/>
 - next-intl App Router Guide: <https://next-intl.dev/docs/getting-started/app-router>
-- Read `./references/checklist.md` for a quick Next.js review pass.

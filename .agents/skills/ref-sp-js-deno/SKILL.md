@@ -62,14 +62,14 @@ boundaries, or troubleshooting, read `./references/adoption-playbook.md`.
 
 ## Before finishing
 
+- Run the quick Deno review pass in `./references/checklist.md`.
 - Any retained `tsconfig.json` or ESLint has explicit, scoped ownership, and replacing either kept
   its useful behaviour or documents what was dropped.
 - Debugging started with Deno-native checks before generic Node or TypeScript advice.
 
-## References
+## Sources
 
 - Deno LLM Summary: <https://docs.deno.com/llms-summary.txt>
 - Deno Configuration Reference: <https://docs.deno.com/runtime/fundamentals/configuration/>
 - Deno TypeScript Configuration Reference: <https://docs.deno.com/runtime/reference/ts_config_migration/>
 - Deno Security Reference: <https://docs.deno.com/runtime/fundamentals/security/>
-- Read `./references/checklist.md` for a quick Deno review pass.

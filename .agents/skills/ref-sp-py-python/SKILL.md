@@ -118,9 +118,6 @@ path standing out from the rest.
 
 ## Before finishing
 
+- Run the quick Python review pass in `./references/checklist.md`.
 - After `uv build`, list the wheel (`unzip -l dist/*.whl`): no maintenance directories or test files
   ship in it.
-
-## References
-
-- Read `./references/checklist.md` for a quick Python review pass.

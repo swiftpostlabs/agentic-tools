@@ -83,11 +83,11 @@ changelog, publishing) is `ref-sp-dev-package-management`; Commitizen-driven rel
 
 ## Before finishing
 
+- Run the quick semver review pass in `./references/checklist.md`.
 - Prerelease vs final behaviour is intentional and stated.
 
-## References
+## Sources
 
 - Semantic Versioning 2.0.0: <https://semver.org/>
 - npm semver reference: <https://docs.npmjs.com/cli/v6/using-npm/semver>
 - npm package.json dependency fields: <https://docs.npmjs.com/cli/v10/configuring-npm/package-json?v=true#dependencies>
-- Read `./references/checklist.md` for a quick semver review pass.
