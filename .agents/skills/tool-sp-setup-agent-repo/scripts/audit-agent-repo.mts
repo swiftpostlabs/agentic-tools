@@ -49,9 +49,9 @@ const coreSkills = [
 ] as const;
 
 const workspaceDirs = [
-  '.agents/tasks',
-  '.agents/retro',
-  '.agents/playground',
+  '.agents/local/tasks',
+  '.agents/local/retro',
+  '.agents/local/playground',
 ] as const;
 
 const skillRoots = [
@@ -229,13 +229,17 @@ const isIgnored = (
   }
   const stem = relative.replace(/\/+$/, '');
   const trimSlashes = (line: string) => line.replace(/^\/+|\/+$/g, '');
+  const coversStem = (entry: string) =>
+    entry === stem || stem.startsWith(`${entry}/`);
   return (
       gitignore
         .split(/\r?\n/)
         .map((line) => line.trim())
         .some(
           (line) =>
-            line !== '' && !line.startsWith('#') && trimSlashes(line) === stem,
+            line !== '' &&
+            !line.startsWith('#') &&
+            coversStem(trimSlashes(line)),
         )
     ) ?
       true
