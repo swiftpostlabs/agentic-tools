@@ -123,6 +123,25 @@ describe('workspace checks', () => {
     expect(check(repo, 'W4')).toBeUndefined();
   });
 
+  test('a link left over files still tracked at the old path warns', () => {
+    const repo = makeRepo(
+      { ...workspaces, '.agents/playground/.gitignore': '*\n!.gitignore\n' },
+      { withGit: true },
+    );
+    gitIn(repo, ['add', '.agents/playground/.gitignore']);
+    fs.rmSync(path.join(repo, '.agents', 'playground'), { recursive: true });
+    fs.symlinkSync(
+      path.join(repo, '.agents', 'local', 'playground'),
+      path.join(repo, '.agents', 'playground'),
+      'junction',
+    );
+    const w4 = check(repo, 'W4');
+    expect(w4?.status).toBe('warn');
+    expect(w4?.detail).toEqual([
+      '.agents/playground: a link to the new folder, with 1 tracked file(s) under the old path',
+    ]);
+  });
+
   test('a link at an old path that leads elsewhere fails W4', () => {
     const repo = makeRepo(
       { ...workspaces, 'elsewhere/x.md': '' },

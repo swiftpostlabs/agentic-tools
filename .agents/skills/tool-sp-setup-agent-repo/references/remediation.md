@@ -14,10 +14,15 @@ The repo was set up before the workspaces moved under `.agents/local/`.
   create beside. Run `tool-sp-migrate-agent-repo`, which moves the old folders and their content
   and records the migration. Creating the new folders first leaves two copies to reconcile by
   hand. Re-run the audit afterwards.
-- **Warn** (an old folder holding only tracked files, such as an old `.agents/playground/.gitignore`
-  placeholder): the migration counts this as done and leaves the files where they are. Once no
-  other clone needs them, confirm with the user and untrack them:
-  `git -C <repo> rm -r --cached .agents/playground`, then remove the folder.
+- **Warn** (files still tracked at an old path, such as an old `.agents/playground/.gitignore`
+  placeholder, in a real folder or under a link to the new one): the migration counts this as done
+  and leaves the files where they are. Once no other clone needs them, confirm with the user and
+  untrack them with `git -C <repo> rm -r --cached .agents/playground`. Then remove the old folder
+  if it is a real one and now empty; leave a link alone.
+
+**Untrack with `--cached` only.** Plain `git rm` on a path under a link deletes the file inside the
+folder the link leads to, and on Windows also removes the junction once that folder looks empty to
+git. Untracking through the new path does not work either: git tracks the file under the old one.
 
 ## W1 — local agent workspaces missing
 
@@ -65,7 +70,8 @@ not retroactively untrack. Confirm with the user, then untrack without deleting 
 git -C <repo> rm -r --cached .agents/local/tasks .agents/local/retro .agents/local/playground
 ```
 
-Check what is being untracked first. If the repo has been treating `.agents/local/tasks/` as shared
+`--cached` matters: plain `git rm` deletes the local copies too, and removes a folder it empties,
+which may be a link migration 0001 left. Check what is being untracked first. If the repo has been treating `.agents/local/tasks/` as shared
 project planning, untracking it destroys a workflow — surface that instead of running the command.
 
 ## S1 / S2 — skills root or core skills missing

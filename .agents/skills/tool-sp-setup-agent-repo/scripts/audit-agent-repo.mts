@@ -454,15 +454,19 @@ const legacyWorkspaces = (
       '.agents/local',
       path.posix.basename(directory),
     );
+    const tracked = trackedPaths(repo, directory, hasGit).length;
     if (linkTarget(full) !== null) {
       if (!sameFolder(full, replacement)) {
         unmigrated.push(
           `${directory}: a link, but not to .agents/local/${path.posix.basename(directory)}`,
         );
+      } else if (tracked > 0) {
+        trackedOnly.push(
+          `${directory}: a link to the new folder, with ${tracked} tracked file(s) under the old path`,
+        );
       }
       continue;
     }
-    const tracked = trackedPaths(repo, directory, hasGit).length;
     if (!isRealDirectory(full)) {
       if (tracked > 0) {
         trackedOnly.push(`${directory}: ${tracked} tracked file(s)`);
