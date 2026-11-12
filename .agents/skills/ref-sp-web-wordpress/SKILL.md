@@ -16,10 +16,10 @@ metadata:
 WordPress the way WordPress documents it: extend through hooks, never core, and treat every request
 as hostile until it passes the three security gates. Most WordPress vulnerabilities are a missing
 capability check or an unescaped output, preventable with documented APIs. WordPress **SEO**
-(sitemaps, canonicals, headless + Next.js metadata) is `ref-sp-web-seo` and its
+(sitemaps, canonicals, archive and thin-content pages, headless + Next.js metadata) is `ref-sp-web-seo` and its
 `references/frameworks.md`; don't duplicate it here. Before asserting a specific function or
-standard, read `./references/sources.md`, which gives the handbook page for every claim here; both
-change over time.
+standard, read `./references/sources.md`, which gives the handbook page for every claim here; the
+function set and the coding standards do change.
 
 ## The security model — three gates, all three required
 

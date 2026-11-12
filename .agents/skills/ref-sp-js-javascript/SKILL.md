@@ -76,7 +76,7 @@ export const statValueLabels = /** @type {const} */ ({
 
 ## File extensions and linting
 
-For the flat ESLint template covering scripts, browser modules, and userscript slices, read
+For the `web-pages` flat ESLint template covering scripts, browser modules, and userscript slices, read
 `./references/config-templates.md`.
 
 - If modern Node or Deno can run the file directly, reconsider whether it should be TypeScript before defaulting to `.js`.
