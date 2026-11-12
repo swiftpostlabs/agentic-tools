@@ -62,6 +62,7 @@
     "./.agents/skills/tool-sp-maintain-agents-instructions",
     "./.agents/skills/tool-sp-maintain-skills",
     "./.agents/skills/tool-sp-make-skill-shareable",
+    "./.agents/skills/tool-sp-migrate-agent-repo",
     "./.agents/skills/tool-sp-run-adversarial-review",
     "./.agents/skills/tool-sp-setup-agent-repo",
     "./.agents/skills/tool-sp-setup-local-agents"
