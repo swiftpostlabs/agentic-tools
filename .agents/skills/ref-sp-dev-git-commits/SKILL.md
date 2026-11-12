@@ -29,8 +29,9 @@ diff, use `tool-sp-commit`, which applies these rules. Release bumps from commit
 type(scope): Short description of the commit
 ```
 
-- `type` is one of `feat`, `fix`, `docs`, `chore`. Skill files count as docs, so a skill-only
-  change is `docs(...)`.
+- `type` is one of `feat`, `fix`, `docs`, `chore`, `refactor`. Skill files count as docs, so a
+  skill-only change is `docs(...)`. `refactor` is only for restructuring that changes no behavior;
+  a change someone could notice, such as a moved default path, is `feat` or `fix`.
 - `scope` names the main surface: `skills`, `policy`, `scripts`, `docs`, `commits`. Changes to the
   commit skills themselves use `commit-skills`.
 - Describe the outcome, not the implementation steps.
