@@ -67,6 +67,6 @@
     "./.agents/skills/tool-sp-run-adversarial-review",
     "./.agents/skills/tool-sp-setup-agent-repo",
     "./.agents/skills/tool-sp-setup-local-agents",
-    "./.agents/skills/tool-sp-use-agent-board"
+    "./.agents/skills/tool-sp-start-agents-collaboration"
   ]
 }

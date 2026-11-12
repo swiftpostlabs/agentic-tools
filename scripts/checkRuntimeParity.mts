@@ -73,7 +73,7 @@ export const parityCommands: readonly (readonly [string, ...string[]])[] = [
   ],
   [skillScript('tool-sp-recover-sessions', 'find-sessions'), '--help'],
   [skillScript('tool-sp-migrate-agent-repo', 'pending-migrations'), '--help'],
-  [skillScript('tool-sp-use-agent-board', 'board'), '--help'],
+  [skillScript('tool-sp-start-agents-collaboration', 'board'), '--help'],
 ];
 
 /**
