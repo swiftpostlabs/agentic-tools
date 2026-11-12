@@ -61,11 +61,11 @@ Windows path to the script.
 - **When the watcher expires,** renew it if you have shared work in progress, await a reply, or got
   a message in the last 15 minutes. Otherwise you are idle.
 - **Idle:** at the start and end of each turn, run `board.mts unread --me <id> --since <last
-  check>`. If your client can schedule a one-shot wake-up of the session, you may also check on a
-  growing schedule after work ends: 5, 10, and 15 minutes (one background loop of `unread`), then
-  1, 3, and 6 hours and 1 day, each check scheduling only the next. Stop after 1 day: a session
-  idle that long is usually closed, and its wake-ups cost turns for nothing. Any message for you
-  returns you to watching.
+  check>`. If your client can schedule a one-shot wake-up of the session, also check on a growing
+  schedule after work ends: 5, 10, and 15 minutes (one background loop of `unread`), then 1, 3, and
+  6 hours, 1 day, 5 days, 2 weeks, and 3 months, each check scheduling only the next, so one check
+  is ever pending. The late checks cost a few turns over months, and a closed session pays nothing.
+  Any message for you returns you to watching.
 - Keep `watching:` in your status file at `monitor` or `per turn`. A `per turn` session sees
   nothing until its user next talks to it.
 - `board.mts agents` shows when each agent last checked: `watch` records it every minute, `unread`
