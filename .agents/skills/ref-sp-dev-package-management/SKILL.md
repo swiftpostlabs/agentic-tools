@@ -82,10 +82,7 @@ Dependabot PR automation is `ref-sp-dev-github-dependabot`.
 
 ## Before finishing
 
+- Run the quick package-management review pass in `./references/checklist.md`.
 - The workflow says where semver decisions come from, separately from the file-sync mechanics.
 - Long-lived publish tokens are absent, or documented as a deliberate fallback.
 - If npm staged publishing is used, the human 2FA approval path is written down.
-
-## References
-
-- Read `./references/checklist.md` for a quick package-management review pass.

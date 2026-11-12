@@ -82,13 +82,13 @@ ship it through Supabase migrations. Whether the authorization model is sound is
 
 ## Before finishing
 
+- Run the quick Supabase review pass in `./references/checklist.md`.
 - Migration history, local schema, generated types, and the remote project agree.
 
-## References
+## Sources
 
 - Supabase LLM Reference: <https://supabase.com/llms.txt>
 - Supabase CLI Reference: <https://supabase.com/docs/reference/cli/introduction>
 - Supabase JavaScript Reference: <https://supabase.com/docs/reference/javascript/introduction>
 - Supabase Functions Guide: <https://supabase.com/docs/guides/functions>
 - Supabase Drizzle Guide: <https://supabase.com/docs/guides/database/drizzle>
-- Read `./references/checklist.md` for a quick Supabase review pass.

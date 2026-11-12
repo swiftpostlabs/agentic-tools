@@ -82,6 +82,6 @@ where order changes meaning (`/etc/cron.d` stays unnumbered). `.d` numbers encod
 simultaneous entries, while a lifecycle is a *sequence*, so don't import priority idioms like a
 `50-` neutral centre.
 
-## References
+## Before finishing
 
-- `./references/checklist.md`: quick structure review pass.
+- Run the quick structure review pass in `./references/checklist.md`.
