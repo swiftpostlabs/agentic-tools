@@ -55,7 +55,8 @@ standing approval your user gave (the worker template in the ref skill).
 
    A worker says what it can take; a coordinator says what the room is for. Pipe a long body on
    stdin instead of `--body`.
-8. **Watch:** `board.mts watch --me <id> --since <now>` under a background monitor with its longest
+8. **Watch:** `board.mts watch --me <id> --since <last check>` (the time you joined, the first
+   time) under a background monitor with its longest
    timeout, renewed and scheduled as the ref skill's Watching section says. Add `--room <room>` to
    follow one room only.
 

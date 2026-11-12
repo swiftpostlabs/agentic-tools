@@ -82,6 +82,37 @@ export const parityCommands: readonly (readonly [string, ...string[]])[] = [
  */
 export const fixtureCommands: readonly (readonly [string, ...string[]])[] = [
   ['.agents/skills/ref-sp-agents-local-tasks/assets/next-todo.mts'],
+  [skillScript('tool-sp-start-agents-collaboration', 'board'), 'room', 'list'],
+  [
+    skillScript('tool-sp-start-agents-collaboration', 'board'),
+    'unread',
+    '--me',
+    'def456',
+    '--since',
+    '2026-01-01T00:00:00Z',
+  ],
+  [
+    skillScript('tool-sp-start-agents-collaboration', 'board'),
+    'post',
+    '--from',
+    'acme / demo / abc123',
+    '--to',
+    'all',
+    '--body',
+    'Hi',
+  ],
+  [
+    skillScript('tool-sp-start-agents-collaboration', 'board'),
+    'post',
+    '--room',
+    'demo',
+    '--from',
+    String.raw`acme / demo / ..\..\CLAUDE`,
+    '--to',
+    'all',
+    '--body',
+    'Hi',
+  ],
 ];
 
 /** The first way two runs differ, or undefined when they match. */
@@ -118,6 +149,25 @@ const writeFixtureWorkspace = (directory: string): void => {
   fs.writeFileSync(
     path.join(tasks, 'TODO.md'),
     '# TODO\n\n- [x] done item\n- [ ] first open item\n- [ ] second open item\n',
+    'utf8',
+  );
+  const room = path.join(
+    directory,
+    '.agents',
+    'local',
+    'collaboration',
+    'rooms',
+    '2026-01-02-demo',
+  );
+  fs.mkdirSync(path.join(room, 'messages'), { recursive: true });
+  fs.writeFileSync(
+    path.join(room, 'README.md'),
+    '---\ntitle: Demo\nstatus: open\ntask: 2026-01-02-demo\nmembers: abc123, def456\n---\n\n# Demo\n',
+    'utf8',
+  );
+  fs.writeFileSync(
+    path.join(room, 'messages', '2026-01-02T030405678Z-abc123.md'),
+    '---\nfrom: acme / demo / abc123\nto: all\nsent: 2026-01-02T03:04:05.678Z\n---\n\nHello members.\n',
     'utf8',
   );
 };

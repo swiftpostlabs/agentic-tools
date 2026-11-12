@@ -92,6 +92,34 @@ Notes that are true only on this machine (paths per client, account names) go be
 
 class UsageError extends Error {}
 
+const idPattern = /^[A-Za-z0-9][A-Za-z0-9-]{0,63}$/;
+
+/**
+ * An agent id, checked because ids become file names: anything but letters, digits, and dashes
+ * could write outside the board.
+ */
+export const checkId = (id: string, what: string): string => {
+  if (!idPattern.test(id)) {
+    throw new UsageError(
+      `${what} must be an id of letters, digits, and dashes, not ${JSON.stringify(id)}`,
+    );
+  }
+  return id;
+};
+
+// A line break in a header value could forge another header line.
+// eslint-disable-next-line no-control-regex -- matching control characters is the point.
+const controlCharacters = /[\u0000-\u001f\u007f]/;
+
+export const checkHeaderValue = (value: string, what: string): string => {
+  if (controlCharacters.test(value)) {
+    throw new UsageError(`${what} must be one line without control characters`);
+  }
+  return value;
+};
+
+const sentPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z$/;
+
 const roomsDir = (board: string): string => path.join(board, 'rooms');
 const agentsDir = (board: string): string => path.join(board, 'agents');
 const topLevelMessagesDir = (board: string): string =>
@@ -156,6 +184,19 @@ const splitList = (value: string): string[] =>
     .map((item) => item.trim())
     .filter((item) => item !== '');
 
+const checkRecipients = (to: string): string => {
+  const recipients = splitList(checkHeaderValue(to, '--to'));
+  if (recipients.length === 0) {
+    throw new UsageError('--to needs at least one id, or all');
+  }
+  for (const recipient of recipients) {
+    if (recipient !== 'all') {
+      checkId(recipient, 'each --to recipient');
+    }
+  }
+  return recipients.join(',');
+};
+
 export const parseMessage = (file: string, text: string): Message => {
   const { header, body } = parseFrontmatter(text);
   return {
@@ -206,6 +247,11 @@ export const readRoom = (board: string, name: string): Room => {
 };
 
 export const writeRoom = (board: string, room: Room): void => {
+  checkHeaderValue(room.title, 'the title');
+  checkHeaderValue(room.task, 'the task');
+  for (const member of room.members) {
+    checkId(member, '--me');
+  }
   const directory = path.join(roomsDir(board), room.name);
   const readme = path.join(directory, 'README.md');
   const existing = fs.existsSync(readme) ? fs.readFileSync(readme, 'utf8') : '';
@@ -385,10 +431,20 @@ export const post = (
   body: string,
   options: { room?: string; sent?: string } = {},
 ): string => {
+  const id = checkId(
+    sessionIdOf(checkHeaderValue(from, '--from')),
+    'the id at the end of --from',
+  );
+  const recipients = checkRecipients(to);
   const place = postPlace(board, options.room);
   const sent = options.sent ?? new Date().toISOString();
-  const file = `${sent.replaceAll(/[:.]/g, '')}-${sessionIdOf(from)}.md`;
-  const content = `---\nfrom: ${from}\nto: ${to}\nsent: ${sent}\n---\n\n${body}\n`;
+  if (!sentPattern.test(sent)) {
+    throw new UsageError(
+      `the send time must be an ISO time in UTC, not ${JSON.stringify(sent)}`,
+    );
+  }
+  const file = `${sent.replaceAll(/[:.]/g, '')}-${id}.md`;
+  const content = `---\nfrom: ${from}\nto: ${recipients}\nsent: ${sent}\n---\n\n${body}\n`;
   fs.mkdirSync(placeMessagesDir(board, place), { recursive: true });
   fs.writeFileSync(path.join(placeMessagesDir(board, place), file), content, {
     flag: 'wx',
@@ -398,6 +454,7 @@ export const post = (
 };
 
 const markSeen = (board: string, me: string): void => {
+  checkId(me, '--me');
   fs.mkdirSync(agentsDir(board), { recursive: true });
   fs.writeFileSync(
     path.join(agentsDir(board), `${me}.seen`),
@@ -458,6 +515,7 @@ export const unreadLines = (
   since: string,
   roomName?: string,
 ): string[] => {
+  checkId(me, '--me');
   const cutoff = Date.parse(since);
   const found: { sent: string; line: string }[] = [];
   for (const place of placesFor(board, roomName)) {
@@ -489,11 +547,38 @@ const unread = (
 };
 
 /** Message file names are unique on a board (send time plus sender id), so they survive a move into a room. */
-const allMessageFiles = (
+export const allMessageFiles = (
   board: string,
   roomName: string | undefined,
 ): string[] =>
   placesFor(board, roomName).flatMap((place) => listMessageFiles(board, place));
+
+/**
+ * Lines for messages to `me` whose files are not in `seen`, adding them to it. Files are tracked
+ * by name, unique on a board, so moving messages into a room does not announce them again.
+ */
+export const newMessageLines = (
+  board: string,
+  me: string,
+  roomName: string | undefined,
+  seen: Set<string>,
+): string[] => {
+  const lines: string[] = [];
+  // Re-read the places each time, so new rooms, joins, and closes take effect while watching.
+  for (const place of placesFor(board, roomName)) {
+    for (const file of listMessageFiles(board, place)) {
+      if (seen.has(file)) {
+        continue;
+      }
+      seen.add(file);
+      const message = readMessage(board, place, file);
+      if (isForIn(place, message, me)) {
+        lines.push(oneLine(message, placeLabel(place, file)));
+      }
+    }
+  }
+  return lines;
+};
 
 const watch = (
   board: string,
@@ -517,20 +602,8 @@ const watch = (
       markSeen(board, me);
       lastMark = Date.now();
     }
-    // Re-read the places each time, so new rooms, joins, and closes take effect while watching.
-    for (const place of placesFor(board, roomName)) {
-      for (const file of listMessageFiles(board, place)) {
-        if (seen.has(file)) {
-          continue;
-        }
-        seen.add(file);
-        const message = readMessage(board, place, file);
-        if (isForIn(place, message, me)) {
-          process.stdout.write(
-            `${oneLine(message, placeLabel(place, file))}\n`,
-          );
-        }
-      }
+    for (const line of newMessageLines(board, me, roomName, seen)) {
+      process.stdout.write(`${line}\n`);
     }
   }, intervalSeconds * 1000);
 };
@@ -576,14 +649,17 @@ const runRoom = (
       const room = createRoom(
         board,
         required(values.name, 'room create needs --name <kebab-name>'),
-        required(values.me, 'room create needs --me <id>'),
+        checkId(required(values.me, 'room create needs --me <id>'), '--me'),
         { title: values.title, task: values.task },
       );
       process.stdout.write(`created rooms/${room.name}\n`);
       return;
     }
     case 'join': {
-      const me = required(values.me, 'room join needs --me <id>');
+      const me = checkId(
+        required(values.me, 'room join needs --me <id>'),
+        '--me',
+      );
       const room = changeRoom(
         board,
         required(values.room, 'room join needs --room <room>'),
@@ -692,9 +768,6 @@ const run = (argv: string[]): number => {
         values.from,
         'post needs --from "<account> / <session name> / <id>"',
       );
-      if (sessionIdOf(from) === '') {
-        throw new UsageError('--from must end with "/ <id>"');
-      }
       const to = required(values.to, 'post needs --to <id|all>');
       const place = postPlace(board, values.room);
       const body = required(
@@ -712,7 +785,7 @@ const run = (argv: string[]): number => {
       listAgents(board);
       return 0;
     case 'unread': {
-      const me = required(values.me, 'unread needs --me <id>');
+      const me = checkId(required(values.me, 'unread needs --me <id>'), '--me');
       const since = isoTime(
         required(values.since, 'unread needs --since <ISO time>'),
       );
@@ -720,7 +793,7 @@ const run = (argv: string[]): number => {
       return 0;
     }
     case 'watch': {
-      const me = required(values.me, 'watch needs --me <id>');
+      const me = checkId(required(values.me, 'watch needs --me <id>'), '--me');
       const since =
         values.since === undefined ? undefined : isoTime(values.since);
       const interval = Number(values.interval);
@@ -740,11 +813,18 @@ const run = (argv: string[]): number => {
   }
 };
 
+/** node:util parseArgs rejects unknown or malformed options with these codes. */
+const isParseArgsError = (error: unknown): error is Error =>
+  error instanceof Error &&
+  'code' in error &&
+  typeof error.code === 'string' &&
+  error.code.startsWith('ERR_PARSE_ARGS_');
+
 const main = (argv: string[]): number => {
   try {
     return run(argv);
   } catch (error) {
-    if (error instanceof UsageError || error instanceof TypeError) {
+    if (error instanceof UsageError || isParseArgsError(error)) {
       process.stderr.write(`board: ${error.message}\n\n${usage}\n`);
       return 2;
     }
