@@ -57,7 +57,8 @@ moves.
 - **Never delete user data.** A migration moves or rewrites; when a target already exists, it
   merges or stops and asks, never overwrites.
 - **Migrations are permanent.** Fix a wrong one with a new, higher-numbered migration, never by
-  editing one that may already have run elsewhere.
+  editing one that may already have run elsewhere. The one exception is wording that changes no
+  Check, Apply, or Verify behavior, such as a clearer sentence or a fixed link: edit that in place.
 
 ## Writing a migration
 
