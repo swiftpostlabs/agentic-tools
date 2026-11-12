@@ -1,4 +1,6 @@
 # Bun shares one module cache across test files, so a hook registered when a helper is first
 # imported would cover only that file. Preloading the fixtures makes their cleanup hook global.
+# Bun reads this file only from the folder it starts in, so run `bun test` from the repo root,
+# as `yarn test:bun` does; started from src/, the leak comes back.
 [test]
 preload = ["./src/core/testFixtures.ts"]
