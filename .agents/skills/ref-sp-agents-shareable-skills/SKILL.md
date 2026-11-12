@@ -120,6 +120,10 @@ read-only banner on vendored copies. Strictness comes from the `phase` in
 `./references/registry.json`. It is separate from the skill-quality validator; `yarn validate`
 runs both.
 
+Skills linked in from another repo (a symlink, or a junction on Windows) count only for resolving
+`requires`: their owner validates them, so `--all` and the manifest check skip them. A hard
+dependency on a linked skill still needs a valid visibility at least as high as the dependent's.
+
 ### Plugin manifest check (`--all` only)
 
 If the repo publishes a plugin (`.claude-plugin/plugin.json`), the validator also checks that
@@ -131,6 +135,8 @@ the stakes:
 - **Error** — a listed skill is not `public`. Publishing leaks a skill that was never meant to leave,
   and installs are cached on users' machines, so it cannot be recalled.
 - **Error** — a listed path is not a skill. Dangling entries silently drop from the published plugin.
+- **Error** — a listed skill is linked in from another repo. `skills sync` gitignores linked skills,
+  so it would not ship.
 - **Error** — the manifest lists the skills *container* while non-public skills exist inside it.
   Listing the container publishes everything in it, tier metadata notwithstanding.
 - **Warning** — a `public` skill is missing from the manifest. It will not ship, but a skill can be

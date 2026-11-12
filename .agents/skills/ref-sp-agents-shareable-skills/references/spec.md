@@ -345,7 +345,9 @@ from the top level.
   name → else **fail**. (General charset/length/folder-match well-formedness is the authoring
   validator's job; this check adds the grammar-vs-metadata projection on top.)
 - `shareable-skills.domain` exists in the registry → else **fail** (with the growth note, §4).
-- Each `shareable-skills.requires` entry resolves to an existing skill → else **fail** (§5).
+- Each `shareable-skills.requires` entry resolves to an existing skill → else **fail** (§5). A skill
+  linked in from another repo counts here, and only here: its owner validates it, so `--all` and the
+  plugin manifest check skip it. A linked dependency without a valid visibility → **fail**.
 - `shareable-skills.suggests` entries may be absent → never fails.
 - No skill hard-depends on a lower-visibility skill (`repo-local` < `organization` < `public`) → else
   **fail** (§5, §6).

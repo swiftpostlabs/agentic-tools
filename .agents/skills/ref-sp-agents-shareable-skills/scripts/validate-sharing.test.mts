@@ -68,6 +68,7 @@ const writeSkill = (
 };
 
 type Report = {
+  status: number | null;
   checked: number;
   findings: { skill: string; severity: string; message: string }[];
 };
@@ -78,8 +79,15 @@ const validateAll = (skillsRoot: string): Report => {
     [script, skillsRoot, '--all', '--format', 'json'],
     { encoding: 'utf8' },
   );
-  return JSON.parse(result.stdout) as Report;
+  expect(result.stderr).toBe('');
+  return {
+    status: result.status,
+    ...(JSON.parse(result.stdout) as Omit<Report, 'status'>),
+  };
 };
+
+const messages = (report: Report): string[] =>
+  report.findings.map((finding) => finding.message);
 
 /** A repo whose skill requires one that lives in another repo and is linked in. */
 const repoWithLinkedDependency = (
@@ -117,6 +125,7 @@ describe('linked skills', () => {
     const report = validateAll(repoWithLinkedDependency('junction').skillsRoot);
     expect(report.findings).toEqual([]);
     expect(report.checked).toBe(1);
+    expect(report.status).toBe(0);
   });
 
   // Windows refuses directory symlinks without Developer Mode or admin, so this runs only where
@@ -127,24 +136,55 @@ describe('linked skills', () => {
       const report = validateAll(repoWithLinkedDependency('dir').skillsRoot);
       expect(report.findings).toEqual([]);
       expect(report.checked).toBe(1);
+      expect(report.status).toBe(0);
     },
   );
+
+  test('a linked dependency still has to be at least as visible as the dependent', () => {
+    const report = validateAll(
+      repoWithLinkedDependency('junction', 'organization').skillsRoot,
+    );
+    expect(messages(report)).toEqual([
+      "public skill must not hard-depend on lower-visibility organization skill 'ref-sp-dev-linked'",
+    ]);
+    expect(report.status).toBe(1);
+  });
+
+  test('a linked dependency without a valid visibility fails, since nothing else validates it', () => {
+    const report = validateAll(
+      repoWithLinkedDependency('junction', '').skillsRoot,
+    );
+    expect(messages(report)).toEqual([
+      "requires 'ref-sp-dev-linked', a linked skill with no valid visibility — its owner must set one before it can be a hard dependency",
+    ]);
+    expect(report.status).toBe(1);
+  });
 
   test('the plugin manifest check leaves linked skills to their owner', () => {
     const { repo, skillsRoot } = repoWithLinkedDependency('junction');
     writeManifest(repo, ['./.agents/skills/ref-sp-dev-local']);
     expect(validateAll(skillsRoot).findings).toEqual([]);
 
-    const withOrganizationSkill = repoWithLinkedDependency(
-      'junction',
-      'organization',
-    );
-    writeManifest(withOrganizationSkill.repo, './.agents/skills');
+    const container = repoWithLinkedDependency('junction', 'organization');
+    writeManifest(container.repo, './.agents/skills');
     expect(
-      validateAll(withOrganizationSkill.skillsRoot).findings.filter(
+      validateAll(container.skillsRoot).findings.filter(
         (finding) => finding.skill === 'plugin-manifest',
       ),
     ).toEqual([]);
+  });
+
+  test('a manifest that lists a linked skill fails, since it would not ship', () => {
+    const { repo, skillsRoot } = repoWithLinkedDependency('junction');
+    writeManifest(repo, [
+      './.agents/skills/ref-sp-dev-local',
+      './.agents/skills/ref-sp-dev-linked',
+    ]);
+    const report = validateAll(skillsRoot);
+    expect(messages(report)).toEqual([
+      "'ref-sp-dev-linked' is linked in from another repo and listed in plugin.json — skills sync gitignores linked skills, so it would not ship; list only this repo's own skills",
+    ]);
+    expect(report.status).toBe(1);
   });
 
   test('a dangling link is skipped, and a dependency on it does not resolve', () => {
@@ -158,5 +198,6 @@ describe('linked skills', () => {
     const report = validateAll(skillsRoot);
     expect(report.checked).toBe(1);
     expect(unresolved(report)).toHaveLength(1);
+    expect(report.status).toBe(1);
   });
 });

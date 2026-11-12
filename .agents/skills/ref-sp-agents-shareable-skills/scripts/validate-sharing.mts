@@ -427,6 +427,15 @@ function validateSharingSkill(
     // A skill must not hard-depend on a lower-visibility (less portable) skill,
     // or the dependency would not travel everywhere the dependent skill can.
     const depRank = visibilityRank(info.visibility);
+    // A repo's own untiered skill fails its own validation; a linked one is never validated here,
+    // so the dependency is where it has to show.
+    if (info.linked && depRank === null) {
+      add(
+        'error',
+        `requires '${dep}', a linked skill with no valid visibility — its owner must set one before it can be a hard dependency`,
+      );
+      continue;
+    }
     if (selfRank !== null && depRank !== null && depRank < selfRank) {
       add(
         'error',
@@ -569,6 +578,13 @@ function validatePluginManifest(
   }
 
   for (const name of listed) {
+    if (index.get(name)?.linked === true) {
+      add(
+        'error',
+        `'${name}' is linked in from another repo and listed in ${manifestName} — skills sync gitignores linked skills, so it would not ship; list only this repo's own skills`,
+      );
+      continue;
+    }
     const visibility = ownSkills.get(name)?.visibility ?? null;
     if (visibility !== 'public') {
       add(
