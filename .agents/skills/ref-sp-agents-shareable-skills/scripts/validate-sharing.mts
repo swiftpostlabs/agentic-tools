@@ -16,7 +16,13 @@
 //   node validate-sharing.mts <skills-root> --all
 //   node validate-sharing.mts <target> [--format text|json] [--warnings-as-errors]
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  lstatSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 type Severity = 'error' | 'warning';
@@ -49,6 +55,8 @@ type Visibility = 'repo-local' | 'organization' | 'public';
 
 interface SkillInfo {
   visibility: Visibility | null;
+  /** Linked in from another repo (a symlink, or a junction on Windows): its owner validates it. */
+  linked: boolean;
 }
 
 // Visibility ordered from least to most portable. A skill may only hard-require
@@ -240,35 +248,42 @@ function loadRegistry(): { registry: Registry | null; error: string | null } {
 }
 
 /**
- * Skill folders under a skills root, linked ones included: linking a skill in from another repo
- * (a symlink, or a junction on Windows) is how skills are shared, and a Dirent reports a link as
- * not a directory. `statSync` follows the link; a dangling one is skipped.
+ * Skill folders under a skills root, linked ones included and marked: linking a skill in from
+ * another repo (a symlink, or a junction on Windows) is how skills are shared, and a Dirent reports
+ * a link as not a directory. `statSync` follows the link; a dangling one is skipped.
  */
-function skillFolderNames(skillsRoot: string): string[] {
+function skillFolders(skillsRoot: string): { name: string; linked: boolean }[] {
   return readdirSync(skillsRoot)
-    .filter((name) => {
+    .sort()
+    .flatMap((name) => {
+      const folder = join(skillsRoot, name);
       try {
         return (
-          statSync(join(skillsRoot, name)).isDirectory() &&
-          existsSync(join(skillsRoot, name, 'SKILL.md'))
-        );
+            statSync(folder).isDirectory() &&
+              existsSync(join(folder, 'SKILL.md'))
+          ) ?
+            [{ name, linked: lstatSync(folder).isSymbolicLink() }]
+          : [];
       } catch {
-        return false;
+        return [];
       }
-    })
-    .sort();
+    });
 }
 
+/**
+ * Every skill a dependency may resolve to, linked ones included. Only the repo's own skills are
+ * validated and checked against its plugin manifest; a linked skill is its owner's to validate.
+ */
 function loadSkillIndex(skillsRoot: string): Map<string, SkillInfo> {
   const index = new Map<string, SkillInfo>();
-  for (const name of skillFolderNames(skillsRoot)) {
+  for (const { name, linked } of skillFolders(skillsRoot)) {
     const skillMd = join(skillsRoot, name, 'SKILL.md');
     try {
       const { frontmatter } = parseFrontmatter(readFileSync(skillMd, 'utf8'));
       const visibility = computeVisibility(asMetadata(frontmatter));
-      index.set(name, { visibility: visibility as Visibility | null });
+      index.set(name, { visibility: visibility as Visibility | null, linked });
     } catch {
-      index.set(name, { visibility: null });
+      index.set(name, { visibility: null, linked });
     }
   }
   return index;
@@ -505,6 +520,8 @@ function validatePluginManifest(
   skillsRoot: string,
   index: Map<string, SkillInfo>,
 ): Finding[] {
+  // Linked skills are gitignored by `skills sync` and never ship in this repo's plugin.
+  const ownSkills = new Map([...index].filter(([, info]) => !info.linked));
   const manifest = findPluginManifest(skillsRoot);
   // A repo that publishes no plugin has nothing to keep in sync.
   if (manifest === null) {
@@ -539,7 +556,7 @@ function validatePluginManifest(
 
   if (containerListed) {
     // Listing the container publishes everything inside it, tier metadata notwithstanding.
-    for (const [name, info] of index) {
+    for (const [name, info] of ownSkills) {
       if (info.visibility === 'public') {
         continue;
       }
@@ -552,7 +569,7 @@ function validatePluginManifest(
   }
 
   for (const name of listed) {
-    const visibility = index.get(name)?.visibility ?? null;
+    const visibility = ownSkills.get(name)?.visibility ?? null;
     if (visibility !== 'public') {
       add(
         'error',
@@ -563,7 +580,7 @@ function validatePluginManifest(
 
   // A public skill may legitimately be in flight before its first release, so this is a warning:
   // the omission is recoverable, unlike a leak.
-  for (const [name, info] of index) {
+  for (const [name, info] of ownSkills) {
     if (info.visibility === 'public' && !listed.has(name)) {
       add(
         'warning',
@@ -579,7 +596,9 @@ function validatePluginManifest(
 
 function findSkillDirs(target: string, validateAll: boolean): string[] {
   if (validateAll) {
-    return skillFolderNames(target).map((name) => join(target, name));
+    return skillFolders(target)
+      .filter(({ linked }) => !linked)
+      .map(({ name }) => join(target, name));
   }
   return [target];
 }

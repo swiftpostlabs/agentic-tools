@@ -38,13 +38,14 @@ const writeSkill = (
   skillsRoot: string,
   name: string,
   requires?: string,
+  visibility = 'public',
 ): void => {
   fs.mkdirSync(path.join(skillsRoot, name), { recursive: true });
   const metadata = [
     '  shareable-skills.owner-prefix: "sp"',
     '  shareable-skills.owner: "swiftpostlabs/agentic-tools"',
     '  shareable-skills.domain: "dev"',
-    '  shareable-skills.visibility: "public"',
+    `  shareable-skills.visibility: "${visibility}"`,
     ...(requires === undefined ?
       []
     : [`  shareable-skills.requires: "${requires}"`]),
@@ -83,17 +84,27 @@ const validateAll = (skillsRoot: string): Report => {
 /** A repo whose skill requires one that lives in another repo and is linked in. */
 const repoWithLinkedDependency = (
   type: 'dir' | 'junction',
-): { skillsRoot: string } => {
+  linkedVisibility = 'public',
+): { repo: string; skillsRoot: string } => {
   const source = path.join(tempDir(), 'skills');
-  writeSkill(source, 'ref-sp-dev-linked');
-  const skillsRoot = path.join(tempDir(), '.agents', 'skills');
+  writeSkill(source, 'ref-sp-dev-linked', undefined, linkedVisibility);
+  const repo = tempDir();
+  const skillsRoot = path.join(repo, '.agents', 'skills');
   writeSkill(skillsRoot, 'ref-sp-dev-local', 'ref-sp-dev-linked');
   fs.symlinkSync(
     path.join(source, 'ref-sp-dev-linked'),
     path.join(skillsRoot, 'ref-sp-dev-linked'),
     type,
   );
-  return { skillsRoot };
+  return { repo, skillsRoot };
+};
+
+const writeManifest = (repo: string, skills: string | string[]): void => {
+  fs.mkdirSync(path.join(repo, '.claude-plugin'), { recursive: true });
+  fs.writeFileSync(
+    path.join(repo, '.claude-plugin', 'plugin.json'),
+    JSON.stringify({ name: 'consumer', skills }),
+  );
 };
 
 const unresolved = (report: Report) =>
@@ -102,22 +113,39 @@ const unresolved = (report: Report) =>
   );
 
 describe('linked skills', () => {
-  test('a hard dependency on a junction-linked skill resolves, and the linked skill is checked', () => {
+  test('a hard dependency on a junction-linked skill resolves; only the own skill is validated', () => {
     const report = validateAll(repoWithLinkedDependency('junction').skillsRoot);
-    expect(unresolved(report)).toEqual([]);
-    expect(report.checked).toBe(2);
+    expect(report.findings).toEqual([]);
+    expect(report.checked).toBe(1);
   });
 
-  // Skipped where the OS refuses directory symlinks (Windows without Developer Mode or admin);
-  // Linux and macOS always run it, and the junction test covers Windows.
+  // Windows refuses directory symlinks without Developer Mode or admin, so this runs only where
+  // the probe succeeds (Linux, macOS, or such a Windows); the junction test covers Windows.
   (canSymlinkDirectories ? test : test.skip)(
-    'a hard dependency on a symlinked skill resolves, and the linked skill is checked',
+    'a hard dependency on a symlinked skill resolves; only the own skill is validated',
     () => {
       const report = validateAll(repoWithLinkedDependency('dir').skillsRoot);
-      expect(unresolved(report)).toEqual([]);
-      expect(report.checked).toBe(2);
+      expect(report.findings).toEqual([]);
+      expect(report.checked).toBe(1);
     },
   );
+
+  test('the plugin manifest check leaves linked skills to their owner', () => {
+    const { repo, skillsRoot } = repoWithLinkedDependency('junction');
+    writeManifest(repo, ['./.agents/skills/ref-sp-dev-local']);
+    expect(validateAll(skillsRoot).findings).toEqual([]);
+
+    const withOrganizationSkill = repoWithLinkedDependency(
+      'junction',
+      'organization',
+    );
+    writeManifest(withOrganizationSkill.repo, './.agents/skills');
+    expect(
+      validateAll(withOrganizationSkill.skillsRoot).findings.filter(
+        (finding) => finding.skill === 'plugin-manifest',
+      ),
+    ).toEqual([]);
+  });
 
   test('a dangling link is skipped, and a dependency on it does not resolve', () => {
     const skillsRoot = path.join(tempDir(), '.agents', 'skills');
