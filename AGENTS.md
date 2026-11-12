@@ -70,6 +70,8 @@ For anything else, match the task against the skill descriptions' `Use when:` cl
 
 Machine-local notes live in `.agents/local/AGENTS.md` (gitignored, so not in every clone): read it when it exists, before starting work.
 
+When `.agents/local/migrations.json` is missing or behind the newest migration in `tool-sp-migrate-agent-repo`, run that skill before other work.
+
 Folder rules live in nested `AGENTS.md` files. Read the one for the folder you are changing before editing it: `src/` (code rules for everything under it), `src/core/`, `src/features/`, one per feature (`policy/`, `skills/`, `plugin/`, `export/`), and `scripts/`.
 
 ## Node and Bun
