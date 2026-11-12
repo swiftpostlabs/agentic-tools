@@ -26,9 +26,12 @@ For each row not done, from the repo root:
 0. List tracked files first: `git ls-files .agents/tasks .agents/retro .agents/playground`. Leave
    each tracked file where it is (an older checkout may track `.agents/playground/.gitignore`);
    moving it shows as a deletion in git. The old folder then stays, holding only those files,
-   until the repo stops tracking them. Untrack them with `git rm --cached <file>`, never plain
-   `git rm`: once a link sits at the old path, plain `git rm` deletes the file inside the new
-   folder, and on Windows also removes the junction.
+   until the repo stops tracking them. When it later does, it should use `git rm --cached` only:
+   if a link sits at the old path, plain `git rm` (or `-f`) can delete the file inside the new
+   folder, and on Windows removes the junction. A Windows clone with a junction at the old path
+   gets the same damage from pulling that commit, so it removes the junction first
+   (`cmd /c rmdir .agents\playground`, which leaves the target alone; PowerShell's own `rmdir`
+   is `Remove-Item`) and recreates it after the pull.
 1. If the old folder holds no tracked file and the new path does not exist, create
    `.agents/local/` and move the old folder there whole (`git mv` does not apply: the folders are
    gitignored). POSIX: `mv .agents/tasks .agents/local/tasks`. PowerShell:
