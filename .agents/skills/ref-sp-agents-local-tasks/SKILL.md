@@ -60,6 +60,7 @@ created: 2026-07-15T21:53:15+02:00
 updated: 2026-07-15T22:04:32+02:00
 outcome: "Both fixes landed, but the auto-merge path was never re-verified end to end because CI
   was red on an unrelated error. Closed on its fixes, not on full verification."
+room: 2026-07-15-auto-merge-fixes
 ---
 ```
 
@@ -69,6 +70,9 @@ outcome: "Both fixes landed, but the auto-merge path was never re-verified end t
 - `outcome`: required in `90-closed/`. One or two sentences of prose, including what was *not*
   done and why. `done` already says it finished; the qualification is the part worth reading.
   Longer reasoning goes in the body.
+- `room`: optional. The name of the board room where agent sessions collaborate on this task
+  (`ref-sp-agents-cross-session-communication`); the room's README names this task back. Use
+  folder names, not paths: both survive the task moving between lifecycle folders.
 
 Nothing validates these files, and `updated` drifts most. When it looks wrong, compare the files
 inside the folder: a folder's own `mtime` changes only when children are added or removed.
