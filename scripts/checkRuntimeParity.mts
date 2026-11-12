@@ -82,6 +82,25 @@ export const parityCommands: readonly (readonly [string, ...string[]])[] = [
  */
 export const fixtureCommands: readonly (readonly [string, ...string[]])[] = [
   ['.agents/skills/ref-sp-agents-local-tasks/assets/next-todo.mts'],
+  [
+    skillScript('tool-sp-start-agents-collaboration', 'board'),
+    'room',
+    'link',
+    '--room',
+    'demo',
+    '--task',
+    '2026-01-02-demo',
+  ],
+  [
+    skillScript('tool-sp-start-agents-collaboration', 'board'),
+    'room',
+    'join',
+    '--room',
+    'demo',
+    '--me',
+    'abc123',
+  ],
+  [skillScript('tool-sp-start-agents-collaboration', 'board'), 'render'],
   [skillScript('tool-sp-start-agents-collaboration', 'board'), 'room', 'list'],
   [
     skillScript('tool-sp-start-agents-collaboration', 'board'),
