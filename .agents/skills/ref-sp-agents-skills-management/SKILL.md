@@ -33,7 +33,8 @@ is `~/.agents/skills`.
   by two sources.
 - **`unlink`**: removes linked skills from a repo or, with `--global`, from `~/.agents/skills`,
   checking they point at the expected source so an unrelated
-  directory is never removed.
+  directory is never removed. It leaves the config alone, so the next `sync` links the skill again;
+  to drop a synced skill for good, remove it from the config and run `sync`.
 
 `link`, `sync`, and `unlink` take `--dry-run`; `link` and `sync` take `--force` to replace a link
 that points elsewhere.

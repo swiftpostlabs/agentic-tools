@@ -31,7 +31,8 @@ export const formatRelative = (target: string, root: string): string => {
   const relative = path.relative(root, target);
   if (
     relative === '' ||
-    relative.startsWith('..') ||
+    relative === '..' ||
+    relative.startsWith(`..${path.sep}`) ||
     path.isAbsolute(relative)
   ) {
     return target;

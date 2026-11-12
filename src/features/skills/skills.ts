@@ -276,6 +276,8 @@ const cleanupUnconfiguredLinks = (
 ): string[] =>
   listLinks(destinationDir)
     .filter((link) => !configured.has(path.basename(link)))
+    // A dead link is already reported, and in a real run removed, by cleanupDeadLinks.
+    .filter((link) => exists(resolveLinkTarget(link)))
     .map((link) => {
       const target = resolveLinkTarget(link);
       if (dryRun) {

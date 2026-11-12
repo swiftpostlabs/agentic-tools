@@ -469,6 +469,28 @@ describe('skills sync', () => {
     );
   });
 
+  test('a dry run lists a dead link once', () => {
+    const { root } = sourceRepo();
+    const consumer = consumerWith([{ from: root, skills: ['ref-base'] }]);
+    fs.mkdirSync(path.join(consumer, '.agents', 'skills'), { recursive: true });
+    fs.symlinkSync(
+      path.join(consumer, 'missing'),
+      path.join(consumer, '.agents', 'skills', 'ref-dead'),
+      'junction',
+    );
+    const { context: ctx, output } = context(consumer);
+    runSkillsSync(ctx, {
+      destination: undefined,
+      useGlobal: false,
+      config: undefined,
+      dryRun: true,
+      force: false,
+    });
+    expect(
+      output.lines.filter((line) => line.includes('ref-dead')),
+    ).toHaveLength(1);
+  });
+
   test('skips a requested repo-local skill, links the rest, and heals renamed names', () => {
     const { root } = sourceRepo();
     const consumer = consumerWith([
@@ -661,5 +683,11 @@ describe('package sources', () => {
     expect(() =>
       resolvePackageSourceRoot('other-package', makeTempDir(), ownRoot),
     ).toThrow("Could not resolve package source 'other-package'.");
+  });
+
+  test('refuses a package name that would leave node_modules', () => {
+    expect(() =>
+      resolvePackageSourceRoot('../../x', makeTempDir(), makeTempDir()),
+    ).toThrow("'package:../../x' is not a valid package name.");
   });
 });

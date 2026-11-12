@@ -57,6 +57,14 @@ export const resolvePackageSourceRoot = (
   fromDirectory: string,
   ownRoot: string,
 ): string => {
+  // An npm name is a scope and a name, so `../x` cannot point outside node_modules.
+  if (
+    !/^(@[a-z0-9][a-z0-9_.~-]*\/)?[a-z0-9][a-z0-9_.~-]*$/i.test(packageName)
+  ) {
+    throw new ToolError(
+      `'package:${packageName}' is not a valid package name.`,
+    );
+  }
   let current = path.resolve(fromDirectory);
   for (;;) {
     const candidate = path.join(current, 'node_modules', packageName);
