@@ -477,6 +477,21 @@ describe('export build command', () => {
     );
   });
 
+  test('writes to the gitignored playground under .agents/local without --out', () => {
+    const root = makeTempDir();
+    writeSkill(path.join(root, '.agents', 'skills'), 'ref-sp-dev-x', {
+      domain: 'dev',
+      visibility: 'public',
+    });
+    expect(runExportBuild(options(root, { out: undefined }))).toBe(0);
+    expect(
+      fs.existsSync(
+        path.join(root, '.agents', 'local', 'playground', 'export', 'gemini-gem', 'dev.md'),
+      ),
+    ).toBe(true);
+    expect(fs.existsSync(path.join(root, '.agents', 'playground'))).toBe(false);
+  });
+
   test('returns 2 for a bad request and 1 when nothing matches', () => {
     const root = makeTempDir();
     expect(runExportBuild(options(root, { target: 'chatgpt' }))).toBe(2);

@@ -60,7 +60,11 @@ export const registerExportCommand = (
       value,
       '.agents/skills',
     )
-    .option('--out <path>', 'Where to write the export.', value)
+    .option(
+      '--out <path>',
+      'Where to write the export. Default: .agents/local/playground/export/<target>.',
+      value,
+    )
     .option(
       '--instructions <path>',
       'Instruction template. Use {{BUNDLE_MAP}} where routing should go.',

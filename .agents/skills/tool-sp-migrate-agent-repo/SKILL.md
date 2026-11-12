@@ -70,6 +70,7 @@ for Windows and POSIX where they differ), and **Verify**. Then add the line to t
 | --- | --- |
 | 0001 | Agent folders move under `.agents/local/`: read `./references/migrations/0001-agents-local-folders.md` when it is pending. |
 | 0002 | A pre-rooms board's messages move into a first room: read `./references/migrations/0002-board-messages-into-a-room.md` when it is pending. |
+| 0003 | `export build`'s default output moves under `.agents/local/playground/`: read `./references/migrations/0003-export-default-under-local.md` when it is pending. |
 
 ## Gotchas
 
