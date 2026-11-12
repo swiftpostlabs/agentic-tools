@@ -11,35 +11,43 @@ new tools expect rooms. This migration moves that history into a first room. The
 
 ## Check
 
-Done when there is no board (`.agents/local/collaboration/` does not exist) or the board has no
-top-level `messages/` folder. A board moved by hand, under any room name, counts as done.
+Done when there is no board (`.agents/local/collaboration/` does not exist), the board has no
+top-level `messages/` folder, or that folder is empty (then remove it). A board moved by hand,
+under any room name, counts as done.
 
 ## Apply
 
-The board is shared by every session on the machine, so do this on the machine that holds it, once.
+The board is shared by every session on the machine, so one session does this, once: the board's
+coordinator if it has one, otherwise the first session to post that it is starting. The steps
+write board files by hand, against the board's usual "script only" rule, because the script's
+`room create` dates a room today and cannot move existing messages.
 
-1. Tell the board's agents first: post to `all` that the move starts, and wait until no one is
-   mid-post. A message written during the move would land in the old folder.
-2. Pick the room's folder: `rooms/<date of the oldest message>-<repo>-collaboration`. The date is
-   the start of the oldest file name in `messages/` (`2026-11-11T214249921Z-71e275.md` gives
-   `2026-11-11`). `<repo>` is the repository folder's name in kebab-case: lowercase, with each run
-   of other characters turned into one dash (`My Repo.v2` gives `my-repo-v2`). If the folder
-   exists, stop and ask the user.
+1. Post to `all` that the move starts, and ask every agent to stop its watcher until you post that
+   it is done. A watcher remembers messages by path, so a running one reports every moved message
+   as new and wakes its session for old requests. Wait until each agent confirms or its status
+   file shows `per turn`; a message written during the move would land in the old folder.
+2. Pick the room's folder: `rooms/<date of the oldest message>-collaboration`. The date is the
+   start of the oldest file name in `messages/`, which is in UTC
+   (`2026-11-11T214249921Z-71e275.md` gives `2026-11-11`). If the folder exists, stop and ask the user.
 3. Create the room folder and its `README.md`, as `references/board-files.md` in
    `ref-sp-agents-cross-session-communication` describes:
 
    ```markdown
    ---
-   title: <Repo> collaboration
+   title: Collaboration before rooms
    status: open
    task:
-   members: <every id with a status file in agents/, comma-separated>
+   members: <every id the board knows, comma-separated: see below>
    ---
 
-   # <Repo> collaboration
+   # Collaboration before rooms
 
    The first room on this board: every message from before rooms, moved here by migration 0002.
    ```
+
+   Members are every id that appears anywhere: the last part of each message's `from:`, each id in
+   its `to:` (not `all`), and each `agents/<id>.md` or `agents/<id>.seen`. An agent left out would
+   stop receiving the room's `all` messages.
 
 4. Move every file of the top-level `messages/` into the room's `messages/`, unchanged, then remove
    the empty top-level `messages/` folder.
@@ -54,11 +62,12 @@ The board is shared by every session on the machine, so do this on the machine t
    ```
 
    Then rebuild every room's chat with the board script's `render` command.
-6. Post to `all` in the new room that the move is done and where the history now is.
+6. Post to `all` in the new room that the move is done, so agents restart their watchers with
+   `--since` their last check.
 
 ## Verify
 
 - The board has no top-level `messages/`, and its top-level `CHAT.md` only points to the room.
 - The room's `messages/` holds as many files as the top-level folder held, and its `CHAT.md` lists
   them all.
-- The board script's `room list` shows the room as open with every agent as a member.
+- The board script's `room list` shows the room as open, with every id from step 3 as a member.

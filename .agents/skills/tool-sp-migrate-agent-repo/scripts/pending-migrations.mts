@@ -15,13 +15,18 @@ import path from 'node:path';
 import { parseArgs } from 'node:util';
 
 export type Migration = { number: string; title: string; file: string };
-export type Record = { applied: string; at: string; note?: string };
+/** The last migration applied, when, and any note each migration asked to keep. */
+export type Record = {
+  applied: string;
+  at: string;
+  notes?: { [migration: string]: string };
+};
 
 const usage = `Usage: node pending-migrations.mts [--repo DIR] [--record NNNN [--note TEXT]]
 
   --repo DIR     Repository root. Defaults to the current directory.
-  --record NNNN  Record migration NNNN as the last one applied.
-  --note TEXT    A note saved with the record, such as links-left.`;
+  --record NNNN  Record migration NNNN as applied. It must be the next pending one.
+  --note TEXT    A note kept with that migration's record, such as links-left.`;
 
 const migrationsDir = path.join(
   import.meta.dirname,
@@ -51,7 +56,12 @@ export const readRecord = (repo: string): Record | undefined => {
   if (!fs.existsSync(file)) {
     return undefined;
   }
-  const parsed: unknown = JSON.parse(fs.readFileSync(file, 'utf8'));
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    throw new Error(`${file} cannot be read as JSON; fix or delete it.`);
+  }
   if (
     typeof parsed !== 'object' ||
     parsed === null ||
@@ -63,7 +73,13 @@ export const readRecord = (repo: string): Record | undefined => {
       `${file} must hold {"applied": "NNNN", ...}; fix or delete it.`,
     );
   }
-  return parsed as Record;
+  const record = parsed as Record & { note?: unknown };
+  // An early record kept one `note` for the migration it named; keep it under that number.
+  if (typeof record.note === 'string' && record.notes === undefined) {
+    const { note, ...rest } = record;
+    return { ...rest, notes: { [record.applied]: note } };
+  }
+  return record;
 };
 
 export const pendingMigrations = (
@@ -95,21 +111,48 @@ const main = (argv: string[]): number => {
     return 0;
   }
   const repo = path.resolve(values.repo);
-  if (!fs.existsSync(path.join(repo, '.agents'))) {
+  if (
+    !fs
+      .statSync(path.join(repo, '.agents'), { throwIfNoEntry: false })
+      ?.isDirectory()
+  ) {
     process.stderr.write(`no .agents folder in ${repo}\n`);
     return 2;
   }
   const migrations = listMigrations();
+
+  let current;
+  try {
+    current = readRecord(repo);
+  } catch (error) {
+    process.stderr.write(`${(error as Error).message}\n`);
+    return 2;
+  }
+  const pending = pendingMigrations(migrations, current);
 
   if (values.record !== undefined) {
     if (!migrations.some((migration) => migration.number === values.record)) {
       process.stderr.write(`no migration numbered '${values.record}'\n`);
       return 2;
     }
+    // Migrations apply oldest first, so a skipped one would never be listed again.
+    const next = pending[0]?.number;
+    if (values.record !== next) {
+      process.stderr.write(
+        next === undefined ?
+          `every migration is already recorded; nothing to record\n`
+        : `the next migration to record is ${next}, not ${values.record}\n`,
+      );
+      return 2;
+    }
+    const notes = {
+      ...current?.notes,
+      ...(values.note === undefined ? {} : { [values.record]: values.note }),
+    };
     const record: Record = {
       applied: values.record,
       at: new Date().toISOString(),
-      ...(values.note === undefined ? {} : { note: values.note }),
+      ...(Object.keys(notes).length === 0 ? {} : { notes }),
     };
     fs.mkdirSync(path.dirname(recordPath(repo)), { recursive: true });
     fs.writeFileSync(recordPath(repo), `${JSON.stringify(record, null, 2)}\n`);
@@ -117,14 +160,22 @@ const main = (argv: string[]): number => {
     return 0;
   }
 
-  let record;
-  try {
-    record = readRecord(repo);
-  } catch (error) {
-    process.stderr.write(`${(error as Error).message}\n`);
+  const newest = migrations.at(-1)?.number;
+  if (
+    current !== undefined &&
+    newest !== undefined &&
+    current.applied > newest
+  ) {
+    process.stderr.write(
+      `the record says ${current.applied}, newer than this skill's last migration (${newest}); update the skill\n`,
+    );
     return 2;
   }
-  for (const migration of pendingMigrations(migrations, record)) {
+  if (values.note !== undefined && values.record === undefined) {
+    process.stderr.write(`--note needs --record\n${usage}\n`);
+    return 2;
+  }
+  for (const migration of pending) {
     process.stdout.write(
       `${migration.number}  ${migration.title}  references/migrations/${migration.file}\n`,
     );

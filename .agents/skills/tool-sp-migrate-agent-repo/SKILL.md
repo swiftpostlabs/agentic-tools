@@ -14,8 +14,9 @@ metadata:
 
 When agentic-tools changes where agent files live or how they are shaped, each repo that uses it
 has to follow. This skill holds those changes as numbered migrations and the procedure to apply
-them. Setting up a repo from nothing is `tool-sp-setup-agent-repo`; it already produces the newest
-layout, so a fresh repo records the newest migration as applied and skips the rest.
+them. Setting up a repo from nothing is `tool-sp-setup-agent-repo`. A fresh repo already has the
+newest layout, so every check here passes at once: record each migration as you go and nothing
+moves.
 
 ## Steps
 
@@ -44,7 +45,9 @@ layout, so a fresh repo records the newest migration as applied and skips the re
 
    Use `--note` when the migration file asks for one, such as `links-left`.
 
-   The record is machine-local and gitignored, because the folders migrations move are too.
+   The script accepts only the next pending number, so none is skipped, and it keeps each
+   migration's note when later ones are recorded. The record is machine-local and gitignored,
+   because the folders migrations move are too.
 
 4. **Report** which migrations ran, which were already in place, and anything skipped.
 
