@@ -486,7 +486,15 @@ describe('export build command', () => {
     expect(runExportBuild(options(root, { out: undefined }))).toBe(0);
     expect(
       fs.existsSync(
-        path.join(root, '.agents', 'local', 'playground', 'export', 'gemini-gem', 'dev.md'),
+        path.join(
+          root,
+          '.agents',
+          'local',
+          'playground',
+          'export',
+          'gemini-gem',
+          'dev.md',
+        ),
       ),
     ).toBe(true);
     expect(fs.existsSync(path.join(root, '.agents', 'playground'))).toBe(false);

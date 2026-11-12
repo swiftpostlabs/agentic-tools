@@ -179,7 +179,8 @@ export const runExportBuild = (options: ExportBuildOptions): number => {
   }
 
   const destinationLabel =
-    options.out ?? path.join('.agents', 'local', 'playground', 'export', options.target);
+    options.out ??
+    path.join('.agents', 'local', 'playground', 'export', options.target);
   const written = writeExport(
     plan,
     path.resolve(options.cwd, destinationLabel),
