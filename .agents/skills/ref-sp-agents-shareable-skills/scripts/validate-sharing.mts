@@ -16,7 +16,7 @@
 //   node validate-sharing.mts <skills-root> --all
 //   node validate-sharing.mts <target> [--format text|json] [--warnings-as-errors]
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 type Severity = 'error' | 'warning';
@@ -239,22 +239,36 @@ function loadRegistry(): { registry: Registry | null; error: string | null } {
   }
 }
 
+/**
+ * Skill folders under a skills root, linked ones included: linking a skill in from another repo
+ * (a symlink, or a junction on Windows) is how skills are shared, and a Dirent reports a link as
+ * not a directory. `statSync` follows the link; a dangling one is skipped.
+ */
+function skillFolderNames(skillsRoot: string): string[] {
+  return readdirSync(skillsRoot)
+    .filter((name) => {
+      try {
+        return (
+          statSync(join(skillsRoot, name)).isDirectory() &&
+          existsSync(join(skillsRoot, name, 'SKILL.md'))
+        );
+      } catch {
+        return false;
+      }
+    })
+    .sort();
+}
+
 function loadSkillIndex(skillsRoot: string): Map<string, SkillInfo> {
   const index = new Map<string, SkillInfo>();
-  for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
-    const skillMd = join(skillsRoot, entry.name, 'SKILL.md');
-    if (!existsSync(skillMd)) {
-      continue;
-    }
+  for (const name of skillFolderNames(skillsRoot)) {
+    const skillMd = join(skillsRoot, name, 'SKILL.md');
     try {
       const { frontmatter } = parseFrontmatter(readFileSync(skillMd, 'utf8'));
       const visibility = computeVisibility(asMetadata(frontmatter));
-      index.set(entry.name, { visibility: visibility as Visibility | null });
+      index.set(name, { visibility: visibility as Visibility | null });
     } catch {
-      index.set(entry.name, { visibility: null });
+      index.set(name, { visibility: null });
     }
   }
   return index;
@@ -565,14 +579,7 @@ function validatePluginManifest(
 
 function findSkillDirs(target: string, validateAll: boolean): string[] {
   if (validateAll) {
-    return readdirSync(target, { withFileTypes: true })
-      .filter(
-        (entry) =>
-          entry.isDirectory() &&
-          existsSync(join(target, entry.name, 'SKILL.md')),
-      )
-      .map((entry) => join(target, entry.name))
-      .sort();
+    return skillFolderNames(target).map((name) => join(target, name));
   }
   return [target];
 }
