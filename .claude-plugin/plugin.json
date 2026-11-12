@@ -12,6 +12,7 @@
   ],
   "skills": [
     "./.agents/skills/ref-sp-agents-adversarial-review",
+    "./.agents/skills/ref-sp-agents-cross-session-communication",
     "./.agents/skills/ref-sp-agents-hooks",
     "./.agents/skills/ref-sp-agents-instructions-authoring",
     "./.agents/skills/ref-sp-agents-local-setup",
