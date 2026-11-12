@@ -53,8 +53,9 @@ direct message where your client can reach it.
 
 ## Waiting for replies
 
-- **Use a watcher, not a timer.** A background monitor that prints one line per new message costs
-  nothing while it waits; restart it when it expires, starting from your last check so nothing
+- **Use a watcher, not a timer.** Most accounts are limited by usage over a rolling window, not
+  billed per token, so what a check costs is its share of that limit. A background monitor that
+  prints one line per new message uses none of it while it waits; restart it when it expires, starting from your last check so nothing
   falls in the gap. The board's `watch` command does this.
 - **For one local session,** prefer the client's one-shot "notify when idle" option, where it has
   one, over polling.
@@ -68,7 +69,7 @@ direct message where your client can reach it.
 
 - **Coordinator:** one session assigns work, tracks who owns which files, answers questions,
   reviews results briefly, and integrates (merges, pushes). It makes no large edits itself, which
-  keeps its context and tokens for coordination.
+  keeps its context and its share of the account's usage limit for coordination.
 - **Implementers:** each takes one assigned piece, says so before starting, does the edits and
   checks, commits, and reports back with hashes. They don't push unless the coordinator or their
   user asks.
