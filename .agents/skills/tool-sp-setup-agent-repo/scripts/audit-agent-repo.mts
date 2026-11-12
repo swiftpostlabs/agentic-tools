@@ -54,6 +54,13 @@ const workspaceDirs = [
   '.agents/local/playground',
 ] as const;
 
+/** Where the workspaces lived before `.agents/local/`; tool-sp-migrate-agent-repo moves them. */
+const legacyWorkspaceDirs = [
+  '.agents/tasks',
+  '.agents/retro',
+  '.agents/playground',
+] as const;
+
 const skillRoots = [
   '.agents/skills',
   '.claude/skills',
@@ -202,16 +209,62 @@ const git = (
     : null;
 };
 
+type IgnoreVerdict = {
+  ignored: boolean | null;
+  /** The ignore file that decided it, when git can tell; `.git/info/exclude` or a global file is machine-local. */
+  source?: string;
+};
+
+const globCharacters = /[*?[\\]/;
+
 /**
- * `true`/`false` when the ignore patterns decide it, `null` when they cannot. `--no-index` keeps the
- * answer about patterns alone: otherwise one tracked file makes git report the whole directory as
- * not ignored. Tracked content is checked separately by `trackedPaths`.
+ * The repo `.gitignore` alone, read without git: literal patterns only, last match wins, and a
+ * folder excluded at any level cannot be re-included below it, as in git. A pattern with glob
+ * characters is never matched, so a path only it would decide stays undecided.
+ */
+export const fallbackIgnored = (
+  gitignore: string,
+  relative: string,
+): boolean | null => {
+  const rules = gitignore
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line !== '' && !line.startsWith('#'))
+    .map((line) => {
+      const negated = line.startsWith('!');
+      const pattern = (negated ? line.slice(1) : line).replace(
+        /^\/+|\/+$/g,
+        '',
+      );
+      return { negated, pattern };
+    })
+    .filter(({ pattern }) => pattern !== '' && !globCharacters.test(pattern));
+  const parts = relative.replace(/\/+$/, '').split('/');
+  let reIncluded = false;
+  for (let depth = 1; depth <= parts.length; depth += 1) {
+    const level = parts.slice(0, depth).join('/');
+    const last = rules.filter(({ pattern }) => pattern === level).at(-1);
+    if (last === undefined) {
+      continue;
+    }
+    if (!last.negated) {
+      return true;
+    }
+    reIncluded = true;
+  }
+  return reIncluded ? false : null;
+};
+
+/**
+ * Whether the ignore patterns decide `relative` is ignored, `null` when they cannot. `--no-index`
+ * keeps the answer about patterns alone: otherwise one tracked file makes git report the whole
+ * directory as not ignored. Tracked content is checked separately by `trackedPaths`.
  */
 const isIgnored = (
   repo: string,
   relative: string,
   hasGit: boolean,
-): boolean | null => {
+): IgnoreVerdict => {
   if (hasGit) {
     const result = git(
       repo,
@@ -219,31 +272,37 @@ const isIgnored = (
       10_000,
     );
     if (result === null || (result.status !== 0 && result.status !== 1)) {
-      return null;
+      return { ignored: null };
     }
-    return result.status === 0;
+    if (result.status === 1) {
+      return { ignored: false };
+    }
+    const verbose = git(
+      repo,
+      ['check-ignore', '-v', '--no-index', '--', relative],
+      10_000,
+    );
+    const source = verbose?.stdout.split(/:\d+:/)[0]?.trim();
+    return source === undefined || source === '' ?
+        { ignored: true }
+      : { ignored: true, source };
   }
   const gitignore = readText(path.join(repo, '.gitignore'));
-  if (gitignore === '') {
-    return null;
-  }
-  const stem = relative.replace(/\/+$/, '');
-  const trimSlashes = (line: string) => line.replace(/^\/+|\/+$/g, '');
-  const coversStem = (entry: string) =>
-    entry === stem || stem.startsWith(`${entry}/`);
+  return {
+    ignored: gitignore === '' ? null : fallbackIgnored(gitignore, relative),
+  };
+};
+
+/** An ignore file that travels with the repo: a `.gitignore` inside it, not `.git/info/exclude` or a global file. */
+const isSharedIgnoreFile = (repo: string, source: string): boolean => {
+  const resolved = path.resolve(repo, source);
+  const inside = path.relative(repo, resolved);
   return (
-      gitignore
-        .split(/\r?\n/)
-        .map((line) => line.trim())
-        .some(
-          (line) =>
-            line !== '' &&
-            !line.startsWith('#') &&
-            coversStem(trimSlashes(line)),
-        )
-    ) ?
-      true
-    : null;
+    path.basename(resolved) === '.gitignore' &&
+    inside !== '' &&
+    !inside.startsWith('..') &&
+    !path.isAbsolute(inside)
+  );
 };
 
 /** Files git tracks under a path, ignore rules notwithstanding. */
@@ -325,8 +384,40 @@ const listSkills = (root: string): string[] =>
       )
   : [];
 
+const isRealDirectory = (target: string): boolean => {
+  try {
+    return fs.lstatSync(target).isDirectory();
+  } catch {
+    return false;
+  }
+};
+
 const checkWorkspaces = (repo: string, hasGit: boolean): Finding[] => {
   const findings: Finding[] = [];
+  // A link at an old path is what migration 0001 may leave on purpose; a real folder or tracked
+  // files there mean the repo has not migrated.
+  const legacy = legacyWorkspaceDirs.flatMap((directory) => {
+    const tracked = trackedPaths(repo, directory, hasGit).length;
+    const real = isRealDirectory(path.join(repo, directory));
+    if (!real && tracked === 0) {
+      return [];
+    }
+    return [
+      `${directory}: ${real ? 'a folder' : 'no folder'}` +
+        (tracked > 0 ? `, ${tracked} tracked file(s)` : ''),
+    ];
+  });
+  if (legacy.length > 0) {
+    findings.push(
+      finding(
+        'W4',
+        'fail',
+        'agent workspaces at their old paths; run tool-sp-migrate-agent-repo before creating new ones',
+        legacy,
+      ),
+    );
+  }
+
   const missing = workspaceDirs.filter(
     (directory) => !isDirectory(path.join(repo, directory)),
   );
@@ -343,17 +434,34 @@ const checkWorkspaces = (repo: string, hasGit: boolean): Finding[] => {
 
   const notIgnored: string[] = [];
   const undecided: string[] = [];
+  const machineLocal = new Set<string>();
   for (const directory of workspaceDirs) {
     const verdict = isIgnored(repo, `${directory}/`, hasGit);
-    if (verdict === false) {
+    if (verdict.ignored === false) {
       notIgnored.push(directory);
-    } else if (verdict === null) {
+    } else if (verdict.ignored === null) {
       undecided.push(directory);
+    } else if (
+      verdict.source !== undefined &&
+      !isSharedIgnoreFile(repo, verdict.source)
+    ) {
+      machineLocal.add(verdict.source);
     }
   }
+  const skillsIgnored =
+    isIgnored(repo, '.agents/skills/', hasGit).ignored === true;
   if (notIgnored.length > 0) {
     findings.push(
       finding('W2', 'fail', 'agent workspaces are not gitignored', notIgnored),
+    );
+  } else if (machineLocal.size > 0) {
+    findings.push(
+      finding(
+        'W2',
+        'fail',
+        "agent workspaces are ignored only on this machine; add /.agents/local/ to the repo's .gitignore",
+        [...machineLocal].sort(),
+      ),
     );
   } else if (undecided.length > 0) {
     findings.push(
@@ -362,6 +470,14 @@ const checkWorkspaces = (repo: string, hasGit: boolean): Finding[] => {
         'warn',
         'could not confirm agent workspaces are gitignored',
         undecided,
+      ),
+    );
+  } else if (skillsIgnored) {
+    findings.push(
+      finding(
+        'W2',
+        'warn',
+        'the rule that ignores the workspaces also ignores .agents/skills; ignore /.agents/local/ instead',
       ),
     );
   } else {

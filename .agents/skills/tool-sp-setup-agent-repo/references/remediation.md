@@ -6,9 +6,16 @@ root.
 
 ---
 
+## W4 — workspaces at their old paths
+
+The repo was set up before the workspaces moved under `.agents/local/`. Migrate, don't create
+beside: run `tool-sp-migrate-agent-repo`, which moves the old folders and their content and
+records the migration. Creating the new folders first leaves two copies to reconcile by hand.
+Re-run the audit afterwards; `W1` to `W3` then describe the moved workspaces.
+
 ## W1 — local agent workspaces missing
 
-Create the three workspaces. They are a set: tasks without a playground pushes scratch files into
+If `W4` failed, fix it first; the migration creates these. Otherwise create the three workspaces. They are a set: tasks without a playground pushes scratch files into
 the source tree, and retro without tasks has nothing to reflect on.
 
 ```bash
@@ -31,6 +38,10 @@ is unaffected. One line covers every workspace under `.agents/local/`:
 
 These directories hold local, per-developer state. Committing them turns one agent's scratch notes
 into everyone's merge conflicts.
+
+An ignore rule only in `.git/info/exclude` or a global ignore file holds on one machine: every
+other clone would commit the workspaces, so `W2` fails until the repo's `.gitignore` has it. A rule
+like `/.agents/` covers the workspaces but also hides `.agents/skills/` from git; `W2` warns.
 
 Don't commit a placeholder to keep an empty workspace after cloning: git cannot add a file under an
 ignored folder, and W1's `mkdir` recreates the folders anyway.

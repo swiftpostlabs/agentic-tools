@@ -9,7 +9,7 @@ metadata:
   shareable-skills.domain: "agents"
   shareable-skills.visibility: "public"
   shareable-skills.tags: "tasks, retro, docs"
-  shareable-skills.suggests: "ref-sp-agents-instructions-authoring, ref-sp-agents-skills-authoring, ref-sp-agents-local-tasks, ref-sp-agents-retro, ref-sp-agents-mr-wolf-persona, ref-sp-agents-plugin-marketplaces, ref-sp-agents-shareable-skills"
+  shareable-skills.suggests: "ref-sp-agents-instructions-authoring, ref-sp-agents-skills-authoring, ref-sp-agents-local-tasks, ref-sp-agents-retro, ref-sp-agents-mr-wolf-persona, ref-sp-agents-plugin-marketplaces, ref-sp-agents-shareable-skills, tool-sp-migrate-agent-repo"
 ---
 
 # Setup Agent Repo
@@ -17,7 +17,8 @@ metadata:
 Brings a repo up to the shared agent baseline: one script run finds the gaps, then you fix them in
 a safe order. How `AGENTS.md` should be written is `ref-sp-agents-instructions-authoring`; refreshing
 an existing one is `tool-sp-maintain-agents-instructions`. The `.agents/local/tasks/` and `.agents/local/retro/`
-formats belong to `ref-sp-agents-local-tasks` and `ref-sp-agents-retro`.
+formats belong to `ref-sp-agents-local-tasks` and `ref-sp-agents-retro`. A repo set up before a
+layout change is brought up to date by `tool-sp-migrate-agent-repo`, not by this skill.
 
 ## First step
 
@@ -37,8 +38,9 @@ script out first.
 
 | Check | What good looks like |
 | --- | --- |
+| `W4` | No workspace at its old path (`.agents/tasks/`, `.agents/retro/`, `.agents/playground/`), except a link to the new one. Reported only when it fails, before `W1`. |
 | `W1` | `.agents/local/tasks/`, `.agents/local/retro/`, and `.agents/local/playground/` exist. |
-| `W2` | All three are gitignored. |
+| `W2` | All three are gitignored by the repo's own `.gitignore`, without ignoring `.agents/skills/`. |
 | `W3` | Nothing under them is committed. |
 | `S1` | `.agents/skills/` exists and holds skills. |
 | `S2` | The five core skills are present (below). |
@@ -65,7 +67,7 @@ Core skills: `ref-sp-agents-skills-authoring`, `ref-sp-agents-instructions-autho
 4. **Confirm before moving or rewriting content**: relocating skills, merging a `CLAUDE.md` into
    `AGENTS.md`, deleting an instruction file. Creating directories, ignore rules, symlinks, and
    settings needs no round trip.
-5. **Fix in order:** workspaces, skills, `AGENTS.md`, leftover instruction files, nested files,
+5. **Fix in order:** workspaces (migrate first when `W4` fails), skills, `AGENTS.md`, leftover instruction files, nested files,
    client wiring. Procedures per check are in `./references/remediation.md`.
 6. **Re-run the audit** and report what is still open, including anything the user declined.
 
