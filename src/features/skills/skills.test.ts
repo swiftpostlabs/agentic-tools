@@ -380,9 +380,11 @@ describe('skills sync', () => {
     const consumer = consumerWith([{ from: root, skills: ['ref-base'] }]);
     const skillsDir = path.join(consumer, '.agents', 'skills');
     fs.mkdirSync(path.join(skillsDir, 'ref-base'), { recursive: true });
+    // A junction needs no symlink rights on Windows; other platforms ignore the type.
     fs.symlinkSync(
       path.join(consumer, 'missing'),
       path.join(skillsDir, 'ref-dead'),
+      'junction',
     );
     const { context: ctx } = context(makeTempDir());
     expect(() => {
