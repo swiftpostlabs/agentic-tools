@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { afterEach, describe, expect, test } from '@jest/globals';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,9 +19,18 @@ const writeTranscript = (
   fs.utimesSync(file, time, time);
 };
 
+const created: string[] = [];
+
+afterEach(() => {
+  for (const directory of created.splice(0)) {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 describe('buildRows', () => {
   test('restores the user-set name and keeps only the live copy', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'find-sessions-'));
+    created.push(root);
     const named = [
       { cwd: '/home/me/my-project' },
       { type: 'custom-title', customTitle: 'my: task' },

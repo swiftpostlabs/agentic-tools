@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { afterEach, describe, expect, test } from '@jest/globals';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -10,8 +10,21 @@ import {
   readRecord,
 } from './pending-migrations.mts';
 
-const tempDir = (): string =>
-  fs.mkdtempSync(path.join(os.tmpdir(), 'pending-migrations-'));
+const created: string[] = [];
+
+afterEach(() => {
+  for (const directory of created.splice(0)) {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+const tempDir = (): string => {
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'pending-migrations-'),
+  );
+  created.push(directory);
+  return directory;
+};
 
 describe('pending migrations', () => {
   test('lists numbered migrations oldest first, titled by their heading', () => {

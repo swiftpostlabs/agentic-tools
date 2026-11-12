@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { afterEach, describe, expect, test } from '@jest/globals';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -6,11 +6,20 @@ import path from 'node:path';
 
 import { auditRepo, fallbackIgnored } from './audit-agent-repo.mts';
 
+const created: string[] = [];
+
+afterEach(() => {
+  for (const directory of created.splice(0)) {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 const makeRepo = (
   files: Record<string, string>,
   { withGit }: { withGit: boolean },
 ): string => {
   const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'audit-agent-repo-'));
+  created.push(repo);
   if (withGit) {
     expect(spawnSync('git', ['init', '-q'], { cwd: repo }).status).toBe(0);
   }

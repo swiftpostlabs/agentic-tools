@@ -1,4 +1,4 @@
-import { describe, expect, test } from '@jest/globals';
+import { afterEach, describe, expect, test } from '@jest/globals';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -21,8 +21,19 @@ import {
   writeRoom,
 } from './board.mts';
 
-const tempDir = (): string =>
-  fs.mkdtempSync(path.join(os.tmpdir(), 'agent-board-'));
+const created: string[] = [];
+
+afterEach(() => {
+  for (const directory of created.splice(0)) {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+const tempDir = (): string => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'agent-board-'));
+  created.push(directory);
+  return directory;
+};
 
 const boardIn = (repo: string): string =>
   path.join(repo, '.agents', 'local', 'collaboration');
