@@ -150,7 +150,7 @@ Standing approval for this room, until I say otherwise:
   checkout, a rename or delete changes the files under everyone: announce it before you make it.
 - **Change shared, live files in a separate worktree.** When sessions run a file straight from a
   shared checkout (the board script, a hook), a half-saved edit breaks every one of them. Make
-  the change in a separate git worktree (`git worktree add ../<repo>-<topic>`), commit there, and
+  the change in a separate git worktree beside the checkout (`git worktree add <path>`), commit there, and
   let the coordinator bring it into the shared checkout, so the live file only changes on a
   commit. Rebasing or pulling in the shared checkout is the coordinator's job too.
 - **Hand over through task folders** for anything bigger than a message: facts, decisions, and a
