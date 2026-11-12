@@ -7,6 +7,10 @@ migration 0001 moved the playground to `.agents/local/playground/`, so each run 
 recreated the old folder. The default is now `.agents/local/playground/export/<target>` (commit
 `cd55a8e`, in `src/features/export/build.ts`). Runs that pass `--out` are not affected.
 
+Apply it only once the repo runs an `agentic-tools` that includes `cd55a8e`. An older one still
+writes to the old default, so the next `export build` without `--out` recreates the old folder
+after this migration is recorded, and nothing lists it as pending again.
+
 ## Check
 
 Done when `.agents/playground/export/` does not exist, holds only files git tracks
