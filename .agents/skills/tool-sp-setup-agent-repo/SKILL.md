@@ -38,7 +38,7 @@ script out first.
 
 | Check | What good looks like |
 | --- | --- |
-| `W4` | No workspace at its old path (`.agents/tasks/`, `.agents/retro/`, `.agents/playground/`), except a link to the new one. Reported only when it fails, before `W1`. |
+| `W4` | Nothing unmigrated at an old path (`.agents/tasks/`, `.agents/retro/`, `.agents/playground/`): a link to the new folder is fine, and a folder holding only tracked files only warns, as migration 0001 counts it done. Reported only when not `pass`, before `W1`. |
 | `W1` | `.agents/local/tasks/`, `.agents/local/retro/`, and `.agents/local/playground/` exist. |
 | `W2` | All three are gitignored by the repo's own `.gitignore`, without ignoring `.agents/skills/`. |
 | `W3` | Nothing under them is committed. |
@@ -67,8 +67,8 @@ Core skills: `ref-sp-agents-skills-authoring`, `ref-sp-agents-instructions-autho
 4. **Confirm before moving or rewriting content**: relocating skills, merging a `CLAUDE.md` into
    `AGENTS.md`, deleting an instruction file. Creating directories, ignore rules, symlinks, and
    settings needs no round trip.
-5. **Fix in order:** workspaces (migrate first when `W4` fails), skills, `AGENTS.md`, leftover instruction files, nested files,
-   client wiring. Procedures per check are in `./references/remediation.md`.
+5. **Fix in order:** workspaces (migrate first when `W4` fails), skills, `AGENTS.md`, leftover
+   instruction files, nested files, client wiring. Procedures per check are in `./references/remediation.md`.
 6. **Re-run the audit** and report what is still open, including anything the user declined.
 
 ## Instruction files

@@ -82,15 +82,32 @@ describe('workspace checks', () => {
 
   test('a repo on the old layout fails W4 and points to the migration', () => {
     const repo = makeRepo(
-      { '.agents/tasks/plan.md': 'plan\n' },
+      { '.agents/tasks/plan.md': 'plan\n', '.agents/tasks/notes.md': 'mine\n' },
       { withGit: true },
     );
     gitIn(repo, ['add', '.agents/tasks/plan.md']);
     const w4 = check(repo, 'W4');
     expect(w4?.status).toBe('fail');
     expect(w4?.message).toContain('tool-sp-migrate-agent-repo');
-    expect(w4?.detail).toEqual(['.agents/tasks: a folder, 1 tracked file(s)']);
+    expect(w4?.detail).toEqual([
+      '.agents/tasks: a folder with untracked content and 1 tracked file(s)',
+    ]);
     expect(auditRepo(repo)[0]?.check).toBe('W4');
+  });
+
+  test('an old folder holding only tracked files is migrated, as 0001 says, and only warns', () => {
+    const repo = makeRepo(
+      {
+        ...workspaces,
+        '.gitignore': '/.agents/local/\n',
+        '.agents/playground/.gitignore': '*\n!.gitignore\n',
+      },
+      { withGit: true },
+    );
+    gitIn(repo, ['add', '.agents/playground/.gitignore']);
+    const w4 = check(repo, 'W4');
+    expect(w4?.status).toBe('warn');
+    expect(w4?.detail).toEqual(['.agents/playground: 1 tracked file(s)']);
   });
 
   test('a link left at an old path by migration 0001 is not reported', () => {
@@ -104,6 +121,31 @@ describe('workspace checks', () => {
       'junction',
     );
     expect(check(repo, 'W4')).toBeUndefined();
+  });
+
+  test('a link at an old path that leads elsewhere fails W4', () => {
+    const repo = makeRepo(
+      { ...workspaces, 'elsewhere/x.md': '' },
+      { withGit: true },
+    );
+    fs.symlinkSync(
+      path.join(repo, 'elsewhere'),
+      path.join(repo, '.agents', 'tasks'),
+      'junction',
+    );
+    const w4 = check(repo, 'W4');
+    expect(w4?.status).toBe('fail');
+    expect(w4?.detail).toEqual([
+      '.agents/tasks: a link, but not to .agents/local/tasks',
+    ]);
+  });
+
+  test('an untracked .gitignore that ignores itself fails W2 like a machine-only rule', () => {
+    const repo = makeRepo(
+      { ...workspaces, '.agents/local/.gitignore': '*\n' },
+      { withGit: true },
+    );
+    expect(check(repo, 'W2')?.status).toBe('fail');
   });
 
   test('without git, a later negation un-ignores the workspaces and fails W2', () => {
@@ -145,6 +187,14 @@ describe('fallbackIgnored', () => {
         '.agents/local/tasks/',
       ),
     ).toBe(true);
+  });
+
+  test('a pattern without an inner slash matches a name at any depth, as in git', () => {
+    expect(
+      fallbackIgnored('!/.agents/local/\nlocal/\n', '.agents/local/tasks/'),
+    ).toBe(true);
+    expect(fallbackIgnored('tasks\n', '.agents/local/tasks/')).toBe(true);
+    expect(fallbackIgnored('local/tasks\n', '.agents/local/tasks/')).toBe(null);
   });
 
   test('glob patterns and unrelated lines leave it undecided', () => {

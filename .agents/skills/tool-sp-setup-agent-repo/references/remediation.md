@@ -8,15 +8,23 @@ root.
 
 ## W4 — workspaces at their old paths
 
-The repo was set up before the workspaces moved under `.agents/local/`. Migrate, don't create
-beside: run `tool-sp-migrate-agent-repo`, which moves the old folders and their content and
-records the migration. Creating the new folders first leaves two copies to reconcile by hand.
-Re-run the audit afterwards; `W1` to `W3` then describe the moved workspaces.
+The repo was set up before the workspaces moved under `.agents/local/`.
+
+- **Fail** (a folder with untracked content, or a link that leads somewhere else): migrate, don't
+  create beside. Run `tool-sp-migrate-agent-repo`, which moves the old folders and their content
+  and records the migration. Creating the new folders first leaves two copies to reconcile by
+  hand. Re-run the audit afterwards.
+- **Warn** (an old folder holding only tracked files, such as an old `.agents/playground/.gitignore`
+  placeholder): the migration counts this as done and leaves the files where they are. Once no
+  other clone needs them, confirm with the user and untrack them:
+  `git -C <repo> rm -r --cached .agents/playground`, then remove the folder.
 
 ## W1 — local agent workspaces missing
 
-If `W4` failed, fix it first; the migration creates these. Otherwise create the three workspaces. They are a set: tasks without a playground pushes scratch files into
-the source tree, and retro without tasks has nothing to reflect on.
+If `W4` failed, fix it first: the migration creates the new folder for each old one it moves.
+Then create whichever of the three workspaces is still missing. They are a set: tasks without a
+playground pushes scratch files into the source tree, and retro without tasks has nothing to
+reflect on.
 
 ```bash
 mkdir -p <repo>/.agents/local/tasks <repo>/.agents/local/retro <repo>/.agents/local/playground
@@ -39,12 +47,14 @@ is unaffected. One line covers every workspace under `.agents/local/`:
 These directories hold local, per-developer state. Committing them turns one agent's scratch notes
 into everyone's merge conflicts.
 
-An ignore rule only in `.git/info/exclude` or a global ignore file holds on one machine: every
-other clone would commit the workspaces, so `W2` fails until the repo's `.gitignore` has it. A rule
+An ignore rule only in `.git/info/exclude`, a global ignore file, or a `.gitignore` that ignores
+itself holds on one machine: every other clone would commit the workspaces, so `W2` fails until a
+`.gitignore` the repo commits has it. A rule
 like `/.agents/` covers the workspaces but also hides `.agents/skills/` from git; `W2` warns.
 
-Don't commit a placeholder to keep an empty workspace after cloning: git cannot add a file under an
-ignored folder, and W1's `mkdir` recreates the folders anyway.
+Don't commit a placeholder to keep an empty workspace after cloning: `git add` refuses a file
+under an ignored folder unless forced with `-f`, `W3` then fails on it, and `W1`'s `mkdir`
+recreates the folders anyway.
 
 ## W3 — workspace content is committed
 

@@ -219,8 +219,10 @@ const globCharacters = /[*?[\\]/;
 
 /**
  * The repo `.gitignore` alone, read without git: literal patterns only, last match wins, and a
- * folder excluded at any level cannot be re-included below it, as in git. A pattern with glob
- * characters is never matched, so a path only it would decide stays undecided.
+ * folder excluded at any level cannot be re-included below it, as in git. As in git, a pattern
+ * with a slash before its end is anchored to the root, and one without matches a name at any
+ * depth. A pattern with glob characters is never matched, so a path only it would decide stays
+ * undecided.
  */
 export const fallbackIgnored = (
   gitignore: string,
@@ -232,18 +234,24 @@ export const fallbackIgnored = (
     .filter((line) => line !== '' && !line.startsWith('#'))
     .map((line) => {
       const negated = line.startsWith('!');
-      const pattern = (negated ? line.slice(1) : line).replace(
-        /^\/+|\/+$/g,
-        '',
-      );
-      return { negated, pattern };
+      const body = (negated ? line.slice(1) : line).replace(/\/+$/, '');
+      return {
+        negated,
+        anchored: body.includes('/'),
+        pattern: body.replace(/^\/+/, ''),
+      };
     })
     .filter(({ pattern }) => pattern !== '' && !globCharacters.test(pattern));
   const parts = relative.replace(/\/+$/, '').split('/');
   let reIncluded = false;
   for (let depth = 1; depth <= parts.length; depth += 1) {
     const level = parts.slice(0, depth).join('/');
-    const last = rules.filter(({ pattern }) => pattern === level).at(-1);
+    const name = parts[depth - 1];
+    const last = rules
+      .filter(({ anchored, pattern }) =>
+        anchored ? pattern === level : pattern === name,
+      )
+      .at(-1);
     if (last === undefined) {
       continue;
     }
@@ -293,16 +301,33 @@ const isIgnored = (
   };
 };
 
-/** An ignore file that travels with the repo: a `.gitignore` inside it, not `.git/info/exclude` or a global file. */
+/**
+ * An ignore file that travels with the repo: a `.gitignore` inside it that git tracks, or would
+ * commit because nothing ignores it. Not `.git/info/exclude`, a global file, or a `.gitignore`
+ * that ignores itself.
+ */
 const isSharedIgnoreFile = (repo: string, source: string): boolean => {
   const resolved = path.resolve(repo, source);
   const inside = path.relative(repo, resolved);
-  return (
-    path.basename(resolved) === '.gitignore' &&
-    inside !== '' &&
-    !inside.startsWith('..') &&
-    !path.isAbsolute(inside)
+  if (
+    path.basename(resolved) !== '.gitignore' ||
+    inside === '' ||
+    inside.startsWith('..') ||
+    path.isAbsolute(inside)
+  ) {
+    return false;
+  }
+  const relative = inside.split(path.sep).join('/');
+  const tracked = git(
+    repo,
+    ['ls-files', '--error-unmatch', '--', relative],
+    10_000,
   );
+  if (tracked !== null && tracked.status === 0) {
+    return true;
+  }
+  const ignored = git(repo, ['check-ignore', '-q', '--', relative], 10_000);
+  return ignored !== null && ignored.status === 1;
 };
 
 /** Files git tracks under a path, ignore rules notwithstanding. */
@@ -392,28 +417,89 @@ const isRealDirectory = (target: string): boolean => {
   }
 };
 
+const countFiles = (directory: string): number =>
+  fs
+    .readdirSync(directory, { withFileTypes: true })
+    .reduce(
+      (sum, entry) =>
+        sum +
+        (entry.isDirectory() ?
+          countFiles(path.join(directory, entry.name))
+        : 1),
+      0,
+    );
+
+const sameFolder = (left: string, right: string): boolean => {
+  try {
+    return fs.realpathSync(left) === fs.realpathSync(right);
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Old workspace paths, judged as migration 0001's Check judges them: a link to the new folder or
+ * a folder holding only tracked files is migrated; anything else at an old path is not.
+ */
+const legacyWorkspaces = (
+  repo: string,
+  hasGit: boolean,
+): { unmigrated: string[]; trackedOnly: string[] } => {
+  const unmigrated: string[] = [];
+  const trackedOnly: string[] = [];
+  for (const directory of legacyWorkspaceDirs) {
+    const full = path.join(repo, directory);
+    const replacement = path.join(
+      repo,
+      '.agents/local',
+      path.posix.basename(directory),
+    );
+    if (linkTarget(full) !== null) {
+      if (!sameFolder(full, replacement)) {
+        unmigrated.push(
+          `${directory}: a link, but not to .agents/local/${path.posix.basename(directory)}`,
+        );
+      }
+      continue;
+    }
+    const tracked = trackedPaths(repo, directory, hasGit).length;
+    if (!isRealDirectory(full)) {
+      if (tracked > 0) {
+        trackedOnly.push(`${directory}: ${tracked} tracked file(s)`);
+      }
+      continue;
+    }
+    if (countFiles(full) > tracked) {
+      unmigrated.push(
+        `${directory}: a folder with untracked content` +
+          (tracked > 0 ? ` and ${tracked} tracked file(s)` : ''),
+      );
+    } else if (tracked > 0) {
+      trackedOnly.push(`${directory}: ${tracked} tracked file(s)`);
+    }
+  }
+  return { unmigrated, trackedOnly };
+};
+
 const checkWorkspaces = (repo: string, hasGit: boolean): Finding[] => {
   const findings: Finding[] = [];
-  // A link at an old path is what migration 0001 may leave on purpose; a real folder or tracked
-  // files there mean the repo has not migrated.
-  const legacy = legacyWorkspaceDirs.flatMap((directory) => {
-    const tracked = trackedPaths(repo, directory, hasGit).length;
-    const real = isRealDirectory(path.join(repo, directory));
-    if (!real && tracked === 0) {
-      return [];
-    }
-    return [
-      `${directory}: ${real ? 'a folder' : 'no folder'}` +
-        (tracked > 0 ? `, ${tracked} tracked file(s)` : ''),
-    ];
-  });
-  if (legacy.length > 0) {
+  const legacy = legacyWorkspaces(repo, hasGit);
+  if (legacy.unmigrated.length > 0) {
     findings.push(
       finding(
         'W4',
         'fail',
         'agent workspaces at their old paths; run tool-sp-migrate-agent-repo before creating new ones',
-        legacy,
+        legacy.unmigrated,
+      ),
+    );
+  } else if (legacy.trackedOnly.length > 0) {
+    findings.push(
+      finding(
+        'W4',
+        'warn',
+        'old workspace paths still hold tracked files; untrack them once nothing needs them',
+        legacy.trackedOnly,
       ),
     );
   }
