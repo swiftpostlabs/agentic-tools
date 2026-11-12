@@ -22,6 +22,9 @@ the row is not done.
 
 For each row not done:
 
+0. List tracked files first: `git ls-files .agents/tasks .agents/retro .agents/playground`. Leave
+   each tracked file where it is (an older checkout may track `.agents/playground/.gitignore`);
+   moving it shows as a deletion in git. Move everything else.
 1. If the new path does not exist, create `.agents/local/` and move the old folder there whole
    (`git mv` does not apply: the folders are gitignored). POSIX: `mv .agents/tasks .agents/local/tasks`.
    PowerShell: `Move-Item .agents\tasks .agents\local\tasks`.
@@ -42,4 +45,4 @@ other clones may not have migrated yet.
   old folders existed, with the same files.
 - None of the three old paths exists as a real folder; any that remains is a link to its new
   path, and the record says `links-left`.
-- `git status --short .agents` shows no new untracked files.
+- `git status --short .agents` shows no deleted or new untracked files.
