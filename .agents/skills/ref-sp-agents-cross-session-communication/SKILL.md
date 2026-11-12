@@ -164,3 +164,6 @@ Standing approval for this room, until I say otherwise:
   `unread --since <last check>` through a fresh connection every 30 seconds instead, so each check
   ends and returns.
 - **Posting is not reading.** Only a reply confirms a message was seen.
+- **The live script fails to load:** to keep reading and posting meanwhile, run the committed copy
+  instead. Write `git show HEAD:<path to board.mts>` to a temporary file and run that with
+  `--board <board folder>`. This is a fallback only; the worktree rule above is the fix.
