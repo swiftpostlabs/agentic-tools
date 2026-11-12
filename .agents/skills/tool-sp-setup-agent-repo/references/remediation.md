@@ -20,9 +20,16 @@ The repo was set up before the workspaces moved under `.agents/local/`.
   untrack them with `git -C <repo> rm -r --cached .agents/playground`. Then remove the old folder
   if it is a real one and now empty; leave a link alone.
 
-**Untrack with `--cached` only.** Plain `git rm` on a path under a link deletes the file inside the
-folder the link leads to, and on Windows also removes the junction once that folder looks empty to
-git. Untracking through the new path does not work either: git tracks the file under the old one.
+**Untrack with `--cached` only.** Plain `git rm` (or `-f`) on a path under a link can delete the
+file inside the folder the link leads to, and on Windows removes the junction even when that
+folder holds other files. Untracking through the new path does not work either: git tracks the
+file under the old one.
+
+**Warn the other clones before pushing the untracking commit.** Pulling it makes git delete the
+files at the old path, so on a Windows clone with a junction there, the pull does the same damage
+as plain `git rm`. On such a clone, remove the junction first with
+`cmd /c rmdir .agents\playground`, which leaves its target alone (PowerShell's own `rmdir` is
+`Remove-Item`), pull, then recreate it. A symlink on Linux or macOS survives the pull.
 
 ## W1 — local agent workspaces missing
 
@@ -70,9 +77,10 @@ not retroactively untrack. Confirm with the user, then untrack without deleting 
 git -C <repo> rm -r --cached .agents/local/tasks .agents/local/retro .agents/local/playground
 ```
 
-`--cached` matters: plain `git rm` deletes the local copies too, and removes a folder it empties,
-which may be a link migration 0001 left. Check what is being untracked first. If the repo has been treating `.agents/local/tasks/` as shared
-project planning, untracking it destroys a workflow — surface that instead of running the command.
+`--cached` matters: plain `git rm` deletes the local copies too and removes the folders it empties,
+leaving any link at an old path pointing at nothing. Check what is being untracked first. If the
+repo has been treating `.agents/local/tasks/` as shared project planning, untracking it destroys a
+workflow — surface that instead of running the command.
 
 ## S1 / S2 — skills root or core skills missing
 

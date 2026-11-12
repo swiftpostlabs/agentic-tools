@@ -38,7 +38,7 @@ script out first.
 
 | Check | What good looks like |
 | --- | --- |
-| `W4` | Nothing unmigrated at an old path (`.agents/tasks/`, `.agents/retro/`, `.agents/playground/`): a link to the new folder is fine, and a folder holding only tracked files only warns, as migration 0001 counts it done. Reported only when not `pass`, before `W1`. |
+| `W4` | Nothing unmigrated at an old path (`.agents/tasks/`, `.agents/retro/`, `.agents/playground/`): a link to the new folder is fine, and files still tracked at an old path (in a real folder or under that link) only warn, as migration 0001 counts that done. Reported only when not `pass`, before `W1`. |
 | `W1` | `.agents/local/tasks/`, `.agents/local/retro/`, and `.agents/local/playground/` exist. |
 | `W2` | All three are gitignored by the repo's own `.gitignore`, without ignoring `.agents/skills/`. |
 | `W3` | Nothing under them is committed. |

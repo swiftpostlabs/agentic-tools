@@ -123,7 +123,7 @@ describe('workspace checks', () => {
     expect(check(repo, 'W4')).toBeUndefined();
   });
 
-  test('a link left over files still tracked at the old path warns', () => {
+  test('a link at an old path that still has tracked files under it warns', () => {
     const repo = makeRepo(
       { ...workspaces, '.agents/playground/.gitignore': '*\n!.gitignore\n' },
       { withGit: true },
