@@ -297,7 +297,7 @@ function validateBody(
   }
 
   // An agent follows the step in front of it, so a reference named only in a closing References
-  // list goes unread. Warn until the catalog follows the point-of-use rule.
+  // list goes unread.
   const referencesDir = join(skillDir, 'references');
   if (existsSync(referencesDir)) {
     const closing = /^## References\s*$/m.exec(body);
@@ -308,7 +308,7 @@ function validateBody(
     for (const file of readdirSync(referencesDir).sort()) {
       if (file.endsWith('.md') && !working.includes(`references/${file}`)) {
         add(
-          'warning',
+          'error',
           `references/${file} is not named where it is needed, only in a closing list or nowhere`,
         );
       }
