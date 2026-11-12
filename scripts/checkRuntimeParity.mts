@@ -111,7 +111,7 @@ const run = (runtime: string, args: readonly string[], cwd: string): Run => {
 };
 
 const writeFixtureWorkspace = (directory: string): void => {
-  const tasks = path.join(directory, '.agents', 'tasks');
+  const tasks = path.join(directory, '.agents', 'local', 'tasks');
   fs.mkdirSync(tasks, { recursive: true });
   fs.writeFileSync(
     path.join(tasks, 'TODO.md'),
