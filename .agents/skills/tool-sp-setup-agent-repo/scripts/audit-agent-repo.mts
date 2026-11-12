@@ -204,8 +204,8 @@ const git = (
 
 /**
  * `true`/`false` when the ignore patterns decide it, `null` when they cannot. `--no-index` keeps the
- * answer about patterns alone: otherwise one tracked placeholder `.gitignore` makes git report the
- * whole directory as not ignored. Tracked content is checked separately by `trackedPaths`.
+ * answer about patterns alone: otherwise one tracked file makes git report the whole directory as
+ * not ignored. Tracked content is checked separately by `trackedPaths`.
  */
 const isIgnored = (
   repo: string,
@@ -369,9 +369,7 @@ const checkWorkspaces = (repo: string, hasGit: boolean): Finding[] => {
   }
 
   const leaked = workspaceDirs.flatMap((directory) => {
-    const tracked = trackedPaths(repo, directory, hasGit).filter(
-      (file) => path.posix.basename(file) !== '.gitignore',
-    );
+    const tracked = trackedPaths(repo, directory, hasGit);
     return tracked.length > 0 ?
         [`${directory}: ${tracked.length} tracked file(s), e.g. ${tracked[0]}`]
       : [];

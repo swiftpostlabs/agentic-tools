@@ -39,7 +39,7 @@ script out first.
 | --- | --- |
 | `W1` | `.agents/local/tasks/`, `.agents/local/retro/`, and `.agents/local/playground/` exist. |
 | `W2` | All three are gitignored. |
-| `W3` | Nothing under them is committed except a placeholder `.gitignore`. |
+| `W3` | Nothing under them is committed. |
 | `S1` | `.agents/skills/` exists and holds skills. |
 | `S2` | The five core skills are present (below). |
 | `S3` | No skills live outside `.agents/skills/` as real directories. |
@@ -109,8 +109,8 @@ installing a long tail; an unused skill costs context for nothing.
 
 ## Gotchas
 
-- `git check-ignore` reports a directory holding a tracked placeholder as not ignored. The script
-  uses `--no-index` for the pattern and checks tracked content separately (`W3`).
+- `git check-ignore` reports a directory holding any tracked file as not ignored. The script uses
+  `--no-index` for the pattern and checks tracked content separately (`W3`).
 - A real `.claude/skills` directory is a fork. Moving it into `.agents/skills` and linking back is
   a content move: confirm, and search for references to the old path.
 - Claude Code cloud sessions load only skills committed under `.claude/skills/`, so a gitignored

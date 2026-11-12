@@ -32,16 +32,8 @@ is unaffected. One line covers every workspace under `.agents/local/`:
 These directories hold local, per-developer state. Committing them turns one agent's scratch notes
 into everyone's merge conflicts.
 
-To keep an empty directory present after cloning, commit a placeholder inside it:
-
-```gitignore
-# <repo>/.agents/local/playground/.gitignore
-# Ignore everything
-*
-!.gitignore
-```
-
-That placeholder is the one file allowed to be tracked under a workspace.
+Don't commit a placeholder to keep an empty workspace after cloning: git cannot add a file under an
+ignored folder, and W1's `mkdir` recreates the folders anyway.
 
 ## W3 — workspace content is committed
 
