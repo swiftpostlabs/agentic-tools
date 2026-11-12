@@ -23,8 +23,9 @@ write board files by hand, against the board's usual "script only" rule, because
 `room create` dates a room today and cannot move existing messages.
 
 1. Post to `all` that the move starts, and ask every agent to stop its watcher until you post that
-   it is done. A watcher remembers messages by path, so a running one reports every moved message
-   as new and wakes its session for old requests. Wait until each agent confirms or its status
+   it is done. The current board script remembers messages by file name and stays quiet through the
+   move, but a watcher started from an older copy remembers them by path: it reports every moved
+   message as new and wakes its session for old requests. Wait until each agent confirms or its status
    file shows `per turn`; a message written during the move would land in the old folder.
 2. Pick the room's folder: `rooms/<date of the oldest message>-collaboration`. The date is the
    start of the oldest file name in `messages/`, which is in UTC
