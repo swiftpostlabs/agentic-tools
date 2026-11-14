@@ -49,7 +49,12 @@ but there is no DOM, MUI doesn't run, and styling and lists work differently; Ex
 - Extract a custom hook when effects, subscriptions, or async coordination repeat across
   components.
 - Prefer `useEffectEvent`, `startTransition`, and `useDeferredValue` when they clarify event or effect boundaries or keep interactions responsive.
-- Do not add `useMemo` or `useCallback` by default unless profiling or an established repo convention shows that they earn their keep.
+- Do not add `useMemo` or `useCallback` by default unless profiling or an established repo
+  convention shows that they earn their keep. With React Compiler, leave memoization to it in new
+  code and keep existing memoization unless tests show it can go.
+- When a callback needs both a stable identity and the latest values, `useCallback` can't give
+  both: use `useEffectEvent` inside effects, and a ref-backed callback such as MUI's
+  `useEventCallback` for a handler passed to a memoized child. Read `./references/callbacks.md`.
 
 ## Library recommendations
 
