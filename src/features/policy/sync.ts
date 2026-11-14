@@ -342,16 +342,22 @@ export const syncPolicyFile = (
       ]),
   ];
   if (lost.length > 0 && !force) {
+    const importing = mode === 'import-vscode';
     throw new ToolError(
       [
-        'Syncing would overwrite edits made since the last sync:',
+        `${importing ? 'Importing' : 'Syncing'} would overwrite edits made since the last sync:`,
         ...lost.map((line) => `- ${line}`),
-        ...(lastWritten === undefined ?
+        ...(lastWritten !== undefined ? []
+        : importing ?
           [
-            `No sync record yet (${recordLabel}): if these came from an earlier policy, rerun with --force to adopt them.`,
+            `No sync record yet (${recordLabel}), so nothing tells whether the policy or VS Code was edited. Rerun with --force to take VS Code's approvals.`,
           ]
-        : []),
-        `To keep a setting, add it to ${policyLabel}; comments and formatting cannot be kept. To overwrite all of these, rerun with --force.`,
+        : [
+            `No sync record yet (${recordLabel}): if these came from an earlier policy, rerun with --force to adopt them.`,
+          ]),
+        importing ?
+          "To keep a policy approval, set it in VS Code first. To take VS Code's approvals and overwrite all of these, rerun with --force."
+        : `To keep a setting, add it to ${policyLabel}, or for a VS Code approval run \`${importCommand}\`. Comments, formatting, and Copilot's restricted-file switch cannot be kept. To overwrite all of these, rerun with --force.`,
       ].join('\n'),
     );
   }

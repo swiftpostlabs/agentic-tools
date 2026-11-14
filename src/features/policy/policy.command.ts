@@ -27,7 +27,7 @@ const addModeCommand = (
   if (mode !== 'check') {
     command.option(
       '-f, --force',
-      'Overwrite settings a person wrote by hand that the policy does not hold.',
+      'Overwrite edits made since the last sync instead of stopping.',
     );
   }
   command.action((raw: unknown) => {

@@ -79,6 +79,25 @@ describe('runCli', () => {
     expect((await run(['policy', 'check', '-f'], workspace)).code).toBe(2);
   });
 
+  test('policy import-vscode exits 1 before undoing a policy edit, and -f imports anyway', async () => {
+    const workspace = makeTempDir();
+    const config = path.join(workspace, '.agents', 'config.json');
+    writeJson(config, {
+      policy: { services: ['copilot'], terminalAutoApprove: { ls: true } },
+    });
+    expect((await run(['policy', 'sync'], workspace)).code).toBe(0);
+    writeJson(config, {
+      policy: {
+        services: ['copilot'],
+        terminalAutoApprove: { ls: true, curl: false },
+      },
+    });
+    expect((await run(['policy', 'import-vscode'], workspace)).code).toBe(1);
+    expect((await run(['policy', 'import-vscode', '-f'], workspace)).code).toBe(
+      0,
+    );
+  });
+
   test('dispatches policy sync and turns expected failures into exit 1', async () => {
     const workspace = makeTempDir();
     writeJson(path.join(workspace, '.agents', 'config.json'), {

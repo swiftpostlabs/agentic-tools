@@ -43,8 +43,10 @@ const stringList = (value: unknown): string[] =>
   : [];
 
 const hashText = (text: string | undefined): string | null =>
-  text === undefined ? null : (
-    `sha256:${createHash('sha256').update(text).digest('hex')}`
+  text === undefined ? null
+    // Line endings follow each checkout's core.autocrlf, so they are not an edit.
+  : (
+    `sha256:${createHash('sha256').update(text.replaceAll('\r\n', '\n')).digest('hex')}`
   );
 
 /**

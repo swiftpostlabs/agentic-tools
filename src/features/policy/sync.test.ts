@@ -211,7 +211,7 @@ describe('syncPolicyFile', () => {
         '- .vscode/settings.json: chat.tools.terminal.autoApprove "make" would be removed',
         '- .vscode/settings.json: chat.tools.terminal.autoApprove "rm" would change from true to false',
         'No sync record yet (.agents/policy.lock.json): if these came from an earlier policy, rerun with --force to adopt them.',
-        'To keep a setting, add it to .agents/config.json; comments and formatting cannot be kept. To overwrite all of these, rerun with --force.',
+        "To keep a setting, add it to .agents/config.json, or for a VS Code approval run `agentic-tools policy import-vscode`. Comments, formatting, and Copilot's restricted-file switch cannot be kept. To overwrite all of these, rerun with --force.",
       ].join('\n'),
     );
     expect(
@@ -650,6 +650,44 @@ describe('hand-written settings', () => {
     expect(syncPolicyFile(policyFile, 'sync')).toContain(
       'Restored: .vscode/settings.json: chat.tools.terminal.autoApprove "uv"',
     );
+  });
+
+  test('Windows line endings in .aiexclude are not a hand edit', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['gemini'],
+      protectedFiles: ['.env'],
+    });
+    const aiExclude = path.join(root, '.aiexclude');
+    writeFile(
+      aiExclude,
+      fs.readFileSync(aiExclude, 'utf8').replaceAll('\n', '\r\n'),
+    );
+    expect(() => syncPolicyFile(policyFile, 'sync')).not.toThrow();
+  });
+
+  test('import-vscode --force takes VS Code approvals over policy-file edits', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['copilot'],
+      terminalAutoApprove: { ls: true },
+    });
+    writeJson(policyFile, {
+      policy: {
+        services: ['copilot'],
+        terminalAutoApprove: { ls: true, curl: false },
+      },
+    });
+    expect(() => syncPolicyFile(policyFile, 'import-vscode')).toThrow(
+      'Importing would overwrite edits made since the last sync:',
+    );
+    syncPolicyFile(policyFile, 'import-vscode', true);
+    expect(
+      (readJson(policyFile) as { policy: Record<string, unknown> }).policy[
+        'terminalAutoApprove'
+      ],
+    ).toEqual({ ls: true });
+    expect(readJson(vscodeFile(root))).toMatchObject({
+      'chat.tools.terminal.autoApprove': { ls: true },
+    });
   });
 
   test('a sync record of another format version is refused with a fix', () => {
