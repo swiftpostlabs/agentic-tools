@@ -178,7 +178,7 @@ describe('syncPolicyFile', () => {
       '// JSON5\n{"editor.x": 1, "z": null, "files.associations": {"a": "b"},}\n',
     );
     expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
-      '.vscode/settings.json: comments or trailing commas would be removed',
+      '.vscode/settings.json: JSON5 syntax (comments, trailing commas, quotes) would be rewritten as plain JSON',
     );
     syncPolicyFile(policyFile, 'sync', true);
     expect(
@@ -206,12 +206,12 @@ describe('syncPolicyFile', () => {
     );
     expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
       [
-        'Syncing would overwrite settings written by hand:',
+        'Syncing would overwrite edits made since the last sync:',
         '- .claude/settings.json: deny rule Read(./mine.txt) would be removed',
         '- .vscode/settings.json: chat.tools.terminal.autoApprove "make" would be removed',
         '- .vscode/settings.json: chat.tools.terminal.autoApprove "rm" would change from true to false',
         'No sync record yet (.agents/policy.lock.json): if these came from an earlier policy, rerun with --force to adopt them.',
-        'To keep them, add them to .agents/config.json; to overwrite them, rerun with --force.',
+        'To keep a setting, add it to .agents/config.json; comments and formatting cannot be kept. To overwrite all of these, rerun with --force.',
       ].join('\n'),
     );
     expect(
@@ -228,6 +228,7 @@ describe('syncPolicyFile', () => {
       services: ['copilot'],
       terminalAutoApprove: { rm: false },
     });
+    syncPolicyFile(policyFile, 'sync');
     writeJson(path.join(root, '.vscode', 'settings.json'), {
       'chat.tools.terminal.autoApprove': { rm: true },
     });
@@ -258,6 +259,7 @@ describe('syncPolicyFile', () => {
       { protectedFiles: ['.env'], terminalAutoApprove: { old: true } },
       { siblings: { skills: { sources: [] } } },
     );
+    syncPolicyFile(policyFile, 'sync');
     writeJson(path.join(root, '.vscode', 'settings.json'), {
       'chat.tools.terminal.autoApprove': { 'git status': true },
     });
@@ -272,10 +274,12 @@ describe('syncPolicyFile', () => {
   });
 
   test('import-vscode clears approval maps that VS Code no longer has', () => {
-    const { policyFile } = setupRepo(
+    const { root, policyFile } = setupRepo(
       { editAutoApprove: { '**/*.md': true } },
       { unified: false },
     );
+    syncPolicyFile(policyFile, 'sync');
+    writeJson(path.join(root, '.vscode', 'settings.json'), {});
     syncPolicyFile(policyFile, 'import-vscode');
     expect(readJson(policyFile)).toEqual({
       editAutoApprove: {},
@@ -431,7 +435,7 @@ describe('hand-written settings', () => {
     );
     expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
       [
-        '- .claude/settings.json: comments or trailing commas would be removed',
+        '- .claude/settings.json: JSON5 syntax (comments, trailing commas, quotes) would be rewritten as plain JSON',
         '- .claude/settings.json: "model": null would be removed',
       ].join('\n'),
     );
@@ -564,7 +568,7 @@ describe('hand-written settings', () => {
       ['<<<<<<< HEAD', '{}', '=======', '{}', '>>>>>>> theirs', ''].join('\n'),
     );
     expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
-      'Rerun with --force to rewrite it from the current policy.',
+      '--force rewrites it but also overwrites every hand edit.',
     );
     syncPolicyFile(policyFile, 'sync', true);
     expect(syncPolicyFile(policyFile, 'check').at(-1)).toBe('Done.');
@@ -601,7 +605,50 @@ describe('hand-written settings', () => {
       ].join('\n'),
     );
     expect(() => syncPolicyFile(policyFile, 'import-vscode')).toThrow(
-      '- .agents/config.json: comments or trailing commas would be removed',
+      '- .agents/config.json: JSON5 syntax (comments, trailing commas, quotes) would be rewritten as plain JSON',
+    );
+  });
+
+  test('an association re-pointed by hand stops sync until forced', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['copilot'],
+      protectedFiles: ['.env'],
+    });
+    const vscode = readJson(vscodeFile(root)) as Record<string, unknown>;
+    writeJson(vscodeFile(root), {
+      ...vscode,
+      'files.associations': { '.env': 'dotenv' },
+    });
+    expectStopsThenForces(
+      policyFile,
+      vscodeFile(root),
+      '- .vscode/settings.json: files.associations ".env" would change from "dotenv" to "copilot-restricted-file"',
+    );
+  });
+
+  test('import-vscode with no record yet stops on a policy approval VS Code would change', () => {
+    const { root, policyFile } = setupRepo({
+      services: ['copilot'],
+      terminalAutoApprove: { uv: false },
+    });
+    writeJson(vscodeFile(root), {
+      'chat.tools.terminal.autoApprove': { uv: true },
+    });
+    const before = fs.readFileSync(policyFile, 'utf8');
+    expect(() => syncPolicyFile(policyFile, 'import-vscode')).toThrow(
+      '- .agents/config.json: terminalAutoApprove "uv" would change from false to true',
+    );
+    expect(fs.readFileSync(policyFile, 'utf8')).toBe(before);
+  });
+
+  test('restoring entries a person deleted is reported, never silent', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['copilot'],
+      terminalAutoApprove: { uv: true },
+    });
+    writeJson(vscodeFile(root), { 'chat.tools.terminal.autoApprove': null });
+    expect(syncPolicyFile(policyFile, 'sync')).toContain(
+      'Restored: .vscode/settings.json: chat.tools.terminal.autoApprove "uv"',
     );
   });
 

@@ -47,18 +47,26 @@ const hashText = (text: string | undefined): string | null =>
     `sha256:${createHash('sha256').update(text).digest('hex')}`
   );
 
-/** Only what sync owns: `Read(...)` denies, restricted-file associations, its Copilot switch, approvals. */
-export const buildSyncRecord = (files: {
-  claude: SettingsDocument;
-  vscode: SettingsDocument;
-  aiexclude: string | undefined;
-}): SyncRecord => {
+/**
+ * Only what sync owns: `Read(...)` denies, restricted-file associations, its Copilot switch, and
+ * approvals. `everything` keeps the other entries of those keys too, to see what a person changed.
+ */
+export const buildSyncRecord = (
+  files: {
+    claude: SettingsDocument;
+    vscode: SettingsDocument;
+    aiexclude: string | undefined;
+  },
+  everything = false,
+): SyncRecord => {
   const owned = (key: string, entries: JsonObject): JsonObject =>
     Object.fromEntries(
-      Object.entries(entries).filter(([entry, value]) =>
-        key === 'files.associations' ? value === restrictedLanguage
-        : key === 'github.copilot.enable' ? entry === restrictedLanguage
-        : true,
+      Object.entries(entries).filter(
+        ([entry, value]) =>
+          everything ||
+          (key === 'files.associations' ? value === restrictedLanguage
+          : key === 'github.copilot.enable' ? entry === restrictedLanguage
+          : true),
       ),
     );
   return {
@@ -66,7 +74,7 @@ export const buildSyncRecord = (files: {
     claude: {
       deny: stringList(
         objectOrEmpty(files.claude.managed['permissions'])['deny'],
-      ).filter((rule) => rule.startsWith(managedRulePrefix)),
+      ).filter((rule) => everything || rule.startsWith(managedRulePrefix)),
     },
     vscode: Object.fromEntries(
       vscodeManagedOrder
@@ -88,7 +96,9 @@ export const readSyncRecord = (
   target: string,
   label: string,
 ): SyncRecord | undefined => {
-  const fix = 'Rerun with --force to rewrite it from the current policy.';
+  const fix =
+    'Resolve it, or delete it so sync treats every entry the policy does not write as hand-written; ' +
+    '--force rewrites it but also overwrites every hand edit.';
   let raw: unknown;
   try {
     raw = readJson5File(target, label);
@@ -152,39 +162,47 @@ const describeLoss = (
   : `${key} would change from ${onDisk} to ${next}`;
 
 /**
- * Hand edits that syncing would undo. An entry is hand-written when the file differs from what
- * sync last wrote; it is lost when the new output differs from the file. With no record yet,
- * an entry in the file counts as the tool's own only when the current policy writes it as is.
+ * Compare the files with what sync last wrote and is about to write. An entry is hand-written when
+ * the file differs from the record; it is lost when the new output differs from the file. An
+ * entry a person deleted is restored, and reported, since the policy asks for it and nothing a
+ * person wrote is lost. With no record yet, an entry in the file counts as the tool's own only when
+ * the current policy writes it as is.
  */
-export const findLosses = (options: {
+export const compareWithRecord = (options: {
+  /** The entries sync owns on disk. */
   onDisk: SyncRecord;
+  /** Every entry of the same keys on disk, so a re-pointed association is seen. */
+  onDiskAll: SyncRecord;
   lastWritten: SyncRecord | undefined;
   next: SyncRecord;
-}): string[] => {
-  const onDisk = recordEntries(options.onDisk);
+}): { losses: string[]; restored: string[] } => {
   const next = recordEntries(options.next);
-  const lastWritten =
+  const ownedOnDisk = recordEntries(options.onDisk);
+  const allOnDisk = recordEntries(options.onDiskAll);
+  const recorded =
     options.lastWritten === undefined ?
-      new Map([...onDisk].filter(([key, value]) => next.get(key) === value))
+      new Map(
+        [...ownedOnDisk].filter(([key, value]) => next.get(key) === value),
+      )
     : recordEntries(options.lastWritten);
-  const keys = new Set([
-    ...onDisk.keys(),
-    ...lastWritten.keys(),
-    ...next.keys(),
-  ]);
-  return [...keys]
-    .flatMap((key) => {
-      const value = onDisk.get(key);
-      // Restoring what a person deleted loses nothing they wrote, and the policy asks for it.
-      return (
-          value === undefined ||
-            value === lastWritten.get(key) ||
-            value === next.get(key)
-        ) ?
-          []
-        : [describeLoss(key, next.get(key), value)];
-    })
-    .sort();
+  const keys = [
+    ...new Set([...ownedOnDisk.keys(), ...recorded.keys(), ...next.keys()]),
+  ].sort();
+  const losses = keys.flatMap((key) => {
+    const value = allOnDisk.get(key);
+    return (
+        value === undefined ||
+          value === recorded.get(key) ||
+          value === next.get(key)
+      ) ?
+        []
+      : [describeLoss(key, next.get(key), value)];
+  });
+  const restored = keys.filter(
+    (key) =>
+      !allOnDisk.has(key) && recorded.has(key) && next.get(key) !== undefined,
+  );
+  return { losses, restored };
 };
 
 const approvalKeys = [
@@ -198,9 +216,9 @@ type ApprovalMaps = {
 };
 
 /**
- * Approvals edited by hand in the policy file since the last sync that importing VS Code's maps
- * would undo. The record holds the approvals the policy had at that sync; with no record, nothing
- * can be told apart, and importing is what was asked for.
+ * Approvals edited in the policy file since the last sync that importing VS Code's maps would
+ * undo. The record holds the approvals the policy had at that sync; with no record, every policy
+ * approval that differs from VS Code counts, since nothing tells which side was edited.
  */
 export const findImportLosses = (options: {
   policyLabel: string;
@@ -208,14 +226,13 @@ export const findImportLosses = (options: {
   imported: ApprovalMaps;
   lastWritten: SyncRecord | undefined;
 }): string[] => {
-  const { lastWritten } = options;
-  if (lastWritten === undefined) {
-    return [];
-  }
   return approvalKeys.flatMap(([policyKey, vscodeKey]) => {
     const before = options.before[policyKey] ?? {};
     const imported = options.imported[policyKey] ?? {};
-    const recorded = lastWritten.vscode[vscodeKey] ?? {};
+    const recorded =
+      options.lastWritten === undefined ?
+        imported
+      : (options.lastWritten.vscode[vscodeKey] ?? {});
     return Object.entries(before)
       .filter(
         ([entry, value]) =>
@@ -230,7 +247,7 @@ export const findImportLosses = (options: {
   });
 };
 
-/** Comments and trailing commas that rewriting the file as plain JSON would strip. */
+/** JSON5 syntax, such as comments and trailing commas, that rewriting as plain JSON would strip. */
 export const lostFormatting = (
   label: string,
   text: string | undefined,
@@ -242,7 +259,9 @@ export const lostFormatting = (
     JSON.parse(text.charCodeAt(0) === 0xfeff ? text.slice(1) : text);
     return [];
   } catch {
-    return [`${label}: comments or trailing commas would be removed`];
+    return [
+      `${label}: JSON5 syntax (comments, trailing commas, quotes) would be rewritten as plain JSON`,
+    ];
   }
 };
 

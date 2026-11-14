@@ -24,7 +24,7 @@ import { buildAiExcludeContent } from './gemini.ts';
 import {
   buildSyncRecord,
   findImportLosses,
-  findLosses,
+  compareWithRecord,
   lostFormatting,
   lostNulls,
   readSyncRecord,
@@ -304,6 +304,17 @@ export const syncPolicyFile = (
   // Forcing overwrites regardless, so an unreadable record must not block it.
   const lastWritten =
     force ? undefined : readSyncRecord(paths.syncRecord, recordLabel);
+  const onDiskFiles = {
+    claude: claudeExisting,
+    vscode: vscodeExisting,
+    aiexclude: aiExcludeText,
+  };
+  const comparison = compareWithRecord({
+    onDisk: buildSyncRecord(onDiskFiles),
+    onDiskAll: buildSyncRecord(onDiskFiles, true),
+    lastWritten,
+    next: nextRecord,
+  });
   const lost = [
     ...(mode === 'import-vscode' ?
       [
@@ -316,15 +327,7 @@ export const syncPolicyFile = (
         ...lostFormatting(policyLabel, readTextOrUndefined(paths.policyFile)),
       ]
     : []),
-    ...findLosses({
-      onDisk: buildSyncRecord({
-        claude: claudeExisting,
-        vscode: vscodeExisting,
-        aiexclude: aiExcludeText,
-      }),
-      lastWritten,
-      next: nextRecord,
-    }),
+    ...comparison.losses,
     ...(claudeText === expectedClaude ?
       []
     : [
@@ -341,14 +344,14 @@ export const syncPolicyFile = (
   if (lost.length > 0 && !force) {
     throw new ToolError(
       [
-        'Syncing would overwrite settings written by hand:',
+        'Syncing would overwrite edits made since the last sync:',
         ...lost.map((line) => `- ${line}`),
         ...(lastWritten === undefined ?
           [
             `No sync record yet (${recordLabel}): if these came from an earlier policy, rerun with --force to adopt them.`,
           ]
         : []),
-        `To keep them, add them to ${policyLabel}; to overwrite them, rerun with --force.`,
+        `To keep a setting, add it to ${policyLabel}; comments and formatting cannot be kept. To overwrite all of these, rerun with --force.`,
       ].join('\n'),
     );
   }
@@ -356,6 +359,8 @@ export const syncPolicyFile = (
   if (mode === 'import-vscode') {
     writePolicyDocument(paths.policyFile, document, policy);
   }
+  // Something a person deleted comes back because the policy asks for it; say so, never silently.
+  messages.push(...comparison.restored.map((entry) => `Restored: ${entry}`));
 
   const hadGeminiFile = aiExcludeText !== undefined;
   writeOrRemove(paths.aiExclude, expectedAiExclude);

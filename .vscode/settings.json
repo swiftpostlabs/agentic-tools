@@ -31,6 +31,7 @@
     "**/.aiexclude": false,
     "**/.agents/config.json": false,
     "**/.agents/policy.json": false,
+    "**/.agents/policy.lock.json": false,
     "**/*.{pem,key,pub}": false,
     "**/internal-config.yml": false
   },
