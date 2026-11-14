@@ -589,35 +589,38 @@ const samePath = (left: string, right: string): boolean => {
 
 /**
  * The main worktree's root when `directory` is the top of a linked worktree (`git worktree add`),
- * otherwise undefined: outside git, in the main worktree, or when the repo has no main worktree.
+ * otherwise undefined: outside git, in the main worktree, or when the repo is bare and so has no
+ * main worktree. Git lists the main worktree first.
  */
 export const mainWorktreeRoot = (directory: string): string | undefined => {
   let output: string;
   try {
-    output = runGit([
-      '-C',
-      directory,
-      'rev-parse',
-      '--path-format=absolute',
-      '--show-toplevel',
-      '--git-dir',
-      '--git-common-dir',
-    ]);
+    output = runGit(['-C', directory, 'worktree', 'list', '--porcelain']);
   } catch {
     return undefined;
   }
-  const [topLevel, gitDir, commonDir] = output.split(/\r?\n/);
+  const worktrees = output
+    .split(/\r?\n\r?\n/)
+    .map((block) => block.split(/\r?\n/))
+    .map((lines) => ({
+      root:
+        lines[0]?.startsWith('worktree ') === true ?
+          lines[0].slice('worktree '.length)
+        : undefined,
+      bare: lines.includes('bare'),
+    }));
+  const [main, ...linked] = worktrees;
   if (
-    topLevel === undefined ||
-    gitDir === undefined ||
-    commonDir === undefined ||
-    !samePath(topLevel, directory) ||
-    samePath(gitDir, commonDir) ||
-    path.basename(commonDir) !== '.git'
+    main?.root === undefined ||
+    main.bare ||
+    !linked.some(
+      (worktree) =>
+        worktree.root !== undefined && samePath(worktree.root, directory),
+    )
   ) {
     return undefined;
   }
-  return path.dirname(path.resolve(commonDir));
+  return path.resolve(main.root);
 };
 
 /** The remote's default branch, asked of the remote, since a bare clone's HEAD does not follow it. */

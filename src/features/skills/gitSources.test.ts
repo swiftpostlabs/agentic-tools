@@ -960,3 +960,53 @@ describe('path sources in a linked worktree', () => {
     );
   });
 });
+
+describe('path sources in a worktree of a bare repo', () => {
+  // A common layout: `git clone --bare <url> proj/.git`, worktrees beside it in proj/. There is no
+  // main checkout, so '../shared' keeps resolving from the worktree itself, to proj/shared.
+  test("'../shared' resolves beside the worktree, since there is no main checkout", () => {
+    const origin = makeTempDir();
+    git(origin, 'init', '--quiet', '--initial-branch', 'main');
+    writeJson(path.join(origin, '.agents', 'config.json'), {
+      skills: { sources: [{ from: '../shared', skills: ['ref-shared'] }] },
+    });
+    git(origin, 'add', '.');
+    git(origin, 'commit', '--quiet', '-m', 'config');
+    const project = path.join(makeTempDir(), 'proj');
+    git(
+      origin,
+      'clone',
+      '--quiet',
+      '--bare',
+      origin,
+      path.join(project, '.git'),
+    );
+    const worktree = path.join(project, 'feature');
+    git(
+      project,
+      'worktree',
+      'add',
+      '--quiet',
+      '-b',
+      'feature',
+      worktree,
+      'main',
+    );
+    writeSkill(
+      path.join(project, 'shared', '.agents', 'skills'),
+      'ref-shared',
+      {
+        domain: 'dev',
+        visibility: 'public',
+      },
+    );
+
+    runSkillsSync(gitContext(worktree).context, syncOptions);
+
+    expect(linkTarget(worktree, 'ref-shared')).toBe(
+      fs.realpathSync(
+        path.join(project, 'shared', '.agents', 'skills', 'ref-shared'),
+      ),
+    );
+  });
+});
