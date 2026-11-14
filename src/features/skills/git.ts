@@ -365,7 +365,8 @@ const isProcessRunning = (pid: number): boolean => {
  * A lock whose process on this host is gone is stale at once, so an interrupted sync (Ctrl+C runs
  * no cleanup) does not hold up the next one. A lock from another host is never broken: its
  * process cannot be checked. A lock whose owner cannot be read (a crash while writing it) is
- * stale once older than the age limit.
+ * stale once older than the age limit. If the dead process's pid has been reused, the lock looks
+ * alive and the next sync waits for it: the safe direction.
  */
 export const isLockStale = (
   lockPath: string,

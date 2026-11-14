@@ -323,6 +323,53 @@ describe('removing exports', () => {
   });
 });
 
+describe('removing exports through sync', () => {
+  test('cleanup of an old export and rollback of a failed sync leave a junction target alone', () => {
+    const outside = makeTempDir();
+    writeFile(path.join(outside, 'keep.txt'), 'must survive');
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    const { toolsHome } = gitContext(root);
+    const sources = path.join(root, '.agents', 'local', 'sources');
+
+    // Cleanup: update moves the pin and removes the old export, junction inside.
+    runSkillsSync(gitContext(root, toolsHome).context, syncOptions);
+    const [old] = exportsOf(root);
+    fs.symlinkSync(
+      outside,
+      path.join(sources, old as string, 'escape'),
+      'junction',
+    );
+    source.commit('second');
+    runSkillsUpdate(gitContext(root, toolsHome).context, {
+      ...syncOptions,
+      sources: [],
+    });
+    expect(fs.existsSync(path.join(sources, old as string))).toBe(false);
+    expect(fs.readFileSync(path.join(outside, 'keep.txt'), 'utf8')).toBe(
+      'must survive',
+    );
+
+    // Rollback: a junction in the folder the next export writes to, then a failed sync.
+    source.commit('third');
+    const next = `${(old as string).split('@')[0] as string}@${source.head().slice(0, 12)}`;
+    fs.mkdirSync(path.join(sources, next), { recursive: true });
+    fs.symlinkSync(outside, path.join(sources, next, 'escape'), 'junction');
+    fs.rmSync(path.join(root, '.agents', 'skills', 'ref-base'));
+    fs.mkdirSync(path.join(root, '.agents', 'skills', 'ref-base'));
+    expect(() => {
+      runSkillsUpdate(gitContext(root, toolsHome).context, {
+        ...syncOptions,
+        sources: [],
+      });
+    }).toThrow(/already exists and is not a symlink/);
+    expect(fs.existsSync(path.join(sources, next))).toBe(false);
+    expect(fs.readFileSync(path.join(outside, 'keep.txt'), 'utf8')).toBe(
+      'must survive',
+    );
+  });
+});
+
 describe('locks', () => {
   test('tells once which lock it waits on and how to clear it', () => {
     const lockPath = path.join(makeTempDir(), 'x.lock');
