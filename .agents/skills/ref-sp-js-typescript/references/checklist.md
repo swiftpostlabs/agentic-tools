@@ -11,3 +11,4 @@
 - Complex unions, generics, or mapped types clarify the domain instead of obscuring it.
 - The final code remains readable to an engineer who did not write the original types.
 - No-build package runtime under `node_modules` emits JavaScript or uses `.mjs` plus JSDoc/checkJs instead of relying on Node type stripping.
+- `tsconfig` sets `strict`, `types`, `target`, and `module` (directly or through a base it extends), sets `rootDir` when `tsc` emits files, and uses no option TypeScript 6 deprecates (`tsc` reports them as TS5101 or TS5107).
