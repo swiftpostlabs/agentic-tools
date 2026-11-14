@@ -22,6 +22,11 @@ import {
 } from './claude.ts';
 import { buildAiExcludeContent } from './gemini.ts';
 import {
+  lostClaudeRules,
+  lostFormatting,
+  lostVscodeSettings,
+} from './overwrites.ts';
+import {
   hasContent,
   loadSettings,
   parseAiPolicy,
@@ -179,6 +184,7 @@ export type PolicyMode = 'sync' | 'check' | 'import-vscode';
 export const syncPolicyFile = (
   policyFile: string,
   mode: PolicyMode,
+  force = false,
 ): string[] => {
   const paths = resolvePolicyPaths(policyFile);
   const document = loadPolicyDocument(paths.policyFile);
@@ -193,6 +199,21 @@ export const syncPolicyFile = (
   if (mode === 'import-vscode') {
     writePolicyDocument(paths.policyFile, document, policy);
     messages.push(`Imported: VS Code approvals into ${policyLabel}`);
+    // An imported change can turn a deny into an allow, so each one is named.
+    for (const key of ['terminalAutoApprove', 'editAutoApprove'] as const) {
+      const before: Record<string, unknown> = document.policy[key] ?? {};
+      const after: Record<string, unknown> = policy[key] ?? {};
+      for (const entry of new Set([
+        ...Object.keys(before),
+        ...Object.keys(after),
+      ])) {
+        if (JSON.stringify(before[entry]) !== JSON.stringify(after[entry])) {
+          messages.push(
+            `  ${key} "${entry}": ${JSON.stringify(before[entry] ?? null)} -> ${JSON.stringify(after[entry] ?? null)}`,
+          );
+        }
+      }
+    }
   }
 
   const { services } = effective;
@@ -258,6 +279,33 @@ export const syncPolicyFile = (
     return messages;
   }
 
+  // Settings a person wrote by hand are never dropped silently: stop unless forced.
+  const claudeText = readTextOrUndefined(paths.claudeSettings);
+  const vscodeText = readTextOrUndefined(paths.vscodeSettings);
+  const lost = [
+    ...(claudeText === expectedClaude ?
+      []
+    : [
+        ...lostClaudeRules(claudeExisting, claudeUpdated),
+        ...lostFormatting('.claude/settings.json', claudeText),
+      ]),
+    ...(vscodeText === expectedVscode ?
+      []
+    : [
+        ...lostVscodeSettings(vscodeExisting, vscodeUpdated),
+        ...lostFormatting('.vscode/settings.json', vscodeText),
+      ]),
+  ];
+  if (lost.length > 0 && !force) {
+    throw new ToolError(
+      [
+        'Syncing would overwrite settings that the policy does not hold:',
+        ...lost.map((line) => `- ${line}`),
+        `Add them to ${policyLabel} to keep them, or rerun with --force to overwrite them.`,
+      ].join('\n'),
+    );
+  }
+
   const hadGeminiFile = fs.existsSync(paths.aiExclude);
   writeOrRemove(paths.aiExclude, expectedAiExclude);
   if (expectedAiExclude !== undefined) {
@@ -292,6 +340,7 @@ export const runPolicyCommand = (options: {
   config: string | undefined;
   cwd: string;
   home: string;
+  force?: boolean;
 }): string[] => {
   const policyPath = resolvePolicyPath(
     options.config,
@@ -303,5 +352,5 @@ export const runPolicyCommand = (options: {
       `No ${agentsPaths.config} policy, ${agentsPaths.policy}, or legacy ${agentsPaths.legacyPolicy} found. Nothing to sync.`,
     ];
   }
-  return syncPolicyFile(policyPath, options.mode);
+  return syncPolicyFile(policyPath, options.mode, options.force === true);
 };

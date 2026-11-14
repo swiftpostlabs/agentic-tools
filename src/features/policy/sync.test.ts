@@ -175,12 +175,61 @@ describe('syncPolicyFile', () => {
       path.join(root, '.vscode', 'settings.json'),
       '// JSON5\n{"editor.x": 1, "z": null, "files.associations": {"a": "b"},}\n',
     );
-    syncPolicyFile(policyFile, 'sync');
+    expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
+      '.vscode/settings.json: comments or trailing commas would be removed',
+    );
+    syncPolicyFile(policyFile, 'sync', true);
     expect(
       Object.keys(
         readJson(path.join(root, '.vscode', 'settings.json')) as object,
       ),
     ).toEqual(['files.associations', 'github.copilot.enable', 'editor.x']);
+  });
+
+  test('stops before dropping hand-written rules and approvals, unless forced', () => {
+    const { root, policyFile } = setupRepo({
+      services: ['claude', 'copilot'],
+      protectedFiles: ['.env'],
+      terminalAutoApprove: { rm: false },
+    });
+    writeJson(path.join(root, '.claude', 'settings.json'), {
+      permissions: { deny: ['Read(./mine.txt)', 'Bash(rm -rf:*)'] },
+    });
+    writeJson(path.join(root, '.vscode', 'settings.json'), {
+      'chat.tools.terminal.autoApprove': { rm: true, make: true },
+    });
+    const claudeBefore = fs.readFileSync(
+      path.join(root, '.claude', 'settings.json'),
+      'utf8',
+    );
+    expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
+      [
+        'Syncing would overwrite settings that the policy does not hold:',
+        '- .claude/settings.json: deny rule Read(./mine.txt) would be removed',
+        '- .vscode/settings.json: chat.tools.terminal.autoApprove "rm" would change from true to false',
+        '- .vscode/settings.json: chat.tools.terminal.autoApprove "make" would be removed',
+      ].join('\n'),
+    );
+    expect(
+      fs.readFileSync(path.join(root, '.claude', 'settings.json'), 'utf8'),
+    ).toBe(claudeBefore);
+    syncPolicyFile(policyFile, 'sync', true);
+    expect(readJson(path.join(root, '.claude', 'settings.json'))).toEqual({
+      permissions: { deny: ['Bash(rm -rf:*)', 'Read(.env)'] },
+    });
+  });
+
+  test('import-vscode names each approval it changes', () => {
+    const { root, policyFile } = setupRepo({
+      services: ['copilot'],
+      terminalAutoApprove: { rm: false },
+    });
+    writeJson(path.join(root, '.vscode', 'settings.json'), {
+      'chat.tools.terminal.autoApprove': { rm: true },
+    });
+    expect(syncPolicyFile(policyFile, 'import-vscode')).toContain(
+      '  terminalAutoApprove "rm": false -> true',
+    );
   });
 
   test('check mode reports drift without writing', () => {

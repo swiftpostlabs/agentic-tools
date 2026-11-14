@@ -58,6 +58,9 @@ When one vendor's file comes out wrong, read that vendor's detail: `./references
   hand-editing generated files.
 - `.claude/settings.json` and `.vscode/settings.json` are only partly managed: edit the parts sync
   doesn't own, never the policy-owned sections.
+- `policy sync` stops with exit 1 and lists what it would lose when a settings file holds what the
+  policy doesn't: a hand-added `Read(...)` deny, an auto-approve entry it would change or drop, or
+  comments it would strip. Add those to the policy, or rerun with `--force` to overwrite them.
 - `.aiexclude` stays at the repo root; don't invent a Gemini-only ignore file.
 - Docs and CI use the `agentic-tools policy` commands only.
 

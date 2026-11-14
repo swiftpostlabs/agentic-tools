@@ -4,7 +4,10 @@ import { value, type CommandContext } from '../../core/command.ts';
 import { parseWith } from '../../core/json.ts';
 import { runPolicyCommand, type PolicyMode } from './sync.ts';
 
-const optionsSchema = z.object({ config: z.string().optional() });
+const optionsSchema = z.object({
+  config: z.string().optional(),
+  force: z.boolean().default(false),
+});
 
 const addModeCommand = (
   group: Command,
@@ -20,11 +23,16 @@ const addModeCommand = (
       'Path to an agents config or policy file.',
       value,
     )
+    .option(
+      '-f, --force',
+      'Overwrite settings a person wrote by hand that the policy does not hold.',
+    )
     .action((raw: unknown) => {
-      const { config } = parseWith(optionsSchema, raw);
+      const { config, force } = parseWith(optionsSchema, raw);
       runPolicyCommand({
         mode,
         config,
+        force,
         cwd: context.cwd,
         home: context.home,
       }).forEach(context.output.info);
