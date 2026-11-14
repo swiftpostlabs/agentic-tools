@@ -101,7 +101,7 @@ src/
 - Guard an entry point by comparing `fs.realpathSync(process.argv[1])` with
   `fs.realpathSync(import.meta.filename)` (inside a `try` that returns `false`), so tests can import
   the module and the script still runs when launched through a symlinked skills folder such as
-  `.claude/skills`. A plain `path.resolve` comparison fails there and exits 0 without output.
+  `.claude/skills`. Under Node a plain `path.resolve` comparison fails there and exits 0 without output.
 
 ## Runtimes
 

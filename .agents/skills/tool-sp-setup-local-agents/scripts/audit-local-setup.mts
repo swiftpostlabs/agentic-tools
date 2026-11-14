@@ -552,8 +552,8 @@ const main = async (argv: string[]): Promise<number> => {
   return findings.some((item) => item.status === 'fail') ? 1 : 0;
 };
 
-// Real paths on both sides: run through a symlinked or junctioned skills folder, argv[1] keeps
-// the link path while import.meta.filename is already resolved.
+// Real paths on both sides: launched through a symlink or junction, Node keeps the link path in
+// argv[1] but resolves import.meta.filename.
 const isEntryPoint = (): boolean => {
   const entry = process.argv[1];
   if (entry === undefined) {
