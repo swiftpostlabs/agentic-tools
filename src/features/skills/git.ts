@@ -28,7 +28,26 @@ export type GitSource = {
 };
 
 const safeSegment = /^[A-Za-z0-9._-]+$/;
+// Names Windows will not create as files or folders, with or without an extension.
+const windowsReserved = /^(con|prn|aux|nul|com\d|lpt\d)(\..*)?$/i;
 
+const isStorableSegment = (segment: string): boolean =>
+  safeSegment.test(segment) &&
+  segment !== '.' &&
+  segment !== '..' &&
+  !segment.endsWith('.') &&
+  !windowsReserved.test(segment);
+
+const storeRefusal = (from: string): ToolError =>
+  new ToolError(
+    `Git source '${from}' does not name a repository this tool can store: use a URL such as ` +
+      `'git:https://github.com/<owner>/<repo>' or 'github:<owner>/<repo>'.`,
+  );
+
+/**
+ * The first segment is the host, which git reaches over the network: one starting with '-' would
+ * be read as an option by ssh. Later segments only name folders.
+ */
 const toSegments = (from: string, parts: string[]): string[] => {
   const segments = parts.filter((part) => part !== '');
   const last = segments.at(-1);
@@ -37,30 +56,37 @@ const toSegments = (from: string, parts: string[]): string[] => {
   }
   if (
     segments.length < 2 ||
-    !segments.every(
-      (segment) =>
-        safeSegment.test(segment) &&
-        !segment.startsWith('-') &&
-        segment !== '.' &&
-        segment !== '..',
-    )
+    (segments[0] as string).startsWith('-') ||
+    !segments.every(isStorableSegment)
   ) {
-    throw new ToolError(
-      `Git source '${from}' does not name a repository this tool can store: use a URL such as ` +
-        `'git:https://github.com/<owner>/<repo>' or 'github:<owner>/<repo>'.`,
-    );
+    throw storeRefusal(from);
   }
   return segments;
 };
 
-/** `file:///C:/Users/x` names `file/c/Users/x`; a UNC host such as `file://server/share` keeps it. */
-const fileUrlSegments = (url: URL): string[] => {
-  const parts = decodeURIComponent(url.pathname).split('/');
+const decodePath = (from: string, encoded: string): string[] => {
+  try {
+    return decodeURIComponent(encoded).split('/');
+  } catch {
+    throw new ToolError(
+      `Git source '${from}' has a malformed percent-encoding.`,
+    );
+  }
+};
+
+/**
+ * `file:///C:/Users/x` names `file/localhost/c-drive/Users/x`, so it cannot meet the POSIX path
+ * `/c/Users/x`; a UNC host such as `file://server/share` keeps its name in place of `localhost`.
+ */
+const fileUrlSegments = (from: string, url: URL): string[] => {
+  const parts = decodePath(from, url.pathname);
   const drive = parts.findIndex((part) => part !== '');
   if (drive !== -1 && /^[A-Za-z]:$/.test(parts[drive] ?? '')) {
-    parts[drive] = (parts[drive] as string).slice(0, 1).toLowerCase();
+    parts[drive] =
+      `${(parts[drive] as string).slice(0, 1).toLowerCase()}-drive`;
   }
-  return ['file', url.hostname.toLowerCase(), ...parts];
+  const host = url.hostname.toLowerCase();
+  return ['file', host === '' ? 'localhost' : host, ...parts];
 };
 
 const hostSegment = (url: URL): string =>
@@ -70,12 +96,23 @@ const hostSegment = (url: URL): string =>
 
 const supportedProtocols = new Set(['https:', 'http:', 'ssh:', 'git:']);
 
+/** The source as it may be printed: user info, query and fragment hidden. */
+const maskCredentials = (from: string): string =>
+  from
+    .replace(/\/\/[^/]*@/, '//***@')
+    .replace(/^(git:)[^/@]*:[^/@]*@/, '$1***@')
+    .replace(/[?#].*$/, '');
+
 const credentialsRefusal = (from: string): ToolError =>
   new ToolError(
-    `Git source '${from.replace(/\/\/[^/@]*@/, '//***@')}' carries credentials in its URL. Remove them ` +
-      "and let git's own credential helper or SSH key supply them: the URL is written to the lock " +
-      'and printed in messages.',
+    `Git source '${maskCredentials(from)}' may carry ` +
+      'credentials in its URL (a password, a user name on http or https, a query or a fragment). ' +
+      "Remove them and let git's own credential helper or SSH key supply them: the URL is written " +
+      'to the lock and printed in messages.',
   );
+
+// WHATWG URLs resolve `.`/`..` segments, encoded or not, but git sends the path as written.
+const dotSegment = /(^|\/)(\.|%2e){1,2}(\/|$)/i;
 
 const parseGitUrl = (from: string, raw: string): string[] => {
   if (raw.startsWith('-')) {
@@ -83,14 +120,20 @@ const parseGitUrl = (from: string, raw: string): string[] => {
     throw new ToolError(`Git source '${from}' must not start with '-'.`);
   }
   if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) {
-    // scp-like syntax, as Git accepts it: [user@]host:owner/repo
-    const scp = /^(?:[^@/\s]+@)?([^:/\s]+):(.+)$/.exec(raw);
+    // scp-like syntax, as git reads it: [user@]host:path, the host ending at the first ':'.
+    if (/^[^@/]*:[^@/]*@/.test(raw)) {
+      throw credentialsRefusal(from);
+    }
+    const scp = /^(?:([^@/:\s]+)@)?([^@:/\s]+):([^@:\s]+)$/.exec(raw);
     if (scp === null) {
-      throw new ToolError(`Git source '${from}' is not a URL Git understands.`);
+      throw new ToolError(`Git source '${from}' is not a URL git understands.`);
+    }
+    if (dotSegment.test(scp[3] as string)) {
+      throw storeRefusal(from);
     }
     return toSegments(from, [
-      (scp[1] as string).toLowerCase(),
-      ...(scp[2] as string).split('/'),
+      (scp[2] as string).toLowerCase(),
+      ...(scp[3] as string).split('/'),
     ]);
   }
   let url: URL;
@@ -103,12 +146,20 @@ const parseGitUrl = (from: string, raw: string): string[] => {
   }
   if (
     url.password !== '' ||
+    url.search !== '' ||
+    url.hash !== '' ||
+    raw.includes('?') ||
+    raw.includes('#') ||
     (url.username !== '' && ['https:', 'http:'].includes(url.protocol))
   ) {
     throw credentialsRefusal(from);
   }
+  const rawPath = raw.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]*/i, '');
+  if (dotSegment.test(rawPath.replaceAll('\\', '/'))) {
+    throw storeRefusal(from);
+  }
   if (url.protocol === 'file:') {
-    return toSegments(from, fileUrlSegments(url));
+    return toSegments(from, fileUrlSegments(from, url));
   }
   if (!supportedProtocols.has(url.protocol)) {
     throw new ToolError(
@@ -117,7 +168,7 @@ const parseGitUrl = (from: string, raw: string): string[] => {
   }
   return toSegments(from, [
     hostSegment(url),
-    ...decodeURIComponent(url.pathname).split('/'),
+    ...decodePath(from, url.pathname),
   ]);
 };
 
@@ -186,13 +237,31 @@ export const bareClonePath = (toolsHome: string, source: GitSource): string => {
 export const exportFolderName = (source: GitSource, commit: string): string =>
   `${source.segments.join('-')}@${commit.slice(0, shortCommitLength)}`;
 
-const gitEnvironment = (): NodeJS.ProcessEnv => ({
-  ...process.env,
-  // Fail at once instead of waiting for a password nobody will type.
-  GIT_TERMINAL_PROMPT: '0',
-  // Git Credential Manager on Windows opens a window unless told not to.
-  GCM_INTERACTIVE: 'never',
-});
+// Set when sync runs from a git hook; they would point every call at the consumer's own repo.
+const inheritedRepositoryVariables = [
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+  'GIT_INDEX_FILE',
+  'GIT_OBJECT_DIRECTORY',
+  'GIT_ALTERNATE_OBJECT_DIRECTORIES',
+  'GIT_COMMON_DIR',
+  'GIT_NAMESPACE',
+  'GIT_PREFIX',
+];
+
+const gitEnvironment = (): NodeJS.ProcessEnv => {
+  const environment: NodeJS.ProcessEnv = {
+    ...process.env,
+    // Fail at once instead of waiting for a password nobody will type.
+    GIT_TERMINAL_PROMPT: '0',
+    // Git Credential Manager on Windows opens a window unless told not to.
+    GCM_INTERACTIVE: 'never',
+  };
+  for (const name of inheritedRepositoryVariables) {
+    Reflect.deleteProperty(environment, name);
+  }
+  return environment;
+};
 
 const authenticationHint =
   'If the repository is private, authenticate git yourself (for example with an SSH key or your ' +
@@ -293,9 +362,10 @@ const isProcessRunning = (pid: number): boolean => {
 };
 
 /**
- * Stale only when old and, on this host, its process is gone: a first clone on a slow link can
- * outlive the age limit. A lock from another host is never broken automatically. A lock whose
- * owner cannot be read (a crash while writing it) is judged by its age alone.
+ * A lock whose process on this host is gone is stale at once, so an interrupted sync (Ctrl+C runs
+ * no cleanup) does not hold up the next one. A lock from another host is never broken: its
+ * process cannot be checked. A lock whose owner cannot be read (a crash while writing it) is
+ * stale once older than the age limit.
  */
 export const isLockStale = (
   lockPath: string,
@@ -307,32 +377,37 @@ export const isLockStale = (
   } catch {
     return false;
   }
-  if (now - modified <= lockStaleAfterMs) {
-    return false;
-  }
   const owner = readLockOwner(lockPath);
   if (owner === undefined) {
-    return true;
+    return now - modified > lockStaleAfterMs;
   }
   return owner.host === os.hostname() && !isProcessRunning(owner.pid);
 };
 
-const tryCreateLock = (lockPath: string): boolean => {
+const windowsBusyCodes = new Set(['EPERM', 'EACCES', 'EBUSY']);
+
+/** Create the lock file only if none exists; returns this process's owner record, or undefined. */
+const tryCreateLock = (lockPath: string): LockOwner | undefined => {
+  const owner: LockOwner = {
+    host: os.hostname(),
+    pid: process.pid,
+    created: new Date().toISOString(),
+  };
   try {
     fs.mkdirSync(path.dirname(lockPath), { recursive: true });
-    const owner: LockOwner = {
-      host: os.hostname(),
-      pid: process.pid,
-      created: new Date().toISOString(),
-    };
     fs.writeFileSync(lockPath, toJsonText(owner), {
       encoding: 'utf8',
       flag: 'wx',
     });
-    return true;
+    return owner;
   } catch (error) {
-    if ((error as { code?: unknown }).code === 'EEXIST') {
-      return false;
+    const code = (error as { code?: unknown }).code;
+    // On Windows, a file another process is deleting cannot be created for a moment: try again.
+    if (
+      code === 'EEXIST' ||
+      (process.platform === 'win32' && windowsBusyCodes.has(String(code)))
+    ) {
+      return undefined;
     }
     throw new ToolError(
       `Could not create lock file '${lockPath}': ${errorMessage(error)}`,
@@ -340,25 +415,52 @@ const tryCreateLock = (lockPath: string): boolean => {
   }
 };
 
+/** A guard is held for a few file operations; one this old was left by a crash. */
+const guardStaleAfterMs = 30 * 1000;
+
 /**
- * Move a stale lock aside under a name only this process uses, then look again: if another waiter
- * broke it first and a live process has locked since, the moved file is fresh and goes back.
+ * Remove a stale lock while holding `<lock>.break`, re-checking under that guard, so two waiters
+ * that both saw the stale lock cannot remove each other's fresh one. Returns whether it removed it.
  */
-const breakStaleLock = (lockPath: string): void => {
-  const claimed = `${lockPath}.stale-${String(process.pid)}-${String(Date.now())}`;
+const breakStaleLock = (lockPath: string): boolean => {
+  const guard = `${lockPath}.break`;
   try {
-    fs.renameSync(lockPath, claimed);
-  } catch {
-    return;
-  }
-  if (!isLockStale(claimed)) {
-    try {
-      fs.linkSync(claimed, lockPath);
-    } catch {
-      // A newer lock already took its place.
+    if (Date.now() - fs.statSync(guard).mtimeMs > guardStaleAfterMs) {
+      fs.rmSync(guard, { force: true });
     }
+  } catch {
+    // No guard, or another waiter removed it first.
   }
-  fs.rmSync(claimed, { force: true });
+  if (tryCreateLock(guard) === undefined) {
+    return false;
+  }
+  try {
+    if (!isLockStale(lockPath)) {
+      return false;
+    }
+    try {
+      fs.rmSync(lockPath, { force: true });
+    } catch (error) {
+      throw new ToolError(
+        `Could not remove stale lock file '${lockPath}': ${errorMessage(error)}. ${clearHint}`,
+      );
+    }
+    return true;
+  } finally {
+    fs.rmSync(guard, { force: true });
+  }
+};
+
+/** Remove the lock only while it is still this process's own record. */
+const releaseLock = (lockPath: string, owner: LockOwner): void => {
+  const current = readLockOwner(lockPath);
+  if (
+    current?.host === owner.host &&
+    current.pid === owner.pid &&
+    current.created === owner.created
+  ) {
+    fs.rmSync(lockPath, { force: true });
+  }
 };
 
 /** How long to wait on another sync's lock, and whom to tell while waiting. */
@@ -372,15 +474,15 @@ export type LockWait = {
 
 const defaultNoticeAfterMs = 3000;
 
+const clearHint =
+  'If no sync is running, delete that file and run the command again.';
+
 const describeHolder = (lockPath: string): string => {
   const owner = readLockOwner(lockPath);
   return owner === undefined ? 'an unknown process' : (
       `process ${String(owner.pid)} on ${owner.host} since ${owner.created}`
     );
 };
-
-const clearHint =
-  'If no sync is running, delete that file and run the command again.';
 
 /** Hold `<target>.lock` while `action` runs, waiting for another process that holds it. */
 export const withLock = <Result>(
@@ -392,9 +494,16 @@ export const withLock = <Result>(
   const deadline = started + (wait.waitMs ?? lockStaleAfterMs);
   const noticeAt = started + (wait.noticeAfterMs ?? defaultNoticeAfterMs);
   let noticed = false;
-  while (!tryCreateLock(lockPath)) {
-    if (isLockStale(lockPath)) {
-      breakStaleLock(lockPath);
+  for (;;) {
+    const owned = tryCreateLock(lockPath);
+    if (owned !== undefined) {
+      try {
+        return action();
+      } finally {
+        releaseLock(lockPath, owned);
+      }
+    }
+    if (isLockStale(lockPath) && breakStaleLock(lockPath)) {
       continue;
     }
     const now = Date.now();
@@ -410,11 +519,6 @@ export const withLock = <Result>(
       );
     }
     sleep(lockPollMs);
-  }
-  try {
-    return action();
-  } finally {
-    fs.rmSync(lockPath, { force: true });
   }
 };
 
@@ -484,17 +588,19 @@ const defaultBranch = (gitDir: string, source: GitSource): string => {
 };
 
 const fullCommit = /^[0-9a-f]{40}$/;
+const abbreviatedCommit = /^[0-9a-f]{7,39}$/;
 const refName = /^[A-Za-z0-9._][A-Za-z0-9._/-]*$/;
 
 /**
- * A ref is a tag, a branch or a commit: no revision expressions (`main~1`), and not `HEAD`, which
- * in a bare clone is the default branch as it was when cloned. Leave `ref` out for the default branch.
+ * A ref is a tag, a branch or a commit: no revision expressions (`main~1`), and no `HEAD` or
+ * pseudo-refs such as `FETCH_HEAD`, which name the clone's state rather than the remote's. Leave
+ * `ref` out for the default branch.
  */
 export const checkRef = (from: string, ref: string | undefined): void => {
   if (
     ref !== undefined &&
     (!refName.test(ref) ||
-      ref === 'HEAD' ||
+      /^([A-Z_]+_)?HEAD$/.test(ref) ||
       ref.includes('..') ||
       ref.endsWith('/') ||
       ref.endsWith('.lock'))
@@ -505,6 +611,35 @@ export const checkRef = (from: string, ref: string | undefined): void => {
   }
 };
 
+const revParse = (gitDir: string, revision: string): string | undefined => {
+  try {
+    return runGit(
+      ['rev-parse', '--verify', '--quiet', `${revision}^{commit}`],
+      {
+        gitDir,
+      },
+    ).trim();
+  } catch {
+    return undefined;
+  }
+};
+
+/** Look a ref up in the clone only as a tag, then a branch, then a commit, never as an expression. */
+const lookUpRef = (
+  gitDir: string,
+  source: GitSource,
+  ref: string | undefined,
+): string | undefined => {
+  if (ref === undefined) {
+    return revParse(gitDir, `refs/heads/${defaultBranch(gitDir, source)}`);
+  }
+  return (
+    revParse(gitDir, `refs/tags/${ref}`) ??
+    revParse(gitDir, `refs/heads/${ref}`) ??
+    (abbreviatedCommit.test(ref) ? revParse(gitDir, ref) : undefined)
+  );
+};
+
 /** Resolve a tag, branch or commit (or the default branch) to a full commit sha. */
 export const resolveRef = (
   gitDir: string,
@@ -513,42 +648,89 @@ export const resolveRef = (
 ): string => {
   checkRef(source.from, ref);
   if (ref !== undefined && fullCommit.test(ref)) {
-    // A full sha may sit outside every branch and tag; fetch it by name if needed.
-    ensureCommit(gitDir, source, ref);
+    // A full sha the config names may sit outside every branch and tag; fetch it by name.
+    ensureCommit(gitDir, source, ref, { fetchBySha: true });
     return ref;
   }
-  const name = ref ?? defaultBranch(gitDir, source);
-  try {
-    return runGit(['rev-parse', '--verify', '--quiet', `${name}^{commit}`], {
-      gitDir,
-    }).trim();
-  } catch {
+  const commit = lookUpRef(gitDir, source, ref);
+  if (commit === undefined) {
     throw new ToolError(
-      `Ref '${name}' was not found in ${source.url}. Check the source's 'ref' in the config.`,
+      `Ref '${ref ?? 'the default branch'}' was not found in ${source.url}. Check the source's 'ref' in the config.`,
     );
   }
+  return commit;
 };
 
-/** Make sure a pinned commit is in the clone: fetch branches and tags, then the commit itself. */
+/**
+ * Make sure a pinned commit is in the clone by fetching branches and tags. Fetching a commit by its
+ * sha is allowed only when the config itself names that sha: a sha that only the lock names could
+ * be any commit the host serves, including one pushed to a fork.
+ */
 export const ensureCommit = (
   gitDir: string,
   source: GitSource,
   commit: string,
+  options: { fetchBySha: boolean } = { fetchBySha: false },
 ): boolean => {
   if (hasCommit(gitDir, commit)) {
     return false;
   }
   fetchSource(gitDir);
-  if (!hasCommit(gitDir, commit)) {
+  if (!hasCommit(gitDir, commit) && options.fetchBySha) {
     gitSucceeds(['fetch', '--quiet', 'origin', commit], { gitDir });
   }
   if (!hasCommit(gitDir, commit)) {
     throw new ToolError(
-      `Commit ${commit} pinned for ${source.from} is not in ${source.url}. ${authenticationHint}`,
+      `Commit ${commit} pinned for ${source.from} is on no branch or tag of ${source.url}. ${authenticationHint}`,
     );
   }
   return true;
 };
+
+const isAncestor = (gitDir: string, commit: string, tip: string): boolean =>
+  gitSucceeds(['merge-base', '--is-ancestor', commit, tip], { gitDir });
+
+/**
+ * The lock is a committed file anyone can edit in a pull request, so before exporting a pinned
+ * commit, check that the config's ref reaches it: the ref's commit itself, or one of its ancestors
+ * (a branch that moved on). A full-sha ref must equal the pin.
+ */
+export const verifyPinnedCommit = (
+  gitDir: string,
+  source: GitSource,
+  ref: string | undefined,
+  commit: string,
+): void => {
+  if (ref !== undefined && fullCommit.test(ref)) {
+    if (ref !== commit) {
+      throw pinMismatch(source, ref, commit);
+    }
+    return;
+  }
+  const reaches = (): boolean => {
+    const tip = lookUpRef(gitDir, source, ref);
+    return (
+      tip !== undefined && (tip === commit || isAncestor(gitDir, commit, tip))
+    );
+  };
+  if (reaches()) {
+    return;
+  }
+  fetchSource(gitDir);
+  if (!reaches()) {
+    throw pinMismatch(source, ref ?? 'the default branch', commit);
+  }
+};
+
+const pinMismatch = (
+  source: GitSource,
+  ref: string,
+  commit: string,
+): ToolError =>
+  new ToolError(
+    `The lock pins ${commit} for '${source.from}', but '${ref}' in ${source.url} does not reach ` +
+      'it. If the lock was edited by hand, restore it, or run skills sync without --locked to pin again.',
+  );
 
 const exportMarkerSchema = z.object({
   from: z.string(),
@@ -562,8 +744,38 @@ export type ExportMarker = z.output<typeof exportMarkerSchema>;
 export const readExportMarker = (folder: string): ExportMarker | undefined =>
   readStateFile(path.join(folder, exportMarker), exportMarkerSchema);
 
-export const isCompleteExport = (folder: string, commit: string): boolean =>
-  readExportMarker(folder)?.commit === commit;
+/**
+ * Is `folder` a finished export of this source at this commit? A marker naming another source
+ * means two sources map to one folder name; refuse rather than overwrite the other's files.
+ */
+export const isCompleteExport = (
+  folder: string,
+  source: GitSource,
+  commit: string,
+): boolean => {
+  const marker = readExportMarker(folder);
+  if (marker === undefined) {
+    return false;
+  }
+  if (marker.from !== source.from) {
+    throw new ToolError(
+      `Export folder ${folder} already holds '${marker.from}', which maps to the same name as ` +
+        `'${source.from}'. Configure only one of them.`,
+    );
+  }
+  return marker.commit === commit;
+};
+
+/** Delete an export under its own lock, so a sync exporting into it at the same time is not cut short. */
+export const removeExport = (folder: string, wait?: LockWait): void => {
+  withLock(
+    `${folder}.lock`,
+    () => {
+      fs.rmSync(folder, { recursive: true, force: true });
+    },
+    wait,
+  );
+};
 
 /**
  * Write the commit's files into `folder` with Git itself (a throwaway index, then checkout-index),
@@ -579,7 +791,7 @@ export const exportCommit = (options: {
   withLock(
     `${options.folder}.lock`,
     () => {
-      if (isCompleteExport(options.folder, options.commit)) {
+      if (isCompleteExport(options.folder, options.source, options.commit)) {
         return false;
       }
       fs.rmSync(options.folder, { recursive: true, force: true });

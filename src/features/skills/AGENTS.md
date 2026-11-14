@@ -15,7 +15,7 @@ the visibility and `requires` rules it enforces are `ref-sp-agents-shareable-ski
 - `links.ts`: creates, reads, and removes directory links, with the Windows junction fallback.
 - `git.ts`: git source names, the bare-clone store, locks between concurrent syncs, and exports.
 - `gitSources.ts`: pins, fetches, and exports one git source for `sync` and `update`.
-- `lock.ts`: reads and writes `.agents/agentic-tools.lock`.
+- `lock.ts`: reads and writes a config's lock, `.agents/agentic-tools.lock` for the default config.
 
 ## Rules
 
@@ -32,4 +32,9 @@ the visibility and `requires` rules it enforces are `ref-sp-agents-shareable-ski
 - **A failed sync changes nothing in the repo:** conflicts are checked before the first write, and
   exports written while reading sources are removed on failure. The bare clones in the tools home
   are a shared cache, fetched under a lock per clone.
+- **Locks are files created exclusively,** holding host and pid. A lock whose process on this host
+  is gone is stale at once; one from another host is never broken; one whose owner cannot be read
+  is stale after 10 minutes. A stale lock is removed only under a short `<lock>.break` guard, and a
+  process removes only a lock that still holds its own record. Order: the config's
+  `.sync.lock`, then a bare clone's, then an export's.
 - **Every write has a `--dry-run` path** that reports it without making it.

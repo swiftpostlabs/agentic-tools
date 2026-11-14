@@ -77,7 +77,8 @@ contract: `./references/config-shape.md`.
 ## Git sources
 
 - A git source takes an optional `ref` (tag, branch, or commit; the remote's default branch when
-  absent). `sync` pins it to a full commit in `.agents/agentic-tools.lock`; commit that file.
+  absent). `sync` pins it to a full commit in `.agents/agentic-tools.lock` (another config: in
+  `<its file name>.lock`); commit that file. Before exporting a pin, it checks the ref reaches it.
 - Bare clones are a shared cache in `$AGENTIC_TOOLS_HOME/git/db/<host>/<owner>/<repo>.git`
   (default `~/.agents/agentic-tools`). Each repo gets an export of the pinned commit in
   `.agents/local/sources/<host>-<owner>-<repo>@<12-character commit>/`, and the skills link there.

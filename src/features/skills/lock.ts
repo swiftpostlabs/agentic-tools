@@ -27,23 +27,20 @@ const lockSchema = z.object({
 
 const defaultConfigNames = new Set(['config.json', 'skills.json']);
 
+/** `.agents/config.json`, or the legacy `.agents/skills.json`: the config a repo syncs by default. */
+export const isDefaultConfig = (configPath: string): boolean =>
+  path.basename(path.dirname(configPath)) === '.agents' &&
+  defaultConfigNames.has(path.basename(configPath));
+
 /**
  * One lock per config, committed beside it, so every clone of the consumer pins the same commits
- * and syncing another config never rewrites this one's pins: `.agents/config.json` (or the legacy
- * `.agents/skills.json`) pins in `.agents/agentic-tools.lock`; any other config `<name>.json` in
- * `<name>.lock` next to it.
+ * and syncing another config never rewrites this one's pins: the default config pins in
+ * `.agents/agentic-tools.lock`; any other config in `<its file name>.lock` next to it.
  */
-export const lockFilePath = (configPath: string): string => {
-  const directory = path.dirname(configPath);
-  const name = path.basename(configPath);
-  if (path.basename(directory) === '.agents' && defaultConfigNames.has(name)) {
-    return path.join(directory, 'agentic-tools.lock');
-  }
-  return path.join(
-    directory,
-    `${path.basename(name, path.extname(name))}.lock`,
-  );
-};
+export const lockFilePath = (configPath: string): string =>
+  isDefaultConfig(configPath) ?
+    path.join(path.dirname(configPath), 'agentic-tools.lock')
+  : `${configPath}.lock`;
 
 export const emptyLock = (): SkillsLock => ({
   version: lockVersion,

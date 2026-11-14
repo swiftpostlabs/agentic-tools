@@ -150,10 +150,32 @@ describe('git source names', () => {
   test('normalizes a Windows file URL: drive letter and backslashes', () => {
     expect(
       parseGitSource('git:file:///C:/Users/me/repo.git')?.segments,
-    ).toEqual(['file', 'c', 'Users', 'me', 'repo']);
+    ).toEqual(['file', 'localhost', 'c-drive', 'Users', 'me', 'repo']);
     expect(
       parseGitSource(String.raw`git:file:///C:\Users\me\repo`)?.segments,
-    ).toEqual(['file', 'c', 'Users', 'me', 'repo']);
+    ).toEqual(['file', 'localhost', 'c-drive', 'Users', 'me', 'repo']);
+    // A POSIX path that looks like a drive, and a network share, stay apart from it.
+    expect(parseGitSource('git:file:///c/Users/me/repo')?.segments).toEqual([
+      'file',
+      'localhost',
+      'c',
+      'Users',
+      'me',
+      'repo',
+    ]);
+    expect(parseGitSource('git:file://srv/a/b')?.segments).toEqual([
+      'file',
+      'srv',
+      'a',
+      'b',
+    ]);
+    expect(parseGitSource('git:file:///srv/a/b')?.segments).toEqual([
+      'file',
+      'localhost',
+      'srv',
+      'a',
+      'b',
+    ]);
   });
 
   test('refuses names that could escape the store, and unsupported URLs', () => {
@@ -190,9 +212,17 @@ describe('git source safety', () => {
     expect(() => parseGitSource('git:-uFOO:a/b')).toThrow(
       /must not start with '-'/,
     );
-    expect(() => parseGitSource('git:host:-x/repo')).toThrow(
+    expect(() => parseGitSource('git:ssh://-oFoo/a/b')).toThrow(
       /does not name a repository/,
     );
+    // A path segment starting with '-' only names a folder, as in a scratch path.
+    expect(parseGitSource('git:file:///tmp/-scratch/repo')?.segments).toEqual([
+      'file',
+      'localhost',
+      'tmp',
+      '-scratch',
+      'repo',
+    ]);
   });
 
   test('refuses credentials in the URL without printing them', () => {
@@ -200,8 +230,11 @@ describe('git source safety', () => {
       'git:https://alice:s3cretTOKEN@example.com/acme/tools.git',
       'git:https://s3cretTOKEN@example.com/acme/tools.git',
       'git:ssh://git:s3cretTOKEN@example.com/acme/tools.git',
+      'git:https://example.com/acme/tools?access_token=s3cretTOKEN',
+      'git:https://example.com/acme/tools#s3cretTOKEN',
+      'git:user:s3cretTOKEN@example.com:acme/tools',
     ]) {
-      expect(() => parseGitSource(from)).toThrow(/carries credentials/);
+      expect(() => parseGitSource(from)).toThrow(/may carry credentials/);
       expect(() => parseGitSource(from)).not.toThrow(/s3cretTOKEN/);
     }
     expect(
@@ -209,8 +242,49 @@ describe('git source safety', () => {
     ).toEqual(['example.com', 'acme', 'tools']);
   });
 
-  test('refuses revision expressions and HEAD as a ref', () => {
-    for (const ref of ['main~1', 'HEAD', 'a..b', '-x', 'v1:path']) {
+  test('reads an scp URL the way git does: the host ends at the first colon', () => {
+    expect(() =>
+      parseGitSource('git:evil.example.com:@github.com:org/skills'),
+    ).toThrow(/is not a URL git understands|may carry credentials/);
+    expect(() =>
+      parseGitSource('git:evil.example.com:github.com:org/skills'),
+    ).toThrow(/is not a URL git understands/);
+  });
+
+  test('refuses dot segments, encoded or not, and malformed encodings', () => {
+    for (const from of [
+      'git:https://example.com/%2e%2e/acme/tools',
+      'git:https://example.com/acme/./tools',
+      'git:https://example.com/acme/../tools',
+      'git:example.com:acme/../tools',
+    ]) {
+      expect(() => parseGitSource(from)).toThrow(/does not name a repository/);
+    }
+    expect(() => parseGitSource('git:https://example.com/o/%zz')).toThrow(
+      /malformed percent-encoding/,
+    );
+  });
+
+  test('refuses folder names Windows cannot create', () => {
+    for (const from of [
+      'github:acme/nul',
+      'github:acme/con.txt',
+      'github:acme/repo.',
+    ]) {
+      expect(() => parseGitSource(from)).toThrow(/does not name a repository/);
+    }
+  });
+
+  test('refuses revision expressions, HEAD and pseudo-refs as a ref', () => {
+    for (const ref of [
+      'main~1',
+      'HEAD',
+      'FETCH_HEAD',
+      'ORIG_HEAD',
+      'a..b',
+      '-x',
+      'v1:path',
+    ]) {
       expect(() => {
         checkRef('github:acme/tools', ref);
       }).toThrow(/is not a tag, branch or commit name/);
@@ -254,26 +328,42 @@ describe('locks', () => {
     expect(fs.existsSync(lockPath)).toBe(false);
   });
 
-  test('breaks a lock only when it is old and its process on this host is gone', () => {
+  test('breaks a lock whose process on this host is gone, at once, and no other', () => {
     const lockPath = path.join(makeTempDir(), 'x.lock');
     const old = new Date(Date.now() - lockStaleAfterMs - 60_000);
-    const write = (host: string, pid: number) => {
-      writeJson(lockPath, { host, pid, created: old.toISOString() });
-      fs.utimesSync(lockPath, old, old);
-    };
     // Above every platform's process id range, so it is never alive.
     const deadPid = 2 ** 31 - 2;
 
-    write(os.hostname(), process.pid);
+    writeJson(lockPath, {
+      host: os.hostname(),
+      pid: process.pid,
+      created: 'x',
+    });
+    fs.utimesSync(lockPath, old, old);
     expect(isLockStale(lockPath)).toBe(false);
-    write('another-host', deadPid);
+    writeJson(lockPath, { host: 'another-host', pid: deadPid, created: 'x' });
+    fs.utimesSync(lockPath, old, old);
     expect(isLockStale(lockPath)).toBe(false);
-    write(os.hostname(), deadPid);
+
+    // Left by an interrupted sync a moment ago: no need to wait out the age limit.
+    writeJson(lockPath, { host: os.hostname(), pid: deadPid, created: 'x' });
     expect(isLockStale(lockPath)).toBe(true);
     expect(withLock(lockPath, () => 'ran', { waitMs: 0 })).toBe('ran');
+    expect(fs.existsSync(lockPath)).toBe(false);
 
-    writeJson(lockPath, { host: os.hostname(), pid: deadPid, created: 'now' });
+    // An owner nobody can read is judged by age.
+    fs.writeFileSync(lockPath, '', 'utf8');
     expect(isLockStale(lockPath)).toBe(false);
+    fs.utimesSync(lockPath, old, old);
+    expect(isLockStale(lockPath)).toBe(true);
+  });
+
+  test('leaves a lock it does not own when its action ends', () => {
+    const lockPath = path.join(makeTempDir(), 'x.lock');
+    withLock(lockPath, () => {
+      writeJson(lockPath, { host: 'another-host', pid: 1, created: 'x' });
+    });
+    expect(fs.existsSync(lockPath)).toBe(true);
   });
 });
 
@@ -497,35 +587,105 @@ describe('skills sync from git sources', () => {
     });
   });
 
-  test('syncing another config in the same repo leaves this lock and its exports alone', () => {
+  test('two configs pinning one source differently keep the exports of both', () => {
     const source = gitSourceRepo();
-    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    git(source.root, 'tag', 'v1');
+    const tagged = source.head();
+    const tip = source.commit('after the tag');
+    const root = consumer([
+      { from: source.from, ref: 'v1', skills: ['ref-base'] },
+    ]);
     const { toolsHome } = gitContext(root);
-    runSkillsSync(gitContext(root, toolsHome).context, syncOptions);
-    const lockBefore = lockOf(root);
-    const exportsBefore = exportsOf(root);
-
-    const other = gitSourceRepo();
     const personal = path.join(root, '.agents', 'personal.json');
     writeJson(personal, {
-      skills: { sources: [{ from: other.from, skills: ['ref-feature'] }] },
+      skills: { sources: [{ from: source.from, skills: ['ref-base'] }] },
     });
     const elsewhere = makeTempDir();
-    runSkillsSync(gitContext(root, toolsHome).context, {
-      ...syncOptions,
-      config: personal,
-      destination: elsewhere,
-    });
+    const syncDefault = () => {
+      runSkillsSync(gitContext(root, toolsHome).context, syncOptions);
+    };
+    const syncPersonal = () => {
+      runSkillsSync(gitContext(root, toolsHome).context, {
+        ...syncOptions,
+        config: personal,
+        destination: elsewhere,
+      });
+    };
 
-    expect(lockOf(root)).toEqual(lockBefore);
-    expect(fs.existsSync(path.join(root, '.agents', 'personal.lock'))).toBe(
-      true,
+    syncDefault();
+    syncPersonal();
+    syncDefault();
+    syncPersonal();
+
+    expect(lockOf(root).sources[source.from]).toEqual({
+      ref: 'v1',
+      commit: tagged,
+    });
+    expect(readJson(`${personal}.lock`)).toEqual({
+      version: 1,
+      sources: { [source.from]: { commit: tip } },
+    });
+    expect(linkTarget(root, 'ref-base')).toContain(tagged.slice(0, 12));
+    expect(linkTarget(elsewhere, 'ref-base')).toContain(tip.slice(0, 12));
+    expect(linkTarget(elsewhere, 'ref-base')).toContain(
+      path.join('sources', 'personal.json'),
     );
-    expect(exportsOf(root)).toEqual(expect.arrayContaining(exportsBefore));
-    expect(exportsOf(root)).toHaveLength(2);
-    expect(linkTarget(root, 'ref-base')).toContain(
-      path.join('local', 'sources'),
+  });
+
+  test('refuses a hand-edited pin that the ref does not reach', () => {
+    const source = gitSourceRepo();
+    git(source.root, 'tag', 'v1');
+    git(source.root, 'checkout', '--quiet', '-b', 'side');
+    const offBranch = source.commit('not on v1');
+    git(source.root, 'update-ref', 'refs/pull/9/head', offBranch);
+    git(source.root, 'checkout', '--quiet', 'main');
+    git(source.root, 'branch', '--quiet', '-D', 'side');
+    const root = consumer([
+      { from: source.from, ref: 'v1', skills: ['ref-base'] },
+    ]);
+    writeJson(path.join(root, '.agents', 'agentic-tools.lock'), {
+      version: 1,
+      sources: { [source.from]: { ref: 'v1', commit: offBranch } },
+    });
+    expect(() => {
+      runSkillsSync(gitContext(root).context, { ...syncOptions, locked: true });
+    }).toThrow(/is on no branch or tag|does not reach it/);
+    expect(exportsOf(root)).toEqual([]);
+  });
+
+  test('a link into a deleted export moves without --force', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    runSkillsSync(gitContext(root).context, syncOptions);
+    source.commit('moved on');
+    fs.rmSync(path.join(root, '.agents', 'local'), {
+      recursive: true,
+      force: true,
+    });
+    fs.rmSync(path.join(root, '.agents', 'agentic-tools.lock'));
+    runSkillsSync(gitContext(root).context, syncOptions);
+    expect(linkTarget(root, 'ref-base')).toContain(source.head().slice(0, 12));
+  });
+
+  test('refuses two sources whose export folders would share a name', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    runSkillsSync(gitContext(root).context, syncOptions);
+    const [folder] = exportsOf(root);
+    const markerPath = path.join(
+      root,
+      '.agents',
+      'local',
+      'sources',
+      folder as string,
+      exportMarker,
     );
+    const marker = readJson(markerPath) as Record<string, string>;
+    writeJson(markerPath, { ...marker, from: 'github:other/name' });
+    fs.rmSync(path.join(root, '.agents', 'skills', 'ref-base'));
+    expect(() => {
+      runSkillsSync(gitContext(root).context, syncOptions);
+    }).toThrow(/already holds 'github:other\/name'/);
   });
 
   test('a sync that fails takes back the export it wrote', () => {

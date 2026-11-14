@@ -14,12 +14,24 @@ import {
   withBareClone,
   type GitSource,
   type LockWait,
+  verifyPinnedCommit,
 } from './git.ts';
-import type { LockedSource } from './lock.ts';
+import { isDefaultConfig, type LockedSource } from './lock.ts';
 
-/** Exports live in the consumer's gitignored local folder, one per pinned commit. */
-export const sourcesDirectory = (configRoot: string): string =>
-  path.join(configRoot, '.agents', 'local', 'sources');
+/**
+ * Exports live in the consumer's gitignored local folder, one per pinned commit. The default
+ * config's sit directly in `.agents/local/sources/`; any other config's in a subfolder named after
+ * its file, so one config's cleanup never removes an export another config links to.
+ */
+export const sourcesDirectory = (
+  configPath: string,
+  configRoot: string,
+): string => {
+  const root = path.join(configRoot, '.agents', 'local', 'sources');
+  return isDefaultConfig(configPath) ? root : (
+      path.join(root, path.basename(configPath))
+    );
+};
 
 export type GitSourceRequest = {
   source: GitSource;
@@ -32,6 +44,8 @@ export type GitSourceRequest = {
   dryRun: boolean;
   toolsHome: string;
   sourcesDir: string;
+  /** Named in errors, so the user knows which file to update. */
+  lockPath: string;
   wait: LockWait;
 };
 
@@ -85,7 +99,7 @@ export const prepareGitSource = (
   if (!pinned && request.frozen) {
     throw new ToolError(
       `The lock does not pin ${describeRef(ref)} for '${source.from}'. Run skills sync without ` +
-        '--locked to update .agents/agentic-tools.lock, and commit it.',
+        `--locked to update ${request.lockPath}, and commit it.`,
     );
   }
 
@@ -96,7 +110,7 @@ export const prepareGitSource = (
 
   if (pinnedCommit !== undefined) {
     const folder = exportFolder(pinnedCommit);
-    if (isCompleteExport(folder, pinnedCommit)) {
+    if (isCompleteExport(folder, source, pinnedCommit)) {
       return {
         root: folder,
         pin: { ...pinnedEntry(ref), commit: pinnedCommit },
@@ -144,9 +158,12 @@ export const prepareGitSource = (
         messages.push(`Pinned ${source.from} ${describeRef(ref)} at ${commit}`);
       } else {
         commit = pinnedCommit;
-        if (ensureCommit(gitDir, source, commit)) {
+        if (
+          ensureCommit(gitDir, source, commit, { fetchBySha: ref === commit })
+        ) {
           messages.push(`Fetched ${source.url}`);
         }
+        verifyPinnedCommit(gitDir, source, ref, commit);
       }
       const folder = exportFolder(commit);
       ignoreSourcesDirectory(request.sourcesDir);
