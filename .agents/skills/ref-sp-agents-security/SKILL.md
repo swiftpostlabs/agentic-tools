@@ -31,11 +31,13 @@ An agent runs with the person's own access. What goes wrong:
 
 No single control covers all three. Layer them, from weakest to strongest:
 
-1. **A behavioural rule** in the instruction file every client reads (`AGENTS.md`). Depends on the
-   model following it.
+1. **A behavioural rule** in the instruction file the clients read (`AGENTS.md`; some read it only
+   once configured, such as Gemini CLI through `context.fileName`). Depends on the model following
+   it.
 2. **Client-enforced path rules**: deny rules, exclusion files. Enforced by the client, but only for
    its own file tools.
-3. **A sandbox** around the agent's process. Stops scripts and shells too, where the client has one.
+3. **A sandbox** around the agent's process. Stops scripts and shells too, where the client has one
+   and it denies those paths.
 4. **A separate, narrower credential** for the agent. The only control that holds for data reached
    through a command (see "The policy bounds files, not data").
 
@@ -72,8 +74,8 @@ instruction file     the behavioural rule, read by every client
 | Client | File-level control | Limit |
 | --- | --- | --- |
 | Claude Code | `Read()` deny rules under `permissions.deny` in its settings | Blocks its file tools and simple shell reads; a script gets past it without the sandbox |
-| Gemini | An exclusion file of patterns | Which file a product reads differs by product; check its docs |
-| GitHub Copilot | Content exclusion set on GitHub, on plans that offer it | Without it, only a deterrent in editor settings plus the instruction file |
+| Gemini | An exclusion file: Gemini CLI reads `.geminiignore`, Gemini Code Assist reads `.aiexclude` | Each product ignores the other's file, so a policy that targets both writes both |
+| GitHub Copilot | Content exclusion set on GitHub, on Business and Enterprise plans | GitHub calls it not a filesystem security boundary; it can miss indirect access. Without it, an editor-settings deterrent affects suggestions only |
 
 Treat which clients the policy targets as part of the trust model: an unlisted client gets only the
 behavioural rule.
@@ -90,12 +92,16 @@ in the instruction file.
 
 A policy nobody tested is an assumption. After any change:
 
-1. Create a **canary**: a harmless file with no real secret, at a path a protected pattern matches.
-2. In each client, ask the agent to read it, and confirm it refuses or cannot.
+1. Create a **canary**: a new file at a new path that a protected pattern matches, holding only a
+   made-up value. Never place it over or beside a real secret, and confirm `git check-ignore` lists
+   it, so it can't be committed.
+2. In each client, ask the agent to read it three ways: with its file tool, with a shell command
+   (`cat`, `grep -r` from its folder), and through a short script. Note which ways were blocked.
 3. Run the drift check, and confirm it passes on the committed outputs.
 4. Delete the canary.
 
-Record which clients passed, and state any that only have the behavioural rule.
+Record which clients blocked which reads. A client that blocks only its file tool relies on the
+sandbox or the behavioural rule for the rest; state that.
 
 ## The policy bounds files, not data
 
@@ -122,7 +128,7 @@ an unstated boundary reads as one that exists.
 Illustrative only; the method above is what applies elsewhere. In `swiftpostlabs/agentic-tools`,
 `ref-sp-agents-policy` owns the implementation: the `policy` section of `.agents/config.json` with
 `protectedFiles` and `excludedFiles` lists, `agentic-tools policy sync` and `check`, and outputs
-for Gemini (`.aiexclude`), Claude Code (`.claude/settings.json`), and Copilot
+for Gemini Code Assist (`.aiexclude`), Claude Code (`.claude/settings.json`), and Copilot
 (`.vscode/settings.json`, where protected patterns map to a `copilot-restricted-file` language that
 Copilot is disabled for). A committed record of what sync wrote lets it stop before overwriting a
 hand edit.
