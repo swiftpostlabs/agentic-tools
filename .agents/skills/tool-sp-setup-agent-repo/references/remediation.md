@@ -216,7 +216,8 @@ See `./clients.md`. `C2` (the `.claude/skills` symlink) and `C3` (`chat.useAgent
 
 Clones on Windows, WSL, and macOS check text out with different line endings unless the repo says
 otherwise, and then every diff and formatter run disagrees across machines. The rule fixes LF in
-every checkout and keeps CRLF where Windows tools need it:
+every new checkout, whatever `core.autocrlf` says, and keeps CRLF where Windows tools need it.
+`text=auto` alone is not enough: under `core.autocrlf=true` it still checks out CRLF.
 
 ```gitattributes
 # LF in every checkout, whatever core.autocrlf says.
@@ -231,14 +232,26 @@ every checkout and keeps CRLF where Windows tools need it:
 - **No `.gitattributes`:** add the file with these lines.
 - **A `.gitattributes` without a `*` line-ending rule:** add only the lines above, at the top. Never
   rewrite or reorder what is there; later lines win, so the repo's own rules still apply.
-- **A deliberate opt-out:** a `* -text` or `* binary` line reports `info`, not `warn`. Leave it.
+- **A deliberate opt-out:** a last `*` rule of `-text` or `binary` reports `info`, not `warn`.
+  Leave it. The audit resolves `*` lines the way git does: the last setting of each attribute wins.
 
-Existing files keep their old endings until they are renormalized. Tell the user to do that as a
-commit of its own, because it touches every file checked in with CRLF, and leave it to them:
+Once the rule is in, `git status` can show Windows-only files such as `*.sln` as modified, and
+files already in the repo keep their old endings until they are renormalized. Tell the user to do
+that as a commit of its own, because it touches every file checked in with the other ending, and
+leave it to them:
 
 ```bash
 git add --renormalize .
 git commit -m "chore: Normalize line endings"
+```
+
+Renormalizing fixes what the repo stores, not the files already checked out. A clone made before
+it keeps its old endings until its files are written again. With no uncommitted work
+(`git status` is clean), this rewrites them:
+
+```bash
+git rm -r --cached --quiet .
+git reset --hard
 ```
 
 ## R1 — stack markers

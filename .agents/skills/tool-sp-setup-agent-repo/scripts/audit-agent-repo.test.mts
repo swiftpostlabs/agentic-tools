@@ -267,4 +267,18 @@ describe('line-ending check', () => {
     const repo = makeRepo({ '.gitattributes': '* -text\n' }, { withGit: true });
     expect(check(repo, 'G1')?.status).toBe('info');
   });
+  test.each([
+    ['* text=auto\n', 'warn'],
+    ['* text=auto eol=crlf\n', 'warn'],
+    ['* eol=lf\n', 'warn'],
+    ['* text eol=lf\n', 'pass'],
+    ['**  text=auto   eol=lf\n', 'pass'],
+    ['# * -text\n* text=auto eol=lf\n', 'pass'],
+    ['* -text\n* text=auto eol=lf\n', 'pass'],
+    ['* text=auto eol=lf\n* binary\n', 'info'],
+    ['* text=auto eol=lf\n* !text\n', 'warn'],
+  ])('G1 resolves %j the way git does: %s', (attributes, status) => {
+    const repo = makeRepo({ '.gitattributes': attributes }, { withGit: true });
+    expect(check(repo, 'G1')?.status).toBe(status);
+  });
 });

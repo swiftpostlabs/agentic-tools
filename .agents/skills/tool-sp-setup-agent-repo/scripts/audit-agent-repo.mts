@@ -919,43 +919,72 @@ const checkClients = (repo: string): Finding[] => {
 /** The catch-all `.gitattributes` line that fixes line endings, as remediation G1 ships it. */
 export const lineEndingRule = '* text=auto eol=lf';
 
+/**
+ * What the catch-all lines of a .gitattributes resolve to. Git applies matching lines in order and
+ * the last setting of each attribute wins; `binary` is shorthand that unsets `text`.
+ */
+const resolveCatchAll = (
+  text: string,
+): { text: 'set' | 'auto' | 'unset' | undefined; eol: string | undefined } => {
+  let textState: 'set' | 'auto' | 'unset' | undefined;
+  let eol: string | undefined;
+  for (const line of text.replace(/^\uFEFF/, '').split(/\r?\n/)) {
+    const [pattern, ...attributes] = line.trim().split(/\s+/);
+    if (pattern !== '*' && pattern !== '**') {
+      continue;
+    }
+    for (const attribute of attributes) {
+      if (attribute === 'text') {
+        textState = 'set';
+      } else if (attribute === 'text=auto') {
+        textState = 'auto';
+      } else if (attribute === '-text' || attribute === 'binary') {
+        textState = 'unset';
+      } else if (attribute === '!text') {
+        textState = undefined;
+      } else if (attribute.startsWith('eol=')) {
+        eol = attribute.slice('eol='.length);
+      } else if (attribute === '-eol' || attribute === '!eol') {
+        eol = undefined;
+      }
+    }
+  }
+  return { text: textState, eol };
+};
+
 const checkLineEndings = (repo: string): Finding[] => {
   const attributesFile = path.join(repo, '.gitattributes');
+  const fix = `add \`${lineEndingRule}\` at the top (see remediation G1)`;
   if (!exists(attributesFile)) {
     return [
       finding(
         'G1',
         'warn',
         'no .gitattributes: line endings follow each clone',
-        [`add \`${lineEndingRule}\` (see remediation G1)`],
+        [fix],
       ),
     ];
   }
-  const catchAll = readText(attributesFile)
-    .split(/\r?\n/)
-    .map((line) => line.trim().split(/\s+/))
-    .filter(([pattern]) => pattern === '*')
-    .flatMap(([, ...attributes]) => attributes);
-  if (catchAll.some((item) => item === '-text' || item === 'binary')) {
+  const rule = resolveCatchAll(readText(attributesFile));
+  if (rule.text === 'unset') {
     return [
       finding('G1', 'info', 'line endings left as committed, by choice', [
-        'the `*` line in .gitattributes sets -text or binary',
+        'the last `*` rule in .gitattributes sets -text or binary',
       ]),
     ];
   }
-  if (
-    catchAll.some(
-      (item) =>
-        item === 'text' || item.startsWith('text=') || item.startsWith('eol='),
-    )
-  ) {
-    return [finding('G1', 'pass', 'line endings are fixed by .gitattributes')];
+  if (rule.eol === 'lf' && (rule.text === 'auto' || rule.text === 'set')) {
+    return [
+      finding('G1', 'pass', 'line endings are fixed to LF by .gitattributes'),
+    ];
   }
-  return [
-    finding('G1', 'warn', '.gitattributes sets no line-ending rule for `*`', [
-      `add \`${lineEndingRule}\` (see remediation G1)`,
-    ]),
-  ];
+  const problem =
+    rule.eol === 'lf' ?
+      '`* eol=lf` without `text=auto` also converts binary files'
+    : rule.text === undefined && rule.eol === undefined ?
+      '.gitattributes sets no line-ending rule for `*`'
+    : '.gitattributes does not fix LF for `*`: each clone can still check out CRLF';
+  return [finding('G1', 'warn', problem, [fix])];
 };
 
 const checkStack = (repo: string): Finding[] => {

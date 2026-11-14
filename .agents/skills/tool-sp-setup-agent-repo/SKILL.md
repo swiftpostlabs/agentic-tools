@@ -1,6 +1,6 @@
 ---
 name: tool-sp-setup-agent-repo
-description: "Audit a repo against the shared agent baseline (.agents workspaces, core skills, a single AGENTS.md with optional nested files, client wiring) and fix what is missing. Use when setting up agent tooling in a repo or removing leftover CLAUDE.md or GEMINI.md files."
+description: "Audit a repo against the shared agent baseline (.agents workspaces, core skills, a single AGENTS.md with optional nested files, client wiring, line endings) and fix what is missing. Use when setting up agent tooling in a repo or removing leftover CLAUDE.md or GEMINI.md files."
 argument-hint: "Repo path to audit, and which agent clients it should support"
 license: MIT
 metadata:
