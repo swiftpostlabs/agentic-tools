@@ -54,11 +54,13 @@ The first segment is a **type axis** describing what the agent *does* with the s
 
 - The `name` must satisfy the Agent Skills spec: 1–64 chars, lowercase letters/numbers/hyphens
   only, no leading/trailing hyphen, no consecutive hyphens, and it must equal the folder name.
-- The `name` is **derived from and validated against** `metadata.shareable-skills.owner-prefix` +
-  `metadata.shareable-skills.domain`. A mismatch is a validation failure. *Why:* metadata is
-  canonical; the name is a checked projection of it, so the two cannot diverge.
-- Tools carry `owner-prefix` but **not** `domain`, and lead with a verb. *Why:* tools are
-  cross-cutting actions, not domain knowledge; refs are domain knowledge, so they carry a domain.
+- The `name` is **derived from and validated against** `metadata.shareable-skills.owner-prefix`,
+  plus `metadata.shareable-skills.domain` for reference skills. A mismatch is a validation
+  failure. *Why:* metadata is canonical; the name is a checked projection of it, so the two cannot
+  diverge.
+- Every skill, tools included, carries `domain` in its metadata, but only a reference skill puts it
+  in the name; a tool's name leads with a verb instead. *Why:* tools are cross-cutting actions, so
+  a domain in the name would mislead; the metadata domain still files them for browsing (§4).
 - Do **not** encode shareability, repo-namespace, or vendoring status in the name; those live in
   metadata. *Why:* the name is the discovery/trigger surface and must stay focused on what the
   skill does.
@@ -114,9 +116,9 @@ Field notes:
 
 ## 4. Domains and tags
 
-**Domain** (`metadata.shareable-skills.domain`) is a single token in the name that names the skill's
-**primary subject** — what a person would browse under to find it. It is an **open, growing,
-registry-driven** vocabulary.
+**Domain** (`metadata.shareable-skills.domain`) is a single token, required on every skill and part
+of a reference skill's name, that names the skill's **primary subject** — what a person would
+browse under to find it. It is an **open, growing, registry-driven** vocabulary.
 
 - The **domain registry** (this skill's `references/registry.json`) is the single source of truth. JSON is
   used (not YAML) so the TypeScript validators and any other tooling can read it without a parser
@@ -341,7 +343,8 @@ fail this spec, or vice versa; run both validators. See §11 for how the two ski
 All portability fields are read from the `metadata.shareable-skills.*` namespace; `license` is read
 from the top level.
 
-- `name` matches `type + owner-prefix + domain (+ optional template) + topic`, and equals the folder
+- `name` matches `ref + owner-prefix + domain (+ optional template) + topic` or
+  `tool + owner-prefix + verb (+ topic)`, and equals the folder
   name → else **fail**. (General charset/length/folder-match well-formedness is the authoring
   validator's job; this check adds the grammar-vs-metadata projection on top.)
 - `shareable-skills.domain` exists in the registry → else **fail** (with the growth note, §4).

@@ -328,7 +328,10 @@ function validateSharingSkill(
   // --- domain ---
   const domain = ss(metadata, 'domain');
   if (!domain) {
-    add(gate('error', 1), 'missing domain (metadata.shareable-skills.domain)');
+    add(
+      gate('error', 1),
+      'missing domain (metadata.shareable-skills.domain): every skill needs one, tools included; a tool keeps it out of its name',
+    );
   } else if (registry) {
     if (Object.hasOwn(registry.domains, domain)) {
       // registered target domain
