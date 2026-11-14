@@ -245,6 +245,19 @@ describe('syncPolicyFile', () => {
     expect(fs.existsSync(path.join(root, '.aiexclude'))).toBe(false);
   });
 
+  test('check mode names a file that differs only in line endings', () => {
+    const { root, policyFile } = setupRepo({
+      services: ['claude'],
+      protectedFiles: ['.env'],
+    });
+    syncPolicyFile(policyFile, 'sync');
+    const claude = path.join(root, '.claude', 'settings.json');
+    writeFile(claude, fs.readFileSync(claude, 'utf8').replaceAll('\n', '\r\n'));
+    expect(() => syncPolicyFile(policyFile, 'check')).toThrow(
+      'Managed policy files are out of sync: .claude/settings.json (differs only in line endings).',
+    );
+  });
+
   test('check mode passes once the outputs are current', () => {
     const { policyFile } = setupRepo({ protectedFiles: ['.env'] });
     syncPolicyFile(policyFile, 'sync');

@@ -283,9 +283,19 @@ export const syncPolicyFile = (
         [paths.vscodeSettings, expectedVscode],
         [paths.syncRecord, expectedRecord],
       ] as const
-    )
-      .filter(([target, expected]) => readTextOrUndefined(target) !== expected)
-      .map(([target]) => formatRelative(target, paths.repoRoot));
+    ).flatMap(([target, expected]) => {
+      const actual = readTextOrUndefined(target);
+      if (actual === expected) {
+        return [];
+      }
+      const label = formatRelative(target, paths.repoRoot);
+      // A CRLF checkout looks like drift; say so, since the fix is .gitattributes, not a sync.
+      return (
+          actual !== undefined && actual.replaceAll('\r\n', '\n') === expected
+        ) ?
+          [`${label} (differs only in line endings)`]
+        : [label];
+    });
     if (drifted.length > 0) {
       throw new ToolError(
         `Managed policy files are out of sync: ${drifted.join(', ')}. Run \`${syncCommand}\` to sync them; ` +
