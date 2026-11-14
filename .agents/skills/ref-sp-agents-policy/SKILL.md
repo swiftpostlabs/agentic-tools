@@ -68,6 +68,9 @@ When one vendor's file comes out wrong, read that vendor's detail: `./references
   policy approval. Add hand edits to the policy, or rerun with `--force` to overwrite them. For a
   conflicted lock, resolve or delete it: `--force` rewrites it but overwrites hand edits too.
   Without a lock yet, any managed entry the current policy doesn't write counts as hand-written.
+- The lock assumes the generated files are committed with it. When a repo gitignores one, such as
+  `.vscode/`, a teammate's first sync after a pull can stop on entries the tool wrote; check the
+  list, then `--force` adopts them.
 - `.aiexclude` stays at the repo root; don't invent a Gemini-only ignore file.
 - Docs and CI use the `agentic-tools policy` commands only.
 
