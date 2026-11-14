@@ -578,6 +578,48 @@ export const fetchSource = (gitDir: string): void => {
 export const hasCommit = (gitDir: string, commit: string): boolean =>
   gitSucceeds(['cat-file', '-e', `${commit}^{commit}`], { gitDir });
 
+// The native form expands Windows short names (RUNNER~1), which git never prints.
+const samePath = (left: string, right: string): boolean => {
+  try {
+    return fs.realpathSync.native(left) === fs.realpathSync.native(right);
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * The main worktree's root when `directory` is the top of a linked worktree (`git worktree add`),
+ * otherwise undefined: outside git, in the main worktree, or when the repo has no main worktree.
+ */
+export const mainWorktreeRoot = (directory: string): string | undefined => {
+  let output: string;
+  try {
+    output = runGit([
+      '-C',
+      directory,
+      'rev-parse',
+      '--path-format=absolute',
+      '--show-toplevel',
+      '--git-dir',
+      '--git-common-dir',
+    ]);
+  } catch {
+    return undefined;
+  }
+  const [topLevel, gitDir, commonDir] = output.split(/\r?\n/);
+  if (
+    topLevel === undefined ||
+    gitDir === undefined ||
+    commonDir === undefined ||
+    !samePath(topLevel, directory) ||
+    samePath(gitDir, commonDir) ||
+    path.basename(commonDir) !== '.git'
+  ) {
+    return undefined;
+  }
+  return path.dirname(path.resolve(commonDir));
+};
+
 /** The remote's default branch, asked of the remote, since a bare clone's HEAD does not follow it. */
 const defaultBranch = (gitDir: string, source: GitSource): string => {
   const output = runGit(['ls-remote', '--symref', 'origin', 'HEAD'], {

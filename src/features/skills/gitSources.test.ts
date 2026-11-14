@@ -897,3 +897,66 @@ describe('skills sync from git sources', () => {
     }).toThrow(/Use --force to replace it/);
   });
 });
+
+// Agents edit in linked worktrees under .agents/local/worktrees/. A sync there must find '../x'
+// beside the main checkout, as a sync in the main checkout does.
+describe('path sources in a linked worktree', () => {
+  const mainWithWorktree = (sources: unknown[]) => {
+    const parent = makeTempDir();
+    writeSkill(path.join(parent, 'shared', '.agents', 'skills'), 'ref-shared', {
+      domain: 'dev',
+      visibility: 'public',
+    });
+    const main = path.join(parent, 'main');
+    fs.mkdirSync(main);
+    git(main, 'init', '--quiet', '--initial-branch', 'main');
+    writeJson(path.join(main, '.agents', 'config.json'), {
+      skills: { sources },
+    });
+    writeSkill(path.join(main, 'vendor', '.agents', 'skills'), 'ref-vendored', {
+      domain: 'dev',
+      visibility: 'public',
+    });
+    writeFile(path.join(main, '.gitignore'), '.agents/local/\n');
+    git(main, 'add', '.');
+    git(main, 'commit', '--quiet', '-m', 'config');
+    const worktree = path.join(
+      main,
+      '.agents',
+      'local',
+      'worktrees',
+      'feature',
+    );
+    git(main, 'worktree', 'add', '--quiet', worktree);
+    return { parent, main, worktree };
+  };
+
+  test("'../shared' resolves beside the main checkout, from the worktree as from main", () => {
+    const { parent, main, worktree } = mainWithWorktree([
+      { from: '../shared', skills: ['ref-shared'] },
+    ]);
+    const expected = fs.realpathSync(
+      path.join(parent, 'shared', '.agents', 'skills', 'ref-shared'),
+    );
+
+    runSkillsSync(gitContext(worktree).context, syncOptions);
+    runSkillsSync(gitContext(main).context, syncOptions);
+
+    expect(linkTarget(worktree, 'ref-shared')).toBe(expected);
+    expect(linkTarget(main, 'ref-shared')).toBe(expected);
+  });
+
+  test("a path inside the repo, such as './vendor', stays in the worktree's own checkout", () => {
+    const { worktree } = mainWithWorktree([
+      { from: './vendor', skills: ['ref-vendored'] },
+    ]);
+
+    runSkillsSync(gitContext(worktree).context, syncOptions);
+
+    expect(linkTarget(worktree, 'ref-vendored')).toBe(
+      fs.realpathSync(
+        path.join(worktree, 'vendor', '.agents', 'skills', 'ref-vendored'),
+      ),
+    );
+  });
+});

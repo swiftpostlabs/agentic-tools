@@ -40,7 +40,11 @@
 
 ## Resolution rules
 
-- Relative `from` values resolve from the destination repo root.
+- Relative `from` values resolve from the destination repo root. In a linked git worktree (`git
+  worktree add`, for example under `.agents/local/worktrees/`), one that leads out of the repo,
+  such as `../shared-skills-repo`, resolves from the main checkout's root instead, so it finds the
+  same folder as a sync in the main checkout. One that stays inside, such as `./vendor`, uses the
+  worktree's own copy.
 - Absolute `from` values are used directly.
 - `package:<name>` values resolve to `node_modules/<name>` in the config's repo or any parent directory, then to the running `agentic-tools` package itself, which is how the Python shim finds its bundled skills. Other Python packages are not searched.
 - `git:<url>` takes any URL git accepts over https, http, ssh, git, or file, including `git@host:owner/repo`. `github:<owner>/<repo>` is short for `git:https://github.com/<owner>/<repo>.git`.

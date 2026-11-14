@@ -5,6 +5,7 @@ import { isDirectory, isFile } from '../../core/fs.ts';
 import { isJsonObject } from '../../core/json.ts';
 import { agentsPaths, resolveUserPath } from '../../core/paths.ts';
 import { configBaseRoot } from './config.ts';
+import { mainWorktreeRoot } from './git.ts';
 
 const packageSourcePrefix = 'package:';
 
@@ -110,5 +111,31 @@ export const resolveConfiguredSourceRoot = (options: {
     }
     return resolvePackageSourceRoot(packageName, base, options.ownRoot);
   }
-  return resolveUserPath(options.source, base, options.home);
+  const resolved = resolveUserPath(options.source, base, options.home);
+  if (!isRelativeOutside(options.source, base, resolved)) {
+    return resolved;
+  }
+  // A path out of the repo, such as '../shared-skills', means beside the repo. A linked worktree
+  // is the same repo checked out elsewhere, often under .agents/local/worktrees/, so it means
+  // beside the main checkout.
+  const mainRoot = mainWorktreeRoot(base);
+  return mainRoot === undefined ? resolved : (
+      resolveUserPath(options.source, mainRoot, options.home)
+    );
+};
+
+const isRelativeOutside = (
+  source: string,
+  base: string,
+  resolved: string,
+): boolean => {
+  if (path.isAbsolute(source) || source === '~' || source.startsWith('~/')) {
+    return false;
+  }
+  const fromBase = path.relative(base, resolved);
+  return (
+    fromBase === '..' ||
+    fromBase.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(fromBase)
+  );
 };
