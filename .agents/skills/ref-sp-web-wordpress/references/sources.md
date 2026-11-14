@@ -110,6 +110,20 @@ Do not present them as documented WordPress guidance:
   attributes; that `get_block_wrapper_attributes()` escapes its output (read from its source on the
   Code Reference page, not stated in prose); that Site Editor changes live in the database, not in
   theme files; and that a hybrid theme is the honest path for an established classic theme.
+- **Also in `block-editor.md`, read from core source by the 2026-11-14 blind review, not handbook
+  prose:** `get_block_wrapper_attributes()` escapes values with `esc_attr()` but writes names
+  as given; `WP_Theme_JSON::merge()` replaces preset leaf arrays (`color.palette`,
+  `typography.fontSizes`) instead of merging them; once a classic theme has a `theme.json`,
+  `WP_Theme_JSON_Resolver::get_theme_data()` stops deriving some settings from theme supports.
+  kses filtering of post content on save for users without `unfiltered_html`, and the
+  `DISALLOW_UNFILTERED_HTML` constant, are standard core behavior stated from knowledge here; check
+  the Code Reference before relying on them in a review.
+- **Source conflict:** the Developer Blog's hybrid-themes post says some theme supports "will not
+  work when a theme.json file is in place", while core maps `add_theme_support` values into
+  theme.json (Block Editor Handbook). The skill follows the handbook and core.
+- **Source tiers beyond the handbooks:** the Developer Blog (developer.wordpress.org/news), the
+  user documentation (wordpress.org/documentation), and the releases page are WordPress.org's own,
+  so tier-1 for WordPress behavior, but less exact than the handbooks.
 
 ## Deliberately not covered
 

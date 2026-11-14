@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-wordpress
-description: "Building and auditing WordPress safely: capability checks, nonces, sanitize and escape, prepared queries, hooks instead of editing core, blocks and block themes (theme.json, FSE), headless REST. Use when writing a plugin, theme, or block, an admin, AJAX, or REST endpoint, querying the DB, or auditing a WP site."
+description: "Building and auditing WordPress safely: capability checks, nonces, sanitize and escape, prepared queries, hooks instead of editing core, small plugin surface, blocks and block themes (theme.json, FSE), headless REST. Use when writing a plugin, theme, or block, an admin, AJAX, or REST endpoint, querying the DB, or auditing a WP site."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -125,7 +125,8 @@ pre-defined spots." They are the reason you never have to edit core.
 **Never modify WordPress core.** Core updates overwrite it, and an un-updatable WordPress is a security
 liability. The same applies to a parent theme: use a **child theme** so updates do not erase your
 changes. A block theme's child overrides templates, parts, and patterns by file name and merges its
-`theme.json` over the parent's.
+`theme.json` over the parent's, except that preset lists such as the color palette are replaced
+whole.
 
 ## Blocks and block themes
 

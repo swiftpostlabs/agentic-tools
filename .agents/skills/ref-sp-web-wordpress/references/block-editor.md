@@ -21,7 +21,8 @@ child themes; hybrid themes.
   in `block.json` (6.1+) or a `render_callback` passed at registration.
 - **Changing a static block's `save` breaks existing posts.** Stored markup that no longer matches
   is flagged invalid in the editor; add a deprecation (the old `save` and attributes) so old content
-  migrates. A dynamic block avoids this, since nothing but its attributes is stored.
+  migrates. A dynamic block whose `save` returns nothing stores only its attributes and avoids this;
+  one that saves `<InnerBlocks.Content />` or fallback markup does not.
 
 ## Security in blocks
 
@@ -30,10 +31,18 @@ child themes; hybrid themes.
 - **Block attributes are user input.** They live in post content, which any author or contributor
   can write. Only users with `unfiltered_html` (administrators and editors on a single site; super
   admins only, on multisite) may post raw HTML or script. Validate attributes in PHP before use.
+- **A static block's saved HTML is not escaped when the page is shown.** For users without
+  `unfiltered_html`, WordPress filters post content through kses (its HTML allow-list) on save; that
+  filter is the only protection. `define( 'DISALLOW_UNFILTERED_HTML', true )` takes the capability
+  from everyone, administrators included.
 - **Use `get_block_wrapper_attributes()`** for the wrapper's attributes in a dynamic render, so
-  block supports (colors, spacing, classes) apply; WordPress builds and escapes that string.
-- **A block that saves or fetches data** through REST or AJAX still needs the capability check and
-  nonce from gates 1 and 2.
+  block supports (colors, spacing, classes) apply. It escapes values, not attribute names: never put
+  untrusted names in its extra attributes.
+- **A block that saves or fetches data** through its own REST route needs a `permission_callback`
+  that checks a capability. `apiFetch` sends a nonce on its own, which proves the request came from
+  the user, not that the user may make it (gates 1 and 2).
+- **Interactivity API** state and context are printed into the page for the browser: never put
+  secrets or unchecked input in them. Its details are outside this reference.
 
 ## Nesting and patterns
 
@@ -80,7 +89,9 @@ differs from a classic theme:
 - **Templates, parts, and patterns:** add a file with the same name as the parent's (a pattern also
   needs the same `Slug`), and the child's wins.
 - **`theme.json`:** merged with the parent's, the child's values taking precedence. Write only the
-  settings that change.
+  settings that change, but note that preset lists such as `settings.color.palette` and
+  `settings.typography.fontSizes` are replaced, not merged: a child that adds one color drops the
+  parent's whole palette, so copy the parent's entries it keeps.
 - **Site Editor changes are stored in the database**, not in either theme's files, and outrank both.
   Export them to files before treating the theme folder as the source of truth.
 
@@ -91,3 +102,8 @@ than in a block theme), and block template parts since 6.1, by declaring
 `add_theme_support( 'block-template-parts' )`, placing parts in `parts/`, and printing them with
 `block_template_part( 'footer' )`. This is the honest path for an established classic theme; a
 rewrite as a block theme is a project of its own.
+
+Adding a `theme.json` can change how a classic theme looks: once the file exists, WordPress stops
+deriving some settings from the theme's `add_theme_support()` calls, such as whether core's default
+palette and font sizes appear. Compare the editor and the site before and after, and declare in
+`theme.json` the presets the theme relies on.
