@@ -4,8 +4,8 @@
  *
  * Detects the local agent workspaces, the skills root and how it is materialized, the instruction
  * files (root and nested AGENTS.md, leftover bridge files), which agent clients the repo shows
- * traces of, and which stack markers imply extra skills. Reports findings as check IDs so the
- * calling skill can map each one to a fix.
+ * traces of, whether .gitattributes fixes line endings, and which stack markers imply extra
+ * skills. Reports findings as check IDs so the calling skill can map each one to a fix.
  *
  * Detection only: this script never writes to the audited repo.
  *
@@ -916,6 +916,48 @@ const checkClients = (repo: string): Finding[] => {
   return findings;
 };
 
+/** The catch-all `.gitattributes` line that fixes line endings, as remediation G1 ships it. */
+export const lineEndingRule = '* text=auto eol=lf';
+
+const checkLineEndings = (repo: string): Finding[] => {
+  const attributesFile = path.join(repo, '.gitattributes');
+  if (!exists(attributesFile)) {
+    return [
+      finding(
+        'G1',
+        'warn',
+        'no .gitattributes: line endings follow each clone',
+        [`add \`${lineEndingRule}\` (see remediation G1)`],
+      ),
+    ];
+  }
+  const catchAll = readText(attributesFile)
+    .split(/\r?\n/)
+    .map((line) => line.trim().split(/\s+/))
+    .filter(([pattern]) => pattern === '*')
+    .flatMap(([, ...attributes]) => attributes);
+  if (catchAll.some((item) => item === '-text' || item === 'binary')) {
+    return [
+      finding('G1', 'info', 'line endings left as committed, by choice', [
+        'the `*` line in .gitattributes sets -text or binary',
+      ]),
+    ];
+  }
+  if (
+    catchAll.some(
+      (item) =>
+        item === 'text' || item.startsWith('text=') || item.startsWith('eol='),
+    )
+  ) {
+    return [finding('G1', 'pass', 'line endings are fixed by .gitattributes')];
+  }
+  return [
+    finding('G1', 'warn', '.gitattributes sets no line-ending rule for `*`', [
+      `add \`${lineEndingRule}\` (see remediation G1)`,
+    ]),
+  ];
+};
+
 const checkStack = (repo: string): Finding[] => {
   const labels: string[] = [];
   for (const [marker, label] of stackMarkers) {
@@ -968,6 +1010,7 @@ export const auditRepo = (repo: string): Finding[] => {
     ...checkDistribution(repo, skills.skills),
     ...checkInstructions(repo, hasGit),
     ...checkClients(repo),
+    ...checkLineEndings(repo),
     ...checkStack(repo),
   ];
 };

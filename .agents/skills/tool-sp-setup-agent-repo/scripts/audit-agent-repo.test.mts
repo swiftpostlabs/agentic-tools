@@ -4,7 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { auditRepo, fallbackIgnored } from './audit-agent-repo.mts';
+import {
+  auditRepo,
+  fallbackIgnored,
+  lineEndingRule,
+} from './audit-agent-repo.mts';
 
 const created: string[] = [];
 
@@ -232,5 +236,35 @@ describe('fallbackIgnored', () => {
     expect(
       fallbackIgnored('# /.agents/local/\nnode_modules/\n', '.agents/local/'),
     ).toBe(null);
+  });
+});
+
+describe('line-ending check', () => {
+  test('a repo without .gitattributes warns G1 and never fails', () => {
+    const repo = makeRepo({}, { withGit: true });
+    const g1 = check(repo, 'G1');
+    expect(g1?.status).toBe('warn');
+    expect(g1?.detail.join(' ')).toContain(lineEndingRule);
+  });
+
+  test('the shipped rule passes G1, CRLF exceptions included', () => {
+    const repo = makeRepo(
+      { '.gitattributes': `${lineEndingRule}\r\n*.bat text eol=crlf\r\n` },
+      { withGit: true },
+    );
+    expect(check(repo, 'G1')?.status).toBe('pass');
+  });
+
+  test('a .gitattributes without a line-ending rule for * warns G1', () => {
+    const repo = makeRepo(
+      { '.gitattributes': '# assets\n*.png binary\n*.sh text eol=lf\n' },
+      { withGit: true },
+    );
+    expect(check(repo, 'G1')?.status).toBe('warn');
+  });
+
+  test('a deliberate * -text opt-out is accepted as info', () => {
+    const repo = makeRepo({ '.gitattributes': '* -text\n' }, { withGit: true });
+    expect(check(repo, 'G1')?.status).toBe('info');
   });
 });

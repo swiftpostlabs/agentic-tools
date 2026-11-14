@@ -52,6 +52,7 @@ script out first.
 | `C1` | Every client the repo shows traces of is wired. |
 | `C2` | With Claude in use, `.claude/skills` is a gitignored symlink to `.agents/skills/`. |
 | `C3` | With VS Code in use, `chat.useAgentsMdFile` is on, plus `chat.useNestedAgentsMdFiles` when nested files exist. |
+| `G1` | `.gitattributes` fixes line endings for `*` (`text=auto eol=lf`), or opts out on purpose. Warns, never fails. |
 | `R1` | Stack markers found have their matching skills installed. |
 
 Core skills: `ref-sp-agents-skills-authoring`, `ref-sp-agents-instructions-authoring`,
@@ -68,7 +69,7 @@ Core skills: `ref-sp-agents-skills-authoring`, `ref-sp-agents-instructions-autho
    `AGENTS.md`, deleting an instruction file. Creating directories, ignore rules, symlinks, and
    settings needs no round trip.
 5. **Fix in order:** workspaces (migrate first when `W4` fails), skills, `AGENTS.md`, leftover
-   instruction files, nested files, client wiring. Procedures per check are in `./references/remediation.md`.
+   instruction files, nested files, client wiring, line endings. Procedures per check are in `./references/remediation.md`.
 6. **Re-run the audit** and report what is still open, including anything the user declined.
 
 ## Instruction files

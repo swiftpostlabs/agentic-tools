@@ -212,6 +212,35 @@ Clients disagree on nested files, so they only work if the repo meets the strict
 See `./clients.md`. `C2` (the `.claude/skills` symlink) and `C3` (`chat.useAgentsMdFile`, plus
 `chat.useNestedAgentsMdFiles` when nested files exist) are documented there with the rest of the per-client matrix.
 
+## G1 — line endings not fixed by `.gitattributes`
+
+Clones on Windows, WSL, and macOS check text out with different line endings unless the repo says
+otherwise, and then every diff and formatter run disagrees across machines. The rule fixes LF in
+every checkout and keeps CRLF where Windows tools need it:
+
+```gitattributes
+# LF in every checkout, whatever core.autocrlf says.
+* text=auto eol=lf
+
+# Windows-only files keep CRLF.
+*.sln text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+```
+
+- **No `.gitattributes`:** add the file with these lines.
+- **A `.gitattributes` without a `*` line-ending rule:** add only the lines above, at the top. Never
+  rewrite or reorder what is there; later lines win, so the repo's own rules still apply.
+- **A deliberate opt-out:** a `* -text` or `* binary` line reports `info`, not `warn`. Leave it.
+
+Existing files keep their old endings until they are renormalized. Tell the user to do that as a
+commit of its own, because it touches every file checked in with CRLF, and leave it to them:
+
+```bash
+git add --renormalize .
+git commit -m "chore: Normalize line endings"
+```
+
 ## R1 — stack markers
 
 Markers are evidence, not a shopping list. Map them with the table in the parent `SKILL.md`, then
