@@ -23,6 +23,7 @@ import {
 import { buildAiExcludeContent } from './gemini.ts';
 import {
   buildSyncRecord,
+  findImportLosses,
   findLosses,
   lostFormatting,
   lostNulls,
@@ -300,8 +301,21 @@ export const syncPolicyFile = (
   const claudeText = readTextOrUndefined(paths.claudeSettings);
   const vscodeText = readTextOrUndefined(paths.vscodeSettings);
   const aiExcludeText = readTextOrUndefined(paths.aiExclude);
-  const lastWritten = readSyncRecord(paths.syncRecord, recordLabel);
+  // Forcing overwrites regardless, so an unreadable record must not block it.
+  const lastWritten =
+    force ? undefined : readSyncRecord(paths.syncRecord, recordLabel);
   const lost = [
+    ...(mode === 'import-vscode' ?
+      [
+        ...findImportLosses({
+          policyLabel,
+          before: document.policy,
+          imported: policy,
+          lastWritten,
+        }),
+        ...lostFormatting(policyLabel, readTextOrUndefined(paths.policyFile)),
+      ]
+    : []),
     ...findLosses({
       onDisk: buildSyncRecord({
         claude: claudeExisting,

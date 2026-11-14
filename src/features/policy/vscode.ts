@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { isJsonObject, type JsonObject } from '../../core/json.ts';
 import type { SettingsDocument, TerminalApprovalValue } from './schema.ts';
 
-const restrictedLanguage = 'copilot-restricted-file';
+export const restrictedLanguage = 'copilot-restricted-file';
 
 const keys = {
   associations: 'files.associations',

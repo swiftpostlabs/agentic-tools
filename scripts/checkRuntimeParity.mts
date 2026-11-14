@@ -81,6 +81,7 @@ export const parityCommands: readonly (readonly [string, ...string[]])[] = [
  * directory, with the script path resolved from the repo root.
  */
 export const fixtureCommands: readonly (readonly [string, ...string[]])[] = [
+  ['src/core/cli.mts', 'policy', 'sync'],
   ['.agents/skills/ref-sp-agents-local-tasks/assets/next-todo.mts'],
   [
     skillScript('tool-sp-start-agents-collaboration', 'board'),
@@ -163,6 +164,25 @@ const run = (runtime: string, args: readonly string[], cwd: string): Run => {
 };
 
 const writeFixtureWorkspace = (directory: string): void => {
+  // A hand-added deny rule, so `policy sync` takes its stop path without writing anything.
+  const agents = path.join(directory, '.agents');
+  fs.mkdirSync(path.join(directory, '.claude'), { recursive: true });
+  fs.mkdirSync(agents, { recursive: true });
+  const writeJsonFile = (target: string, value: unknown): void => {
+    fs.writeFileSync(target, `${JSON.stringify(value)}\n`, 'utf8');
+  };
+  writeJsonFile(path.join(agents, 'config.json'), {
+    policy: { services: ['claude'], protectedFiles: ['.env'] },
+  });
+  writeJsonFile(path.join(agents, 'policy.lock.json'), {
+    version: 1,
+    claude: { deny: ['Read(.env)'] },
+    vscode: {},
+    aiexclude: null,
+  });
+  writeJsonFile(path.join(directory, '.claude', 'settings.json'), {
+    permissions: { deny: ['Read(.env)', 'Read(./mine)'] },
+  });
   const tasks = path.join(directory, '.agents', 'local', 'tasks');
   fs.mkdirSync(tasks, { recursive: true });
   fs.writeFileSync(

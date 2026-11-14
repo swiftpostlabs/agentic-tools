@@ -492,11 +492,124 @@ describe('hand-written settings', () => {
     expect(fs.readFileSync(policyFile, 'utf8')).toBe(policyBefore);
   });
 
+  test('a fresh clone without the generated files syncs without --force', () => {
+    const { root, policyFile } = syncedRepo({ protectedFiles: ['.env'] });
+    for (const file of [
+      '.aiexclude',
+      '.claude/settings.json',
+      '.vscode/settings.json',
+    ]) {
+      fs.rmSync(path.join(root, file));
+    }
+    expect(() => syncPolicyFile(policyFile, 'sync')).not.toThrow();
+    expect(syncPolicyFile(policyFile, 'check').at(-1)).toBe('Done.');
+  });
+
+  test('a protection deleted by hand is restored without --force', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['claude'],
+      protectedFiles: ['.env'],
+    });
+    writeJson(claudeFile(root), { permissions: { deny: [] } });
+    syncPolicyFile(policyFile, 'sync');
+    expect(readJson(claudeFile(root))).toEqual({
+      permissions: { deny: ['Read(.env)'] },
+    });
+  });
+
+  test('settings sync does not own stay out of the record and out of check', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['claude', 'copilot'],
+      protectedFiles: ['.env'],
+    });
+    writeJson(claudeFile(root), {
+      permissions: { deny: ['Read(.env)', 'Bash(rm:*)'] },
+    });
+    const vscode = readJson(vscodeFile(root)) as Record<string, unknown>;
+    writeJson(vscodeFile(root), {
+      ...vscode,
+      'files.associations': {
+        ...(vscode['files.associations'] as object),
+        '*.foo': 'json',
+      },
+    });
+    syncPolicyFile(policyFile, 'sync');
+    expect(syncPolicyFile(policyFile, 'check').at(-1)).toBe('Done.');
+    const lock = fs.readFileSync(
+      path.join(root, '.agents', 'policy.lock.json'),
+      'utf8',
+    );
+    expect(lock).not.toContain('Bash(rm');
+    expect(lock).not.toContain('*.foo');
+  });
+
+  test('reordering the keys of an approval is not an edit', () => {
+    const { root, policyFile } = syncedRepo({
+      services: ['copilot'],
+      terminalAutoApprove: { npm: { approve: true, matchCommandLine: true } },
+    });
+    writeJson(vscodeFile(root), {
+      'chat.tools.terminal.autoApprove': {
+        npm: { matchCommandLine: true, approve: true },
+      },
+    });
+    expect(() => syncPolicyFile(policyFile, 'sync')).not.toThrow();
+  });
+
+  test('an unreadable sync record stops sync with a way out, and --force rewrites it', () => {
+    const { root, policyFile } = syncedRepo({ protectedFiles: ['.env'] });
+    const lock = path.join(root, '.agents', 'policy.lock.json');
+    writeFile(
+      lock,
+      ['<<<<<<< HEAD', '{}', '=======', '{}', '>>>>>>> theirs', ''].join('\n'),
+    );
+    expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
+      'Rerun with --force to rewrite it from the current policy.',
+    );
+    syncPolicyFile(policyFile, 'sync', true);
+    expect(syncPolicyFile(policyFile, 'check').at(-1)).toBe('Done.');
+  });
+
+  test('import-vscode stops before undoing an approval edited in the policy file', () => {
+    const { policyFile } = syncedRepo({
+      services: ['copilot'],
+      terminalAutoApprove: { ls: true },
+    });
+    writeJson(policyFile, {
+      policy: {
+        services: ['copilot'],
+        terminalAutoApprove: { ls: true, curl: false },
+      },
+    });
+    const before = fs.readFileSync(policyFile, 'utf8');
+    expect(() => syncPolicyFile(policyFile, 'import-vscode')).toThrow(
+      '- .agents/config.json: terminalAutoApprove "curl" would be removed',
+    );
+    expect(fs.readFileSync(policyFile, 'utf8')).toBe(before);
+  });
+
+  test('import-vscode stops before stripping comments from the policy file', () => {
+    const { policyFile } = syncedRepo({ services: ['copilot'] });
+    writeFile(
+      policyFile,
+      [
+        '{',
+        '  // my note',
+        '  "policy": {"services": ["copilot"]}',
+        '}',
+        '',
+      ].join('\n'),
+    );
+    expect(() => syncPolicyFile(policyFile, 'import-vscode')).toThrow(
+      '- .agents/config.json: comments or trailing commas would be removed',
+    );
+  });
+
   test('a sync record of another format version is refused with a fix', () => {
     const { root, policyFile } = syncedRepo({ protectedFiles: ['.env'] });
     writeJson(path.join(root, '.agents', 'policy.lock.json'), { version: 2 });
     expect(() => syncPolicyFile(policyFile, 'sync')).toThrow(
-      'has format version 2; this tool reads version 1.',
+      'has format version 2; this tool reads version 1. Use the agentic-tools version that wrote it',
     );
   });
 });

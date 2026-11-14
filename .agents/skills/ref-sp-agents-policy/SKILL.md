@@ -62,9 +62,11 @@ When one vendor's file comes out wrong, read that vendor's detail: `./references
 - `policy sync` and `policy import-vscode` stop with exit 1, before writing anything, and list
   what they would lose when a person edited a managed entry since the last sync: a `Read(...)`
   deny, an association or approval, `.aiexclude`, a comment, or a top-level `null`. An entry sync
-  wrote itself, recorded in `.agents/policy.lock.json`, changes freely when the policy changes.
-  Add hand edits to the policy, or rerun with `--force` to overwrite them. Without a lock yet,
-  any managed entry the current policy doesn't write counts as hand-written.
+  wrote itself, recorded in `.agents/policy.lock.json`, changes freely when the policy changes,
+  and an entry a person deleted is restored without stopping. `import-vscode` also stops before
+  undoing an approval edited in the policy file. Add hand edits to the policy, or rerun with
+  `--force` to overwrite them; `--force` also rewrites an unreadable lock. Without a lock yet, any
+  managed entry the current policy doesn't write counts as hand-written.
 - `.aiexclude` stays at the repo root; don't invent a Gemini-only ignore file.
 - Docs and CI use the `agentic-tools policy` commands only.
 

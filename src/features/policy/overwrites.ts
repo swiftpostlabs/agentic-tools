@@ -2,13 +2,16 @@ import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { ToolError } from '../../core/errors.ts';
 import {
+  errorMessage,
   isJsonObject,
   parseWith,
   readJson5File,
   type JsonObject,
 } from '../../core/json.ts';
 import type { SettingsDocument } from './schema.ts';
-import { vscodeManagedOrder } from './vscode.ts';
+import { restrictedLanguage, vscodeManagedOrder } from './vscode.ts';
+
+const managedRulePrefix = 'Read(';
 
 export const syncRecordVersion = 1;
 
@@ -44,43 +47,82 @@ const hashText = (text: string | undefined): string | null =>
     `sha256:${createHash('sha256').update(text).digest('hex')}`
   );
 
-/** The record of a set of generated files, as they are on disk or as sync is about to write them. */
+/** Only what sync owns: `Read(...)` denies, restricted-file associations, its Copilot switch, approvals. */
 export const buildSyncRecord = (files: {
   claude: SettingsDocument;
   vscode: SettingsDocument;
   aiexclude: string | undefined;
-}): SyncRecord => ({
-  version: syncRecordVersion,
-  claude: {
-    deny: stringList(
-      objectOrEmpty(files.claude.managed['permissions'])['deny'],
+}): SyncRecord => {
+  const owned = (key: string, entries: JsonObject): JsonObject =>
+    Object.fromEntries(
+      Object.entries(entries).filter(([entry, value]) =>
+        key === 'files.associations' ? value === restrictedLanguage
+        : key === 'github.copilot.enable' ? entry === restrictedLanguage
+        : true,
+      ),
+    );
+  return {
+    version: syncRecordVersion,
+    claude: {
+      deny: stringList(
+        objectOrEmpty(files.claude.managed['permissions'])['deny'],
+      ).filter((rule) => rule.startsWith(managedRulePrefix)),
+    },
+    vscode: Object.fromEntries(
+      vscodeManagedOrder
+        .map(
+          (key) =>
+            [
+              key,
+              owned(key, objectOrEmpty(files.vscode.managed[key])),
+            ] as const,
+        )
+        .filter(([, entries]) => Object.keys(entries).length > 0),
     ),
-  },
-  vscode: Object.fromEntries(
-    vscodeManagedOrder
-      .map((key) => [key, objectOrEmpty(files.vscode.managed[key])] as const)
-      .filter(([, entries]) => Object.keys(entries).length > 0),
-  ),
-  aiexclude: hashText(files.aiexclude),
-});
+    aiexclude: hashText(files.aiexclude),
+  };
+};
 
+/** Read the record. A missing file is `undefined`; an unreadable one stops with a way out. */
 export const readSyncRecord = (
   target: string,
   label: string,
 ): SyncRecord | undefined => {
-  const raw = readJson5File(target, label);
+  const fix = 'Rerun with --force to rewrite it from the current policy.';
+  let raw: unknown;
+  try {
+    raw = readJson5File(target, label);
+  } catch (error) {
+    throw new ToolError(`${errorMessage(error)}. ${fix}`);
+  }
   if (raw === undefined) {
     return undefined;
   }
   if (isJsonObject(raw) && raw['version'] !== syncRecordVersion) {
     throw new ToolError(
-      `${label} has format version ${JSON.stringify(raw['version'])}; this tool reads version ${String(syncRecordVersion)}. Update agentic-tools, or delete the file and sync with --force.`,
+      `${label} has format version ${JSON.stringify(raw['version'])}; this tool reads version ${String(syncRecordVersion)}. Use the agentic-tools version that wrote it, or: ${fix}`,
     );
   }
-  return parseWith(syncRecordSchema, raw, label);
+  try {
+    return parseWith(syncRecordSchema, raw, label);
+  } catch (error) {
+    throw new ToolError(`${errorMessage(error)}. ${fix}`);
+  }
 };
 
 const aiexcludeKey = '.aiexclude';
+
+/** JSON with object keys sorted, so the same meaning always compares equal. */
+const canonical = (value: unknown): string =>
+  JSON.stringify(value, (_key, inner: unknown) =>
+    isJsonObject(inner) ?
+      Object.fromEntries(
+        Object.keys(inner)
+          .sort()
+          .map((key) => [key, inner[key]]),
+      )
+    : inner,
+  );
 
 /** Flatten a record to one comparable value per managed entry, keyed by how it is reported. */
 const recordEntries = (record: SyncRecord): Map<string, string> => {
@@ -90,10 +132,7 @@ const recordEntries = (record: SyncRecord): Map<string, string> => {
   }
   for (const [key, values] of Object.entries(record.vscode)) {
     for (const [entry, value] of Object.entries(values)) {
-      entries.set(
-        `.vscode/settings.json: ${key} "${entry}"`,
-        JSON.stringify(value),
-      );
+      entries.set(`.vscode/settings.json: ${key} "${entry}"`, canonical(value));
     }
   }
   if (record.aiexclude !== null) {
@@ -104,24 +143,13 @@ const recordEntries = (record: SyncRecord): Map<string, string> => {
 
 const describeLoss = (
   key: string,
-  onDisk: string | undefined,
   next: string | undefined,
-): string => {
-  if (key === aiexcludeKey) {
-    return (
-      onDisk === undefined ?
-        '.aiexclude was deleted by hand and would be restored'
-      : next === undefined ?
-        '.aiexclude was edited by hand and would be removed'
-      : '.aiexclude was edited by hand and would be replaced'
-    );
-  }
-  return (
-    onDisk === undefined ? `${key} was removed by hand and would be restored`
-    : next === undefined ? `${key} would be removed`
-    : `${key} would change from ${onDisk} to ${next}`
-  );
-};
+  onDisk: string,
+): string =>
+  key === aiexcludeKey ?
+    `.aiexclude was edited by hand and would be ${next === undefined ? 'removed' : 'replaced'}`
+  : next === undefined ? `${key} would be removed`
+  : `${key} would change from ${onDisk} to ${next}`;
 
 /**
  * Hand edits that syncing would undo. An entry is hand-written when the file differs from what
@@ -145,13 +173,61 @@ export const findLosses = (options: {
     ...next.keys(),
   ]);
   return [...keys]
-    .filter(
-      (key) =>
-        onDisk.get(key) !== lastWritten.get(key) &&
-        next.get(key) !== onDisk.get(key),
-    )
-    .sort()
-    .map((key) => describeLoss(key, onDisk.get(key), next.get(key)));
+    .flatMap((key) => {
+      const value = onDisk.get(key);
+      // Restoring what a person deleted loses nothing they wrote, and the policy asks for it.
+      return (
+          value === undefined ||
+            value === lastWritten.get(key) ||
+            value === next.get(key)
+        ) ?
+          []
+        : [describeLoss(key, next.get(key), value)];
+    })
+    .sort();
+};
+
+const approvalKeys = [
+  ['terminalAutoApprove', 'chat.tools.terminal.autoApprove'],
+  ['editAutoApprove', 'chat.tools.edits.autoApprove'],
+] as const;
+
+type ApprovalMaps = {
+  [Key in (typeof approvalKeys)[number][0]]?:
+    Record<string, unknown> | undefined;
+};
+
+/**
+ * Approvals edited by hand in the policy file since the last sync that importing VS Code's maps
+ * would undo. The record holds the approvals the policy had at that sync; with no record, nothing
+ * can be told apart, and importing is what was asked for.
+ */
+export const findImportLosses = (options: {
+  policyLabel: string;
+  before: ApprovalMaps;
+  imported: ApprovalMaps;
+  lastWritten: SyncRecord | undefined;
+}): string[] => {
+  const { lastWritten } = options;
+  if (lastWritten === undefined) {
+    return [];
+  }
+  return approvalKeys.flatMap(([policyKey, vscodeKey]) => {
+    const before = options.before[policyKey] ?? {};
+    const imported = options.imported[policyKey] ?? {};
+    const recorded = lastWritten.vscode[vscodeKey] ?? {};
+    return Object.entries(before)
+      .filter(
+        ([entry, value]) =>
+          canonical(value) !== canonical(recorded[entry]) &&
+          canonical(value) !== canonical(imported[entry]),
+      )
+      .map(([entry, value]) =>
+        entry in imported ?
+          `${options.policyLabel}: ${policyKey} "${entry}" would change from ${canonical(value)} to ${canonical(imported[entry])}`
+        : `${options.policyLabel}: ${policyKey} "${entry}" would be removed`,
+      );
+  });
 };
 
 /** Comments and trailing commas that rewriting the file as plain JSON would strip. */
