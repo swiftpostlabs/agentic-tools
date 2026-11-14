@@ -99,8 +99,11 @@ const windowsDeviceNames = /^(con|prn|aux|nul|com\d|lpt\d)$/i;
  * An agent id, checked because ids become file names: anything but letters, digits, and dashes
  * could write outside the board.
  */
+const isId = (id: string): boolean =>
+  idPattern.test(id) && !windowsDeviceNames.test(id);
+
 export const checkId = (id: string, what: string): string => {
-  if (!idPattern.test(id) || windowsDeviceNames.test(id)) {
+  if (!isId(id)) {
     throw new UsageError(
       `${what} must be an id of letters, digits, and dashes, not ${JSON.stringify(id)}`,
     );
@@ -484,20 +487,45 @@ const markSeen = (board: string, me: string): void => {
   );
 };
 
-const listAgents = (board: string): void => {
+/**
+ * One line per status file in agents/, and a warning for each other Markdown file there. A status
+ * file is `<id>.md` whose `name:` ends in that id, so a draft saved beside them is no agent.
+ */
+export const agentLines = (
+  board: string,
+): { lines: string[]; warnings: string[] } => {
+  const lines: string[] = [];
+  const warnings: string[] = [];
   for (const file of listMarkdown(agentsDir(board))) {
     const id = file.slice(0, -'.md'.length);
-    const status = fs.readFileSync(path.join(agentsDir(board), file), 'utf8');
-    const name = /^name:\s*(.*)$/m.exec(status)?.[1]?.trim() ?? id;
-    const watching = /^watching:\s*(.*)$/m.exec(status)?.[1]?.trim() ?? '?';
+    const { header } = parseFrontmatter(
+      fs.readFileSync(path.join(agentsDir(board), file), 'utf8'),
+    );
+    const name = header.get('name') ?? '';
+    if (!isId(id) || sessionIdOf(name) !== id) {
+      warnings.push(
+        `skipped agents/${file}: not a status file (needs name: <account> / <session name> / ${id})`,
+      );
+      continue;
+    }
+    const watching = header.get('watching') || '?';
     const seenFile = path.join(agentsDir(board), `${id}.seen`);
     const seen =
       fs.existsSync(seenFile) ?
         fs.readFileSync(seenFile, 'utf8').trim()
       : 'never';
-    process.stdout.write(
-      `${name} | watching: ${watching} | last check: ${seen}\n`,
-    );
+    lines.push(`${name} | watching: ${watching} | last check: ${seen}`);
+  }
+  return { lines, warnings };
+};
+
+const listAgents = (board: string): void => {
+  const { lines, warnings } = agentLines(board);
+  for (const warning of warnings) {
+    process.stderr.write(`warning: ${warning}\n`);
+  }
+  for (const line of lines) {
+    process.stdout.write(`${line}\n`);
   }
 };
 

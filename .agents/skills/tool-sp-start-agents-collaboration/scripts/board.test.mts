@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 import {
+  agentLines,
   allMessageFiles,
   checkId,
   createRoom,
@@ -355,5 +356,41 @@ describe('agent board', () => {
     const lines = newMessageLines(board, 'def456', undefined, seen);
     expect(lines).toHaveLength(1);
     expect(lines[0]).toContain('New.');
+  });
+
+  test('agents lists status files only; a draft beside them is skipped with a warning', () => {
+    const board = newBoard();
+    const agents = path.join(board, 'agents');
+    fs.mkdirSync(agents, { recursive: true });
+    const status = (name: string) =>
+      `---\nname: ${name}\nwatching: monitor\n---\n\nWorking on: tests\n`;
+    fs.writeFileSync(
+      path.join(agents, 'abc123.md'),
+      status('acme / demo / abc123'),
+    );
+    fs.writeFileSync(
+      path.join(agents, 'session-7.md'),
+      status('acme / client id / session-7'),
+    );
+    fs.writeFileSync(
+      path.join(agents, 'abc123.seen'),
+      '2026-01-02T12:00:00.000Z\n',
+    );
+    fs.writeFileSync(
+      path.join(agents, '94bdff-t1-draft.md'),
+      status('acme / demo / 94bdff'),
+    );
+    fs.writeFileSync(path.join(agents, 'notes.md'), 'a plain note\n');
+
+    expect(agentLines(board)).toEqual({
+      lines: [
+        'acme / demo / abc123 | watching: monitor | last check: 2026-01-02T12:00:00.000Z',
+        'acme / client id / session-7 | watching: monitor | last check: never',
+      ],
+      warnings: [
+        'skipped agents/94bdff-t1-draft.md: not a status file (needs name: <account> / <session name> / 94bdff-t1-draft)',
+        'skipped agents/notes.md: not a status file (needs name: <account> / <session name> / notes)',
+      ],
+    });
   });
 });

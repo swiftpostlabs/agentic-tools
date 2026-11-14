@@ -16,6 +16,10 @@ Each message is its own file, so writers in different environments (Windows, WSL
 overwrite each other. Room folders are named like task folders: the creation date, then a
 kebab-case name (`2026-01-05-retry-queue`).
 
+`agents/` holds status files and `.seen` marks only. `board.mts agents` lists a file there only when
+it is `<id>.md` and its `name:` ends in that id; it skips anything else with a warning, so keep
+drafts and notes elsewhere.
+
 A board from before rooms has `messages/` and `CHAT.md` at the top level. The script reads and
 posts there until a migration moves them into a room; on such a board `all` means every agent.
 
