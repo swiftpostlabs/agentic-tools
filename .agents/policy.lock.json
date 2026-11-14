@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "claude": {
+    "deny": [
+      "Read(*.env)",
+      "Read(*.env.*)",
+      "Read(*.pem)",
+      "Read(*.key)",
+      "Read(*.pub)",
+      "Read(credentials.json)",
+      "Read(secrets/)",
+      "Read(internal-config.yml)"
+    ]
+  },
+  "vscode": {
+    "files.associations": {
+      "*.env": "copilot-restricted-file",
+      "*.env.*": "copilot-restricted-file",
+      "*.pem": "copilot-restricted-file",
+      "*.key": "copilot-restricted-file",
+      "*.pub": "copilot-restricted-file",
+      "credentials.json": "copilot-restricted-file",
+      "secrets/": "copilot-restricted-file",
+      "internal-config.yml": "copilot-restricted-file"
+    },
+    "github.copilot.enable": {
+      "copilot-restricted-file": false
+    },
+    "chat.tools.terminal.autoApprove": {
+      "/^git (log|status|diff).*$/": true,
+      "/^yarn (lint|typecheck|test|validate)$/": true,
+      "/^yarn cli policy (sync|check|import-vscode)$/": true,
+      "rm": false,
+      "rmdir": false,
+      "del": false,
+      "curl": false,
+      "wget": false,
+      "uv": true,
+      "Out-Null": true
+    },
+    "chat.tools.edits.autoApprove": {
+      "**/*.{py,json,yml,yaml,css,md}": true,
+      "**/.env*": false,
+      "**/secrets/**": false,
+      "**/.aiexclude": false,
+      "**/.agents/config.json": false,
+      "**/.agents/policy.json": false,
+      "**/*.{pem,key,pub}": false,
+      "**/internal-config.yml": false
+    }
+  },
+  "aiexclude": "sha256:321865b4ff9120e6ff4f6e994a6d5cc85372fa6a5be07ee83952254f29e8a1c9"
+}

@@ -12,6 +12,7 @@ into each client's own files. What the policy means and which files it generates
 - `schema.ts`: the zod schema for the policy section and the settings documents it reads.
 - `services.ts`: the supported services and their accepted spellings.
 - `claude.ts`, `gemini.ts`, `vscode.ts`: one adapter per client output.
+- `overwrites.ts`: finds what a sync would lose that a person wrote by hand, so sync can stop first.
 
 ## Rules
 

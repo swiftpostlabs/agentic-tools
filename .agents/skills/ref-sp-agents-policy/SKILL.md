@@ -48,6 +48,7 @@ which holds the full contract.
 | `gemini` | `.aiexclude` | Built from `protectedFiles` and `excludedFiles`; removed when Gemini is disabled. |
 | `claude` | `.claude/settings.json` | `permissions.deny` `Read(...)` rules for `protectedFiles`; cleaned when disabled. |
 | `copilot` | `.vscode/settings.json` | File associations, Copilot language disablement, approval maps; cleaned when disabled. |
+| (all) | `.agents/policy.lock.json` | What sync last wrote into each file above; committed, so it holds on every clone. |
 
 When one vendor's file comes out wrong, read that vendor's detail: `./references/gemini.md`,
 `./references/claude-code.md`, or `./references/copilot.md`.
@@ -58,9 +59,12 @@ When one vendor's file comes out wrong, read that vendor's detail: `./references
   hand-editing generated files.
 - `.claude/settings.json` and `.vscode/settings.json` are only partly managed: edit the parts sync
   doesn't own, never the policy-owned sections.
-- `policy sync` stops with exit 1 and lists what it would lose when a settings file holds what the
-  policy doesn't: a hand-added `Read(...)` deny, an auto-approve entry it would change or drop, or
-  comments it would strip. Add those to the policy, or rerun with `--force` to overwrite them.
+- `policy sync` and `policy import-vscode` stop with exit 1, before writing anything, and list
+  what they would lose when a person edited a managed entry since the last sync: a `Read(...)`
+  deny, an association or approval, `.aiexclude`, a comment, or a top-level `null`. An entry sync
+  wrote itself, recorded in `.agents/policy.lock.json`, changes freely when the policy changes.
+  Add hand edits to the policy, or rerun with `--force` to overwrite them. Without a lock yet,
+  any managed entry the current policy doesn't write counts as hand-written.
 - `.aiexclude` stays at the repo root; don't invent a Gemini-only ignore file.
 - Docs and CI use the `agentic-tools policy` commands only.
 

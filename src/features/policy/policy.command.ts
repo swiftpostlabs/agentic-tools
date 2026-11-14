@@ -15,28 +15,31 @@ const addModeCommand = (
   mode: PolicyMode,
   description: string,
 ) => {
-  group
+  const command = group
     .command(mode)
     .description(description)
     .option(
       '-c, --config <path>',
       'Path to an agents config or policy file.',
       value,
-    )
-    .option(
+    );
+  // check only compares, so it has nothing to force.
+  if (mode !== 'check') {
+    command.option(
       '-f, --force',
       'Overwrite settings a person wrote by hand that the policy does not hold.',
-    )
-    .action((raw: unknown) => {
-      const { config, force } = parseWith(optionsSchema, raw);
-      runPolicyCommand({
-        mode,
-        config,
-        force,
-        cwd: context.cwd,
-        home: context.home,
-      }).forEach(context.output.info);
-    });
+    );
+  }
+  command.action((raw: unknown) => {
+    const { config, force } = parseWith(optionsSchema, raw);
+    runPolicyCommand({
+      mode,
+      config,
+      force,
+      cwd: context.cwd,
+      home: context.home,
+    }).forEach(context.output.info);
+  });
 };
 
 /** `agentic-tools policy <sync|check|import-vscode>`. */

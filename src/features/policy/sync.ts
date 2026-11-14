@@ -22,9 +22,11 @@ import {
 } from './claude.ts';
 import { buildAiExcludeContent } from './gemini.ts';
 import {
-  lostClaudeRules,
+  buildSyncRecord,
+  findLosses,
   lostFormatting,
-  lostVscodeSettings,
+  lostNulls,
+  readSyncRecord,
 } from './overwrites.ts';
 import {
   hasContent,
@@ -48,6 +50,7 @@ export type PolicyPaths = {
   aiExclude: string;
   vscodeSettings: string;
   claudeSettings: string;
+  syncRecord: string;
 };
 
 /**
@@ -160,6 +163,7 @@ export const resolvePolicyPaths = (policyFile: string): PolicyPaths => {
     aiExclude: path.join(repoRoot, clientPaths.geminiAiExclude),
     vscodeSettings: path.join(repoRoot, clientPaths.vscodeSettings),
     claudeSettings: path.join(repoRoot, clientPaths.claudeSettings),
+    syncRecord: path.join(repoRoot, agentsPaths.policyLock),
   };
 };
 
@@ -197,7 +201,6 @@ export const syncPolicyFile = (
   const policyLabel = formatRelative(paths.policyFile, paths.repoRoot);
   const messages: string[] = [];
   if (mode === 'import-vscode') {
-    writePolicyDocument(paths.policyFile, document, policy);
     messages.push(`Imported: VS Code approvals into ${policyLabel}`);
     // An imported change can turn a deny into an allow, so each one is named.
     for (const key of ['terminalAutoApprove', 'editAutoApprove'] as const) {
@@ -259,19 +262,33 @@ export const syncPolicyFile = (
   });
   const expectedVscode = renderSettings(vscodeManagedOrder, vscodeUpdated);
 
+  const nextRecord = buildSyncRecord({
+    claude: claudeUpdated,
+    vscode: vscodeUpdated,
+    aiexclude: expectedAiExclude,
+  });
+  const writesNothing =
+    expectedAiExclude === undefined &&
+    expectedClaude === undefined &&
+    expectedVscode === undefined;
+  const expectedRecord = writesNothing ? undefined : toJsonText(nextRecord);
+  const recordLabel = formatRelative(paths.syncRecord, paths.repoRoot);
+
   if (mode === 'check') {
     const drifted = (
       [
         [paths.aiExclude, expectedAiExclude],
         [paths.claudeSettings, expectedClaude],
         [paths.vscodeSettings, expectedVscode],
+        [paths.syncRecord, expectedRecord],
       ] as const
     )
       .filter(([target, expected]) => readTextOrUndefined(target) !== expected)
       .map(([target]) => formatRelative(target, paths.repoRoot));
     if (drifted.length > 0) {
       throw new ToolError(
-        `Managed policy files are out of sync: ${drifted.join(', ')}. Run \`${syncCommand}\` to sync them. ` +
+        `Managed policy files are out of sync: ${drifted.join(', ')}. Run \`${syncCommand}\` to sync them; ` +
+          `it stops before overwriting hand-written settings, and \`--force\` overwrites them. ` +
           `If you intended to keep VS Code approval edits instead, run \`${importCommand}\`.`,
       );
     }
@@ -279,34 +296,54 @@ export const syncPolicyFile = (
     return messages;
   }
 
-  // Settings a person wrote by hand are never dropped silently: stop unless forced.
+  // Settings a person wrote by hand are never dropped silently: stop, before any write, unless forced.
   const claudeText = readTextOrUndefined(paths.claudeSettings);
   const vscodeText = readTextOrUndefined(paths.vscodeSettings);
+  const aiExcludeText = readTextOrUndefined(paths.aiExclude);
+  const lastWritten = readSyncRecord(paths.syncRecord, recordLabel);
   const lost = [
+    ...findLosses({
+      onDisk: buildSyncRecord({
+        claude: claudeExisting,
+        vscode: vscodeExisting,
+        aiexclude: aiExcludeText,
+      }),
+      lastWritten,
+      next: nextRecord,
+    }),
     ...(claudeText === expectedClaude ?
       []
     : [
-        ...lostClaudeRules(claudeExisting, claudeUpdated),
         ...lostFormatting('.claude/settings.json', claudeText),
+        ...lostNulls('.claude/settings.json', claudeExisting),
       ]),
     ...(vscodeText === expectedVscode ?
       []
     : [
-        ...lostVscodeSettings(vscodeExisting, vscodeUpdated),
         ...lostFormatting('.vscode/settings.json', vscodeText),
+        ...lostNulls('.vscode/settings.json', vscodeExisting),
       ]),
   ];
   if (lost.length > 0 && !force) {
     throw new ToolError(
       [
-        'Syncing would overwrite settings that the policy does not hold:',
+        'Syncing would overwrite settings written by hand:',
         ...lost.map((line) => `- ${line}`),
-        `Add them to ${policyLabel} to keep them, or rerun with --force to overwrite them.`,
+        ...(lastWritten === undefined ?
+          [
+            `No sync record yet (${recordLabel}): if these came from an earlier policy, rerun with --force to adopt them.`,
+          ]
+        : []),
+        `To keep them, add them to ${policyLabel}; to overwrite them, rerun with --force.`,
       ].join('\n'),
     );
   }
 
-  const hadGeminiFile = fs.existsSync(paths.aiExclude);
+  if (mode === 'import-vscode') {
+    writePolicyDocument(paths.policyFile, document, policy);
+  }
+
+  const hadGeminiFile = aiExcludeText !== undefined;
   writeOrRemove(paths.aiExclude, expectedAiExclude);
   if (expectedAiExclude !== undefined) {
     messages.push(`Synced: Gemini (${clientPaths.geminiAiExclude})`);
@@ -329,6 +366,9 @@ export const syncPolicyFile = (
   } else if (hasContent(vscodeExisting)) {
     messages.push(`Cleaned: Copilot local policy (${vscodeLabel})`);
   }
+
+  // Written last, so a sync that fails partway never records output it did not finish writing.
+  writeOrRemove(paths.syncRecord, expectedRecord);
 
   messages.push('Done.');
   return messages;

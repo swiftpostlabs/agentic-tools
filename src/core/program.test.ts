@@ -60,6 +60,25 @@ describe('runCli', () => {
     ]);
   });
 
+  test('policy sync exits 1 before overwriting a hand edit, and -f overwrites it', async () => {
+    const workspace = makeTempDir();
+    writeJson(path.join(workspace, '.agents', 'config.json'), {
+      policy: { services: ['claude'], protectedFiles: ['.env'] },
+    });
+    expect((await run(['policy', 'sync'], workspace)).code).toBe(0);
+    writeJson(path.join(workspace, '.claude', 'settings.json'), {
+      permissions: { deny: ['Read(.env)', 'Read(./mine)'] },
+    });
+    const stopped = await run(['policy', 'sync'], workspace);
+    expect(stopped.code).toBe(1);
+    expect(stopped.output.errors[0]).toContain(
+      'deny rule Read(./mine) would be removed',
+    );
+    expect((await run(['policy', 'sync', '-f'], workspace)).code).toBe(0);
+    expect((await run(['policy', 'check'], workspace)).code).toBe(0);
+    expect((await run(['policy', 'check', '-f'], workspace)).code).toBe(2);
+  });
+
   test('dispatches policy sync and turns expected failures into exit 1', async () => {
     const workspace = makeTempDir();
     writeJson(path.join(workspace, '.agents', 'config.json'), {

@@ -96,13 +96,16 @@ uv run agentic-tools skills sync
 ### Manage agent policy
 
 After adding or changing the `policy` section of `.agents/config.json`, regenerate the client files
-(`.aiexclude`, `.claude/settings.json`, `.vscode/settings.json`):
+(`.aiexclude`, `.claude/settings.json`, `.vscode/settings.json`, and `.agents/policy.lock.json`, the record
+of what sync wrote; commit them all):
 
 ```sh
 uv run agentic-tools policy sync
 ```
 
 `policy check` fails without writing when the generated files drifted, for CI and pre-commit use.
+`policy sync` stops before overwriting a managed entry someone edited by hand, and lists it; add it
+to the policy, or rerun with `--force` to overwrite it.
 `policy import-vscode` copies approvals you made in VS Code back into the policy before syncing.
 
 ### Skill scripts

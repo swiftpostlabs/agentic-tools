@@ -5,6 +5,7 @@ export const agentsPaths = {
   root: '.agents',
   config: path.join('.agents', 'config.json'),
   policy: path.join('.agents', 'policy.json'),
+  policyLock: path.join('.agents', 'policy.lock.json'),
   legacyPolicy: '.ai-policy.json',
   skills: path.join('.agents', 'skills'),
   skillsConfig: path.join('.agents', 'skills.json'),

@@ -3,6 +3,6 @@
 - `.agents/config.json` is treated as the canonical source of truth.
 - Command references prefer `agentic-tools policy` over compatibility aliases.
 - `services` behavior and generated outputs match the implementation.
-- `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` are described as managed outputs.
+- `.aiexclude`, `.claude/settings.json`, and `.vscode/settings.json` are described as managed outputs, and `.agents/policy.lock.json` as the committed record of what sync wrote.
 - Vendor-specific docs still match the current implementation.
 - CI and adoption docs still use the correct command names and file paths.
