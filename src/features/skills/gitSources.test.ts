@@ -8,6 +8,7 @@ import { createCapturedOutput } from '../../core/output.ts';
 import {
   makeTempDir,
   readJson,
+  writeFile,
   writeJson,
   writeSkill,
 } from '../../core/testFixtures.ts';
@@ -18,6 +19,7 @@ import {
   isLockStale,
   lockStaleAfterMs,
   parseGitSource,
+  removeExport,
   toolsHomeDirectory,
   withLock,
 } from './git.ts';
@@ -292,6 +294,32 @@ describe('git source safety', () => {
     expect(() => {
       checkRef('github:acme/tools', 'release/v1.2');
     }).not.toThrow();
+  });
+});
+
+describe('removing exports', () => {
+  test('never follows a link or junction inside an export folder', () => {
+    const outside = makeTempDir();
+    writeFile(path.join(outside, 'keep.txt'), 'must survive');
+    const sourcesDir = makeTempDir();
+    const folder = path.join(sourcesDir, 'github.com-acme-tools@0123456789ab');
+    writeFile(
+      path.join(folder, '.agents', 'skills', 'ref-a', 'SKILL.md'),
+      '# A\n',
+    );
+    fs.symlinkSync(outside, path.join(folder, 'escape'), 'junction');
+    fs.symlinkSync(
+      outside,
+      path.join(folder, '.agents', 'skills', 'nested'),
+      'junction',
+    );
+
+    removeExport(folder, { waitMs: 0 });
+
+    expect(fs.existsSync(folder)).toBe(false);
+    expect(fs.readFileSync(path.join(outside, 'keep.txt'), 'utf8')).toBe(
+      'must survive',
+    );
   });
 });
 
