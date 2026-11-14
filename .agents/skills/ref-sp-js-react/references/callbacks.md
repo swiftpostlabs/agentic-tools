@@ -20,18 +20,21 @@ removing it can change what the compiler produces.
 `useEffectEvent` (React 19.2) wraps logic that an effect runs but that should not make the effect
 re-run, such as logging with the current theme when a connection opens.
 
-- Call the function it returns only from `useEffect`, `useLayoutEffect`, `useInsertionEffect`, or
-  another Effect Event in the same component.
+- Call the function it returns only inside the same component's `useEffect`, `useLayoutEffect`, or
+  `useInsertionEffect`, including callbacks those effects set up, such as an event subscription,
+  or from another Effect Event.
 - Never call it during render, and never pass it to other components or hooks.
-- Never list it in a dependency array: its identity changes on every render by design. The linter
-  (`eslint-plugin-react-hooks` at its latest version) knows this and enforces the rules above.
+- Never list it in a dependency array: its identity changes on every render by design.
+  `eslint-plugin-react-hooks` v6 or later knows this and enforces the rules above.
 - Don't use it to hide a real dependency. A value the effect should react to stays in the array.
 
 ## Handlers passed down: a ref-backed callback
 
 `useEffectEvent` cannot be passed to children, so it doesn't help a handler a memoized child
 receives. When that child's re-renders are measurably costly, a ref-backed callback gives a stable
-function that calls the latest one. MUI's `useEventCallback` (in `@mui/utils`) is this pattern:
+function that calls the latest one. MUI's `useEventCallback` (in `@mui/utils`) is this pattern; its
+copy also marks the file `'use client'` and uses `useEffect` instead of `useLayoutEffect` during
+server rendering, to avoid a warning there:
 
 ```ts
 import { useLayoutEffect, useRef } from 'react';
@@ -47,8 +50,11 @@ const useEventCallback = <Args extends unknown[], Return>(
 };
 ```
 
-- The ref is updated after commit, so calling the function during render runs the previous
-  render's callback. Call it from event handlers and effects only.
+- The ref changes in the owning component's layout effect, after commit, so some callers still
+  see the previous render's callback: a call during render, a child's layout effect (children's
+  run before the parent's), and an unmounting layout effect. The `useEvent` RFC names this the
+  pitfall of userland versions. Call it from event handlers; call it from an effect only when the
+  previous version would do.
 - Prefer the library's copy where the repo already depends on it, over a local one.
 - Reach for it only after the plain handler, or React Compiler, has shown a measured cost.
 
@@ -56,8 +62,8 @@ const useEventCallback = <Args extends unknown[], Return>(
 
 React never shipped `useEvent`. Its RFC (reactjs/rfcs#220) was closed after a 2022 update saying it
 would be revised and possibly renamed. What shipped is `useEffectEvent`, which covers the effect
-case and, unlike the proposal, cannot be passed to other components. Libraries such as MUI keep
-their ref-backed version for the handler case.
+case and, unlike the proposal, cannot be passed to other components. MUI's own copy is still the
+ref-backed pattern above, with comments pointing to that RFC.
 
 ## Sources
 
