@@ -45,7 +45,15 @@ const fixtureGitEnvironment = (): NodeJS.ProcessEnv => {
 const git = (cwd: string, ...args: string[]): string =>
   execFileSync(
     'git',
-    ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', ...args],
+    [
+      '-c',
+      'user.name=Test',
+      '-c',
+      'user.email=test@example.com',
+      '-c',
+      'core.longpaths=true',
+      ...args,
+    ],
     {
       cwd,
       encoding: 'utf8',
@@ -294,6 +302,65 @@ describe('git source safety', () => {
     expect(() => {
       checkRef('github:acme/tools', 'release/v1.2');
     }).not.toThrow();
+  });
+});
+
+describe('exports', () => {
+  test('write paths past the Windows 260-character limit, and only the skills', () => {
+    const source = gitSourceRepo();
+    const deep = path.join(
+      source.root,
+      '.agents',
+      'skills',
+      'ref-base',
+      'references',
+      ...Array.from(
+        { length: 6 },
+        (_, index) => `a-rather-long-folder-name-number-${String(index)}`,
+      ),
+      'deep.md',
+    );
+    writeFile(deep, '# Deep\n');
+    writeFile(path.join(source.root, 'src', 'not-a-skill.ts'), 'export {};\n');
+    git(source.root, 'add', '.');
+    git(source.root, 'commit', '--quiet', '-m', 'deep');
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+
+    runSkillsSync(gitContext(root).context, syncOptions);
+
+    const [folder] = exportsOf(root);
+    const exportRoot = path.join(
+      root,
+      '.agents',
+      'local',
+      'sources',
+      folder as string,
+    );
+    const exported = path.join(exportRoot, path.relative(source.root, deep));
+    expect(exported.length).toBeGreaterThan(260);
+    // The machine's git may check out CRLF (core.autocrlf on Windows).
+    expect(fs.readFileSync(exported, 'utf8')).toMatch(/^# Deep\r?\n$/);
+    expect(fs.existsSync(path.join(exportRoot, 'src'))).toBe(false);
+  });
+
+  test('a source without .agents/skills is exported whole', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    git(
+      source.root,
+      'mv',
+      path.join('.agents', 'skills', 'ref-base'),
+      'ref-base',
+    );
+    git(
+      source.root,
+      'mv',
+      path.join('.agents', 'skills', 'ref-feature'),
+      'ref-feature',
+    );
+    git(source.root, 'commit', '--quiet', '-m', 'skills at the root');
+    runSkillsSync(gitContext(root).context, syncOptions);
+    expect(linkTarget(root, 'ref-base')).toMatch(/@[0-9a-f]{12}[\\/]ref-base$/);
   });
 });
 

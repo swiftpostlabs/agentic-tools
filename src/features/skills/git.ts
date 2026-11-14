@@ -19,6 +19,7 @@ export const lockStaleAfterMs = 10 * 60 * 1000;
 const lockPollMs = 200;
 const bareCloneMarker = 'agentic-tools-complete';
 export const exportMarker = '.agentic-tools-source.json';
+const skillsTreePath = '.agents/skills';
 
 /** A `git:` or `github:` source: where to fetch it and the path segments that name it on disk. */
 export type GitSource = {
@@ -289,6 +290,10 @@ type GitOptions = {
 
 const runGit = (args: readonly string[], options: GitOptions = {}): string => {
   const prefix = [
+    // Windows' 260-character path limit is easy to pass in an export below a project folder;
+    // git refuses those paths unless told otherwise, and the setting does nothing elsewhere.
+    '-c',
+    'core.longpaths=true',
     ...(options.gitDir === undefined ? [] : ['--git-dir', options.gitDir]),
     ...(options.workTree === undefined ?
       []
@@ -803,9 +808,23 @@ export const exportCommit = (options: {
         workTree: options.folder,
         indexFile,
       };
+      // Only the skills when the source keeps them in .agents/skills: shorter paths, less disk.
+      const skillsTree = `${options.commit}:${skillsTreePath}`;
+      const readTree =
+        (
+          gitSucceeds(['cat-file', '-e', skillsTree], {
+            gitDir: options.gitDir,
+          })
+        ) ?
+          ['read-tree', `--prefix=${skillsTreePath}/`, skillsTree]
+        : ['read-tree', options.commit];
       try {
-        runGit(['read-tree', options.commit], gitOptions);
+        runGit(readTree, gitOptions);
         runGit(['checkout-index', '--all', '--force'], gitOptions);
+      } catch (error) {
+        // A half-written export without its marker would be redone anyway; leave nothing behind.
+        fs.rmSync(options.folder, { recursive: true, force: true });
+        throw error;
       } finally {
         fs.rmSync(indexFile, { force: true });
       }
