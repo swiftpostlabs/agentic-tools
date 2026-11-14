@@ -7,6 +7,7 @@ import {
   runSkillsList,
   runSkillsSync,
   runSkillsUnlink,
+  runSkillsUpdate,
 } from './skills.ts';
 
 const sourceSchema = z.object({ from: z.string().optional() });
@@ -21,10 +22,14 @@ const linkSchema = z.object({
   ...destinationSchema.shape,
   ...forceSchema.shape,
 });
-const syncSchema = z.object({
+const updateSchema = z.object({
   ...destinationSchema.shape,
   ...forceSchema.shape,
   config: z.string().optional(),
+});
+const syncSchema = z.object({
+  ...updateSchema.shape,
+  locked: z.boolean().default(false),
 });
 const unlinkSchema = z.object({
   ...sourceSchema.shape,
@@ -54,20 +59,27 @@ const addForceOption = (command: Command) =>
     'Replace an existing symlink that points somewhere else.',
   );
 
+const addConfigOption = (command: Command) =>
+  command.option(
+    '-c, --config <path>',
+    'Agents config or skills config. Defaults to <destination>/.agents/config.json.',
+    value,
+  );
+
 const destination = (options: z.output<typeof destinationSchema>) => ({
   destination: options.to,
   useGlobal: options.global,
   dryRun: options.dryRun,
 });
 
-/** `agentic-tools skills <list|link|sync|unlink>`. */
+/** `agentic-tools skills <list|link|sync|update|unlink>`. */
 export const registerSkillsCommand = (
   program: Command,
   context: CommandContext,
 ) => {
   const group = program
     .command('skills')
-    .description('List, link, sync, and unlink shared skills.');
+    .description('List, link, sync, update, and unlink shared skills.');
 
   addSourceOption(
     group.command('list').description('List skills from a source repo.'),
@@ -94,22 +106,52 @@ export const registerSkillsCommand = (
     });
   });
 
-  addForceOption(
-    addDestinationOptions(
-      group
-        .command('sync')
-        .description('Link skills declared in a skills config.'),
-    ).option(
-      '-c, --config <path>',
-      'Agents config or skills config. Defaults to <destination>/.agents/config.json.',
-      value,
+  addConfigOption(
+    addForceOption(
+      addDestinationOptions(
+        group
+          .command('sync')
+          .description(
+            'Link skills declared in a skills config, fetching git sources at their pinned commits.',
+          ),
+      ),
     ),
-  ).action((raw: unknown) => {
-    const options = parseWith(syncSchema, raw);
-    runSkillsSync(context, {
+  )
+    .option(
+      '--locked',
+      'Fail instead of changing .agents/agentic-tools.lock; recreates missing exports from it (for CI).',
+    )
+    .action((raw: unknown) => {
+      const options = parseWith(syncSchema, raw);
+      runSkillsSync(context, {
+        ...destination(options),
+        config: options.config,
+        force: options.force,
+        locked: options.locked,
+      });
+    });
+
+  addConfigOption(
+    addForceOption(
+      addDestinationOptions(
+        group
+          .command('update')
+          .description(
+            'Fetch git sources again, pin their refs to the latest commits, and relink.',
+          )
+          .argument(
+            '[sources...]',
+            "Git sources to update, as written in the config's 'from'. Defaults to all.",
+          ),
+      ),
+    ),
+  ).action((sources: string[], raw: unknown) => {
+    const options = parseWith(updateSchema, raw);
+    runSkillsUpdate(context, {
       ...destination(options),
       config: options.config,
       force: options.force,
+      sources,
     });
   });
 

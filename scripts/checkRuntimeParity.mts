@@ -9,6 +9,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 export type Run = { stdout: string; stderr: string; status: number | null };
 
@@ -102,6 +103,9 @@ export const fixtureCommands: readonly (readonly [string, ...string[]])[] = [
     'abc123',
   ],
   [skillScript('tool-sp-start-agents-collaboration', 'board'), 'render'],
+  // Against the fixture's file:// git source, already pinned and exported: no network.
+  ['src/core/cli.mts', 'skills', 'sync', '--dry-run'],
+  ['src/core/cli.mts', 'skills', 'sync', '--locked'],
   [skillScript('tool-sp-start-agents-collaboration', 'board'), 'room', 'list'],
   [
     skillScript('tool-sp-start-agents-collaboration', 'board'),
@@ -161,6 +165,69 @@ const run = (runtime: string, args: readonly string[], cwd: string): Run => {
     stderr: result.stderr,
     status: result.status,
   };
+};
+
+const gitSourceDirectory = 'git-source';
+
+/** A one-skill git repo the fixture's config syncs from, built with the machine's config ignored. */
+const writeGitSource = (directory: string): void => {
+  const source = path.join(directory, gitSourceDirectory);
+  const skill = path.join(source, '.agents', 'skills', 'ref-demo-base');
+  fs.mkdirSync(skill, { recursive: true });
+  fs.writeFileSync(
+    path.join(skill, 'SKILL.md'),
+    '---\nname: ref-demo-base\ndescription: "A demo skill. Use in parity checks."\nlicense: MIT\n' +
+      'metadata:\n  shareable-skills.domain: "dev"\n  shareable-skills.visibility: "public"\n---\n\n# Demo\n',
+    'utf8',
+  );
+  const emptyConfig = path.join(directory, 'empty-gitconfig');
+  fs.writeFileSync(emptyConfig, '', 'utf8');
+  const environment = {
+    ...process.env,
+    GIT_CONFIG_GLOBAL: emptyConfig,
+    GIT_CONFIG_NOSYSTEM: '1',
+  };
+  for (const args of [
+    ['init', '--quiet', '--initial-branch', 'main'],
+    ['add', '.'],
+    [
+      '-c',
+      'user.name=Parity',
+      '-c',
+      'user.email=parity@example.com',
+      'commit',
+      '--quiet',
+      '-m',
+      'demo',
+    ],
+  ]) {
+    const result = spawnSync('git', args, {
+      cwd: source,
+      env: environment,
+      encoding: 'utf8',
+    });
+    if (result.status !== 0) {
+      throw new Error(`git ${args.join(' ')} failed: ${result.stderr}`);
+    }
+  }
+  fs.writeFileSync(
+    path.join(directory, '.agents', 'config.json'),
+    `${JSON.stringify(
+      {
+        skills: {
+          sources: [
+            {
+              from: `git:${pathToFileURL(source).href}`,
+              skills: ['ref-demo-base'],
+            },
+          ],
+        },
+      },
+      null,
+      2,
+    )}\n`,
+    'utf8',
+  );
 };
 
 const writeFixtureWorkspace = (directory: string): void => {
@@ -230,6 +297,19 @@ const main = (argv: string[]): number => {
   const root = path.resolve(import.meta.dirname, '..');
   const fixtures = fs.mkdtempSync(path.join(os.tmpdir(), 'runtime-parity-'));
   writeFixtureWorkspace(fixtures);
+  writeGitSource(fixtures);
+  // Both runtimes share this bare-clone store, so the setup sync below pins and exports once.
+  process.env['AGENTIC_TOOLS_HOME'] = path.join(fixtures, 'tools-home');
+  const setup = run(
+    process.execPath,
+    [path.join(root, 'src/core/cli.mts'), 'skills', 'sync'],
+    fixtures,
+  );
+  if (setup.status !== 0) {
+    process.stderr.write(`Fixture skills sync failed:\n${setup.stderr}`);
+    fs.rmSync(fixtures, { recursive: true, force: true });
+    return 2;
+  }
   const runs = [
     ...parityCommands.map((command) => ({ args: command, cwd: root })),
     ...fixtureCommands.map(([script, ...rest]) => ({

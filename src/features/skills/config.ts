@@ -23,6 +23,8 @@ export type ConfiguredSource = {
   from: string;
   skills: string[];
   url: string | undefined;
+  /** A tag, branch or commit for a git source; absent means the remote's default branch. */
+  ref: string | undefined;
 };
 
 const isNonEmptyString = (value: unknown): value is string =>
@@ -34,6 +36,7 @@ const sourceSchema = (index: number) =>
     .looseObject({
       from: z.unknown().optional(),
       url: z.unknown().optional(),
+      ref: z.unknown().optional(),
       skills: z.unknown().optional(),
     })
     .transform((source, context): ConfiguredSource => {
@@ -66,10 +69,18 @@ const sourceSchema = (index: number) =>
         });
         return z.NEVER;
       }
+      if (source.ref !== undefined && !isNonEmptyString(source.ref)) {
+        context.addIssue({
+          code: 'custom',
+          message: `Skills config source '${source.from}' ref must be a non-empty string.`,
+        });
+        return z.NEVER;
+      }
       return {
         from: source.from,
         skills: source.skills,
         url: isNonEmptyString(source.url) ? source.url.trim() : undefined,
+        ref: isNonEmptyString(source.ref) ? source.ref.trim() : undefined,
       };
     });
 

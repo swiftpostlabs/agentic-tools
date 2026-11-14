@@ -1,7 +1,7 @@
 # src/features/skills
 
-`agentic-tools skills <list|link|sync|unlink>`: links skills from a source repo into a destination's
-`.agents/skills/`. The config shape and consumer workflow are `ref-sp-agents-skills-management`;
+`agentic-tools skills <list|link|sync|update|unlink>`: links skills from a source repo into a
+destination's `.agents/skills/`. The config shape and consumer workflow are `ref-sp-agents-skills-management`;
 the visibility and `requires` rules it enforces are `ref-sp-agents-shareable-skills`.
 
 ## What it holds
@@ -13,11 +13,18 @@ the visibility and `requires` rules it enforces are `ref-sp-agents-shareable-ski
 - `sources.ts`: resolves where a source's skills live, including `package:agentic-tools`, which
   falls back to this package's own install so the Python shim finds its bundled skills.
 - `links.ts`: creates, reads, and removes directory links, with the Windows junction fallback.
+- `git.ts`: git source names, the bare-clone store, locks between concurrent syncs, and exports.
+- `gitSources.ts`: pins, fetches, and exports one git source for `sync` and `update`.
+- `lock.ts`: reads and writes `.agents/agentic-tools.lock`.
 
 ## Rules
 
-- **It never copies skill files.** It writes links, the destination's `.gitignore` for synced
-  skills, and, on `sync`, renamed skill names back into the config.
+- **It never copies skill files into `.agents/skills/`.** It writes links, the destination's
+  `.gitignore` for synced skills, and, on `sync`, renamed skill names back into the config and git
+  pins into the lock. Git sources are exported to the gitignored `.agents/local/sources/`, and the
+  links point there.
+- **Git runs with prompts off** (`GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=never`) and through
+  `execFileSync`, never a shell.
 - **Refuse rather than overwrite:** an existing link to somewhere else is replaced only with
   `--force`, and a real directory never.
 - **Every write has a `--dry-run` path** that reports it without making it.

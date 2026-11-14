@@ -6,9 +6,17 @@ import type { Output } from '../../core/output.ts';
 import { agentsPaths, resolveUserPath } from '../../core/paths.ts';
 import {
   applyConfigAliasRenames,
+  configBaseRoot,
   loadConfiguredSources,
   resolveSyncConfigPath,
 } from './config.ts';
+import {
+  listExportFolders,
+  parseGitSource,
+  toolsHomeDirectory,
+} from './git.ts';
+import { prepareGitSource, sourcesDirectory } from './gitSources.ts';
+import { lockFilePath, lockText, readLock, type SkillsLock } from './lock.ts';
 import {
   createDirectoryLink,
   isDirectoryLink,
@@ -42,6 +50,10 @@ export type SkillsContext = {
   home: string;
   output: Output;
   ownRoot?: string;
+  /** Where bare clones live; defaults to `$AGENTIC_TOOLS_HOME` or `~/.agents/agentic-tools`. */
+  toolsHome?: string;
+  /** How long to wait for another sync's lock; tests set it low. */
+  lockWaitMs?: number;
 };
 
 const makeShareableHint = (name: string): string =>
@@ -177,10 +189,21 @@ export const describeSkills = (manifests: ManifestMap): string => {
     .join('\n');
 };
 
+/** A link into this repo's own git exports is the tool's to move when the pin changes. */
+const isInside = (target: string, root: string | undefined): boolean => {
+  if (root === undefined) {
+    return false;
+  }
+  const relative = path.relative(root, target);
+  return (
+    relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative)
+  );
+};
+
 const linkSkillDirectory = (
   manifest: SkillManifest,
   destinationDir: string,
-  options: { dryRun: boolean; force: boolean },
+  options: { dryRun: boolean; force: boolean; replaceableRoot?: string },
 ) => {
   const destination = path.join(destinationDir, manifest.name);
   const target = resolveLoose(manifest.directory);
@@ -190,7 +213,7 @@ const linkSkillDirectory = (
     if (existingTarget === target) {
       return `Already linked ${destination} -> ${target}`;
     }
-    if (!options.force) {
+    if (!options.force && !isInside(existingTarget, options.replaceableRoot)) {
       throw new ToolError(
         `Destination '${destination}' already points to '${existingTarget}'. Use --force to replace it.`,
       );
@@ -436,9 +459,34 @@ const describeBySource = (
     ),
   ].join('\n');
 
+/** Which git sources `skills update` re-resolves: every one, or those named. */
+export type RefreshSelection = 'all' | ReadonlySet<string>;
+
+const isRefreshed = (
+  refresh: RefreshSelection | undefined,
+  from: string,
+): boolean => refresh === 'all' || (refresh !== undefined && refresh.has(from));
+
+/** Remove exports the lock no longer names; only folders carrying this tool's marker are touched. */
+const cleanupStaleExports = (
+  sourcesDir: string,
+  keep: ReadonlySet<string>,
+  dryRun: boolean,
+): string[] =>
+  listExportFolders(sourcesDir)
+    .filter((folder) => !keep.has(folder))
+    .map((folder) => {
+      if (dryRun) {
+        return `Would remove unused export ${folder}`;
+      }
+      fs.rmSync(folder, { recursive: true, force: true });
+      return `Removed unused export ${folder}`;
+    });
+
 /**
  * Link every skill declared in the skills config, prune dead and unconfigured links, heal renamed
- * names in the config, and regenerate the destination's `.gitignore`.
+ * names in the config, and regenerate the destination's `.gitignore`. Git sources are pinned in
+ * `.agents/agentic-tools.lock` and exported to `.agents/local/sources/` first.
  */
 export const runSkillsSync = (
   context: SkillsContext,
@@ -446,6 +494,8 @@ export const runSkillsSync = (
     config: string | undefined;
     dryRun: boolean;
     force: boolean;
+    locked?: boolean;
+    refresh?: RefreshSelection;
   },
 ): void => {
   const destinationDir = resolveDestinationDir(context, options);
@@ -462,6 +512,43 @@ export const runSkillsSync = (
     home: context.home,
   });
   const ownRoot = context.ownRoot ?? findOwnPackageRoot();
+  const frozen = options.locked ?? false;
+  if (frozen && options.refresh !== undefined) {
+    throw new ToolError('cannot combine --locked with skills update');
+  }
+  const configRoot = configBaseRoot(configPath);
+  const lockPath = lockFilePath(configRoot);
+  const lock = readLock(lockPath);
+  const nextLock: SkillsLock = { version: lock.version, sources: {} };
+  const sourcesDir = sourcesDirectory(configRoot);
+  const toolsHome = context.toolsHome ?? toolsHomeDirectory(context.home);
+  const configuredSources = loadConfiguredSources(configPath);
+
+  const gitFroms = new Set<string>();
+  for (const configured of configuredSources) {
+    const gitSource = parseGitSource(configured.from);
+    if (gitSource === undefined && configured.ref !== undefined) {
+      throw new ToolError(
+        `Skills config source '${configured.from}' has a 'ref', but only git: and github: sources take one.`,
+      );
+    }
+    if (gitSource !== undefined) {
+      if (gitFroms.has(configured.from)) {
+        throw new ToolError(
+          `Git source '${configured.from}' is configured more than once; list all its skills in one entry.`,
+        );
+      }
+      gitFroms.add(configured.from);
+    }
+  }
+  if (options.refresh !== undefined && options.refresh !== 'all') {
+    const unknown = [...options.refresh].filter((from) => !gitFroms.has(from));
+    if (unknown.length > 0) {
+      throw new ToolError(
+        `Not a configured git source: ${unknown.join(', ')}. Configured git sources: ${[...gitFroms].join(', ') || 'none'}.`,
+      );
+    }
+  }
 
   const missingBySource: Array<[string, string[]]> = [];
   const skippedBySource: Array<[string, string[]]> = [];
@@ -469,14 +556,50 @@ export const runSkillsSync = (
   const renamesBySource = new Map<number, Map<string, string>>();
   const sourceUrls: string[] = [];
   const linkedNames = new Set<string>();
+  const keptExports = new Set<string>();
+  const gitMessages: string[] = [];
+  const unexportedSources: string[] = [];
 
-  loadConfiguredSources(configPath).forEach((configured, index) => {
-    const sourceRoot = resolveConfiguredSourceRoot({
-      source: configured.from,
-      configPath,
-      home: context.home,
-      ownRoot,
-    });
+  configuredSources.forEach((configured, index) => {
+    const gitSource = parseGitSource(configured.from);
+    let sourceRoot: string;
+    if (gitSource === undefined) {
+      sourceRoot = resolveConfiguredSourceRoot({
+        source: configured.from,
+        configPath,
+        home: context.home,
+        ownRoot,
+      });
+    } else {
+      const prepared = prepareGitSource({
+        source: gitSource,
+        ref: configured.ref,
+        locked: lock.sources[configured.from],
+        refresh: isRefreshed(options.refresh, configured.from),
+        frozen,
+        dryRun: options.dryRun,
+        toolsHome,
+        sourcesDir,
+        waitMs: context.lockWaitMs,
+      });
+      gitMessages.push(...prepared.messages);
+      const previous = lock.sources[configured.from];
+      const pin = prepared.pin ?? previous;
+      if (pin !== undefined) {
+        nextLock.sources[configured.from] = pin;
+      }
+      if (configured.url === undefined) {
+        sourceUrls.push(gitSource.url);
+      }
+      if (prepared.root === undefined) {
+        // A dry run cannot read skills it has not exported; keep their links out of the cleanup.
+        unexportedSources.push(configured.from);
+        configured.skills.forEach((name) => linkedNames.add(name));
+        return;
+      }
+      keptExports.add(prepared.root);
+      sourceRoot = prepared.root;
+    }
     const manifests = discoverSkillManifests(sourceRoot);
     const aliases = loadSkillAliases(sourceRoot);
     const requested = deduplicate(configured.skills);
@@ -522,6 +645,7 @@ export const runSkillsSync = (
       linkedNames.add(manifest.name);
     }
   });
+  gitMessages.forEach(context.output.info);
 
   if (missingBySource.length > 0) {
     throw new ToolError(
@@ -540,9 +664,26 @@ export const runSkillsSync = (
     );
   }
 
+  const currentLockText = isFile(lockPath) ? lockText(lock) : undefined;
+  const nextLockText =
+    gitFroms.size === 0 && currentLockText === undefined ?
+      undefined
+    : lockText(nextLock);
+  const lockChanges = nextLockText !== currentLockText;
+  if (lockChanges && frozen) {
+    throw new ToolError(
+      `${lockPath} names sources the config no longer has. Run skills sync without --locked to update it, and commit it.`,
+    );
+  }
+
   // Refuse a conflicting link before the first write, so a failed sync changes nothing.
+  const replaceable = resolveLoose(sourcesDir);
   for (const manifest of manifestsToLink) {
-    linkSkillDirectory(manifest, destinationDir, { ...options, dryRun: true });
+    linkSkillDirectory(manifest, destinationDir, {
+      ...options,
+      dryRun: true,
+      replaceableRoot: replaceable,
+    });
   }
 
   const messages = [
@@ -550,6 +691,15 @@ export const runSkillsSync = (
     ...cleanupDeadLinks(destinationDir, options.dryRun),
     ...cleanupUnconfiguredLinks(destinationDir, linkedNames, options.dryRun),
   ];
+  if (lockChanges && nextLockText !== undefined) {
+    if (options.dryRun) {
+      messages.push(`Would update ${lockPath}`);
+    } else {
+      fs.mkdirSync(path.dirname(lockPath), { recursive: true });
+      fs.writeFileSync(lockPath, nextLockText, 'utf8');
+      messages.push(`Updated ${lockPath}`);
+    }
+  }
   messages.forEach(context.output.info);
 
   for (const manifest of manifestsToLink) {
@@ -557,7 +707,12 @@ export const runSkillsSync = (
     if (warning !== undefined) {
       context.output.warn(warning);
     }
-    context.output.info(linkSkillDirectory(manifest, destinationDir, options));
+    context.output.info(
+      linkSkillDirectory(manifest, destinationDir, {
+        ...options,
+        replaceableRoot: replaceable,
+      }),
+    );
   }
   writeSyncedSkillsGitignore(
     destinationDir,
@@ -565,4 +720,25 @@ export const runSkillsSync = (
     sourceUrls,
     options.dryRun,
   ).forEach(context.output.info);
+  if (unexportedSources.length === 0) {
+    cleanupStaleExports(sourcesDir, keptExports, options.dryRun).forEach(
+      context.output.info,
+    );
+  }
+};
+
+/** Fetch git sources again, re-resolve their refs, rewrite the lock, and relink. */
+export const runSkillsUpdate = (
+  context: SkillsContext,
+  options: DestinationOptions & {
+    config: string | undefined;
+    sources: string[];
+    dryRun: boolean;
+    force: boolean;
+  },
+): void => {
+  runSkillsSync(context, {
+    ...options,
+    refresh: options.sources.length === 0 ? 'all' : new Set(options.sources),
+  });
 };

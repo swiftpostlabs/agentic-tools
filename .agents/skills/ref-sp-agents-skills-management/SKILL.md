@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-skills-management
-description: "This repo's agentic-tools skills CLI (list, link, sync, unlink) and the skills section of .agents/config.json that consuming repos use. Use when changing the CLI or debugging why a skill won't link or sync."
+description: "This repo's agentic-tools skills CLI (list, link, sync, update, unlink) and the skills section of .agents/config.json that consuming repos use. Use when changing the CLI or debugging why a skill won't link or sync."
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
@@ -30,7 +30,10 @@ is `~/.agents/skills`.
   `<destination>/.agents/config.json` (its `skills` section), falling back to
   `.agents/skills.json`; `--global` requires `--config`. It reports missing names per source before
   changing anything, removes dead links in the destination first, and rejects a skill name declared
-  by two sources.
+  by two sources. Git sources are pinned and exported first (below). `--locked` fails instead of
+  changing the lock, for CI.
+- **`update [sources...]`**: fetches git sources again (all, or those named by their `from`),
+  pins each ref to its current commit, and relinks, as `sync` does.
 - **`unlink`**: removes linked skills from a repo or, with `--global`, from `~/.agents/skills`,
   checking they point at the expected source so an unrelated
   directory is never removed. It leaves the config alone, so the next `sync` links the skill again;
@@ -64,11 +67,24 @@ Missing metadata points the user to `tool-sp-make-skill-shareable`.
 }
 ```
 
-`from` is a filesystem path (relative paths resolve from the target repo root) or
-`package:<name>`. A package source resolves to `node_modules/<name>` in the config's repo or a
+`from` is a filesystem path (relative paths resolve from the target repo root), `package:<name>`,
+`git:<url>`, or `github:<owner>/<repo>`. A package source resolves to `node_modules/<name>` in the config's repo or a
 parent, then to the running `agentic-tools` package itself, which is how a Python repo finds the
 skills bundled in the shim. Prefer `package:` when the source is an installed dependency, a relative
-path when two repos are cloned side by side. Full contract: `./references/config-shape.md`.
+path when two repos are cloned side by side, and a git source for a repo you don't install. Full
+contract: `./references/config-shape.md`.
+
+## Git sources
+
+- A git source takes an optional `ref` (tag, branch, or commit; the remote's default branch when
+  absent). `sync` pins it to a full commit in `.agents/agentic-tools.lock`; commit that file.
+- Bare clones are a shared cache in `$AGENTIC_TOOLS_HOME/git/db/<host>/<owner>/<repo>.git`
+  (default `~/.agents/agentic-tools`). Each repo gets an export of the pinned commit in
+  `.agents/local/sources/<host>-<owner>-<repo>@<12-character commit>/`, and the skills link there.
+- A fresh clone or CI has no export until `sync` runs; `sync --locked` recreates it from the lock
+  without changing the lock. A pinned source with its export present needs no network.
+- `git` runs as installed, with its own credentials; prompts are off, so a private repo fails at
+  once until the user authenticates git.
 
 ## Gotchas
 
@@ -84,7 +100,8 @@ path when two repos are cloned side by side. Full contract: `./references/config
 ## Before finishing
 
 - `yarn cli skills list` parses the metadata.
-- `yarn cli skills sync --dry-run --to <repo>` before a real sync when debugging.
+- `yarn cli skills sync --dry-run --to <repo>` before a real sync when debugging; a dry run
+  makes no network call.
 - The feature's tests pass when source resolution, dependencies, or link handling changed, and the
   README examples still match. The implementation and its tests are the authority on exact
   behaviour; check them when this summary isn't enough.
