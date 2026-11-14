@@ -98,8 +98,10 @@ src/
   imports from `src/`. Node refuses to strip types under `node_modules`, so under Node a skill script
   runs from a checkout, a global skills folder, or the Python shim's site-packages, but not from an
   npm install. Bun has no such restriction.
-- Guard an entry point with `path.resolve(process.argv[1]) === import.meta.filename`, so tests can
-  import the module.
+- Guard an entry point by comparing `fs.realpathSync(process.argv[1])` with
+  `fs.realpathSync(import.meta.filename)` (inside a `try` that returns `false`), so tests can import
+  the module and the script still runs when launched through a symlinked skills folder such as
+  `.claude/skills`. A plain `path.resolve` comparison fails there and exits 0 without output.
 
 ## Runtimes
 

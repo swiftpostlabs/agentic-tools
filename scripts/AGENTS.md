@@ -13,5 +13,6 @@ Repo maintenance, run directly by Node and wired as yarn scripts. Nothing here s
 ## Rules
 
 - **`.mts`, camelCase, with a `<name>.test.mts` beside each.** Guard the entry point with
-  `path.resolve(process.argv[1]) === import.meta.filename` so tests can import the module.
+  `fs.realpathSync(process.argv[1]) === fs.realpathSync(import.meta.filename)` (see the Node and Bun
+  rules in the root `AGENTS.md`) so tests can import the module.
 - **A user-facing capability belongs in a feature under `src/features/`**, not here.

@@ -427,9 +427,20 @@ const main = (argv: string[]): number => {
   return 0;
 };
 
-if (
-  process.argv[1] !== undefined &&
-  path.resolve(process.argv[1]) === import.meta.filename
-) {
+// Real paths on both sides: run through a symlinked or junctioned skills folder, argv[1] keeps
+// the link path while import.meta.filename is already resolved.
+const isEntryPoint = (): boolean => {
+  const entry = process.argv[1];
+  if (entry === undefined) {
+    return false;
+  }
+  try {
+    return fs.realpathSync(entry) === fs.realpathSync(import.meta.filename);
+  } catch {
+    return false;
+  }
+};
+
+if (isEntryPoint()) {
   process.exitCode = main(process.argv.slice(2));
 }

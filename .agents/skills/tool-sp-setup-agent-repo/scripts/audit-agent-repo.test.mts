@@ -284,3 +284,56 @@ describe('line-ending check', () => {
     expect(check(repo, 'G1')?.status).toBe(status);
   });
 });
+
+/** Windows creates a real directory symlink only with Developer Mode or admin rights. */
+const canSymlinkDirectories = ((): boolean => {
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'audit-agent-repo-probe-'),
+  );
+  try {
+    fs.symlinkSync(directory, path.join(directory, 'probe'), 'dir');
+    return true;
+  } catch {
+    return false;
+  } finally {
+    fs.rmSync(directory, { recursive: true, force: true });
+  }
+})();
+
+// Agents often run skill scripts through .claude/skills, a link to .agents/skills. An entry guard
+// that compares the link path with the resolved module path skips main and exits 0 silently.
+describe('run through a linked skills folder', () => {
+  const linkTypes: ('dir' | 'junction')[] = [
+    ...(canSymlinkDirectories ? (['dir'] as const) : []),
+    ...(process.platform === 'win32' ? (['junction'] as const) : []),
+  ];
+
+  test.each(linkTypes)(
+    'a failing audit still prints and exits 1 through a %s link',
+    (type) => {
+      const repo = makeRepo({}, { withGit: true });
+      // Link to a copy, so cleanup can never reach the real scripts folder through the link.
+      const skills = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'audit-agent-repo-link-'),
+      );
+      created.push(skills);
+      const realScripts = path.join(skills, 'real');
+      fs.mkdirSync(realScripts);
+      fs.copyFileSync(
+        path.join(import.meta.dirname, 'audit-agent-repo.mts'),
+        path.join(realScripts, 'audit-agent-repo.mts'),
+      );
+      const linkedScripts = path.join(skills, 'linked');
+      fs.symlinkSync(realScripts, linkedScripts, type);
+
+      const result = spawnSync(
+        process.execPath,
+        [path.join(linkedScripts, 'audit-agent-repo.mts'), '--repo', repo],
+        { encoding: 'utf8' },
+      );
+
+      expect(result.stdout).toContain('[FAIL]');
+      expect(result.status).toBe(1);
+    },
+  );
+});
