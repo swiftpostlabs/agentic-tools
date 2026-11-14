@@ -1,6 +1,6 @@
 ---
 name: ref-sp-web-wordpress
-description: "Building and auditing WordPress safely: capability checks, nonces, sanitize and escape, prepared queries, hooks instead of editing core, small plugin surface, headless REST. Use when writing a plugin or theme, an admin, AJAX, or REST endpoint, querying the DB, or auditing a WP site."
+description: "Building and auditing WordPress safely: capability checks, nonces, sanitize and escape, prepared queries, hooks instead of editing core, blocks and block themes (theme.json, FSE), headless REST. Use when writing a plugin, theme, or block, an admin, AJAX, or REST endpoint, querying the DB, or auditing a WP site."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -124,7 +124,15 @@ pre-defined spots." They are the reason you never have to edit core.
 
 **Never modify WordPress core.** Core updates overwrite it, and an un-updatable WordPress is a security
 liability. The same applies to a parent theme: use a **child theme** so updates do not erase your
-changes.
+changes. A block theme's child overrides templates, parts, and patterns by file name and merges its
+`theme.json` over the parent's.
+
+## Blocks and block themes
+
+Blocks, `block.json`, static and dynamic rendering, patterns, `theme.json`, block themes, their
+child themes, and hybrid themes are in `./references/block-editor.md`. Read it before writing a
+block or a block theme. The gates above still apply: a dynamic block's render is PHP output to
+escape, and block attributes are user input.
 
 ## Headless WordPress
 
@@ -167,3 +175,5 @@ Before shipping WordPress code, confirm:
 - Every SQL query with a variable in it goes through `$wpdb->prepare()`, placeholders unquoted.
 - No core or parent-theme file was modified.
 - Every filter callback returns a value.
+- Every dynamic block escapes its render and validates its attributes; a static block whose `save`
+  changed has a deprecation.
