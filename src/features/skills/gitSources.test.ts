@@ -14,6 +14,7 @@ import {
 import {
   bareClonePath,
   exportMarker,
+  checkRef,
   isLockStale,
   lockStaleAfterMs,
   parseGitSource,
@@ -117,7 +118,13 @@ const lockOf = (root: string) =>
 
 const exportsOf = (root: string): string[] => {
   const sources = path.join(root, '.agents', 'local', 'sources');
-  return fs.existsSync(sources) ? fs.readdirSync(sources).sort() : [];
+  return fs.existsSync(sources) ?
+      fs
+        .readdirSync(sources, { withFileTypes: true })
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name)
+        .sort()
+    : [];
 };
 
 const linkTarget = (root: string, name: string): string =>
@@ -178,6 +185,42 @@ describe('git source names', () => {
   });
 });
 
+describe('git source safety', () => {
+  test('refuses a URL that git would read as an option', () => {
+    expect(() => parseGitSource('git:-uFOO:a/b')).toThrow(
+      /must not start with '-'/,
+    );
+    expect(() => parseGitSource('git:host:-x/repo')).toThrow(
+      /does not name a repository/,
+    );
+  });
+
+  test('refuses credentials in the URL without printing them', () => {
+    for (const from of [
+      'git:https://alice:s3cretTOKEN@example.com/acme/tools.git',
+      'git:https://s3cretTOKEN@example.com/acme/tools.git',
+      'git:ssh://git:s3cretTOKEN@example.com/acme/tools.git',
+    ]) {
+      expect(() => parseGitSource(from)).toThrow(/carries credentials/);
+      expect(() => parseGitSource(from)).not.toThrow(/s3cretTOKEN/);
+    }
+    expect(
+      parseGitSource('git:ssh://git@example.com/acme/tools.git')?.segments,
+    ).toEqual(['example.com', 'acme', 'tools']);
+  });
+
+  test('refuses revision expressions and HEAD as a ref', () => {
+    for (const ref of ['main~1', 'HEAD', 'a..b', '-x', 'v1:path']) {
+      expect(() => {
+        checkRef('github:acme/tools', ref);
+      }).toThrow(/is not a tag, branch or commit name/);
+    }
+    expect(() => {
+      checkRef('github:acme/tools', 'release/v1.2');
+    }).not.toThrow();
+  });
+});
+
 describe('locks', () => {
   test('waits on a live lock and names the file when it gives up', () => {
     const lockPath = path.join(makeTempDir(), 'x.lock');
@@ -198,7 +241,8 @@ describe('locks', () => {
       writeJson(lockPath, { host, pid, created: old.toISOString() });
       fs.utimesSync(lockPath, old, old);
     };
-    const deadPid = 2 ** 22 - 3;
+    // Above every platform's process id range, so it is never alive.
+    const deadPid = 2 ** 31 - 2;
 
     write(os.hostname(), process.pid);
     expect(isLockStale(lockPath)).toBe(false);
@@ -414,5 +458,120 @@ describe('skills sync from git sources', () => {
     expect(listed.output.lines.join('\n')).toMatch(
       /ref-feature: .*requires ref-base/,
     );
+  });
+
+  test('pins a full commit that no branch or tag reaches', () => {
+    const source = gitSourceRepo();
+    git(source.root, 'checkout', '--quiet', '-b', 'side');
+    const side = source.commit('only on a pull ref');
+    git(source.root, 'update-ref', 'refs/pull/1/head', side);
+    git(source.root, 'checkout', '--quiet', 'main');
+    git(source.root, 'branch', '--quiet', '-D', 'side');
+    const root = consumer([
+      { from: source.from, ref: side, skills: ['ref-base'] },
+    ]);
+    runSkillsSync(gitContext(root).context, syncOptions);
+    expect(lockOf(root).sources[source.from]).toEqual({
+      ref: side,
+      commit: side,
+    });
+  });
+
+  test('syncing another config in the same repo leaves this lock and its exports alone', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    const { toolsHome } = gitContext(root);
+    runSkillsSync(gitContext(root, toolsHome).context, syncOptions);
+    const lockBefore = lockOf(root);
+    const exportsBefore = exportsOf(root);
+
+    const other = gitSourceRepo();
+    const personal = path.join(root, '.agents', 'personal.json');
+    writeJson(personal, {
+      skills: { sources: [{ from: other.from, skills: ['ref-feature'] }] },
+    });
+    const elsewhere = makeTempDir();
+    runSkillsSync(gitContext(root, toolsHome).context, {
+      ...syncOptions,
+      config: personal,
+      destination: elsewhere,
+    });
+
+    expect(lockOf(root)).toEqual(lockBefore);
+    expect(fs.existsSync(path.join(root, '.agents', 'personal.lock'))).toBe(
+      true,
+    );
+    expect(exportsOf(root)).toEqual(expect.arrayContaining(exportsBefore));
+    expect(exportsOf(root)).toHaveLength(2);
+    expect(linkTarget(root, 'ref-base')).toContain(
+      path.join('local', 'sources'),
+    );
+  });
+
+  test('a sync that fails takes back the export it wrote', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    fs.mkdirSync(path.join(root, '.agents', 'skills', 'ref-base'), {
+      recursive: true,
+    });
+    expect(() => {
+      runSkillsSync(gitContext(root).context, syncOptions);
+    }).toThrow(/already exists and is not a symlink/);
+    expect(exportsOf(root)).toEqual([]);
+    expect(
+      fs.existsSync(path.join(root, '.agents', 'agentic-tools.lock')),
+    ).toBe(false);
+  });
+
+  test('keeps exports out of git with their own ignore file', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    runSkillsSync(gitContext(root).context, syncOptions);
+    expect(
+      fs.readFileSync(
+        path.join(root, '.agents', 'local', 'sources', '.gitignore'),
+        'utf8',
+      ),
+    ).toMatch(/^\*$/m);
+  });
+
+  test('a dry run after a ref change says the lock would change', () => {
+    const source = gitSourceRepo();
+    git(source.root, 'tag', 'v1');
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    runSkillsSync(gitContext(root).context, syncOptions);
+    writeJson(path.join(root, '.agents', 'config.json'), {
+      skills: {
+        sources: [{ from: source.from, ref: 'v1', skills: ['ref-base'] }],
+      },
+    });
+    const { context, output } = gitContext(root);
+    runSkillsSync(context, { ...syncOptions, dryRun: true });
+    expect(output.lines.join('\n')).toMatch(
+      /Would update .*agentic-tools\.lock/,
+    );
+  });
+
+  test('a link into an unmarked folder under the sources folder still needs --force', () => {
+    const source = gitSourceRepo();
+    const root = consumer([{ from: source.from, skills: ['ref-base'] }]);
+    const handmade = path.join(
+      root,
+      '.agents',
+      'local',
+      'sources',
+      'handmade',
+      'ref-base',
+    );
+    fs.mkdirSync(handmade, { recursive: true });
+    fs.mkdirSync(path.join(root, '.agents', 'skills'), { recursive: true });
+    fs.symlinkSync(
+      handmade,
+      path.join(root, '.agents', 'skills', 'ref-base'),
+      'junction',
+    );
+    expect(() => {
+      runSkillsSync(gitContext(root).context, syncOptions);
+    }).toThrow(/Use --force to replace it/);
   });
 });

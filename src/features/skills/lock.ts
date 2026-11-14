@@ -25,9 +25,25 @@ const lockSchema = z.object({
   ),
 });
 
-/** Committed beside the config, so every clone of the consumer pins the same commits. */
-export const lockFilePath = (configRoot: string): string =>
-  path.join(configRoot, '.agents', 'agentic-tools.lock');
+const defaultConfigNames = new Set(['config.json', 'skills.json']);
+
+/**
+ * One lock per config, committed beside it, so every clone of the consumer pins the same commits
+ * and syncing another config never rewrites this one's pins: `.agents/config.json` (or the legacy
+ * `.agents/skills.json`) pins in `.agents/agentic-tools.lock`; any other config `<name>.json` in
+ * `<name>.lock` next to it.
+ */
+export const lockFilePath = (configPath: string): string => {
+  const directory = path.dirname(configPath);
+  const name = path.basename(configPath);
+  if (path.basename(directory) === '.agents' && defaultConfigNames.has(name)) {
+    return path.join(directory, 'agentic-tools.lock');
+  }
+  return path.join(
+    directory,
+    `${path.basename(name, path.extname(name))}.lock`,
+  );
+};
 
 export const emptyLock = (): SkillsLock => ({
   version: lockVersion,

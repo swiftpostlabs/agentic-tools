@@ -26,5 +26,10 @@ the visibility and `requires` rules it enforces are `ref-sp-agents-shareable-ski
 - **Git runs with prompts off** (`GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=never`) and through
   `execFileSync`, never a shell.
 - **Refuse rather than overwrite:** an existing link to somewhere else is replaced only with
-  `--force`, and a real directory never.
+  `--force`, and a real directory never. The one exception: a link into one of the repo's own
+  exports (a folder under `.agents/local/sources/` carrying the export marker) moves without
+  `--force` when its pin changes.
+- **A failed sync changes nothing in the repo:** conflicts are checked before the first write, and
+  exports written while reading sources are removed on failure. The bare clones in the tools home
+  are a shared cache, fetched under a lock per clone.
 - **Every write has a `--dry-run` path** that reports it without making it.

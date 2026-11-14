@@ -43,13 +43,14 @@
 - Relative `from` values resolve from the destination repo root.
 - Absolute `from` values are used directly.
 - `package:<name>` values resolve to `node_modules/<name>` in the config's repo or any parent directory, then to the running `agentic-tools` package itself, which is how the Python shim finds its bundled skills. Other Python packages are not searched.
-- `git:<url>` takes any URL git accepts over https, ssh, git, or file, including `git@host:owner/repo`. `github:<owner>/<repo>` is short for `git:https://github.com/<owner>/<repo>.git`.
-- `ref` is allowed only on a git source, and each git source may appear only once.
+- `git:<url>` takes any URL git accepts over https, http, ssh, git, or file, including `git@host:owner/repo`. `github:<owner>/<repo>` is short for `git:https://github.com/<owner>/<repo>.git`.
+- A URL carrying credentials (a password, or any user name on http and https) is refused: it would land in the lock and in messages. Let git's credential helper or SSH key supply them.
+- `ref` is allowed only on a git source: a tag, branch, or commit name, never a revision expression such as `main~1` or `HEAD`. Each git source may appear only once.
 - A configured skill name may appear only once across all sync sources.
 
 ## Lock file
 
-`.agents/agentic-tools.lock`, next to the config and committed. One entry per git source, keyed by its `from`:
+One lock per config, committed: `.agents/config.json` (or the legacy `.agents/skills.json`) pins in `.agents/agentic-tools.lock`, and any other config `<name>.json` in `<name>.lock` beside it, so syncing one config never rewrites another's pins. One entry per git source, keyed by its `from`:
 
 ```json
 {
@@ -65,7 +66,8 @@
 
 - `sync` keeps an entry while its `ref` matches the config, and resolves the ref again when it does not.
 - `sync --locked` fails rather than change the file; `update` rewrites the entries it updates.
-- Exports in `.agents/local/sources/` that the lock no longer names are removed by the next `sync`.
+- Exports of this lock's sources in `.agents/local/sources/` that it no longer pins are removed by the next `sync`; another config's exports are left alone. The folder carries its own `.gitignore`.
+- A sync that fails removes the exports it wrote; the shared bare clones are a cache and may have been fetched.
 
 ## Practical use
 

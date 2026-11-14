@@ -5,7 +5,7 @@ One folder per command group. Each has its own `AGENTS.md` saying what it holds.
 | Folder | Command group | What it does |
 | --- | --- | --- |
 | `policy/` | `policy` | Syncs `.agents/config.json`'s policy into Claude Code, Gemini, and Copilot settings |
-| `skills/` | `skills` | Lists, links, syncs, and unlinks skills between repos |
+| `skills/` | `skills` | Lists, links, syncs, updates, and unlinks skills between repos |
 | `plugin/` | `plugin` | Generates and drift-checks `.claude-plugin/` manifests |
 | `export/` | `export` | Bundles skills for chat assistants that cannot load them |
 

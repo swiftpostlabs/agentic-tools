@@ -4,7 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { ToolError } from '../../core/errors.ts';
 import { exists, isFile } from '../../core/fs.ts';
-import { errorMessage, isJsonObject, toJsonText } from '../../core/json.ts';
+import { z } from 'zod';
+import { errorMessage, toJsonText } from '../../core/json.ts';
 
 const gitPrefix = 'git:';
 const githubPrefix = 'github:';
@@ -38,7 +39,10 @@ const toSegments = (from: string, parts: string[]): string[] => {
     segments.length < 2 ||
     !segments.every(
       (segment) =>
-        safeSegment.test(segment) && segment !== '.' && segment !== '..',
+        safeSegment.test(segment) &&
+        !segment.startsWith('-') &&
+        segment !== '.' &&
+        segment !== '..',
     )
   ) {
     throw new ToolError(
@@ -66,7 +70,18 @@ const hostSegment = (url: URL): string =>
 
 const supportedProtocols = new Set(['https:', 'http:', 'ssh:', 'git:']);
 
+const credentialsRefusal = (from: string): ToolError =>
+  new ToolError(
+    `Git source '${from.replace(/\/\/[^/@]*@/, '//***@')}' carries credentials in its URL. Remove them ` +
+      "and let git's own credential helper or SSH key supply them: the URL is written to the lock " +
+      'and printed in messages.',
+  );
+
 const parseGitUrl = (from: string, raw: string): string[] => {
+  if (raw.startsWith('-')) {
+    // Git would read it as an option.
+    throw new ToolError(`Git source '${from}' must not start with '-'.`);
+  }
   if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)) {
     // scp-like syntax, as Git accepts it: [user@]host:owner/repo
     const scp = /^(?:[^@/\s]+@)?([^:/\s]+):(.+)$/.exec(raw);
@@ -86,12 +101,18 @@ const parseGitUrl = (from: string, raw: string): string[] => {
       `Git source '${from}' is not a valid URL: ${errorMessage(error)}`,
     );
   }
+  if (
+    url.password !== '' ||
+    (url.username !== '' && ['https:', 'http:'].includes(url.protocol))
+  ) {
+    throw credentialsRefusal(from);
+  }
   if (url.protocol === 'file:') {
     return toSegments(from, fileUrlSegments(url));
   }
   if (!supportedProtocols.has(url.protocol)) {
     throw new ToolError(
-      `Git source '${from}' uses '${url.protocol}', which is not supported; use https, ssh, git or file.`,
+      `Git source '${from}' uses '${url.protocol}', which is not supported; use https, http, ssh, git or file.`,
     );
   }
   return toSegments(from, [
@@ -232,28 +253,31 @@ const sleep = (milliseconds: number): void => {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
 };
 
-type LockOwner = { host: string; pid: number; created: string };
+const lockOwnerSchema = z.object({
+  host: z.string(),
+  pid: z.number().int(),
+  created: z.string(),
+});
 
-const readLockOwner = (lockPath: string): LockOwner | undefined => {
+type LockOwner = z.output<typeof lockOwnerSchema>;
+
+/** Parse a small JSON state file this tool wrote; anything unreadable is undefined. */
+const readStateFile = <Schema extends z.ZodType>(
+  target: string,
+  schema: Schema,
+): z.output<Schema> | undefined => {
   try {
-    const parsed: unknown = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
-    if (
-      isJsonObject(parsed) &&
-      typeof parsed['host'] === 'string' &&
-      typeof parsed['pid'] === 'number' &&
-      typeof parsed['created'] === 'string'
-    ) {
-      return {
-        host: parsed['host'],
-        pid: parsed['pid'],
-        created: parsed['created'],
-      };
-    }
+    const result = schema.safeParse(
+      JSON.parse(fs.readFileSync(target, 'utf8')),
+    );
+    return result.success ? result.data : undefined;
   } catch {
-    // An unreadable lock is judged by its age alone.
+    return undefined;
   }
-  return undefined;
 };
+
+const readLockOwner = (lockPath: string): LockOwner | undefined =>
+  readStateFile(lockPath, lockOwnerSchema);
 
 const isProcessRunning = (pid: number): boolean => {
   try {
@@ -266,7 +290,8 @@ const isProcessRunning = (pid: number): boolean => {
 
 /**
  * Stale only when old and, on this host, its process is gone: a first clone on a slow link can
- * outlive the age limit. A lock from another host is never broken automatically.
+ * outlive the age limit. A lock from another host is never broken automatically. A lock whose
+ * owner cannot be read (a crash while writing it) is judged by its age alone.
  */
 export const isLockStale = (
   lockPath: string,
@@ -311,6 +336,27 @@ const tryCreateLock = (lockPath: string): boolean => {
   }
 };
 
+/**
+ * Move a stale lock aside under a name only this process uses, then look again: if another waiter
+ * broke it first and a live process has locked since, the moved file is fresh and goes back.
+ */
+const breakStaleLock = (lockPath: string): void => {
+  const claimed = `${lockPath}.stale-${String(process.pid)}-${String(Date.now())}`;
+  try {
+    fs.renameSync(lockPath, claimed);
+  } catch {
+    return;
+  }
+  if (!isLockStale(claimed)) {
+    try {
+      fs.linkSync(claimed, lockPath);
+    } catch {
+      // A newer lock already took its place.
+    }
+  }
+  fs.rmSync(claimed, { force: true });
+};
+
 /** Hold `<target>.lock` while `action` runs, waiting for another process that holds it. */
 export const withLock = <Result>(
   lockPath: string,
@@ -320,7 +366,7 @@ export const withLock = <Result>(
   const deadline = Date.now() + waitMs;
   while (!tryCreateLock(lockPath)) {
     if (isLockStale(lockPath)) {
-      fs.rmSync(lockPath, { force: true });
+      breakStaleLock(lockPath);
       continue;
     }
     if (Date.now() >= deadline) {
@@ -342,30 +388,36 @@ export const withLock = <Result>(
   }
 };
 
-/** Clone the source as a bare repo, once; a clone without its marker was interrupted and is redone. */
-export const ensureBareClone = (
+/**
+ * Run `action` on the shared bare clone while holding its lock, so concurrent syncs never fetch
+ * into it at once. The clone is made on first use (a clone without its marker was interrupted and
+ * is redone), and `origin` is pointed at this source's URL every time, because several URL forms
+ * of one repository share a clone.
+ */
+export const withBareClone = <Result>(
   source: GitSource,
   toolsHome: string,
-  waitMs?: number,
-): { path: string; cloned: boolean } => {
+  waitMs: number | undefined,
+  action: (gitDir: string, cloned: boolean) => Result,
+): Result => {
   const target = bareClonePath(toolsHome, source);
-  const cloned = withLock(
+  return withLock(
     `${target}.lock`,
     () => {
       if (isFile(path.join(target, bareCloneMarker))) {
-        return false;
+        runGit(['remote', 'set-url', 'origin', source.url], { gitDir: target });
+        return action(target, false);
       }
       fs.rmSync(target, { recursive: true, force: true });
       fs.mkdirSync(path.dirname(target), { recursive: true });
-      runGit(['clone', '--bare', '--quiet', source.url, target], {
+      runGit(['clone', '--bare', '--quiet', '--', source.url, target], {
         network: true,
       });
       fs.writeFileSync(path.join(target, bareCloneMarker), '', 'utf8');
-      return true;
+      return action(target, true);
     },
     waitMs,
   );
-  return { path: target, cloned };
 };
 
 /** Bring every branch and tag up to date; `--prune` drops branches the remote deleted. */
@@ -401,16 +453,41 @@ const defaultBranch = (gitDir: string, source: GitSource): string => {
   return match[1] as string;
 };
 
+const fullCommit = /^[0-9a-f]{40}$/;
+const refName = /^[A-Za-z0-9._][A-Za-z0-9._/-]*$/;
+
+/**
+ * A ref is a tag, a branch or a commit: no revision expressions (`main~1`), and not `HEAD`, which
+ * in a bare clone is the default branch as it was when cloned. Leave `ref` out for the default branch.
+ */
+export const checkRef = (from: string, ref: string | undefined): void => {
+  if (
+    ref !== undefined &&
+    (!refName.test(ref) ||
+      ref === 'HEAD' ||
+      ref.includes('..') ||
+      ref.endsWith('/') ||
+      ref.endsWith('.lock'))
+  ) {
+    throw new ToolError(
+      `Ref '${ref}' for '${from}' is not a tag, branch or commit name. Leave 'ref' out to follow the default branch.`,
+    );
+  }
+};
+
 /** Resolve a tag, branch or commit (or the default branch) to a full commit sha. */
 export const resolveRef = (
   gitDir: string,
   source: GitSource,
   ref: string | undefined,
 ): string => {
-  const name = ref ?? defaultBranch(gitDir, source);
-  if (name.startsWith('-')) {
-    throw new ToolError(`Ref '${name}' for ${source.from} is not valid.`);
+  checkRef(source.from, ref);
+  if (ref !== undefined && fullCommit.test(ref)) {
+    // A full sha may sit outside every branch and tag; fetch it by name if needed.
+    ensureCommit(gitDir, source, ref);
+    return ref;
   }
+  const name = ref ?? defaultBranch(gitDir, source);
   try {
     return runGit(['rev-parse', '--verify', '--quiet', `${name}^{commit}`], {
       gitDir,
@@ -443,32 +520,17 @@ export const ensureCommit = (
   return true;
 };
 
-export type ExportMarker = { from: string; url: string; commit: string };
+const exportMarkerSchema = z.object({
+  from: z.string(),
+  url: z.string(),
+  commit: z.string(),
+});
 
-export const readExportMarker = (folder: string): ExportMarker | undefined => {
-  const markerPath = path.join(folder, exportMarker);
-  if (!isFile(markerPath)) {
-    return undefined;
-  }
-  try {
-    const parsed: unknown = JSON.parse(fs.readFileSync(markerPath, 'utf8'));
-    if (
-      isJsonObject(parsed) &&
-      typeof parsed['from'] === 'string' &&
-      typeof parsed['url'] === 'string' &&
-      typeof parsed['commit'] === 'string'
-    ) {
-      return {
-        from: parsed['from'],
-        url: parsed['url'],
-        commit: parsed['commit'],
-      };
-    }
-  } catch {
-    // A damaged marker counts as an unfinished export.
-  }
-  return undefined;
-};
+export type ExportMarker = z.output<typeof exportMarkerSchema>;
+
+/** A damaged or missing marker counts as an unfinished export. */
+export const readExportMarker = (folder: string): ExportMarker | undefined =>
+  readStateFile(path.join(folder, exportMarker), exportMarkerSchema);
 
 export const isCompleteExport = (folder: string, commit: string): boolean =>
   readExportMarker(folder)?.commit === commit;
