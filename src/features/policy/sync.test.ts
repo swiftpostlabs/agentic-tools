@@ -256,6 +256,16 @@ describe('syncPolicyFile', () => {
     expect(() => syncPolicyFile(policyFile, 'check')).toThrow(
       'Managed policy files are out of sync: .claude/settings.json (differs only in line endings).',
     );
+    expect(() => syncPolicyFile(policyFile, 'check')).toThrow(
+      'until .gitattributes sets `* text=auto eol=lf`',
+    );
+    writeFile(
+      claude,
+      fs.readFileSync(claude, 'utf8').replace('Read(.env)', 'Read(.env2)'),
+    );
+    expect(() => syncPolicyFile(policyFile, 'check')).toThrow(
+      'Managed policy files are out of sync: .claude/settings.json. Run',
+    );
   });
 
   test('check mode passes once the outputs are current', () => {

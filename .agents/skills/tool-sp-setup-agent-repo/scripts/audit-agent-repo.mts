@@ -930,7 +930,7 @@ const resolveCatchAll = (
   let eol: string | undefined;
   for (const line of text.replace(/^\uFEFF/, '').split(/\r?\n/)) {
     const [pattern, ...attributes] = line.trim().split(/\s+/);
-    if (pattern !== '*' && pattern !== '**') {
+    if (pattern !== '*' && pattern !== '**' && pattern !== '"*"') {
       continue;
     }
     for (const attribute of attributes) {
@@ -938,7 +938,13 @@ const resolveCatchAll = (
         textState = 'set';
       } else if (attribute === 'text=auto') {
         textState = 'auto';
-      } else if (attribute === '-text' || attribute === 'binary') {
+      } else if (attribute.startsWith('text=')) {
+        textState = 'set';
+      } else if (
+        attribute === '-text' ||
+        attribute === 'binary' ||
+        attribute === '-crlf'
+      ) {
         textState = 'unset';
       } else if (attribute === '!text') {
         textState = undefined;
@@ -973,14 +979,14 @@ const checkLineEndings = (repo: string): Finding[] => {
       ]),
     ];
   }
-  if (rule.eol === 'lf' && (rule.text === 'auto' || rule.text === 'set')) {
+  // Only text=auto leaves binary files alone; text or a bare eol converts them too.
+  if (rule.eol === 'lf' && rule.text === 'auto') {
     return [
       finding('G1', 'pass', 'line endings are fixed to LF by .gitattributes'),
     ];
   }
   const problem =
-    rule.eol === 'lf' ?
-      '`* eol=lf` without `text=auto` also converts binary files'
+    rule.eol === 'lf' ? 'eol=lf without `text=auto` converts binary files too'
     : rule.text === undefined && rule.eol === undefined ?
       '.gitattributes sets no line-ending rule for `*`'
     : '.gitattributes does not fix LF for `*`: each clone can still check out CRLF';

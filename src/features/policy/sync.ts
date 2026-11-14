@@ -300,6 +300,13 @@ export const syncPolicyFile = (
       throw new ToolError(
         `Managed policy files are out of sync: ${drifted.join(', ')}. Run \`${syncCommand}\` to sync them; ` +
           `it stops before overwriting hand-written settings, and \`--force\` overwrites them. ` +
+          ((
+            drifted.some((entry) =>
+              entry.endsWith('(differs only in line endings)'),
+            )
+          ) ?
+            'A file that differs only in line endings drifts again on the next checkout until .gitattributes sets `* text=auto eol=lf`. '
+          : '') +
           `If you intended to keep VS Code approval edits instead, run \`${importCommand}\`.`,
       );
     }
