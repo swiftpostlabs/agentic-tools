@@ -10,10 +10,11 @@ the sharing spec only; general skill quality is checked separately via
 
 ## Naming
 
-- Does the `name` follow the grammar: `ref-<owner-prefix>-<domain>-[template-]<topic>` or
+- Does the `name` follow the grammar: `ref-<owner-prefix>-<domain>-<topic>[-template]` or
   `tool-<owner-prefix>-<verb>[-<topic>]`?
-- Does the `name` match `shareable-skills.owner-prefix` + `shareable-skills.domain` in metadata, and
-  equal the folder name?
+- Does the `name` match `shareable-skills.owner-prefix` in metadata, plus `shareable-skills.domain`
+  for a ref, and equal the folder name?
+- Does every skill, tools included, set `shareable-skills.domain`?
 - Is shareability / namespace / vendoring status kept out of the name (in metadata instead)?
 
 ## Metadata

@@ -201,3 +201,22 @@ describe('linked skills', () => {
     expect(report.status).toBe(1);
   });
 });
+
+describe('domain', () => {
+  test('a tool skill without a domain fails with a message that says tools need one too', () => {
+    const skillsRoot = path.join(tempDir(), 'skills');
+    writeSkill(skillsRoot, 'tool-sp-check');
+    const skillFile = path.join(skillsRoot, 'tool-sp-check', 'SKILL.md');
+    fs.writeFileSync(
+      skillFile,
+      fs
+        .readFileSync(skillFile, 'utf8')
+        .replace('  shareable-skills.domain: "dev"\n', ''),
+    );
+    const report = validateAll(skillsRoot);
+    expect(report.status).toBe(1);
+    expect(messages(report)).toContain(
+      'missing domain (metadata.shareable-skills.domain): every skill needs one, tools included; a tool keeps it out of its name',
+    );
+  });
+});

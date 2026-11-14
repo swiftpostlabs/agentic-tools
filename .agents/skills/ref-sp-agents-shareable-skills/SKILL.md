@@ -44,8 +44,9 @@ metadata:
 - refs: `ref-<owner-prefix>-<domain>-<topic>[-template]`
 - tools: `tool-<owner-prefix>-<verb>[-<topic>]` (first topic segment is an action verb)
 - `template` is a reserved topic suffix marking an app-level scaffold/blueprint, never a `template-` type prefix.
-- The name is derived from and validated against `shareable-skills.owner-prefix` +
-  `shareable-skills.domain`; mismatch is a failure.
+- The name is derived from and validated against `shareable-skills.owner-prefix`, plus
+  `shareable-skills.domain` for a ref; mismatch is a failure. Every skill, tools included, carries a
+  domain in metadata; only a ref puts it in the name.
 - The owner prefix is on every skill for collision avoidance, which is what lets vendoring be a
   pure copy with no rename. Read `./references/spec.md` §2.
 - Never encode shareability, namespace, or vendoring status in the name; that is metadata.

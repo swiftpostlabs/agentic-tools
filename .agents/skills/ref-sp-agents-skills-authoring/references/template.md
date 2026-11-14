@@ -48,6 +48,7 @@ Before keeping it:
 
 - Pick `ref-` for guidance and `tool-` for a user-invoked workflow.
 - Set the sharing metadata from the sharing spec (`ref-sp-agents-shareable-skills`); tool skills
-  carry no `domain`. Add `shareable-skills.requires` for hard skill dependencies.
+  carry a `domain` too but keep it out of their name. Add `shareable-skills.requires` for hard
+  skill dependencies.
 - Replace every placeholder with real repo commands and paths, or with obviously synthetic names.
 - Keep the description to 150–300 characters.

@@ -144,7 +144,7 @@ browse under to find it. It is an **open, growing, registry-driven** vocabulary.
   `phase` controls validator strictness (§9); `domainAliases` map legacy categories
   to target domains; `aliases` is the frozen old-name → new-name skill map (§9).
 
-- A domain deliberately mixes two axes; pick the **primary subject** for the name and push the other
+- A domain deliberately mixes two axes; pick the **primary subject** for the domain and push the other
   axis into `tags`:
   - Stack/language axis: `py`, `js`, and on-demand `rust`, `cpp`, `java`, …
   - Domain/concern axis: `db`, `baas`, `ops`, `agents`, `dev` (catch-all), `biz`, `ai`,
@@ -343,10 +343,11 @@ fail this spec, or vice versa; run both validators. See §11 for how the two ski
 All portability fields are read from the `metadata.shareable-skills.*` namespace; `license` is read
 from the top level.
 
-- `name` matches `ref + owner-prefix + domain (+ optional template) + topic` or
-  `tool + owner-prefix + verb (+ topic)`, and equals the folder
-  name → else **fail**. (General charset/length/folder-match well-formedness is the authoring
-  validator's job; this check adds the grammar-vs-metadata projection on top.)
+- A `ref-` or `tool-` name carries the metadata owner prefix as its second segment, and a ref's
+  third segment equals its registered metadata domain → else **fail**; a name not yet in this
+  grammar only warns (§9). The verb in a tool name is not checked. (General
+  charset/length/folder-match well-formedness is the authoring validator's job; this check adds
+  the grammar-vs-metadata projection on top.)
 - `shareable-skills.domain` exists in the registry → else **fail** (with the growth note, §4).
 - Each `shareable-skills.requires` entry resolves to an existing skill → else **fail** (§5). A skill
   linked in from another repo counts here, and only here: its owner validates it, so `--all` and the
