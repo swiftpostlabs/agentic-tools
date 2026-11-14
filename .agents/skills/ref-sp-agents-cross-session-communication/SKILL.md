@@ -115,8 +115,9 @@ compete with that work. A closed session uses none.
 ## Roles
 
 - **Coordinator:** creates the room, assigns work, tracks who owns which files, answers questions,
-  reviews results briefly, and integrates (merges, pushes). It makes no large edits itself, which
-  keeps its context and its share of the usage limit for coordination.
+  reviews results briefly, integrates (merges, pushes), and keeps the room's `decisions.md`. It
+  makes no large edits itself, which keeps its context and its share of the usage limit for
+  coordination.
 - **Workers:** each takes one assigned piece, says so before starting, does the edits and checks,
   commits, and reports back with hashes. They don't push unless the coordinator or their user asks.
 - **Blind review before done:** before reporting a piece done, a worker has it reviewed by a
@@ -141,6 +142,22 @@ Standing approval for this room, until I say otherwise:
    board and tell me; don't do it.
 ```
 
+## Deciding shared rules
+
+Changes to a shared rule or practice, to file ownership, or to the scope of another agent's
+assigned work go through a consensus step; changes inside a task already assigned to you don't.
+
+1. The proposer posts numbered proposals, marked `Reply needed:`, with options A, B, C where there
+   are real alternatives, and a reply-by time. A watcher wakes only on messages, so the
+   coordinator schedules itself a wake-up for that time, or, where its client can't, checks at
+   its first turn after it.
+2. Members reply per number: agree, object with a reason, or offer a better option. Silence is
+   not agreement: at the reply-by time, a member who hasn't answered is noted, not waited on.
+3. The coordinator decides on the evidence in the replies, not on a count, says which objection
+   changed what, and records the decision in the room's `decisions.md`: one line each, with the
+   date, the decision, and the message that made it. Only the coordinator writes that file;
+   everyone reads it before relying on an earlier rule.
+
 ## Sharing work
 
 - **Claim before starting.** Say in the room what you are taking, so two sessions never do the
@@ -148,14 +165,20 @@ Standing approval for this room, until I say otherwise:
 - **One owner per file at a time.** Agree who owns which files before editing. If you must touch a
   file someone else owns, say so first and tell them afterwards so they re-read it. In a shared
   checkout, a rename or delete changes the files under everyone: announce it before you make it.
-- **Change shared, live files in a separate worktree.** When sessions run a file straight from a
-  shared checkout (the board script, a hook), a half-saved edit breaks every one of them. Make
-  the change in a separate git worktree beside the checkout (`git worktree add <path>`), commit there, and
-  let the coordinator bring it into the shared checkout, so the live file only changes on a
-  commit. Rebasing or pulling in the shared checkout is the coordinator's job too.
+- **Each worker edits in its own git worktree,** at `.agents/local/worktrees/<id>-<topic>/`
+  (`git worktree add --detach <path>`, or `-b <branch>` when the coordinator names one), not in
+  the shared checkout. Sessions sharing one checkout share one git index, so one agent's
+  `git add` can sweep another's staged files into its commit; and sessions run live files from
+  it (the board script, a hook), so a half-saved edit breaks every one of them. Commit in the
+  worktree; the coordinator brings the commits into the shared checkout, which only it rebases or
+  pulls. Inside the gitignored `.agents/local/`, the main checkout's git ignores the worktree and
+  `board.mts` run there still finds the main board. Check once per repo that the main checkout's
+  test and lint runs skip `.agents/local/`. Never run `git clean -x` in the shared checkout: it
+  deletes the board, tasks, and retros, and with `-ff` the worktrees too.
 - **Hand over through task folders** for anything bigger than a message: facts, decisions, and a
   done-when line in the folder, then one message naming the folders and the order to do them in.
-- **Pull before editing** shared files, and after anyone reports a push.
+- **Rebase before editing** shared files, and after anyone reports a push: in a worktree, onto
+  the updated branch; in the shared checkout, only the coordinator pulls.
 
 ## Gotchas
 
@@ -167,3 +190,14 @@ Standing approval for this room, until I say otherwise:
 - **The live script fails to load:** to keep reading and posting meanwhile, run the committed copy
   instead. Write `git show HEAD:<path to board.mts>` to a temporary file and run that with
   `--board <board folder>`. This is a fallback only; the worktree rule above is the fix.
+- **Package scripts fail in a worktree without its own install.** Node imports find the main
+  checkout's `node_modules` by walking up, but package scripts don't: one calling a tool by name
+  (`eslint`) needs the main checkout's `node_modules/.bin` first on `PATH`, and one naming a
+  `node_modules/...` path needs that command rerun with the main checkout's path. Install in the
+  worktree only if its commits change dependencies.
+- **A suggested reply looks like typed input.** Claude Code's CLI shows a greyed suggestion in an
+  idle session's input box; read off the screen, it looks like the user's answer. Only text that
+  was sent counts: confirm in the session's transcript or by a reply on the board.
+- **`claude --continue` can resume the wrong session.** On Windows it has resumed the newest
+  session in the folder across the CLI and the desktop app, which was the coordinator, not the
+  worker meant. Resume by the client's session id (`claude --resume <session-id>`), not the board id.

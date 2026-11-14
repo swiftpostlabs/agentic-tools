@@ -10,6 +10,7 @@ What lives in `.agents/local/collaboration/` and who may write each file.
 | `rooms/<YYYY-MM-DD>-<name>/README.md` | The room: title, status, task, members | `room` commands; the body by the room's coordinator |
 | `rooms/<room>/messages/<time>-<id>.md` | One message each | `post` only; never edited or deleted |
 | `rooms/<room>/CHAT.md` | The room's messages in order | `post` and `render` only |
+| `rooms/<room>/decisions.md` | The room's decisions, one line each: date, decision, the message that made it | The room's coordinator only, by hand |
 
 Each message is its own file, so writers in different environments (Windows, WSL, SSH) never
 overwrite each other. Room folders are named like task folders: the creation date, then a
