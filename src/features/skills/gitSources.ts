@@ -13,6 +13,7 @@ import {
   shortCommitLength,
   withBareClone,
   type GitSource,
+  type LockWait,
 } from './git.ts';
 import type { LockedSource } from './lock.ts';
 
@@ -31,7 +32,7 @@ export type GitSourceRequest = {
   dryRun: boolean;
   toolsHome: string;
   sourcesDir: string;
-  waitMs?: number | undefined;
+  wait: LockWait;
 };
 
 export type PreparedGitSource = {
@@ -128,7 +129,7 @@ export const prepareGitSource = (
   return withBareClone(
     source,
     request.toolsHome,
-    request.waitMs,
+    request.wait,
     (gitDir, cloned): PreparedGitSource => {
       if (cloned) {
         messages.push(`Cloned ${source.url} into ${gitDir}`);
@@ -154,7 +155,7 @@ export const prepareGitSource = (
         source,
         commit,
         folder,
-        waitMs: request.waitMs,
+        wait: request.wait,
       });
       if (created) {
         messages.push(

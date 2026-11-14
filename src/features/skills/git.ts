@@ -159,7 +159,11 @@ export const toolsHomeDirectory = (
     : path.join(home, '.agents', 'agentic-tools');
 };
 
-/** The shared bare clone: `<tools home>/git/db/<host>/<owner>/<repo>.git`. */
+/**
+ * The shared bare clone: `<tools home>/git/db/<host>/<owner>/<repo>.git`. The URL scheme is not
+ * part of the name, so the https, http and ssh forms of one repository share a clone; that is safe
+ * because `withBareClone` points `origin` at the configured URL on every use.
+ */
 export const bareClonePath = (toolsHome: string, source: GitSource): string => {
   const database = path.resolve(toolsHome, 'git', 'db');
   const parents = source.segments.slice(0, -1);
@@ -357,26 +361,52 @@ const breakStaleLock = (lockPath: string): void => {
   fs.rmSync(claimed, { force: true });
 };
 
+/** How long to wait on another sync's lock, and whom to tell while waiting. */
+export type LockWait = {
+  /** Give up after this long; defaults to the stale limit. */
+  waitMs?: number | undefined;
+  /** Told once, after `noticeAfterMs`, so a long wait does not look like a hang. */
+  onWait?: ((message: string) => void) | undefined;
+  noticeAfterMs?: number | undefined;
+};
+
+const defaultNoticeAfterMs = 3000;
+
+const describeHolder = (lockPath: string): string => {
+  const owner = readLockOwner(lockPath);
+  return owner === undefined ? 'an unknown process' : (
+      `process ${String(owner.pid)} on ${owner.host} since ${owner.created}`
+    );
+};
+
+const clearHint =
+  'If no sync is running, delete that file and run the command again.';
+
 /** Hold `<target>.lock` while `action` runs, waiting for another process that holds it. */
 export const withLock = <Result>(
   lockPath: string,
   action: () => Result,
-  waitMs: number = lockStaleAfterMs,
+  wait: LockWait = {},
 ): Result => {
-  const deadline = Date.now() + waitMs;
+  const started = Date.now();
+  const deadline = started + (wait.waitMs ?? lockStaleAfterMs);
+  const noticeAt = started + (wait.noticeAfterMs ?? defaultNoticeAfterMs);
+  let noticed = false;
   while (!tryCreateLock(lockPath)) {
     if (isLockStale(lockPath)) {
       breakStaleLock(lockPath);
       continue;
     }
-    if (Date.now() >= deadline) {
-      const owner = readLockOwner(lockPath);
-      const holder =
-        owner === undefined ? 'an unknown process' : (
-          `process ${String(owner.pid)} on ${owner.host} since ${owner.created}`
-        );
+    const now = Date.now();
+    if (now >= deadline) {
       throw new ToolError(
-        `Lock file '${lockPath}' is held by ${holder}. If no sync is running, delete that file and run the command again.`,
+        `Lock file '${lockPath}' is held by ${describeHolder(lockPath)}. ${clearHint}`,
+      );
+    }
+    if (!noticed && now >= noticeAt && wait.onWait !== undefined) {
+      noticed = true;
+      wait.onWait(
+        `Waiting for lock file '${lockPath}', held by ${describeHolder(lockPath)}. ${clearHint}`,
       );
     }
     sleep(lockPollMs);
@@ -397,7 +427,7 @@ export const withLock = <Result>(
 export const withBareClone = <Result>(
   source: GitSource,
   toolsHome: string,
-  waitMs: number | undefined,
+  wait: LockWait,
   action: (gitDir: string, cloned: boolean) => Result,
 ): Result => {
   const target = bareClonePath(toolsHome, source);
@@ -416,7 +446,7 @@ export const withBareClone = <Result>(
       fs.writeFileSync(path.join(target, bareCloneMarker), '', 'utf8');
       return action(target, true);
     },
-    waitMs,
+    wait,
   );
 };
 
@@ -544,7 +574,7 @@ export const exportCommit = (options: {
   source: GitSource;
   commit: string;
   folder: string;
-  waitMs?: number | undefined;
+  wait?: LockWait | undefined;
 }): boolean =>
   withLock(
     `${options.folder}.lock`,
@@ -578,7 +608,7 @@ export const exportCommit = (options: {
       );
       return true;
     },
-    options.waitMs,
+    options.wait,
   );
 
 /** Export folders under `sourcesDir` that carry this tool's marker; anything else is left alone. */

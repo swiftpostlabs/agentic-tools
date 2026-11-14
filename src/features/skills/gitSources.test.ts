@@ -222,10 +222,30 @@ describe('git source safety', () => {
 });
 
 describe('locks', () => {
+  test('tells once which lock it waits on and how to clear it', () => {
+    const lockPath = path.join(makeTempDir(), 'x.lock');
+    const notices: string[] = [];
+    withLock(lockPath, () => {
+      expect(() =>
+        withLock(lockPath, () => 1, {
+          waitMs: 700,
+          noticeAfterMs: 0,
+          onWait: (message) => notices.push(message),
+        }),
+      ).toThrow(/is held by/);
+    });
+    expect(notices).toHaveLength(1);
+    expect(notices[0]).toMatch(
+      new RegExp(
+        `Waiting for lock file '.*x\\.lock', held by process ${String(process.pid)} on .*delete that file`,
+      ),
+    );
+  });
+
   test('waits on a live lock and names the file when it gives up', () => {
     const lockPath = path.join(makeTempDir(), 'x.lock');
     withLock(lockPath, () => {
-      expect(() => withLock(lockPath, () => 1, 0)).toThrow(
+      expect(() => withLock(lockPath, () => 1, { waitMs: 0 })).toThrow(
         new RegExp(
           `Lock file '.*x\\.lock' is held by process ${String(process.pid)}`,
         ),
@@ -250,7 +270,7 @@ describe('locks', () => {
     expect(isLockStale(lockPath)).toBe(false);
     write(os.hostname(), deadPid);
     expect(isLockStale(lockPath)).toBe(true);
-    expect(withLock(lockPath, () => 'ran', 0)).toBe('ran');
+    expect(withLock(lockPath, () => 'ran', { waitMs: 0 })).toBe('ran');
 
     writeJson(lockPath, { host: os.hostname(), pid: deadPid, created: 'now' });
     expect(isLockStale(lockPath)).toBe(false);

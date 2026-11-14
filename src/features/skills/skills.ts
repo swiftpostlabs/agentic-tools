@@ -610,7 +610,10 @@ export const runSkillsSync = (
           dryRun: options.dryRun,
           toolsHome,
           sourcesDir,
-          waitMs: context.lockWaitMs,
+          wait: {
+            waitMs: context.lockWaitMs,
+            onWait: context.output.warn,
+          },
         });
         gitMessages.push(...prepared.messages);
         if (prepared.created && prepared.root !== undefined) {
