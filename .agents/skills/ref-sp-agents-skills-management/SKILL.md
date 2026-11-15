@@ -68,8 +68,8 @@ Missing metadata points the user to `tool-sp-make-skill-shareable`.
 ```
 
 `from` is a filesystem path (relative paths resolve from the target repo root; in a linked git
-worktree, a path out of the repo such as `../x` resolves from the main checkout), `package:<name>`,
-`git:<url>`, or `github:<owner>/<repo>`. A package source resolves to `node_modules/<name>` in the
+worktree, a relative path out of the repo, to a sibling folder for example, resolves from the
+main checkout), `package:<name>`, `git:<url>`, or `github:<owner>/<repo>`. A package source resolves to `node_modules/<name>` in the
 config's repo or a parent, then to the running `agentic-tools` package itself, which is how a
 Python repo finds the skills bundled in the shim. Prefer `package:` when the source is an installed dependency, a relative
 path when two repos are cloned side by side, and a git source for a repo you don't install. Full
