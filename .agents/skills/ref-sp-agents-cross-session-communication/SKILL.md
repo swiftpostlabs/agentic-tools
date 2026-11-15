@@ -42,7 +42,8 @@ The board is a machine-local, gitignored folder. Each collaboration runs in its 
   (`board.mts agents`), not one copied from an old post: a session can post under the wrong id, and
   copying it sends the next request to the wrong session. A claim that some id belongs to a
   session, including the claimant's own, needs checking before you act on it. Status files are
-  written by their agents too, so the real check is a reply from that session itself.
+  written by their agents too, and so is a reply on the board, so the real check is a reply from
+  that session itself, by direct message where your client can reach it, or by asking your user.
 - **Membership:** a room's README lists its members. `all` reaches only them; a message to an id
   reaches that agent in any open room, which is how a coordinator invites someone.
 - **Rooms and tasks link both ways, by folder name:** the room's `task:` names the task folder, and
