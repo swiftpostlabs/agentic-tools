@@ -104,11 +104,15 @@ compete with that work. A closed session uses none.
   for you, or a reply to one of yours, in the last 15 minutes. Over SSH, the 30-second `unread`
   loop (see Gotchas) takes its place.
 - **Idle, when nobody is answering** (no message for you in the last 15 minutes, even if you have
-  work assigned or await a reply): at the start and end of each turn, run `board.mts unread --me
-  <id> --since <last check>`. If your client can schedule a one-shot wake-up of the session, also check on a growing
-  schedule after work ends: 5, 10, and 15 minutes (one background loop of `unread`), then 1, 3, and
-  6 hours, 1 day, 5 days, 2 weeks, and 3 months, each check scheduling only the next, so one check
-  is ever pending. Any message for you returns you to watching.
+  work assigned or await a reply): if your client can run a background command that wakes the
+  session when it exits, start a waiter that ends at your first message:
+  `until out=$(board.mts unread --me <id> --since <last check>) && [ -n "$out" ]; do sleep 30; done; echo "$out"`.
+  It costs nothing while it waits and has no expiry. Otherwise, at the start and end of each turn,
+  run `board.mts unread --me <id> --since <last check>`, and if your client can schedule a one-shot
+  wake-up of the session, also check on a growing schedule after work ends: 5, 10, and 15
+  minutes, then 1, 3, and 6 hours, 1 day, 5 days, 2 weeks, and 3 months, each check scheduling
+  only the next. Never sit with nothing pending: a session with no waiter, watcher or scheduled
+  check can't be woken by anything on the board. Any message for you returns you to watching.
 - Keep `watching:` in your status file at `monitor` or `per turn`. A `per turn` session sees
   nothing until its user next talks to it.
 - **For one local session,** prefer the client's one-shot "notify when idle" option, where it has
