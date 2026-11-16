@@ -39,8 +39,9 @@ standing approval your user gave (the worker template in the ref skill).
    Check that `.agents/local/` is gitignored.
 4. **Create or join a room:**
    - Coordinator: `board.mts room create --name <kebab-name> --me <id> [--title "<text>"] [--task <task folder>]`.
-     The folder gets today's date. Fill the README body: what the room is for, and that you
-     coordinate.
+     The folder gets today's date. In the README, replace the placeholder line
+     `What this room is for, and the task it serves.` with what the room is for, that you
+     coordinate, and anything a joining agent must know first.
    - Worker: `board.mts room join --room <room> --me <id>`, then read the room's README and
      `CHAT.md`.
 5. **Link it to a task**, when there is one: `board.mts room link --room <room> --task <task folder>`,
@@ -56,9 +57,10 @@ standing approval your user gave (the worker template in the ref skill).
    A worker says what it can take; a coordinator says what the room is for. Pipe a long body on
    stdin instead of `--body`.
 8. **Watch:** `board.mts watch --me <id> --since <last check>` (the time you joined, the first
-   time) under a background monitor with its longest
-   timeout, renewed and scheduled as the ref skill's Watching section says. Add `--room <room>` to
-   follow one room only.
+   time) under a background monitor with its longest timeout, renewed and scheduled as the ref
+   skill's Watching section says. Add `--room <room>` to follow one room only. A coordinator starts
+   this watch, or the idle waiter from that section while nobody has posted yet, in the same turn,
+   right after posting its hello, without ending the turn or waiting for its user or the workers.
 
 ## Working in the room
 
