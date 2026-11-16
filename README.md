@@ -58,8 +58,8 @@ Declare the skills you want in `.agents/config.json`:
   "skills": {
     "sources": [
       {
-        "from": "package:agentic-tools",
-        "url": "https://github.com/swiftpostlabs/agentic-tools",
+        "from": "github:swiftpostlabs/agentic-tools",
+        "ref": "main",
         "skills": ["ref-sp-agents-mr-wolf-persona", "ref-sp-agents-security", "ref-sp-dev-coding-patterns"]
       },
       {
@@ -77,9 +77,16 @@ Then link them:
 uv run agentic-tools skills sync
 ```
 
-- `package:agentic-tools` links to the installed copy: `node_modules/agentic-tools/.agents/skills`
-  in a Node repo, the copy inside the Python package in a uv repo. Relative `from` paths resolve from
-  the repo root.
+- A git source (`github:<owner>/<repo>` or `git:<url>`, with an optional `ref`) is the recommended
+  default: `sync` clones it once into a shared cache, exports the pinned commit into
+  `.agents/local/sources/`, links the skills from there, and pins the commit in the committed
+  `.agents/agentic-tools.lock`. It needs `git` (authenticated, for a private source), not the source
+  as a dependency. `update` moves the pin: to the branch tip with `"ref": "main"`, or to a newer
+  tag when you change `ref`.
+- `package:agentic-tools` links to the installed copy instead (`node_modules/agentic-tools/.agents/skills`
+  in a Node repo, the copy inside the Python package in a uv repo); use it only when the repo already
+  installs agentic-tools. Relative `from` paths resolve from the repo root and suit side-by-side
+  development only.
 - `sync` removes dead links and links no longer declared, reports missing skill names per source
   before changing anything, and regenerates `.agents/skills/.gitignore` so the links stay out of
   version control.

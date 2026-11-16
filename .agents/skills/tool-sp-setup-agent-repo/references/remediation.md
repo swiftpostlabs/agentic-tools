@@ -131,7 +131,8 @@ renaming severs identity and breaks drift detection.
   "skills": {
     "sources": [
       {
-        "from": "package:agentic-tools",
+        "from": "github:swiftpostlabs/agentic-tools",
+        "ref": "main",
         "skills": ["ref-sp-agents-skills-authoring", "ref-sp-agents-local-tasks"]
       }
     ]
@@ -139,11 +140,16 @@ renaming severs identity and breaks drift detection.
 }
 ```
 
-Then run the source repo's skills CLI to materialize them as links. Best when the repo already
-consumes the source as a dependency and wants updates to arrive with a re-pin.
+Then run the source repo's skills CLI to materialize them as links. A git source is the default:
+`sync` clones it into a shared cache, exports the pinned commit into `.agents/local/sources/`, links
+the skills from there, and records the commit in the committed `.agents/agentic-tools.lock`, so
+every machine and CI with the agentic-tools CLI and `git` get the same skills without installing the
+source as a dependency. A private source needs git authenticated wherever `sync` runs. Use `package:` only when the repo
+already installs the source as a dependency.
 
 Two failure modes worth knowing before they cost an hour:
 
+- A git source sees only pushed commits, and `update` moves the pin; until then the lock decides.
 - A `package:<name>` source reads the **installed** copy at the revision the lockfile pins — not a
   local checkout sitting next to it. A skill that exists only in unpushed commits is invisible.
 - Sync removes dead links in the destination before relinking, so a rename in the source repo is a

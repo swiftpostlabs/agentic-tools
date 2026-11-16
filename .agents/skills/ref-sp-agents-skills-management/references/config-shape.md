@@ -76,8 +76,11 @@ One lock per config, committed: `.agents/config.json` (or the legacy `.agents/sk
 
 ## Practical use
 
-- Use sibling repo paths for local side-by-side development.
-- Use `package:agentic-tools` when the source repo is installed into the consumer environment.
+- Use a git source (`github:<owner>/<repo>` with a `ref`) by default: the source is never installed
+  as a dependency, the committed lock pins a commit, and every machine and CI with the CLI, `git`,
+  and access to the repo get the same skills.
+- Use `package:agentic-tools` only when the consumer already installs the source as a dependency.
+- Use a sibling repo path only while developing two repos side by side.
 - Keep the skill list explicit rather than syncing an entire repo by default.
 - During `sync`, missing configured skill names are reported by source before any linking happens.
 - During `sync`, dead links already present under the destination `.agents/skills` directory are cleaned up before the configured skills are linked.

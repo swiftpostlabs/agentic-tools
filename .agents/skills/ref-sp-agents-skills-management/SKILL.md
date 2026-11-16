@@ -59,7 +59,8 @@ Missing metadata points the user to `tool-sp-make-skill-shareable`.
   "skills": {
     "sources": [
       {
-        "from": "package:agentic-tools",
+        "from": "github:swiftpostlabs/agentic-tools",
+        "ref": "main",
         "skills": ["ref-sp-agents-skills-authoring", "ref-sp-dev-projects-architecture"]
       }
     ]
@@ -71,9 +72,14 @@ Missing metadata points the user to `tool-sp-make-skill-shareable`.
 worktree, a relative path out of the repo, to a sibling folder for example, resolves from the
 main checkout), `package:<name>`, `git:<url>`, or `github:<owner>/<repo>`. A package source resolves to `node_modules/<name>` in the
 config's repo or a parent, then to the running `agentic-tools` package itself, which is how a
-Python repo finds the skills bundled in the shim. Prefer `package:` when the source is an installed dependency, a relative
-path when two repos are cloned side by side, and a git source for a repo you don't install. Full
-contract: `./references/config-shape.md`.
+Python repo finds the skills bundled in the shim. Prefer a git source (`github:` or `git:`): the
+consumer needs the agentic-tools CLI and `git`, but never installs the source as a dependency; the
+committed lock pins an exact commit; and skill scripts run from the export, where Node strips their
+TypeScript (it refuses to under `node_modules`). A private source needs git to be authenticated on
+each machine and in CI. The examples follow `main`, so `update` moves to its tip; set `ref` to a tag
+for slower, deliberate updates. Use `package:` only when the repo already
+installs the source as a dependency and must stay on that revision, and a relative path only for
+developing two repos side by side. Full contract: `./references/config-shape.md`.
 
 ## Git sources
 
