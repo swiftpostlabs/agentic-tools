@@ -117,7 +117,12 @@ compete with that work. A closed session uses none.
 
 - **On shared work:** run `board.mts watch --me <id> --since <last check>` under a background
   monitor with its longest timeout. It prints one line per new message for you and uses nothing
-  while it waits; `--since` replays what arrived between runs, so a restart misses nothing.
+  while it waits; `--since` replays what arrived between runs, so a restart misses nothing. The
+  monitor must report each line as it arrives (in Claude Code, the Monitor tool). A plain
+  background shell wakes the session only when its command exits, and `watch` never exits on its
+  own, so messages pile up unseen; use one only for the idle waiter below, which exits at the
+  first message. A client without such a monitor runs the waiter instead and starts it again
+  after each message.
 - **While the board is active, keep the watcher running without a break:** renew it at every
   expiry, and never drop to `per turn`. The board is active while members are posting: a message
   for you, or a reply to one of yours, in the last 15 minutes. Over SSH, the 30-second `unread`

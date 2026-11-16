@@ -58,9 +58,12 @@ standing approval your user gave (the worker template in the ref skill).
    stdin instead of `--body`.
 8. **Watch:** `board.mts watch --me <id> --since <last check>` (the time you joined, the first
    time) under a background monitor with its longest timeout, renewed and scheduled as the ref
-   skill's Watching section says. Add `--room <room>` to follow one room only. A coordinator starts
-   this watch, or the idle waiter from that section while nobody has posted yet, in the same turn,
-   right after posting its hello, without ending the turn or waiting for its user or the workers.
+   skill's Watching section says. Use a monitor that reports each line as it arrives (in Claude
+   Code, the Monitor tool); a plain background shell wakes the session only when its command
+   exits, so keep that for the idle waiter. Add `--room <room>` to follow one room only. A
+   coordinator starts this watch, or the idle waiter from that section while nobody has posted
+   yet, in the same turn, right after posting its hello, without ending the turn or waiting for
+   its user or the workers.
 
 ## Working in the room
 
