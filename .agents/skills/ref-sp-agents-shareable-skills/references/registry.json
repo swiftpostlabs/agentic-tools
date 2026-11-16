@@ -77,6 +77,10 @@
     "edu": {
       "description": "Teaching and learning: reviewing learners' work, writing feedback for learners, course and assignment design.",
       "belongsWhen": "Is this about teaching or assessing learners, rather than managing a team's work (biz) or the subject being taught?"
+    },
+    "comms": {
+      "description": "Communicating with the public: writing for a general audience, science communication, persuasion and its ethics, and planning and measuring content on social platforms.",
+      "belongsWhen": "Is the subject how a message is written, framed, or published for a public audience, rather than how a site is found (web), how an interface is used (ux), or teaching learners (edu)?"
     }
   },
   "reservedTokens": [
