@@ -35,6 +35,14 @@ const objectOrEmpty = (value: unknown): JsonObject =>
 const nullIfEmpty = (value: JsonObject): JsonObject | null =>
   Object.keys(value).length === 0 ? null : value;
 
+/**
+ * A `!pattern` entry is an exception to the patterns before it (gitignore negation): Claude and
+ * Gemini read it as such, but a VS Code association has no negation, so this adapter skips it and
+ * the excepted files stay restricted for Copilot, the fail-safe direction.
+ */
+const restrictedPatterns = (protectedFiles: string[]): string[] =>
+  protectedFiles.filter((pattern) => !pattern.startsWith('!'));
+
 /** Protected patterns become a restricted language, which Copilot is then disabled for. */
 const mergeAssociations = (
   existing: unknown,
@@ -46,7 +54,10 @@ const mergeAssociations = (
     ),
   );
   const managed = Object.fromEntries(
-    protectedFiles.map((pattern) => [pattern, restrictedLanguage]),
+    restrictedPatterns(protectedFiles).map((pattern) => [
+      pattern,
+      restrictedLanguage,
+    ]),
   );
   return nullIfEmpty({ ...preserved, ...managed });
 };
@@ -60,7 +71,7 @@ const mergeCopilotEnable = (
       ([key]) => key !== restrictedLanguage,
     ),
   );
-  if (protectedFiles.length > 0) {
+  if (restrictedPatterns(protectedFiles).length > 0) {
     enable[restrictedLanguage] = false;
   }
   return nullIfEmpty(enable);

@@ -122,6 +122,24 @@ describe('client settings transforms', () => {
       'chat.tools.edits.autoApprove': null,
     });
   });
+  test('exceptions: Claude keeps `!` rules in order, VS Code skips them', () => {
+    const protectedFiles = ['*.env', '*.env.*', '!*.env.example'];
+    const claude = applyPolicyToClaudeSettings(
+      { managed: {}, extras: {} },
+      protectedFiles,
+    );
+    expect(claude.managed['permissions']).toEqual({
+      deny: ['Read(*.env)', 'Read(*.env.*)', 'Read(!*.env.example)'],
+    });
+    const vscode = applyPolicyToVscodeSettings(
+      { managed: {}, extras: {} },
+      { protectedFiles, terminalAutoApprove: {}, editAutoApprove: {} },
+    );
+    expect(vscode.managed['files.associations']).toEqual({
+      '*.env': 'copilot-restricted-file',
+      '*.env.*': 'copilot-restricted-file',
+    });
+  });
 });
 
 describe('syncPolicyFile', () => {
