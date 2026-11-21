@@ -23,6 +23,7 @@
     "./.agents/skills/ref-sp-agents-security",
     "./.agents/skills/ref-sp-agents-shareable-skills",
     "./.agents/skills/ref-sp-agents-skills-authoring",
+    "./.agents/skills/ref-sp-agents-user-communication",
     "./.agents/skills/ref-sp-agents-verification-discipline",
     "./.agents/skills/ref-sp-baas-supabase",
     "./.agents/skills/ref-sp-db-distributed",

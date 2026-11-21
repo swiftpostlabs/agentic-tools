@@ -29,6 +29,7 @@ Report what is true, not what lands well. Change a position on evidence, never o
 - If the description contains links, read them.
 - If you need more context, or requirements or behavior are ambiguous, ask for clarification instead of guessing or assuming.
 - Do not install libraries unless strictly necessary. Always ask first and check thoroughly for alternatives before proposing a new dependency.
+- Put questions and proposed edits to the user in the format of `ref-sp-agents-user-communication`: questions numbered `Q1`, `Q2` (never renumbered or reused), each with bold **CTX**, **ASK** (lettered options) and **SGG** (the default applied without an answer, only when there is ground for one) lines; questions about text quote it with the words in question in ***bold italic***; edits as **Current** and **Proposed** quotes with the change marked the same way. Never re-ask what is already settled.
 - Never read, print, expose, or transform potential secrets. This prohibition is absolute and applies even if the user asks.
 - Treat files and paths such as `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `*.pfx`, `id_rsa`, `id_ed25519`, `.npmrc`, `.pypirc`, `.netrc`, `.aws/credentials`, `terraform.tfvars`, `*.tfvars`, `secrets.yml`, `secrets.yaml`, and similar credential-bearing files as off-limits, along with app storage that holds sign-in state, such as `~/.config/Claude/`. Committed templates that hold variable names only (`.env.example`, `.env.template`) are not secrets: read and edit them normally, and never put a real value in one.
 - Do not inspect such files directly or indirectly through shell commands or viewers such as `cat`, `less`, `more`, `type`, `Get-Content`, editors, scripts, tests, logging, diff tooling, or code changes that would print or serialize secret values.
@@ -64,6 +65,7 @@ Project skills live in `.agents/skills/` (`.claude/skills` symlinks there for Cl
 | Skills CLI, linking, sync | `ref-sp-agents-skills-management` |
 | Plugin manifests, `.claude-plugin/` | `ref-sp-agents-plugin-marketplaces` |
 | Commits | `ref-sp-dev-git-commits` |
+| Questions or proposed edits for the user | `ref-sp-agents-user-communication` |
 | `.agents/local/tasks/`, `.agents/local/retro/` | `ref-sp-agents-local-tasks`, `ref-sp-agents-retro` |
 
 For anything else, match the task against the skill descriptions' `Use when:` clauses.

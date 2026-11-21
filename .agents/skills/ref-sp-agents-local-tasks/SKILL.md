@@ -87,7 +87,8 @@ in a changed repo; a prescribed implementation hands over a conclusion without i
 
 - **Facts:** what was verified, with sources.
 - **Decided:** only what was actually settled, marked as settled.
-- **Open:** questions nobody has answered.
+- **Open:** questions nobody has answered, in the numbered **CTX**/**ASK**/**SGG** format of
+  `ref-sp-agents-user-communication`, so the user can answer by number.
 - **Options:** candidate approaches, notes, and leads, under a heading that says so.
 
 Leave out implementation detail invented while filing: step sequences, file layouts, function or

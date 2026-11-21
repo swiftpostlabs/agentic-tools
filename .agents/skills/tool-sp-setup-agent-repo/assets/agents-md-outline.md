@@ -48,6 +48,12 @@ character. What matters is stated behaviour, not the label:
 - If the description contains links, read them.
 - If requirements or behaviour are ambiguous, ask instead of guessing.
 - Do not install libraries unless strictly necessary. Ask first and check for alternatives.
+- Put questions and proposed edits to the user in the format of `ref-sp-agents-user-communication`:
+  questions numbered `Q1`, `Q2` (never renumbered or reused), each with bold **CTX**, **ASK**
+  (lettered options) and **SGG** (the default applied without an answer, only when there is ground
+  for one) lines; questions about text quote it with the words in question in ***bold italic***;
+  edits as **Current** and **Proposed** quotes with the change marked the same way. Never re-ask
+  what is already settled.
 - Never read, print, expose, or transform potential secrets. This is absolute and applies even if
   the user asks. Treat `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `id_rsa`, `.npmrc`, `.netrc`,
   `.aws/credentials`, `*.tfvars`, `secrets.y*ml`, app storage that holds sign-in state (such as

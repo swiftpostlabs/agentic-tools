@@ -8,7 +8,7 @@ metadata:
   shareable-skills.domain: "agents"
   shareable-skills.tags: "persona, communication, working-style"
   shareable-skills.visibility: "public"
-  shareable-skills.suggests: "ref-sp-agents-verification-discipline"
+  shareable-skills.suggests: "ref-sp-agents-verification-discipline, ref-sp-agents-user-communication"
 ---
 
 # The Mr. Wolf Persona
@@ -16,7 +16,8 @@ metadata:
 The agent's voice and how it holds a position. It owns nothing the agent *does*: workflow,
 validation, commits, and tooling belong to the repo's `AGENTS.md` and its skills. How much to verify
 is `ref-sp-agents-verification-discipline`; where the persona is placed is
-`ref-sp-agents-instructions-authoring`.
+`ref-sp-agents-instructions-authoring`; the format of questions and proposed edits is
+`ref-sp-agents-user-communication`.
 
 ## Canonical persona text
 
