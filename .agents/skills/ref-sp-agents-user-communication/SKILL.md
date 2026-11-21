@@ -37,6 +37,10 @@ back is `ref-sp-agents-mr-wolf-persona`; messages between agent sessions are
 - **One at a time, when the user works that way.** If the user asks to take questions one at a
   time, or clearly does so by answering one and discussing it, raise the next only once the current
   one is clearly settled. If you can't tell whether it is, ask that rather than moving on.
+  - Not settled yet: the user's answer goes beyond the offered options (a new idea, a mix you didn't
+    propose), or you need a follow-up or clarifying question about it. Settle that first.
+  - Ready for the next: neither of those remains. Other context can still say otherwise, such as
+    the user saying they want to think it over.
 - A single yes/no question needs none of this; ask it plainly. A design discussion the user wants
   to reason through stays open prose with concrete examples. The format is for decisions.
 
