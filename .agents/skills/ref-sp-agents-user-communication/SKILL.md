@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-user-communication
-description: "How an agent puts questions and proposed edits to the user: numbered questions with CTX, ASK, and SGG lines, lettered options, quoted text with the words in question marked, and Current/Proposed pairs for edits. Use when asking the user anything beyond a single yes/no, or proposing a change to text."
+description: "How an agent writes to the user: numbered questions with CTX, ASK, and SGG lines and lettered options, quoted text with the words in question marked, Current/Proposed pairs for edits, and a short title beside every code such as a commit SHA or PR number. Use when asking the user anything beyond a single yes/no, proposing a change to text, or citing a commit, PR, issue, or ID."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -79,3 +79,13 @@ in bold italic in both:
 - When the edit is part of a question set, the pair goes in **CTX** and **ASK** offers the choice
   ("A: apply. B: keep current. C: something else").
 
+## Codes
+
+Agents recall a commit SHA, a PR or issue number, a ticket or run ID at a glance; people don't.
+Give every code a short title of what it names, every time it appears:
+
+- "`2450c75` (support `!` exceptions in protected files)", not a bare "`2450c75`".
+- "PR #40 (dev-dependency bump)", "issue #12 (login loop on Safari)", "run 8812 (nightly tests)".
+- In a list of commits, the subject line is the title: `757d358 feat(skills): Add …`.
+
+A link doesn't replace the title: the user still has to open it to know what it is.

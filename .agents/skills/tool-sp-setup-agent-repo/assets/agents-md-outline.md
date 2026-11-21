@@ -52,8 +52,9 @@ character. What matters is stated behaviour, not the label:
   numbered list `1.`, `2.` (never renumbered or reused), each with bold **CTX**, **ASK** (lettered
   options) and **SGG** (the default applied without an answer, only when there is ground for one)
   lines; questions about text quote it with the words in question in ***bold italic***; edits as
-  **Current** and **Proposed** quotes with the change marked the same way. Never re-ask what is
-  already settled.
+  **Current** and **Proposed** quotes with the change marked the same way; every code (commit SHA,
+  PR or issue number, ID) followed by a short title of what it names. Never re-ask what is already
+  settled.
 - Never read, print, expose, or transform potential secrets. This is absolute and applies even if
   the user asks. Treat `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `id_rsa`, `.npmrc`, `.netrc`,
   `.aws/credentials`, `*.tfvars`, `secrets.y*ml`, app storage that holds sign-in state (such as
