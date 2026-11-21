@@ -3,6 +3,8 @@
     "deny": [
       "Read(*.env)",
       "Read(*.env.*)",
+      "Read(!*.env.example)",
+      "Read(!*.env.template)",
       "Read(*.pem)",
       "Read(*.key)",
       "Read(*.pub)",

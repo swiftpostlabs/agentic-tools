@@ -53,6 +53,11 @@ Split patterns into two lists, because they need different treatment:
 
 Name categories by pattern, never by a value, and keep the list in one place.
 
+Committed templates such as `.env.example` match the environment-file patterns but hold names
+only. Carve them out with an explicit exception after the broad pattern, rather than narrowing
+the pattern to known secret names: an unlisted variant such as `.env.staging` must stay blocked.
+An exception reopens a path, so give it a canary check too.
+
 ## One policy, every client
 
 ```text

@@ -4,6 +4,8 @@
     "deny": [
       "Read(*.env)",
       "Read(*.env.*)",
+      "Read(!*.env.example)",
+      "Read(!*.env.template)",
       "Read(*.pem)",
       "Read(*.key)",
       "Read(*.pub)",
@@ -50,5 +52,5 @@
       "**/internal-config.yml": false
     }
   },
-  "aiexclude": "sha256:321865b4ff9120e6ff4f6e994a6d5cc85372fa6a5be07ee83952254f29e8a1c9"
+  "aiexclude": "sha256:1c0f287b7e6a9e9169373670d1273a29b49f00ae657934b92a7e12dd25bf43cc"
 }

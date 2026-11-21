@@ -52,7 +52,9 @@ character. What matters is stated behaviour, not the label:
   the user asks. Treat `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `id_rsa`, `.npmrc`, `.netrc`,
   `.aws/credentials`, `*.tfvars`, `secrets.y*ml`, app storage that holds sign-in state (such as
   `~/.config/<App>/`), and similar as off-limits — directly, and
-  indirectly through shell commands, tests, logging, or generated files.
+  indirectly through shell commands, tests, logging, or generated files. Committed templates that
+  hold variable names only (`.env.example`, `.env.template`) are not secrets: read and edit them
+  normally, and never put a real value in one.
 - On accidental secret exposure: stop work on that path, report the incident without repeating the
   value, and recommend containment and rotation.
 - Run finite commands whose output and exit status matter (lint, type-check, tests, builds) in the
