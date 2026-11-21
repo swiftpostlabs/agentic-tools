@@ -34,6 +34,9 @@ back is `ref-sp-agents-mr-wolf-persona`; messages between agent sessions are
     or something the user said. When the information isn't there, leave **SGG** out and the
     question waits for its answer; a guessed default reads as a recommendation.
 - **Describe every cross-reference:** "4 (amount and duration)", never a bare "4" or "4b".
+- **One at a time, when the user works that way.** If the user asks to take questions one at a
+  time, or clearly does so by answering one and discussing it, raise the next only once the current
+  one is clearly settled. If you can't tell whether it is, ask that rather than moving on.
 - A single yes/no question needs none of this; ask it plainly. A design discussion the user wants
   to reason through stays open prose with concrete examples. The format is for decisions.
 
