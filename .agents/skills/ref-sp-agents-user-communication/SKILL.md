@@ -23,8 +23,13 @@ back is `ref-sp-agents-mr-wolf-persona`; messages between agent sessions are
 - **Check first.** Look where answers land (earlier in the conversation, the task brief, a board's
   chat and decisions) and never ask again what is already settled.
 - **Number them as a plain list**, `1.`, `2.`, and so on, so the user can reply "1. yes, 2. B"
-  without typing a prefix. Numbers are permanent: never renumber or reuse one. A new question takes
-  the next unused number, even after earlier ones are answered.
+  without typing a prefix. Within a topic, numbers are permanent: never renumber or reuse one. A
+  new question takes the next unused number, even after earlier ones are answered.
+- **Restart at 1 for a new topic,** once every question of the current one is settled. A topic is
+  a piece of work the user handles on its own, such as the next application, document, or task;
+  the next question about the same thing is not a new topic. Open the new block with a line naming
+  the topic ("**Hero application**"), and refer back to an earlier block by topic and number, with
+  its description: "IKEA 3 (relocation)". While any question is still open, keep counting.
 - **Give each these lines, labels in bold:**
   - **CTX** the context in plain words: what it is about and what depends on the answer.
   - **ASK** the question. Offer options only when the answer is a choice among known alternatives;
