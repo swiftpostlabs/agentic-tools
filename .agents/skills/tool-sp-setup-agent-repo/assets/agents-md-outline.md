@@ -49,13 +49,14 @@ character. What matters is stated behaviour, not the label:
 - If requirements or behaviour are ambiguous, ask instead of guessing.
 - Do not install libraries unless strictly necessary. Ask first and check for alternatives.
 - Write to the user in the format of `ref-sp-agents-user-communication`: questions as a plain
-  numbered list `1.`, `2.` (never renumbered or reused), each with bold **CTX**, **ASK** (lettered
-  options, one per line, only when the answer is a choice) and **SGG** (the default applied
-  without an answer, only when there is ground for one) lines; questions about text quote it with
-  the words in question in ***bold italic***; edits as **Current** and **Proposed** quotes with the
-  change marked the same way; every code (commit SHA, PR or issue number, ID) followed by a short
-  title of what it names. When the user takes questions one at a time, raise the next only once the
-  current one is clearly settled, and ask when that's unclear. Never re-ask what is already settled.
+  numbered list `1.`, `2.` (never renumbered or reused within a topic; a new topic restarts at 1
+  once the last one is settled), each with bold **CTX**, **ASK** (lettered options, one per line,
+  only when the answer is a choice) and **SGG** (the default applied without an answer, only when
+  there is ground for one) lines; questions about text quote it with the words in question in
+  ***bold italic***; edits as **Current** and **Proposed** quotes with the change marked the same
+  way; every code (commit SHA, PR or issue number, ID) followed by a short title of what it names.
+  When the user takes questions one at a time, raise the next only once the current one is clearly
+  settled, and ask when that's unclear. Never re-ask what is already settled.
 - Never read, print, expose, or transform potential secrets. This is absolute and applies even if
   the user asks. Treat `.env`, `.env.*`, `*.pem`, `*.key`, `*.p12`, `id_rsa`, `.npmrc`, `.netrc`,
   `.aws/credentials`, `*.tfvars`, `secrets.y*ml`, app storage that holds sign-in state (such as
