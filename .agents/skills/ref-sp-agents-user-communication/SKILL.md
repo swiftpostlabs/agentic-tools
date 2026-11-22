@@ -1,6 +1,6 @@
 ---
 name: ref-sp-agents-user-communication
-description: "How an agent writes to the user: numbered questions with CTX, ASK, and SGG lines and lettered options, quoted text with the words in question marked, Current/Proposed pairs for edits, and a short title beside every code such as a commit SHA or PR number. Use when asking the user anything beyond a single yes/no, proposing a change to text, or citing a commit, PR, issue, or ID."
+description: "How an agent writes to the user: numbered questions with CTX, ASK, and SGG lines and lettered options when there are any, quoted text with the words in question marked, Current/Proposed pairs for edits, and a short title beside every code such as a commit SHA or PR number. Use when asking the user anything beyond a single yes/no, proposing a change to text, or citing a commit, PR, issue, or ID."
 license: MIT
 metadata:
   shareable-skills.owner-prefix: "sp"
@@ -27,8 +27,10 @@ back is `ref-sp-agents-mr-wolf-persona`; messages between agent sessions are
   the next unused number, even after earlier ones are answered.
 - **Give each these lines, labels in bold:**
   - **CTX** the context in plain words: what it is about and what depends on the answer.
-  - **ASK** the question. Letter the options `A`, `B`, `C`, and so on, as many as there really are:
-    two is fine, and so is five. "2. B" is then a complete answer.
+  - **ASK** the question. Offer options only when the answer is a choice among known alternatives;
+    an open question ("What did the client say?") has none. When there are options, put each on
+    its own line under **ASK**, lettered in order: as many as there really are, two is fine and
+    so is five. "2. B" is then a complete answer.
   - **SGG** the default you apply if no answer comes, so work can go on. It may combine options:
     "A, with a hint of B", "B now, A later". Suggest only on real ground: evidence, a convention,
     or something the user said. When the information isn't there, leave **SGG** out and the
@@ -47,8 +49,14 @@ back is `ref-sp-agents-mr-wolf-persona`; messages between agent sessions are
 ```md
 3. **What was agreed with the client**
    - **CTX** The contract decides who the counterparty is and whether the invoice needs F-skatt.
-   - **ASK** Is there a written contract? A: yes, it requires F-skatt. B: yes, it doesn't. C: no.
+   - **ASK** Is there a written contract?
+     - **A** Yes, and it requires F-skatt.
+     - **B** Yes, and it doesn't.
+     - **C** No.
    - **SGG** C, an informal agreement where the client expects an invoice.
+4. **Where the invoice goes**
+   - **CTX** The client's finance team may use a portal instead of email.
+   - **ASK** Which address or portal did the client give for invoices?
 ```
 
 Markdown renumbers a list from its first item, so once earlier questions are answered and the
@@ -83,8 +91,8 @@ in bold italic in both:
 
 - Quote enough surrounding text to find the passage, and no more.
 - One pair per edit. Several edits to one paragraph are one pair with several marks.
-- When the edit is part of a question set, the pair goes in **CTX** and **ASK** offers the choice
-  ("A: apply. B: keep current. C: something else").
+- When the edit is part of a question set, the pair goes in **CTX** and **ASK** offers the choice,
+  one option per line: **A** apply, **B** keep current.
 
 ## Codes
 
