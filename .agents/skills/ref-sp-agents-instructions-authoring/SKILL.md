@@ -28,8 +28,9 @@ all of it, with domain detail pushed into skills that load on demand.
 
 - Use `./references/agents-md-standard.md` for which clients read `AGENTS.md`, their size limits,
   nesting, and the fallback bridge when a client cannot read it.
-- Use `./references/global-instructions.md` for user-level files (`~/.claude/CLAUDE.md`,
-  `~/.copilot/instructions/`, `~/.codex/AGENTS.md`), not repo files.
+- Use `./references/global-instructions.md` for user-level files: the source of truth at
+  `~/.config/agents/AGENTS.md` and its bridges (`~/.claude/CLAUDE.md`,
+  `~/.copilot/instructions/`), not repo files.
 - Use `./references/providers/copilot-instructions.md` only for a repo that keeps
   `.github/copilot-instructions.md` as its source of truth.
 - Use the repo's persona skill (`ref-sp-agents-mr-wolf-persona` here) for the persona text itself.

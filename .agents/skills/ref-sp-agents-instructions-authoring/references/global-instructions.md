@@ -51,31 +51,34 @@ The single-source-of-truth pattern used for repo files also works for global
 config. Keep the real personal guidance in one file and route the others to it,
 instead of hand-maintaining several parallel global bodies.
 
-The `AGENTS.md` standard itself still documents only repo-root and nested
-placement, with no global/home tier. A few tools outside our provider set
-document their own user-level `AGENTS.md` (e.g. OpenAI Codex reads
-`~/.codex/AGENTS.md`), and the standard's repo has an open proposal for a shared
-`~/.config/agents/AGENTS.md`, but none of Copilot, Claude, or Gemini document a
-user-level `AGENTS.md` today. So — unlike the repo tier, where a root
-`AGENTS.md` is the default source of truth (see `./agents-md-standard.md`) —
-keep **Copilot** (`~/.copilot/instructions/*.instructions.md`) as the
-recommended global source of truth and bridge the other providers back to it.
-Revisit this if one of those tools documents global `AGENTS.md` support or the
-`~/.config/agents/` proposal lands.
+None of Copilot, Claude, or Gemini document a user-level `AGENTS.md` today. A few tools outside
+our provider set document their own (e.g. OpenAI Codex reads `~/.codex/AGENTS.md`), and the
+standard's repo has an open proposal for a shared `~/.config/agents/AGENTS.md`. Keep the source
+of truth there: it is vendor-neutral, and it is the location most likely to be read natively if a
+global tier is standardised. Until a client reads it, bridge every provider to it. Global skills
+stay in `~/.agents/skills/`, because clients read that folder directly; only the instructions
+move.
 
-A common working setup:
+The setup:
 
-- Put the actual personal defaults in one file, e.g.
-  `~/.copilot/instructions/default.instructions.md`.
-- Make `~/.claude/CLAUDE.md` a thin bridge that imports it (`@`-import or a
-  relative path the provider supports).
-- Add a matching thin bridge for `~/.gemini/GEMINI.md` if Gemini is used. Gemini
-  reads it as the global tier and concatenates it, so a short import line plus a
-  pointer to the shared file is enough.
-- For Hermes, put the durable personal defaults in `~/.hermes/SOUL.md` directly.
-  It is an identity file that cannot be as cleanly reduced to a one-line bridge,
-  so accept some duplication there or keep `SOUL.md` focused on voice and let
-  the repo-level files carry the rest.
+- Put the personal defaults in `~/.config/agents/AGENTS.md`. Keep a `description` front matter
+  block at the top: Copilot uses it, and the other clients read it as plain text.
+- **Copilot** reads only its own folder and has no import: make
+  `~/.copilot/instructions/default.instructions.md` a symlink to `~/.config/agents/AGENTS.md` (on Windows, a
+  symlink needs Developer Mode or an elevated shell; a hard link also works but breaks when an
+  editor replaces the file instead of writing in place, so check it after editing).
+- **Claude Code**: `~/.claude/CLAUDE.md` holds only `@../.config/agents/AGENTS.md`.
+  Claude reads it from its config home, so with `CLAUDE_CONFIG_DIR` set, check that the session
+  actually loads it (it is listed at session start) and add the same bridge in that folder if not.
+- **Gemini**, if used: a thin `~/.gemini/GEMINI.md` with an import line pointing to the source.
+- **Hermes**: put the durable personal defaults in `~/.hermes/SOUL.md` directly. It is an
+  identity file that cannot be as cleanly reduced to a one-line bridge, so accept some
+  duplication there or keep `SOUL.md` focused on voice and let the repo-level files carry the
+  rest.
+- **Moving an older setup** whose source is `~/.copilot/instructions/default.instructions.md`:
+  move the file to `~/.config/agents/AGENTS.md`, put the Copilot symlink at the old Copilot path, and change the
+  `CLAUDE.md` import. Reword anything in the file that calls it Copilot-only or points repo rules
+  anywhere but `AGENTS.md`.
 
 This keeps one authoritative personal-defaults file while every agent still
 loads it. Unlike the repo tier, the global tier still needs bridges, because
