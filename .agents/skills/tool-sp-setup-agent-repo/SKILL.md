@@ -114,6 +114,10 @@ installing a long tail; an unused skill costs context for nothing.
 
 - `git check-ignore` reports a directory holding any tracked file as not ignored. The script uses
   `--no-index` for the pattern and checks tracked content separately (`W3`).
+- In a `.gitignore` checked out with CRLF, git reads a blank line as an empty pattern that matches
+  every path ending in `/`, so `git check-ignore dir/` calls any directory ignored. The script
+  probes a path inside the directory instead. The `G1` rule (`* text=auto eol=lf`) prevents the
+  CRLF checkout in the first place.
 - A real `.claude/skills` directory is a fork. Moving it into `.agents/skills` and linking back is
   a content move: confirm, and search for references to the old path.
 - Claude Code cloud sessions load only skills committed under `.claude/skills/`, so a gitignored

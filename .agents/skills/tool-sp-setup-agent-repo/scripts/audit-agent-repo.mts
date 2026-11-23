@@ -264,6 +264,14 @@ export const fallbackIgnored = (
 };
 
 /**
+ * A name probed inside a directory instead of asking about `dir/` itself. In a `.gitignore` checked
+ * out with CRLF line endings, git reads a blank line as an empty pattern that matches every path
+ * ending in `/`, so asking about `dir/` reports any directory as ignored. A path inside the
+ * directory is still ignored by any rule that ignores the directory.
+ */
+const directoryProbe = 'audit-agent-repo-probe';
+
+/**
  * Whether the ignore patterns decide `relative` is ignored, `null` when they cannot. `--no-index`
  * keeps the answer about patterns alone: otherwise one tracked file makes git report the whole
  * directory as not ignored. Tracked content is checked separately by `trackedPaths`.
@@ -274,9 +282,11 @@ const isIgnored = (
   hasGit: boolean,
 ): IgnoreVerdict => {
   if (hasGit) {
+    const probe =
+      relative.endsWith('/') ? `${relative}${directoryProbe}` : relative;
     const result = git(
       repo,
-      ['check-ignore', '-q', '--no-index', '--', relative],
+      ['check-ignore', '-q', '--no-index', '--', probe],
       10_000,
     );
     if (result === null || (result.status !== 0 && result.status !== 1)) {
@@ -287,7 +297,7 @@ const isIgnored = (
     }
     const verbose = git(
       repo,
-      ['check-ignore', '-v', '--no-index', '--', relative],
+      ['check-ignore', '-v', '--no-index', '--', probe],
       10_000,
     );
     const source = verbose?.stdout.split(/:\d+:/)[0]?.trim();

@@ -59,6 +59,25 @@ describe('workspace checks', () => {
     expect(check(repo, 'W4')).toBeUndefined();
   });
 
+  test('a CRLF .gitignore with a blank line passes W2: the blank line ignores nothing', () => {
+    const repo = makeRepo(
+      {
+        ...workspaces,
+        '.gitignore': '/.agents/local/\r\n\r\nnode_modules/\r\n',
+      },
+      { withGit: true },
+    );
+    expect(check(repo, 'W2')?.status).toBe('pass');
+  });
+
+  test('a CRLF .gitignore with a blank line still fails W2 when nothing ignores the workspaces', () => {
+    const repo = makeRepo(
+      { ...workspaces, '.gitignore': 'node_modules/\r\n\r\ndist/\r\n' },
+      { withGit: true },
+    );
+    expect(check(repo, 'W2')?.status).toBe('fail');
+  });
+
   test('an ignore rule only in .git/info/exclude fails W2: it holds on this machine only', () => {
     const repo = makeRepo(workspaces, { withGit: true });
     fs.appendFileSync(
