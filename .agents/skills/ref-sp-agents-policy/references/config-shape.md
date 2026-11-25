@@ -26,8 +26,9 @@
 
 - `policy.services` controls which vendor outputs are generated or cleaned.
 - `policy.protectedFiles` drive Claude and Copilot deterrents and Gemini exclusions. An entry
-  starting with `!` is an exception to the entries before it, gitignore-style: list
-  `"*.env.*", "!*.env.example"` in that order, since an exception listed first excepts nothing.
+  starting with an exclamation mark (!) is an exception to the entries before it,
+  gitignore-style: list `"*.env.*", "!*.env.example"` in that order, since an exception listed
+  first excepts nothing.
   Use it for committed templates that hold names only, never to reopen a real secret.
 - `policy.excludedFiles` affect Gemini's generated exclusion file.
 - `policy.terminalAutoApprove` and `policy.editAutoApprove` feed managed VS Code settings.

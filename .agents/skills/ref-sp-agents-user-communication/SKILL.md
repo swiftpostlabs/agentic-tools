@@ -104,7 +104,7 @@ in bold italic in both:
 Agents recall a commit SHA, a PR or issue number, a ticket or run ID at a glance; people don't.
 Give every code a short title of what it names, every time it appears:
 
-- "`2450c75` (support `!` exceptions in protected files)", not a bare "`2450c75`".
+- "`2450c75` (support exceptions in protected files)", not a bare "`2450c75`".
 - "PR #40 (dev-dependency bump)", "issue #12 (login loop on Safari)", "run 8812 (nightly tests)".
 - In a list of commits, the subject line is the title: `757d358 feat(skills): Add …`.
 
