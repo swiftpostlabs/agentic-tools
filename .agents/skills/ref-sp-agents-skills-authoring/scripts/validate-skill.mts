@@ -34,6 +34,10 @@ type Frontmatter = Record<string, FrontmatterValue>;
 // Clients list every skill's description in a shared budget (Codex: 2% of context or 8,000
 // characters), so long descriptions crowd out other skills. 1024 is the spec's hard limit.
 const DESCRIPTION_SOFT_LIMIT = 400;
+/** Wildcard grants on package runners and shells: each pre-approves arbitrary commands. */
+const BROAD_TOOL_GRANT_PATTERN =
+  /Bash\((?:npx|npm|pnpm|yarn|bunx?|node|deno|python3?|uvx?|pipx?|sh|bash|zsh|pwsh|powershell|cmd)(?::\*|\s*\*)\)/g;
+
 const ALLOWED_TOP_LEVEL_KEYS = new Set([
   'allowed-tools',
   'argument-hint',
@@ -261,6 +265,21 @@ function validateFrontmatter(
     }
   }
 
+  // A client grants allowed-tools without asking whenever the skill is active, so a wildcard on a
+  // package runner or shell pre-approves arbitrary commands.
+  const allowedTools = frontmatter['allowed-tools'];
+  if (typeof allowedTools === 'string') {
+    const broad = [...allowedTools.matchAll(BROAD_TOOL_GRANT_PATTERN)].map(
+      (grant) => grant[0],
+    );
+    if (broad.length > 0) {
+      add(
+        'error',
+        `allowed-tools pre-approves arbitrary commands: ${broad.join(', ')}; grant the one command the skill needs`,
+      );
+    }
+  }
+
   for (const key of ['compatibility', 'license', 'argument-hint']) {
     const value = frontmatter[key];
     if (value !== undefined && typeof value !== 'string') {
@@ -280,6 +299,15 @@ function validateBody(
   const add = (severity: Severity, message: string): void => {
     findings.push({ skill: skillLabel, severity, message });
   };
+
+  // Claude Code runs !`command` in a skill as a shell command when the skill loads, with no
+  // permission prompt, so a `!` written inside inline code turns the prose after it into a command.
+  if (body.includes('!`')) {
+    add(
+      'error',
+      "body contains '!`', which Claude Code runs as a shell command when the skill loads; keep '!' out of backticks",
+    );
+  }
 
   if (body.split(/\r?\n/).length > 500) {
     add(
