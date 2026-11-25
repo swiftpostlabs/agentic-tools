@@ -2,7 +2,7 @@
 name: ref-sp-dev-playwright-cli
 description: "Drive a real browser from the terminal with playwright-cli: click, fill, snapshot, inspect console and network, mock requests, record video or traces, run Playwright tests, collect live UI feedback. Use when testing or debugging a web page, or reading a JS-rendered page."
 license: Apache-2.0
-allowed-tools: Bash(playwright-cli:*) Bash(npx:*) Bash(npm:*) Bash(yarn:*)
+allowed-tools: Bash(playwright-cli:*)
 metadata:
   shareable-skills.owner-prefix: "sp"
   shareable-skills.owner: "swiftpostlabs/agentic-tools"
